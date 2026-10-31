@@ -221,3 +221,6 @@ __marimo__/
 
 # VS code
 .vscode/
+
+# Local caches (blender worktrees, generated stubs, ty results)
+/.cache/
