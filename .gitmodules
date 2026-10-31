@@ -1,0 +1,9 @@
+[submodule "ty-blender"]
+	path = ty-blender
+	url = https://github.com/taway1450/ty-blender.git
+[submodule "blender"]
+	path = blender
+	url = https://projects.blender.org/blender/blender.git
+[submodule "fake-bpy-module"]
+	path = fake-bpy-module
+	url = https://github.com/nutti/fake-bpy-module.git
