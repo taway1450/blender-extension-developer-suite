@@ -44,7 +44,6 @@ DIAGNOSTIC_RE = re.compile(r"^.+?:\d+:\d+: (?P<severity>\w+)\[(?P<rule>[\w-]+)\]
 def run_ty(ty: Path, version: str, source: Path, stubs: Path) -> Path:
     python_version = blender_python_version(source)
     results = CACHE_DIR / "ty-results" / f"{version}.txt"
-    results.parent.mkdir(parents=True, exist_ok=True)
 
     cmd: list[str | Path] = [ty, "check", "--project", source, "--python-version", python_version,
                              "--output-format", "concise", "--no-progress", "--color", "never",
@@ -56,9 +55,15 @@ def run_ty(ty: Path, version: str, source: Path, stubs: Path) -> Path:
     cmd.append(source)
 
     log(f"Running ty (Python {python_version}) on {source}")
+    return run_ty_with_summary(cmd, source, results)
+
+
+def run_ty_with_summary(cmd: list[str | Path], cwd: Path, results: Path) -> Path:
+    """Run a ``ty check`` command, write its output to ``results`` and print diagnostic counts per rule."""
+    results.parent.mkdir(parents=True, exist_ok=True)
     print(f"    $ {' '.join(str(c) for c in cmd)}", flush=True)
     start = time.monotonic()
-    result = subprocess.run([str(c) for c in cmd], cwd=source, capture_output=True, text=True,
+    result = subprocess.run([str(c) for c in cmd], cwd=cwd, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
     elapsed = time.monotonic() - start
     results.write_text(result.stdout + result.stderr, encoding="utf-8")
