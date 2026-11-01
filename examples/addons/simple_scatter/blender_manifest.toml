@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+
+id = "simple_scatter"
+version = "1.0.0"
+name = "Simple Scatter"
+tagline = "Scatter copies of the active object around it"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]

@@ -1,0 +1,61 @@
+[tasks."ty:build"]
+description = "Build ty from the ty-blender submodule"
+usage = '''
+flag "--debug" help="Build a debug binary instead of a release binary"
+'''
+run = 'uv run scripts/build_ty.py {% if usage.debug %}--debug{% endif %}'
+
+[tasks."blender:download"]
+description = "Download an official Blender release binary into .cache/blender-bin/"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2)"
+flag "--force" help="Download and extract again even if cached"
+'''
+run = 'uv run scripts/download_blender.py {{usage.version}} {% if usage.force %}--force{% endif %}'
+
+[tasks."stubs:generate"]
+description = "Generate bpy stubs with fake-bpy-module (downloads Blender if needed)"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or 'main'"
+flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / main"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+flag "--force" help="Recreate the source worktree and regenerate the stubs"
+'''
+run = '''
+uv run scripts/generate_stubs.py {{usage.version}}
+{%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
+{%- if usage.force %} --force{% endif %}
+'''
+
+[tasks."check:blender"]
+description = "Type-check the Blender source code with ty"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or 'main'"
+flag "--debug" help="Use a debug build of ty"
+flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / main"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+flag "--force" help="Recreate the source worktree and regenerate the stubs"
+'''
+run = '''
+uv run scripts/check_blender.py {{usage.version}}
+{%- if usage.debug %} --debug{% endif %}
+{%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
+{%- if usage.force %} --force{% endif %}
+'''
+
+[tasks."check:addons"]
+description = "Type-check the example addons in examples/addons/ with ty"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or 'main'"
+arg "[addons]" var=#true help="Addon directory names in examples/addons/ (default: all)"
+flag "--debug" help="Use a debug build of ty"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+'''
+run = '''
+uv run scripts/check_addons.py {{usage.version}}
+{%- for addon in usage.addons %} {{addon}}{% endfor %}
+{%- if usage.debug %} --debug{% endif %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
+'''
