@@ -15,6 +15,7 @@ cached under `.cache/`.
 | `mise run check:blender <version> [--debug]` | Type-check the Blender source of that version with ty; the full output goes to `.cache/ty-results/<version>.txt`. |
 | `mise run check:stubs <version> [--debug]` | Type-check the generated bpy stubs themselves with ty; the full output goes to `.cache/ty-results/stubs-<version>.txt`. |
 | `mise run check:addons <version> [addon...] [--debug]` | Type-check the example addons in `examples/addons/` with ty against the bpy stubs. |
+| `mise run report:flags <version>` | For every documented class, property, function, parameter, return value and operator argument, compare its RNA flags with the behaviour probed in Blender, the API docs and the bpy stubs; per-flag counts and wrong flag combinations go to `.cache/flag-report/<version>/summary.md`, all rows to `rows.md` / `rows.csv`. |
 
 `<version>` is a Blender version such as `5.2`, or `main` together with `--blender <path>` pointing at a
 matching Blender build. The check tasks build ty and generate missing stubs themselves.

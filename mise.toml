@@ -76,3 +76,18 @@ uv run scripts/check_stubs.py {{usage.version}}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
 {%- if usage.force %} --force{% endif %}
 '''
+
+[tasks."report:flags"]
+description = "Tabulate Blender's RNA flags against runtime behaviour, the API docs and the bpy stubs"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or 'main'"
+flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / main"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+flag "--force" help="Recreate the source worktree and regenerate the stubs"
+'''
+run = '''
+uv run scripts/report_flags.py {{usage.version}}
+{%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
+{%- if usage.force %} --force{% endif %}
+'''
