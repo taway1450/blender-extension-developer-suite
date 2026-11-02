@@ -25,7 +25,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from _common import CACHE_DIR, FAKE_BPY_SRC, StepError, exe, log, main_wrapper, validate_version
+from _common import CACHE_DIR, FAKE_BPY_SRC, StepError, exe, log, main_wrapper, validate_release_version
 
 BLENDER_BIN_DIR = CACHE_DIR / "blender-bin"
 DOWNLOADS_DIR = CACHE_DIR / "downloads"
@@ -156,7 +156,7 @@ def download_blender(version: str, force: bool = False) -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("version", type=validate_version, help="Blender version as X.Y (e.g. 5.2)")
+    parser.add_argument("version", type=validate_release_version, help="Blender version as X.Y (e.g. 5.2)")
     parser.add_argument("--force", action="store_true", help="Download and extract again even if cached")
     args = parser.parse_args()
     download_blender(args.version, args.force)

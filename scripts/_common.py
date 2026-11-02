@@ -48,10 +48,30 @@ def exe(name: str) -> str:
     return f"{name}.exe" if sys.platform == "win32" else name
 
 
+def is_release(version: str) -> bool:
+    """Whether ``version`` names an official release (X.Y) rather than a Blender build from source."""
+    return re.fullmatch(r"\d+\.\d+", version) is not None
+
+
 def validate_version(version: str) -> str:
-    if version != "main" and not re.fullmatch(r"\d+\.\d+", version):
-        raise argparse.ArgumentTypeError(f"version must be X.Y or 'main', got {version!r}")
+    """A release version (X.Y) or the name of a Blender build from source (e.g. 'main')."""
+    if not re.fullmatch(r"\w[\w.-]*", version):
+        raise argparse.ArgumentTypeError(
+            f"version must be X.Y or a build name (letters, digits, '.', '-', '_'), got {version!r}")
     return version
+
+
+def validate_release_version(version: str) -> str:
+    if not is_release(version):
+        raise argparse.ArgumentTypeError(f"version must be X.Y, got {version!r}")
+    return version
+
+
+def validate_build_name(name: str) -> str:
+    if is_release(name):
+        raise argparse.ArgumentTypeError(
+            f"{name!r} looks like a release version, which is downloaded instead of built; pick another name")
+    return validate_version(name)
 
 
 def main_wrapper(func) -> None:

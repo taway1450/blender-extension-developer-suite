@@ -8,12 +8,14 @@ Steps:
   1. Create a git worktree of the ``blender`` submodule for the requested version
      (``sphinx_doc_gen.py`` and the bgl sources are taken from it).
   2. Download the matching official Blender binary into ``.cache/blender-bin/`` unless it is
-     already there (or ``--blender`` is passed).
+     already there (or ``--blender`` is passed). Versions other than X.Y (e.g. ``main``) name a
+     Blender build from source, made with ``build_blender.py`` into the same directory.
   3. Run Blender to generate the rst API docs and fake-bpy-module's mod files, then run
      fake-bpy-module's ``gen.py`` to turn them into stubs in ``.cache/bpy-stubs/<version>``.
 
 Usage:
   uv run scripts/generate_stubs.py 5.2
+  uv run scripts/generate_stubs.py main          # after: uv run scripts/build_blender.py main
   uv run scripts/generate_stubs.py main --blender "C:/path/to/blender-5.4/blender.exe"
 
 Everything is cached under ``.cache/``; pass ``--force`` to regenerate the worktree and stubs.
@@ -36,12 +38,13 @@ from _common import (
     StepError,
     exe,
     git_output,
+    is_release,
     log,
     main_wrapper,
     run,
     validate_version,
 )
-from download_blender import download_blender
+from download_blender import cached_blender, download_blender
 
 STUBS_DIR = CACHE_DIR / "bpy-stubs"
 
@@ -49,48 +52,72 @@ STUBS_DIR = CACHE_DIR / "bpy-stubs"
 def resolve_git_ref(version: str, ref_override: str | None) -> str:
     if ref_override:
         return ref_override
-    if version == "main":
-        return "main"
+    if not is_release(version):
+        return version
     return f"blender-v{version}-release"
 
 
-def ensure_worktree(version: str, ref: str | None = None, force: bool = False) -> Path:
-    """Return a git worktree of the Blender source for ``version``, creating it if needed."""
+def resolve_commit(ref: str, fetch: bool = False) -> str:
+    """Return the commit ``ref`` names in the blender submodule, fetching it from origin if it is
+    not known locally (or always with ``fetch``)."""
+    def lookup(candidate: str) -> str | None:
+        check = subprocess.run(
+            ["git", "-C", str(BLENDER_SUBMODULE), "rev-parse", "--verify", "-q", f"{candidate}^{{commit}}"],
+            capture_output=True, text=True,
+        )
+        return check.stdout.strip() if check.returncode == 0 else None
+
+    if not fetch:
+        # Prefer the remote-tracking branch, fall back to whatever the ref names (tag, commit, ...).
+        for candidate in (f"origin/{ref}", ref):
+            if commit := lookup(candidate):
+                return commit
+        log(f"Ref {ref!r} not found locally, fetching it from origin")
+    run(["git", "-C", BLENDER_SUBMODULE, "fetch", "origin", ref])
+    if commit := lookup("FETCH_HEAD"):
+        return commit
+    raise StepError(f"Could not resolve Blender git ref {ref!r}")
+
+
+def worktree_commit(version: str) -> str | None:
+    """HEAD of the source worktree for ``version``, or None if it is missing or no longer a git worktree."""
+    worktree = CACHE_DIR / "blender-src" / version
+    if not worktree.exists():
+        return None
+    check = subprocess.run(["git", "-C", str(worktree), "rev-parse", "HEAD"], capture_output=True, text=True)
+    return check.stdout.strip() if check.returncode == 0 else None
+
+
+def ensure_worktree(version: str, ref: str | None = None, force: bool = False, update: bool = False) -> Path:
+    """Return a git worktree of the Blender source for ``version``, creating it if needed.
+
+    With ``update`` the ref is fetched again and an existing worktree is moved to its latest commit.
+    """
     ref = resolve_git_ref(version, ref)
     worktree = CACHE_DIR / "blender-src" / version
-    if worktree.exists() and not force:
-        log(f"Reusing Blender source worktree {worktree} ({git_output(worktree, 'rev-parse', '--short', 'HEAD')})")
-        return worktree
-
-    if worktree.exists():
-        log(f"Removing existing worktree {worktree}")
-        run(["git", "-C", BLENDER_SUBMODULE, "worktree", "remove", "--force", worktree])
-    run(["git", "-C", BLENDER_SUBMODULE, "worktree", "prune"])
-
-    # Prefer the remote-tracking branch, fall back to whatever the ref names (tag, commit, ...).
-    candidates = [f"origin/{ref}", ref]
-    commit = None
-    for _ in range(2):
-        for candidate in candidates:
-            check = subprocess.run(
-                ["git", "-C", str(BLENDER_SUBMODULE), "rev-parse", "--verify", "-q", f"{candidate}^{{commit}}"],
-                capture_output=True, text=True,
-            )
-            if check.returncode == 0:
-                commit = check.stdout.strip()
-                break
-        if commit:
-            break
-        log(f"Ref {ref!r} not found locally, fetching it from origin")
-        run(["git", "-C", BLENDER_SUBMODULE, "fetch", "origin", ref])
-        candidates.append("FETCH_HEAD")
-    if not commit:
-        raise StepError(f"Could not resolve Blender git ref {ref!r}")
-
-    log(f"Creating Blender source worktree for {ref} ({commit[:10]}) at {worktree}")
-    worktree.parent.mkdir(parents=True, exist_ok=True)
     # Blender stores test data and some assets in git LFS; we only need the Python sources.
     env = {**os.environ, "GIT_LFS_SKIP_SMUDGE": "1"}
+    head = worktree_commit(version)
+    if head and not force:
+        if update and (commit := resolve_commit(ref, fetch=True)) != head:
+            log(f"Updating Blender source worktree {worktree} to {ref} ({head[:10]} -> {commit[:10]})")
+            run(["git", "-C", worktree, "checkout", "--detach", commit], env=env)
+            return worktree
+        log(f"Reusing Blender source worktree {worktree} ({head[:10]})")
+        return worktree
+
+    if head:
+        log(f"Removing existing worktree {worktree}")
+        run(["git", "-C", BLENDER_SUBMODULE, "worktree", "remove", "--force", worktree])
+    elif worktree.exists():
+        # E.g. its metadata in the submodule's .git/worktrees/ is gone; git can't remove it then.
+        log(f"Removing {worktree}, which is no longer a git worktree")
+        shutil.rmtree(worktree)
+    run(["git", "-C", BLENDER_SUBMODULE, "worktree", "prune"])
+
+    commit = resolve_commit(ref, fetch=update)
+    log(f"Creating Blender source worktree for {ref} ({commit[:10]}) at {worktree}")
+    worktree.parent.mkdir(parents=True, exist_ok=True)
     run(["git", "-C", BLENDER_SUBMODULE, "worktree", "add", "--detach", worktree, commit], env=env)
     return worktree
 
@@ -118,13 +145,16 @@ def find_blender(version: str, explicit: Path | None) -> Path:
             blender = blender / exe("blender")
         if not blender.is_file():
             raise StepError(f"Blender binary {blender} does not exist")
-    elif version == "main":
-        raise StepError("Version 'main' requires an explicit --blender path to a matching Blender build")
+    elif not is_release(version):
+        blender = cached_blender(version)
+        if not blender:
+            raise StepError(f"No Blender build named {version!r}: build it with `mise run blender:build {version}` "
+                            "or pass --blender with a matching Blender binary")
     else:
         blender = download_blender(version)
 
     actual = blender_binary_version(blender)
-    if version != "main" and actual != version:
+    if is_release(version) and actual != version:
         raise StepError(f"{blender} is Blender {actual}, but stubs for Blender {version} were requested")
     log(f"Using Blender {actual} binary {blender}")
     return blender
@@ -145,9 +175,14 @@ def generate_stubs(version: str, *, ref: str | None = None, blender: Path | None
                    force: bool = False) -> Path:
     """Return the bpy stubs directory for ``version``, generating the stubs if needed."""
     stubs_dir = STUBS_DIR / version
-    if (stubs_dir / COMPLETE_MARKER).exists() and not force:
-        log(f"Reusing bpy stubs {stubs_dir}")
-        return stubs_dir
+    marker = stubs_dir / COMPLETE_MARKER
+    if marker.exists() and not force:
+        # Stubs go stale when the worktree moved to another commit (blender:build --update).
+        stubs_commit = re.search(r"^commit=(\w+)$", marker.read_text(), re.MULTILINE)
+        if not stubs_commit or stubs_commit[1] == worktree_commit(version):
+            log(f"Reusing bpy stubs {stubs_dir}")
+            return stubs_dir
+        log(f"bpy stubs {stubs_dir} were generated from another commit, regenerating them")
 
     blender = find_blender(version, blender)
     source = ensure_worktree(version, ref, force)
@@ -156,14 +191,14 @@ def generate_stubs(version: str, *, ref: str | None = None, blender: Path | None
     # The rst output is kept until the stubs are complete, so a failed generation can be retried quickly.
     tmp_dir = CACHE_DIR / "bpy-stubs-tmp" / version
     rst_complete = tmp_dir / COMPLETE_MARKER
-    if rst_complete.exists() and not force:
+    if rst_complete.exists() and not force and rst_complete.read_text() == git_output(source, "rev-parse", "HEAD"):
         log(f"Reusing rst documentation {tmp_dir / 'sphinx-in'}")
     else:
         shutil.rmtree(tmp_dir, ignore_errors=True)
         tmp_dir.mkdir(parents=True)
         log("Generating rst documentation with Blender (sphinx_doc_gen.py)")
         run_blender_script(blender, source / "doc" / "python_api" / "sphinx_doc_gen.py", "--output", tmp_dir)
-        rst_complete.touch()
+        rst_complete.write_text(git_output(source, "rev-parse", "HEAD"))
 
     # gen.py always reads generated mod files from this fixed location inside the submodule (gitignored).
     generated_mods = FAKE_BPY_SRC / "mods" / "generated_mods"
@@ -187,9 +222,9 @@ def generate_stubs(version: str, *, ref: str | None = None, blender: Path | None
 
         log("Generating bpy stubs (fake-bpy-module gen.py)")
         # Same convention as fake-bpy-module's release tooling: the mod version is the Blender version.
-        # For 'main' no mod version is passed, which applies all version-ranged mods.
-        target_version = "latest" if version == "main" else version
-        mod_args = [] if version == "main" else ["-m", version]
+        # For source builds (e.g. 'main') no mod version is passed, which applies all version-ranged mods.
+        target_version = version if is_release(version) else "latest"
+        mod_args = ["-m", version] if is_release(version) else []
         run(uv_python_cmd() + [FAKE_BPY_SRC / "gen.py", "-i", tmp_dir / "sphinx-in", "-o", stubs_dir,
                                "-f", "ruff", "-T", "blender", "-t", target_version, "-l", "warn", *mod_args],
             cwd=FAKE_BPY_SRC)
@@ -197,17 +232,18 @@ def generate_stubs(version: str, *, ref: str | None = None, blender: Path | None
         shutil.rmtree(generated_mods, ignore_errors=True)
 
     shutil.rmtree(tmp_dir, ignore_errors=True)
-    (stubs_dir / COMPLETE_MARKER).write_text(f"blender={blender}\nsource={source}\n")
+    marker.write_text(f"blender={blender}\nsource={source}\ncommit={git_output(source, 'rev-parse', 'HEAD')}\n")
     log(f"bpy stubs: {stubs_dir}")
     return stubs_dir
 
 
 def add_stubs_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("version", type=validate_version, help="Blender version as X.Y (e.g. 5.2), or 'main'")
-    parser.add_argument("--ref", help="Blender git ref to check out instead of blender-vX.Y-release / main")
+    parser.add_argument("version", type=validate_version,
+                        help="Blender version as X.Y (e.g. 5.2), or the name of a Blender build from source (e.g. main)")
+    parser.add_argument("--ref", help="Blender git ref to check out instead of blender-vX.Y-release / the build name")
     parser.add_argument("--blender", type=Path,
-                        help="Path to a Blender binary (or its directory) matching the version; "
-                             "by default the official release is downloaded into .cache/blender-bin/")
+                        help="Path to a Blender binary (or its directory) matching the version; by default the "
+                             "official release is downloaded into .cache/blender-bin/ (or built there by build_blender.py)")
     parser.add_argument("--force", action="store_true", help="Recreate the source worktree and regenerate the stubs")
 
 
