@@ -6,7 +6,8 @@
 
 Builds ty (see build_ty.py), makes sure the source worktree and bpy stubs exist (see
 generate_stubs.py) and runs ty on all Python files of the worktree (excluding ``lib/`` and
-``extern/``). The full output goes to ``.cache/ty-results/<version>.txt``.
+``extern/``), once per stub generator (``--generator``). The full output goes to
+``.cache/ty-results/<version>.txt`` (fake-bpy-module stubs) and ``<version>-builtin.txt`` (Blender's own stubs).
 
 Usage:
   uv run scripts/check_blender.py 5.2
@@ -26,7 +27,14 @@ from pathlib import Path
 
 from _common import CACHE_DIR, StepError, log, main_wrapper
 from build_ty import build_ty
-from generate_stubs import add_stubs_arguments, blender_python_version, ensure_worktree, generate_stubs
+from generate_stubs import (
+    add_stubs_arguments,
+    blender_python_version,
+    ensure_worktree,
+    generate_stubs,
+    resolve_generators,
+    results_name,
+)
 
 EXCLUDED_DIRS = ["lib", "extern"]
 # Directories (relative to the Blender source root) that Blender puts on ``sys.path``.
@@ -41,9 +49,9 @@ BLENDER_SEARCH_PATHS = [
 DIAGNOSTIC_RE = re.compile(r"^.+?:\d+:\d+: (?P<severity>\w+)\[(?P<rule>[\w-]+)\]", re.MULTILINE)
 
 
-def run_ty(ty: Path, version: str, source: Path, stubs: Path) -> Path:
+def run_ty(ty: Path, version: str, source: Path, stubs: Path, generator: str) -> Path:
     python_version = blender_python_version(source)
-    results = CACHE_DIR / "ty-results" / f"{version}.txt"
+    results = CACHE_DIR / "ty-results" / results_name(version, generator)
 
     cmd: list[str | Path] = [ty, "check", "--project", source, "--python-version", python_version,
                              "--output-format", "concise", "--no-progress", "--color", "never",
@@ -54,7 +62,7 @@ def run_ty(ty: Path, version: str, source: Path, stubs: Path) -> Path:
         cmd += ["--exclude", f"{excluded}/"]
     cmd.append(source)
 
-    log(f"Running ty (Python {python_version}) on {source}")
+    log(f"Running ty (Python {python_version}, {generator} stubs) on {source}")
     return run_ty_with_summary(cmd, source, results)
 
 
@@ -94,10 +102,13 @@ def main() -> int:
     parser.add_argument("--debug", action="store_true", help="Use a debug build of ty")
     args = parser.parse_args()
 
-    stubs = generate_stubs(args.version, ref=args.ref, blender=args.blender, force=args.force)
+    generators = resolve_generators(args.version, args.ref, args.generator)
+    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+                 for g in generators}
     source = ensure_worktree(args.version, args.ref)
     ty = build_ty(args.debug)
-    run_ty(ty, args.version, source, stubs)
+    for generator, stubs in all_stubs.items():
+        run_ty(ty, args.version, source, stubs, generator)
     return 0
 
 

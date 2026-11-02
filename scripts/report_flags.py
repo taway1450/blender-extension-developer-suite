@@ -11,10 +11,12 @@ Steps:
      the API docs say about them (computed with the same ``rna_info`` calls as ``sphinx_doc_gen.py``)
      and the runtime behaviour probed in Blender. A probe step that crashes Blender is recorded and
      skipped on the next run.
-  3. Parse the stubs and compare, for every row and flag: does the probed behaviour match the flag,
-     do the docs match the behaviour, do the stubs match the behaviour?
+  3. Parse the stubs of each stub generator (``--generator``) and compare, for every row and flag:
+     does the probed behaviour match the flag, do the docs match the behaviour, do the stubs match
+     the behaviour?
 
-Output in ``.cache/flag-report/<version>/``:
+Output in ``.cache/flag-report/<version>/`` (the report against Blender's own stubs goes to its
+``builtin/`` subdirectory):
   summary.md  per-flag counts of correct and wrong docs/stubs, unnecessary or wrong flag combinations
   rows.md     one row per class, property, function, parameter, return value and operator argument
   rows.csv    the same rows as CSV
@@ -39,8 +41,17 @@ import sys
 from pathlib import Path
 
 from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper
-from generate_stubs import add_stubs_arguments, ensure_worktree, find_blender, generate_stubs
+from generate_stubs import (
+    BUILTIN,
+    FAKE_BPY,
+    add_stubs_arguments,
+    ensure_worktree,
+    find_blender,
+    generate_stubs,
+    resolve_generators,
+)
 
+STUB_NAMES = {FAKE_BPY: "fake-bpy-module stubs", BUILTIN: "stubs of Blender's own stub generator"}
 DUMP_SCRIPT = REPO_ROOT / "scripts" / "blender" / "dump_rna_flags.py"
 MAX_CRASH_RETRIES = 100
 
@@ -208,15 +219,18 @@ def parse_class(node: ast.ClassDef) -> StubClass:
     return cls
 
 
-def parse_stubs(stubs: Path) -> tuple[dict[str, StubClass], dict[str, StubFunction]]:
-    package = stubs / "bpy-stubs"
+def parse_stubs(stubs: Path, generator: str) -> tuple[dict[str, StubClass], dict[str, StubFunction]]:
+    package = stubs / ("bpy-stubs" if generator == FAKE_BPY else "bpy")
     tree = ast.parse((package / "types" / "__init__.pyi").read_text(encoding="utf-8"))
     classes = {node.name: parse_class(node) for node in tree.body if isinstance(node, ast.ClassDef)}
     ops = {}
     for module in sorted((package / "ops").glob("*/__init__.pyi")):
         tree = ast.parse(module.read_text(encoding="utf-8"))
         for node in tree.body:
-            if isinstance(node, ast.ClassDef):
+            # Blender's own stubs declare operators as functions, fake-bpy-module's as classes.
+            if isinstance(node, ast.FunctionDef):
+                ops[f"bpy.ops.{module.parent.name}.{node.name}"] = parse_function(node, skip_first=False)
+            elif isinstance(node, ast.ClassDef):
                 new = next((n for n in node.body if isinstance(n, ast.FunctionDef) and n.name == "__new__"), None)
                 if new is not None:
                     ops[f"bpy.ops.{module.parent.name}.{node.name}"] = parse_function(new, skip_first=True)
@@ -681,7 +695,7 @@ def write_rows(rows: list[Row], out_dir: Path) -> None:
     (out_dir / "rows.md").write_text("# RNA flags per row\n\n" + "\n".join(lines) + "\n", encoding="utf-8")
 
 
-def summarize(rows: list[Row], dump: dict, crashed: list[str]) -> str:
+def summarize(rows: list[Row], dump: dict, crashed: list[str], generator: str) -> str:
     counts: dict[tuple[str, str, str], collections.Counter] = collections.defaultdict(collections.Counter)
     examples: dict[tuple[str, str, str], dict[str, list[str]]] = collections.defaultdict(lambda: collections.defaultdict(list))
     for row in rows:
@@ -704,7 +718,7 @@ def summarize(rows: list[Row], dump: dict, crashed: list[str]) -> str:
         "",
         "One check per row and flag. **Runtime** compares the behaviour probed in Blender with what the flag",
         "says (`confirmed / contradicted`; rows without a probe count in neither). **Docs** and **Stub** compare",
-        "the Blender API docs and the fake-bpy-module stubs with the behaviour (`correct / wrong`). Where no",
+        f"the Blender API docs and the {STUB_NAMES[generator]} with the behaviour (`correct / wrong`). Where no",
         "probe ran, the behaviour is the one the flag implies in `bpy_rna.cc`.",
         "",
         "| Flag | C flag | Value | Row kind | Rows | Runtime ✓ / ✗ | Docs ✓ / ✗ | Stub ✓ / ✗ | Examples of wrong |",
@@ -777,7 +791,9 @@ def main() -> int:
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
 
-    stubs = generate_stubs(args.version, ref=args.ref, blender=args.blender, force=args.force)
+    generators = resolve_generators(args.version, args.ref, args.generator)
+    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+                 for g in generators}
     source = ensure_worktree(args.version, args.ref)
     blender = find_blender(args.version, args.blender)
     out_dir = CACHE_DIR / "flag-report" / args.version
@@ -791,14 +807,18 @@ def main() -> int:
         dump = dump_rna(blender, source, out_dir)
     crashed = (out_dir / "crashed.txt").read_text(encoding="utf-8").split()
 
-    log(f"Comparing {len(dump['rows'])} rows with the stubs in {stubs}")
-    stub_classes, stub_ops = parse_stubs(stubs)
-    rows = compare(dump, stub_classes, stub_ops)
-    write_rows(rows, out_dir)
-    summary = summarize(rows, dump, crashed)
-    (out_dir / "summary.md").write_text(summary, encoding="utf-8")
-    print(summary)
-    log(f"Report: {out_dir / 'summary.md'} (all rows: {out_dir / 'rows.md'}, {out_dir / 'rows.csv'})")
+    for generator, stubs in all_stubs.items():
+        log(f"Comparing {len(dump['rows'])} rows with the {generator} stubs in {stubs}")
+        stub_classes, stub_ops = parse_stubs(stubs, generator)
+        rows = compare(dump, stub_classes, stub_ops)
+        # The report against fake-bpy-module's stubs keeps its place next to rna.json.
+        report_dir = out_dir if generator == FAKE_BPY else out_dir / generator
+        report_dir.mkdir(parents=True, exist_ok=True)
+        write_rows(rows, report_dir)
+        summary = summarize(rows, dump, crashed, generator)
+        (report_dir / "summary.md").write_text(summary, encoding="utf-8")
+        print(summary)
+        log(f"Report: {report_dir / 'summary.md'} (all rows: {report_dir / 'rows.md'}, {report_dir / 'rows.csv'})")
     return 0
 
 
