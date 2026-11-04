@@ -30,13 +30,14 @@ import json
 import re
 import subprocess
 import threading
-from dataclasses import dataclass
 from pathlib import Path
 from queue import Empty, Queue
 from typing import Any
 
+from _baseline import Changes, compare, ide_file, merge, read_sections, write_progress, write_sections
 from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import select, split_recorded
+from _features import all_addons, ide_markers, select
+from _markers import IdeMarker
 from build_ty import build_ty
 from generate_stubs import (
     add_stubs_arguments,
@@ -46,12 +47,9 @@ from generate_stubs import (
     resolve_generators,
 )
 
-EXPECTED_DIR = TYPECHECK_TESTS_DIR / "expected"
 RESULTS_DIR = CACHE_DIR / "typecheck-results"
 REQUEST_TIMEOUT = 120  # seconds; the first request loads the stubs
 
-MARKER = re.compile(r"^\s*#.*?\^(?P<kind>[a-z][a-z-]*)(?:\s+(?P<arg>.*?))?\s*$")
-KINDS = ("hover", "hover-contains", "hover-none", "signature", "signature-param", "completion", "deprecated")
 MAX_LINES = 40  # longer hover/signature texts are cut in the golden file
 
 
@@ -178,53 +176,6 @@ def start_server(ty: Path, stubs: Path, python_version: str) -> LspClient:
 # --- markers ----------------------------------------------------------------------------------------------------
 
 
-@dataclass
-class Marker:
-    path: Path
-    line: int  # 0-based line of the queried code
-    character: int  # 0-based column of the caret
-    kind: str
-    arg: str | None
-    source: str  # the queried code line
-
-    @property
-    def rel(self) -> str:
-        return self.path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
-
-    @property
-    def title(self) -> str:
-        arg = f" {self.arg}" if self.arg else ""
-        return f"{self.rel}:{self.line + 1}:{self.character + 1} ^{self.kind}{arg}"
-
-
-def find_markers(path: Path) -> list[Marker]:
-    text = path.read_text(encoding="utf-8")
-    if not text.isascii():
-        # LSP positions count UTF-16 code units; with ASCII they equal the column of the caret.
-        raise StepError(f"{path} contains non-ASCII characters; IDE test files must be ASCII")
-    lines = text.splitlines()
-    markers = []
-    target = None
-    for number, line in enumerate(lines):
-        match = MARKER.match(line)
-        if match is None:
-            if line.strip() and not line.lstrip().startswith("#"):
-                target = number
-            continue
-        if match["kind"] not in KINDS:
-            raise StepError(f"{path}:{number + 1}: unknown marker ^{match['kind']} (known: {', '.join(KINDS)})")
-        if target is None:
-            raise StepError(f"{path}:{number + 1}: marker without a code line above it")
-        markers.append(Marker(path, target, line.index("^"), match["kind"], match["arg"], lines[target].strip()))
-    return markers
-
-
-def quoted(arg: str | None) -> str:
-    if not arg or not (len(arg) >= 2 and arg[0] == arg[-1] == '"'):
-        raise StepError(f"expected a quoted string after the marker, got {arg!r}")
-    return arg[1:-1]
-
-
 # --- rendering ---------------------------------------------------------------------------------------------------
 
 
@@ -270,7 +221,7 @@ def contains(haystack: str, needle: str) -> str:
     return "PASS" if needle in haystack else f'FAIL: does not contain "{needle}"'
 
 
-def render(marker: Marker, response: Any, stubs: Path) -> str:
+def render(marker: IdeMarker, response: Any, stubs: Path) -> str:
     """The golden-file text for one marker."""
     kind = marker.kind
     if kind.startswith("hover"):
@@ -279,7 +230,7 @@ def render(marker: Marker, response: Any, stubs: Path) -> str:
             return "(no hover)" if markdown is None else cut(normalize(markdown, stubs))
         if kind == "hover-none":
             return "PASS" if markdown is None else "FAIL: hover is not empty\n" + cut(normalize(markdown, stubs))
-        return "FAIL: no hover" if markdown is None else contains(plain(markdown), quoted(marker.arg))
+        return "FAIL: no hover" if markdown is None else contains(plain(markdown), marker.quoted_arg())
 
     if kind.startswith("signature"):
         if not response or not response.get("signatures"):
@@ -290,7 +241,7 @@ def render(marker: Marker, response: Any, stubs: Path) -> str:
         if kind == "signature-param":
             if active is None or active >= len(params):
                 return "FAIL: no active parameter"
-            return contains(plain(doc_text(params[active].get("documentation"))), quoted(marker.arg))
+            return contains(plain(doc_text(params[active].get("documentation"))), marker.quoted_arg())
         lines = [f"label: {normalize(signature['label'], stubs)}", f"active parameter: {active}", "parameters:"]
         for param in params:
             label = param["label"]
@@ -334,8 +285,8 @@ def render(marker: Marker, response: Any, stubs: Path) -> str:
     raise AssertionError(kind)
 
 
-def query(client: LspClient, marker: Marker) -> Any:
-    document = {"uri": marker.path.as_uri()}
+def query(client: LspClient, marker: IdeMarker) -> Any:
+    document = {"uri": (TYPECHECK_TESTS_DIR / marker.path).as_uri()}
     position = {"line": marker.line, "character": marker.character}
     if marker.kind.startswith("hover"):
         return client.request("textDocument/hover", {"textDocument": document, "position": position})
@@ -348,52 +299,31 @@ def query(client: LspClient, marker: Marker) -> Any:
     raise AssertionError(marker.kind)
 
 
-# --- golden file -------------------------------------------------------------------------------------------------
+# --- recorded results ---------------------------------------------------------------------------------------------
 
 
-def golden_file(generator: str, version: str) -> Path:
-    return EXPECTED_DIR / generator / f"{version}.ide.md"
-
-
-def parse_golden(path: Path) -> dict[str, str]:
-    """Sections of a golden file by title (the `## ` line)."""
-    sections: dict[str, str] = {}
-    if not path.is_file():
-        return sections
-    title = None
-    body: list[str] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## "):
-            if title is not None:
-                sections[title] = "\n".join(body).strip()
-            title, body = line[3:], []
-        elif title is not None:
-            body.append(line)
-    if title is not None:
-        sections[title] = "\n".join(body).strip()
-    return sections
-
-
-def section_body(marker: Marker, result: str) -> str:
-    return f"`{marker.source}`\n\n````text\n{result}\n````"
-
-
-def write_golden(path: Path, generator: str, version: str, sections: dict[str, str]) -> None:
-    def key(title: str) -> tuple[str, int, int, str]:
-        location, _, rest = title.partition(" ")
-        file, line, col = location.rsplit(":", 2)
-        return file, int(line), int(col), rest
-
-    out = [
+def header(generator: str, version: str) -> list[str]:
+    return [
         f"# IDE results, {generator} stubs, Blender {version}",
         "",
         f"Written by `mise run check:ide {version} --update`; the task fails when this file would change.",
-        "Each section is one marker: the queried code line, then what ty's language server returned for it.",
+        "Each section is one marker, `path | ^marker @column | queried line`, and what ty's language server returned.",
     ]
-    for title in sorted(sections, key=key):
-        out += ["", f"## {title}", "", sections[title]]
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+def print_changes(changes: Changes, expected: dict[str, str], sections: dict[str, str]) -> None:
+    for title in [*changes.gone, *changes.changed, *changes.new]:
+        print(f"    ## {title}", flush=True)
+        diff = difflib.unified_diff(
+            (expected.get(title) or "").splitlines(),
+            (sections.get(title) or "").splitlines(),
+            "recorded",
+            "now",
+            lineterm="",
+            n=1,
+        )
+        for line in list(diff)[2:]:
+            print(f"    {line}", flush=True)
 
 
 # --- main ------------------------------------------------------------------------------------------------------
@@ -416,7 +346,7 @@ def main() -> int:
     selected = [a for a in select(args.features) if a.ide_test_files()]
     if not selected:
         raise StepError("None of the selected addons has ide_*.py files")
-    markers = [m for addon in selected for f in addon.ide_test_files() for m in find_markers(f)]
+    markers = sorted((m for addon in selected for m in ide_markers(addon)), key=lambda m: (m.path, m.line, m.character))
 
     generators = resolve_generators(args.version, args.ref, args.generator)
     all_stubs = {
@@ -436,7 +366,7 @@ def main() -> int:
         raw = []
         sections = {}
         try:
-            for path in sorted({m.path for m in markers}):
+            for path in sorted({TYPECHECK_TESTS_DIR / m.path for m in markers}):
                 client.notify(
                     "textDocument/didOpen",
                     {
@@ -451,7 +381,7 @@ def main() -> int:
             for marker in markers:
                 response = query(client, marker)
                 raw.append({"marker": marker.title, "response": response})
-                sections[marker.title] = section_body(marker, render(marker, response, stubs))
+                sections[marker.title] = f"````text\n{render(marker, response, stubs)}\n````"
         finally:
             client.close()
 
@@ -464,38 +394,25 @@ def main() -> int:
             f"{results_dir / 'ide.json'}"
         )
 
-        path = golden_file(generator, args.version)
-        recorded = parse_golden(path)
-        compared, kept = split_recorded(list(recorded), selected)
-        expected = {t: recorded[t] for t in compared}
+        path = ide_file(generator, args.version)
+        shown = path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)
+        recorded = read_sections(path)
+        existing = all_addons()
         if args.update:
-            others = {t: recorded[t] for t in kept}
-            write_golden(path, generator, args.version, {**others, **sections})
-            log(f"Wrote {path}")
+            write_sections(path, header(generator, args.version), merge(recorded, sections, selected, existing))
+            log(f"Wrote {path} and {write_progress(generator, args.version)}")
             continue
         if not path.is_file():
             log(f"No recorded results in {path}; run with --update to record them")
             changed = True
             continue
-        if expected == sections:
-            log(f"Results match {path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)}")
+        changes = compare(recorded, sections, selected, existing)
+        if not changes:
+            log(f"Results match {shown}")
             continue
         changed = True
-        log(f"Results changed against {path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)} (--update records them):")
-        for title in sorted(set(expected) | set(sections)):
-            if expected.get(title) == sections.get(title):
-                continue
-            print(f"    ## {title}", flush=True)
-            diff = difflib.unified_diff(
-                (expected.get(title) or "").splitlines(),
-                (sections.get(title) or "").splitlines(),
-                "recorded",
-                "now",
-                lineterm="",
-                n=1,
-            )
-            for line in list(diff)[2:]:
-                print(f"    {line}", flush=True)
+        log(f"Results changed against {shown} (--update records them):")
+        print_changes(changes, recorded, sections)
     return 1 if changed else 0
 
 

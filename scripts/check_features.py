@@ -13,8 +13,9 @@ Every folder in ``tests/typecheck/features/`` is a type-checker feature made of 
   or ``ignore-comment-unknown-rule`` for a ``blender-*`` rule ty does not know yet;
 - any other diagnostic is unexpected.
 
-The results that are not passes go to ``tests/typecheck/expected/<generator>/<version>.txt``. The task fails
-when they differ from that file, so both regressions and fixes show up; ``--update`` rewrites it. A summary per
+The results that are not passes go to ``tests/typecheck/expected/<generator>/<version>.txt`` (see ``_baseline.py``).
+The task fails when they differ from that file, so both regressions and fixes show up; ``--update`` rewrites it
+and the progress table ``<version>.progress.md``. A summary per
 addon and the full ty output go to ``.cache/typecheck-results/<version>/<generator>/``.
 
 Usage:
@@ -27,19 +28,10 @@ from __future__ import annotations
 
 import argparse
 import subprocess
-from pathlib import Path
 
+from _baseline import compare, features_file, merge, read_lines, type_entries, write_lines, write_progress
 from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import (
-    AddonResult,
-    evaluate,
-    parse_diagnostics,
-    print_table,
-    select,
-    source_line,
-    split_recorded,
-    summary_markdown,
-)
+from _features import all_addons, evaluate, parse_diagnostics, print_table, select, summary_markdown
 from build_ty import build_ty
 from generate_stubs import (
     add_stubs_arguments,
@@ -49,42 +41,15 @@ from generate_stubs import (
     resolve_generators,
 )
 
-EXPECTED_DIR = TYPECHECK_TESTS_DIR / "expected"
 RESULTS_DIR = CACHE_DIR / "typecheck-results"
 
 
-def outcome_lines(results: list[AddonResult]) -> list[str]:
-    """Everything that is not a pass, one line per (location, rule), without ty's messages: those change
-    with every type-rendering tweak, while this file should only change when a result does."""
-    entries = set()
-    for result in results:
-        for marker in result.markers:
-            if not marker.passed:
-                rule = next(d.rule for d in marker.diagnostics if d.rule in marker.failure_rules)
-                entries.add((marker.path, marker.line, rule, marker.source))
-        for d in result.unexpected:
-            entries.add((d.path, d.line, d.rule, source_line(d.path, d.line)))
-    return [f"{path}:{line} {rule} | {source}" for path, line, rule, source in sorted(entries)]
-
-
-def expected_file(generator: str, version: str) -> Path:
-    return EXPECTED_DIR / generator / f"{version}.txt"
-
-
-def read_expected(path: Path) -> list[str]:
-    if not path.is_file():
-        return []
-    return [line for line in path.read_text(encoding="utf-8").splitlines() if line and not line.startswith("#")]
-
-
-def write_expected(path: Path, generator: str, version: str, lines: list[str]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    header = [
-        f"# Feature-test results that are not passes, {generator} stubs, Blender {version}.",
-        f"# `mise run check:features {version}` fails when they change; `--update` rewrites this file.",
-        "# Format: path:line rule | source line",
+def header(generator: str, version: str) -> list[str]:
+    return [
+        f"Feature-test results that are not passes, {generator} stubs, Blender {version}.",
+        f"`mise run check:features {version}` fails when they change; `--update` rewrites this file.",
+        "Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)",
     ]
-    path.write_text("\n".join(header + sorted(lines)) + "\n", encoding="utf-8")
 
 
 def main() -> int:
@@ -141,32 +106,31 @@ def main() -> int:
         print_table(results)
         log(f"Summary: {results_dir / 'summary.md'}")
 
-        path = expected_file(generator, args.version)
-        actual = outcome_lines(results)
-        recorded = read_expected(path)
-        expected, others = split_recorded(recorded, addons)
+        path = features_file(generator, args.version)
+        shown = path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)
+        actual = dict.fromkeys(type_entries(results), "")
+        recorded = read_lines(path)
+        existing = all_addons()
         if args.update:
-            write_expected(path, generator, args.version, others + actual)
-            log(f"Wrote {path}")
+            write_lines(path, header(generator, args.version), merge(recorded, actual, addons, existing))
+            log(f"Wrote {path} and {write_progress(generator, args.version)}")
             continue
         if not path.is_file():
             log(f"No recorded results in {path}; run with --update to record them")
             changed = True
             continue
-        new = sorted(set(actual) - set(expected))
-        gone = sorted(set(expected) - set(actual))
-        if new or gone:
+        changes = compare(recorded, actual, addons, existing)
+        if changes:
             changed = True
             log(
-                f"Results changed against {path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)} "
-                f"({len(new)} new, {len(gone)} gone; --update records them):"
+                f"Results changed against {shown} ({len(changes.new)} new, {len(changes.gone)} gone; --update records them):"
             )
-            for line in gone:
+            for line in changes.gone:
                 print(f"    - {line}", flush=True)
-            for line in new:
+            for line in changes.new:
                 print(f"    + {line}", flush=True)
         else:
-            log(f"Results match {path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)}")
+            log(f"Results match {shown}")
     return 1 if changed else 0
 
 

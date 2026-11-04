@@ -100,7 +100,7 @@ description = "Type-check the feature tests in tests/typecheck/ with ty and comp
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Feature directory names in tests/typecheck/features/ (default: all)"
-flag "--update" help="Rewrite tests/typecheck/expected/<generator>/<version>.txt instead of comparing"
+flag "--update" help="Rewrite tests/typecheck/expected/<generator>/<version>.txt and .progress.md instead of comparing"
 flag "--debug" help="Use a debug build of ty"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
@@ -156,7 +156,7 @@ description = "Query ty's language server at the markers in tests/typecheck/ (ho
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Feature directory names in tests/typecheck/features/ or tests/typecheck/ide/ (default: all)"
-flag "--update" help="Rewrite tests/typecheck/expected/<generator>/<version>.ide.md instead of comparing"
+flag "--update" help="Rewrite tests/typecheck/expected/<generator>/<version>.ide.md and .progress.md instead of comparing"
 flag "--debug" help="Use a debug build of ty"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
@@ -324,6 +324,10 @@ uv run scripts/run_ruff.py format features {{usage.version}}
 [tasks."lint:scripts"]
 description = "Lint and format the tooling in scripts/ with the pinned upstream ruff through prek (.pre-commit-config.yaml); fixes files"
 run = 'uvx prek@0.5.6 run --all-files'
+
+[tasks."test:scripts"]
+description = "Unit-test the tooling in scripts/ (marker grammar, recorded results) with pytest"
+run = 'uv run --no-project --with pytest pytest scripts/tests -q -p no:cacheprovider'
 
 [tasks."report:flags"]
 description = "Tabulate Blender's RNA flags against runtime behaviour, the API docs and the bpy stubs"

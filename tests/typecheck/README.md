@@ -48,7 +48,8 @@ tests/typecheck/
 │   └── generated/<addon>/           # add-ons written by scripts/feature_generators/<feature>.py
 └── expected/<generator>/
     ├── <version>.txt                # check:features results that are not passes
-    └── <version>.ide.md             # check:ide results, passes and failures
+    ├── <version>.ide.md             # check:ide results, passes and failures
+    └── <version>.progress.md        # passing markers per feature, written by --update
 ```
 
 Each add-on is a top-level package (its feature folder is an import root), so add-on names are unique across all
@@ -153,3 +154,16 @@ results differ from the recorded ones, so a checker improvement shows up as a di
 the diff, then run the task with `--update`. Running a subset (`mise run check:features main properties`) compares
 and updates only those add-ons' entries, plus any entries of add-ons that no longer exist: those show up as gone
 and `--update` drops them.
+
+Entries name a line by its text, not its number: `path | rule | source line` in `<version>.txt`, and
+`path | ^marker @column | source line` as an `<version>.ide.md` section title. When the same text occurs again in
+a file, the later lines get ` #2`, ` #3` ... So adding, removing or moving code changes no entry, unless the code
+is a copy of a line further down. The terminal output of a run still shows line numbers.
+
+`<version>.progress.md` counts the markers that pass per feature, for type markers, expected errors and IDE markers
+(`^hover` and `^signature` only record, so they are not counted). Its last column counts recorded diagnostics on lines
+without a marker. `--update` of either task rewrites it for every feature, from the recorded results and the current
+markers, so it also stays complete after a partial run.
+
+The marker grammar is parsed in `scripts/_markers.py`, and the recorded results are read and written in
+`scripts/_baseline.py`. `mise run test:scripts` runs their unit tests.

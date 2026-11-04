@@ -37,7 +37,6 @@ from __future__ import annotations
 import argparse
 import ast
 import os
-import re
 import shutil
 import subprocess
 import textwrap
@@ -47,6 +46,7 @@ from pathlib import Path
 
 from _common import CACHE_DIR, TY_SUBMODULE, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
 from _features import FEATURES_DIR, Addon, AddonResult, evaluate, parse_diagnostics, select
+from _markers import is_check_file
 from generate_stubs import (
     add_stubs_arguments,
     blender_python_version,
@@ -58,8 +58,6 @@ from generate_stubs import (
 ORACLE_DIR = CACHE_DIR / "typecheck-oracle"
 BASELINE_DIR = TYPECHECK_TESTS_DIR / "oracle"
 RESULTS_DIR = CACHE_DIR / "typecheck-results"
-SKIP_MARKER = re.compile(r"#\s*oracle-skip\b")
-CHECK_PREFIX = "check_"
 
 
 def stock_ty_command() -> list[str]:
@@ -289,16 +287,6 @@ def build_project(addon: Addon, target: Path) -> None:
             shutil.copy2(stub, out)
 
 
-def skipped_lines(addon: Addon) -> set[tuple[str, int]]:
-    skipped = set()
-    for path in addon.type_test_files():
-        rel = path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
-        for number, text in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            if SKIP_MARKER.search(text):
-                skipped.add((rel, number))
-    return skipped
-
-
 @dataclass
 class OracleResult:
     result: AddonResult
@@ -306,19 +294,20 @@ class OracleResult:
     failures: list[str]
 
 
-def judge(result: AddonResult, skipped: set[tuple[str, int]]) -> OracleResult:
+def judge(result: AddonResult) -> OracleResult:
+    skipped = {(path, line) for path, f in result.files.items() for line in f.oracle_skip_lines}
     failures = []
     checked = 0
-    for marker in result.markers:
-        in_check_file = marker.path.rpartition("/")[2].startswith(CHECK_PREFIX)
-        if marker.blender_only or not in_check_file or (marker.path, marker.line) in skipped:
+    for m in result.markers:
+        marker = m.marker
+        if marker.blender_only or not marker.in_check_file or marker.oracle_skip:
             continue
         checked += 1
-        if not marker.passed:
-            messages = "; ".join(d.message for d in marker.diagnostics if d.rule in marker.failure_rules)
+        if not m.passed:
+            messages = "; ".join(d.message for d in m.failures)
             failures.append(f"FAIL `{marker.path}:{marker.line}` `{marker.source}`: {messages}")
     for d in result.unexpected:
-        if d.path.rpartition("/")[2].startswith(CHECK_PREFIX) and (d.path, d.line) not in skipped:
+        if is_check_file(d.path) and (d.path, d.line) not in skipped:
             failures.append(f"{d.severity}[{d.rule}] `{d.path}:{d.line}:{d.col}`: {d.message}")
     return OracleResult(result, checked, failures)
 
@@ -381,7 +370,7 @@ def main() -> int:
                 raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
             (work / addon.module / "ty.txt").write_text(result.stdout, encoding="utf-8")
             [addon_result] = evaluate([addon], parse_diagnostics(result.stdout, base=project))
-            outcome = judge(addon_result, skipped_lines(addon))
+            outcome = judge(addon_result)
             outcomes.append(outcome)
             status = "ok" if not outcome.failures else f"{len(outcome.failures)} failures"
             print(f"    {addon.feature}/{addon.name}: {outcome.checked} markers checked, {status}", flush=True)

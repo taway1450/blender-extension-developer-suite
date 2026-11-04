@@ -1,7 +1,8 @@
-"""The feature tests in ``tests/typecheck/features/``: discovery, markers and how diagnostics are attributed.
+"""The feature tests in ``tests/typecheck/features/``: discovery, and how diagnostics are attributed to markers.
 
-Shared by ``check_features.py``, ``check_oracle.py``, ``check_ide.py`` and ``generate_features.py``.
-See ``tests/typecheck/README.md`` for the layout and the marker syntax.
+Shared by ``check_features.py``, ``check_oracle.py``, ``check_ide.py`` and ``generate_features.py``. The marker
+grammar is in ``_markers.py``, the recorded results in ``_baseline.py``. See ``tests/typecheck/README.md`` for the
+layout and the marker syntax.
 """
 
 from __future__ import annotations
@@ -11,21 +12,27 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from _common import TYPECHECK_TESTS_DIR, StepError
+from _markers import (
+    ASSERT,
+    EXPECTED,
+    IDE_PREFIX,
+    IdeMarker,
+    TypeFile,
+    TypeMarker,
+    is_ide_file,
+    line_keys,
+    parse_ide_file,
+    parse_type_file,
+)
 
 FEATURES_DIR = TYPECHECK_TESTS_DIR / "features"
 GENERATED = "generated"  # features/<feature>/generated/<addon>/: written by generate_features.py
 EXPECTED_STUBS = "_expected"  # <addon>/_expected/: reference stubs for check:oracle
-IDE_PREFIX = "ide_"  # files for check:ide, not type tests
 
 # ty --output-format concise: `path:line:col: severity[rule] message`
 DIAGNOSTIC = re.compile(
     r"^(?P<path>.+?):(?P<line>\d+):(?P<col>\d+): (?P<severity>\w+)\[(?P<rule>[\w-]+)\] (?P<message>.*)$"
 )
-ASSERT_MARKER = re.compile(r"\bassert_type\(")
-IGNORE_MARKER = re.compile(r"#\s*ty:\s*ignore\[(?P<rules>[^\]]+)\]")
-# Rules that only ty-blender reports. Until it does, ty flags their ignore comments as unknown rules.
-BLENDER_RULE_PREFIX = "blender-"
-UNKNOWN_RULE = "ignore-comment-unknown-rule"
 
 
 @dataclass(frozen=True)
@@ -112,24 +119,6 @@ def all_addons() -> list[Addon]:
     return addons
 
 
-def result_prefixes(addons: list[Addon]) -> tuple[str, ...]:
-    """The prefixes of the recorded result lines (``path:line ...``) that belong to ``addons``."""
-    return tuple(f"{a.rel}/" if a.path.is_dir() else f"{a.rel}:" for a in addons)
-
-
-def split_recorded(recorded: list[str], selected: list[Addon]) -> tuple[list[str], list[str]]:
-    """Split recorded result lines (or IDE marker titles) into the ones this run compares and the ones it keeps.
-
-    The compared ones belong to a selected addon or to no addon that still exists: a stale line from a removed
-    or renamed addon then shows up as gone, and ``--update`` drops it. The kept ones belong to unselected addons.
-    """
-    selected_prefixes = result_prefixes(selected)
-    current_prefixes = result_prefixes(all_addons())
-    compared = [r for r in recorded if r.startswith(selected_prefixes) or not r.startswith(current_prefixes)]
-    kept = [r for r in recorded if not r.startswith(selected_prefixes) and r.startswith(current_prefixes)]
-    return compared, kept
-
-
 def import_roots(addons: list[Addon]) -> list[str]:
     """The ty ``environment.root`` entries (relative to tests/typecheck) that make every addon top-level."""
     return sorted({a.root.relative_to(TYPECHECK_TESTS_DIR).as_posix() for a in addons})
@@ -163,47 +152,35 @@ class Diagnostic:
 
 
 @dataclass
-class Marker:
-    path: str
-    line: int
-    kind: str  # "assert_type" or "expected-error"
-    source: str
-    rules: tuple[str, ...] = ()  # the rules of an expected error
+class MarkerResult:
+    """A type marker and the diagnostics ty reported on its line."""
+
+    marker: TypeMarker
     diagnostics: list[Diagnostic] = field(default_factory=list)
 
     @property
-    def failure_rules(self) -> tuple[str, ...]:
-        if self.kind == "assert_type":
-            return ("type-assertion-failure",)
-        # A rule ty does not know yet (a blender-* rule before ty-blender reports it) is an expected error
-        # that is not found either.
-        return ("unused-ignore-comment", UNKNOWN_RULE)
-
-    @property
-    def failure_rule(self) -> str:
-        """The rule recorded for a failure; an unknown rule counts as an unused ignore."""
-        return self.failure_rules[0]
+    def failures(self) -> list[Diagnostic]:
+        return [d for d in self.diagnostics if d.rule in self.marker.failure_rules]
 
     @property
     def passed(self) -> bool:
-        return not any(d.rule in self.failure_rules for d in self.diagnostics)
-
-    @property
-    def blender_only(self) -> bool:
-        """An expected error that only ty-blender can report: stock ty with reference stubs cannot."""
-        return self.kind == "expected-error" and all(r.startswith(BLENDER_RULE_PREFIX) for r in self.rules)
+        return not self.failures
 
 
-def find_markers(addon: Addon) -> list[Marker]:
-    markers = []
+def type_files(addon: Addon) -> dict[str, TypeFile]:
+    """The parsed type-test files of the addon, by path relative to tests/typecheck."""
+    files = {}
     for path in addon.type_test_files():
         rel = path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
-        for number, text in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            if match := IGNORE_MARKER.search(text):
-                rules = tuple(r.strip() for r in match["rules"].split(","))
-                markers.append(Marker(rel, number, "expected-error", text.strip(), rules))
-            elif ASSERT_MARKER.search(text) and not text.lstrip().startswith(("#", "from ", "import ")):
-                markers.append(Marker(rel, number, "assert_type", text.strip()))
+        files[rel] = parse_type_file(rel, path.read_text(encoding="utf-8"))
+    return files
+
+
+def ide_markers(addon: Addon) -> list[IdeMarker]:
+    markers = []
+    for path in addon.ide_test_files():
+        rel = path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
+        markers += parse_ide_file(rel, path.read_text(encoding="utf-8"))
     return markers
 
 
@@ -232,38 +209,42 @@ def parse_diagnostics(output: str, base: Path = TYPECHECK_TESTS_DIR) -> list[Dia
 @dataclass
 class AddonResult:
     addon: Addon
-    markers: list[Marker]
+    markers: list[MarkerResult]
     unexpected: list[Diagnostic]
+    files: dict[str, TypeFile]
 
     def counts(self, kind: str) -> tuple[int, int]:
-        markers = [m for m in self.markers if m.kind == kind]
+        markers = [m for m in self.markers if m.marker.kind == kind]
         return sum(m.passed for m in markers), len(markers)
+
+    def line_key(self, path: str, line: int) -> str:
+        """The key of a line of one of the addon's files (see ``_markers.line_keys``)."""
+        if path not in self.files:
+            text = (TYPECHECK_TESTS_DIR / path).read_text(encoding="utf-8")
+            self.files[path] = TypeFile([], frozenset(), line_keys(text.splitlines()))
+        keys = self.files[path].keys
+        return keys[line - 1] if 0 < line <= len(keys) else ""
 
 
 def evaluate(addons: list[Addon], diagnostics: list[Diagnostic]) -> list[AddonResult]:
     results = []
     for addon in addons:
-        markers = find_markers(addon)
-        by_line = {(m.path, m.line): m for m in markers}
+        files = type_files(addon)
+        markers = [MarkerResult(m) for f in files.values() for m in f.markers]
+        by_line = {(m.marker.path, m.marker.line): m for m in markers}
         unexpected = []
         for diagnostic in diagnostics:
             if not addon.contains(diagnostic.path):
                 continue
-            parts = diagnostic.path.split("/")
-            if parts[-1].startswith(IDE_PREFIX) or EXPECTED_STUBS in parts:
+            if is_ide_file(diagnostic.path) or EXPECTED_STUBS in diagnostic.path.split("/"):
                 continue  # editor tests (check:ide) hold unfinished code on purpose
             marker = by_line.get((diagnostic.path, diagnostic.line))
             if marker is not None:
                 marker.diagnostics.append(diagnostic)
-            if marker is None or diagnostic.rule not in marker.failure_rules:
+            if marker is None or diagnostic.rule not in marker.marker.failure_rules:
                 unexpected.append(diagnostic)
-        results.append(AddonResult(addon, markers, unexpected))
+        results.append(AddonResult(addon, markers, unexpected, files))
     return results
-
-
-def source_line(path: str, line: int) -> str:
-    lines = (TYPECHECK_TESTS_DIR / path).read_text(encoding="utf-8").splitlines()
-    return lines[line - 1].strip() if 0 < line <= len(lines) else ""
 
 
 def summary_markdown(title: str, results: list[AddonResult]) -> str:
@@ -274,8 +255,8 @@ def summary_markdown(title: str, results: list[AddonResult]) -> str:
         "| --- | --- | --- | --- | --- |",
     ]
     for r in results:
-        a_pass, a_total = r.counts("assert_type")
-        e_pass, e_total = r.counts("expected-error")
+        a_pass, a_total = r.counts(ASSERT)
+        e_pass, e_total = r.counts(EXPECTED)
         out.append(
             f"| {r.addon.feature} | {r.addon.name} | {a_pass}/{a_total} | {e_pass}/{e_total} | {len(r.unexpected)} |"
         )
@@ -285,8 +266,8 @@ def summary_markdown(title: str, results: list[AddonResult]) -> str:
             continue
         out += ["", f"## {r.addon.feature}/{r.addon.name}", ""]
         for m in failing:
-            messages = "; ".join(d.message for d in m.diagnostics if d.rule in m.failure_rules)
-            out.append(f"- FAIL `{m.path}:{m.line}` `{m.source}`: {messages}")
+            messages = "; ".join(d.message for d in m.failures)
+            out.append(f"- FAIL `{m.marker.path}:{m.marker.line}` `{m.marker.source}`: {messages}")
         for d in r.unexpected:
             out.append(f"- {d.severity}[{d.rule}] `{d.path}:{d.line}:{d.col}`: {d.message}")
     return "\n".join(out) + "\n"
@@ -297,8 +278,8 @@ def print_table(results: list[AddonResult]) -> None:
     width = max(len(n) for n in names)
     print(f"    {'addon'.ljust(width)}  assert_type  expected errors  other", flush=True)
     for name, r in zip(names, results):
-        a_pass, a_total = r.counts("assert_type")
-        e_pass, e_total = r.counts("expected-error")
+        a_pass, a_total = r.counts(ASSERT)
+        e_pass, e_total = r.counts(EXPECTED)
         print(
             f"    {name.ljust(width)}  {f'{a_pass}/{a_total}':>11}  {f'{e_pass}/{e_total}':>15}  {len(r.unexpected):>5}",
             flush=True,
