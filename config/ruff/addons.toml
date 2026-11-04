@@ -1,5 +1,5 @@
-# Ruff profile for Blender add-ons: the example add-ons (lint:addons, format:addons) and the feature-test
-# add-ons (lint:features, format:features). The tasks also run stock ruff next to it, so the two results show
+# Ruff profile for Blender add-ons: the example add-ons (lint:addons, format:addons) and, through
+# features.toml, the feature-test add-ons. The tasks also run stock ruff next to it, so the two results show
 # what this profile changes.
 #
 # It starts from ruff's default rules and only changes what misfires on idiomatic add-on code; see

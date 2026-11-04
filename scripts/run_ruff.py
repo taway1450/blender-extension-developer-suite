@@ -15,7 +15,7 @@ Targets:
   stubs     the generated bpy stubs, once per stub generator (profile: stubs.toml)
   addons    the example add-ons in examples/addons/ (profile: addons.toml); exits non-zero when the profile
             run has findings, like check:addons
-  features  the feature-test add-ons in tests/typecheck/features/, without _expected/ (profile: addons.toml)
+  features  the feature-test add-ons in tests/typecheck/features/, without _expected/ (profile: features.toml)
 
 The target Python version is the one of the Blender version. Only the stubs target needs the stubs.
 
@@ -53,7 +53,7 @@ from generate_stubs import (
 TOOLS = ("lint", "format")
 TARGETS = ("blender", "stubs", "addons", "features")
 PROFILES_DIR = REPO_ROOT / "config" / "ruff"
-PROFILE_OF_TARGET = {"blender": "blender", "stubs": "stubs", "addons": "addons", "features": "addons"}
+PROFILE_OF_TARGET = {"blender": "blender", "stubs": "stubs", "addons": "addons", "features": "features"}
 CONFIGS = ("default", "profile")
 RESULTS_DIR = CACHE_DIR / "ruff-results"
 RUFF_CACHE = CACHE_DIR / "ruff-cache"
@@ -101,8 +101,9 @@ def run_once(cmd: list[str | Path], tool: str, config: str, job: Job, results: P
     results.parent.mkdir(parents=True, exist_ok=True)
     print(f"    $ {' '.join(str(c) for c in cmd)}", flush=True)
     start = time.monotonic()
-    result = subprocess.run([str(c) for c in cmd], cwd=job.cwd, capture_output=True, text=True,
-                            encoding="utf-8", errors="replace")
+    result = subprocess.run(
+        [str(c) for c in cmd], cwd=job.cwd, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
     elapsed = time.monotonic() - start
     results.write_text(result.stdout + result.stderr, encoding="utf-8")
 
@@ -126,14 +127,17 @@ def run_once(cmd: list[str | Path], tool: str, config: str, job: Job, results: P
         if errors:
             counts["error"] = len(errors)
         total = len(files)
-        log(f"ruff format ({config}) finished in {elapsed:.1f}s: {len(files)} files would be reformatted"
-            f"{f', {len(errors)} errors' if errors else ''}")
+        log(
+            f"ruff format ({config}) finished in {elapsed:.1f}s: {len(files)} files would be reformatted"
+            f"{f', {len(errors)} errors' if errors else ''}"
+        )
     return Run(config, results, counts, total)
 
 
 def print_side_by_side(runs: list[Run]) -> None:
-    rules = sorted({rule for run in runs for rule in run.counts},
-                   key=lambda rule: (-max(run.counts[rule] for run in runs), rule))
+    rules = sorted(
+        {rule for run in runs for rule in run.counts}, key=lambda rule: (-max(run.counts[rule] for run in runs), rule)
+    )
     if not rules:
         return
     width = max(len(rule) for rule in [*rules, "total"])
@@ -148,8 +152,9 @@ def run_job(ruff: Path, tool: str, profile: str, python_version: str, job: Job) 
     runs = []
     for config in CONFIGS:
         results = RESULTS_DIR / f"{job.stem}-{config}.txt"
-        runs.append(run_once(ruff_command(ruff, tool, config, profile, python_version, job), tool, config, job,
-                             results))
+        runs.append(
+            run_once(ruff_command(ruff, tool, config, profile, python_version, job), tool, config, job, results)
+        )
     print_side_by_side(runs)
     log(f"Full output: {', '.join(str(run.results) for run in runs)}")
     return runs
@@ -159,16 +164,31 @@ def jobs_for(tool: str, args: argparse.Namespace) -> list[Job]:
     stem = f"{tool}-{args.target}"
     if args.target == "blender":
         source = ensure_worktree(args.version, args.ref, force=args.force)
-        return [Job(f"the Blender {args.version} source {source}", [source], source,
-                    f"{stem}-{args.version}", [f"{(source / d).as_posix()}/" for d in EXCLUDED_DIRS])]
+        return [
+            Job(
+                f"the Blender {args.version} source {source}",
+                [source],
+                source,
+                f"{stem}-{args.version}",
+                [f"{(source / d).as_posix()}/" for d in EXCLUDED_DIRS],
+            )
+        ]
     if args.target == "stubs":
         generators = resolve_generators(args.version, args.ref, args.generator)
         jobs = []
         for generator in generators:
-            stubs = generate_stubs(args.version, generator=generator, ref=args.ref, blender=args.blender,
-                                   force=args.force)
-            jobs.append(Job(f"the {generator} bpy stubs {stubs}", [stubs], stubs,
-                            results_name(f"{stem}-{args.version}", generator).removesuffix(".txt"), []))
+            stubs = generate_stubs(
+                args.version, generator=generator, ref=args.ref, blender=args.blender, force=args.force
+            )
+            jobs.append(
+                Job(
+                    f"the {generator} bpy stubs {stubs}",
+                    [stubs],
+                    stubs,
+                    results_name(f"{stem}-{args.version}", generator).removesuffix(".txt"),
+                    [],
+                )
+            )
         return jobs
     if args.target == "addons":
         available = sorted(p.name for p in EXAMPLE_ADDONS_DIR.iterdir() if (p / "__init__.py").is_file())
@@ -176,11 +196,25 @@ def jobs_for(tool: str, args: argparse.Namespace) -> list[Job]:
         if unknown:
             raise StepError(f"Unknown addons {', '.join(sorted(unknown))} (available: {', '.join(available)})")
         names = args.names or available
-        return [Job(f"the example addons {', '.join(names)}", [EXAMPLE_ADDONS_DIR / n for n in names],
-                    EXAMPLE_ADDONS_DIR, f"{stem}-{args.version}", [])]
+        return [
+            Job(
+                f"the example addons {', '.join(names)}",
+                [EXAMPLE_ADDONS_DIR / n for n in names],
+                EXAMPLE_ADDONS_DIR,
+                f"{stem}-{args.version}",
+                [],
+            )
+        ]
     addons = select(args.names)
-    return [Job(f"{len(addons)} feature-test addons", [a.path for a in addons], FEATURES_DIR.parent,
-                f"{stem}-{args.version}", [EXPECTED_STUBS])]
+    return [
+        Job(
+            f"{len(addons)} feature-test addons",
+            [a.path for a in addons],
+            FEATURES_DIR.parent,
+            f"{stem}-{args.version}",
+            [EXPECTED_STUBS],
+        )
+    ]
 
 
 def main() -> int:
@@ -188,9 +222,12 @@ def main() -> int:
     parser.add_argument("tool", choices=TOOLS, help="lint (ruff check) or format (ruff format --check --diff)")
     parser.add_argument("target", choices=TARGETS, help="What to run ruff on")
     add_stubs_arguments(parser)
-    parser.add_argument("names", nargs="*",
-                        help="addons: addon directory names in examples/addons/; features: features or "
-                             "feature/addon in tests/typecheck/features/ (default: all)")
+    parser.add_argument(
+        "names",
+        nargs="*",
+        help="addons: addon directory names in examples/addons/; features: features or "
+        "feature/addon in tests/typecheck/features/ (default: all)",
+    )
     parser.add_argument("--debug", action="store_true", help="Use a debug build of ruff")
     args = parser.parse_args()
     if args.names and args.target not in ("addons", "features"):
