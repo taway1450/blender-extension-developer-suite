@@ -7,3 +7,4 @@
 [submodule "ty-blender"]
 	path = ty-blender
 	url = https://github.com/taway1450/ty-blender.git
+	branch = blender
