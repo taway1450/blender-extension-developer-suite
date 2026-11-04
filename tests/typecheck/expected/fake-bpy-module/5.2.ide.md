@@ -27,6 +27,43 @@ FAIL: does not contain "PREFS_EXT_Preferences"
 FAIL: does not contain "prefs_ext"
 ````
 
+## features/inheritance/inh_overrides/ide_inh_overrides.py:19:11 ^hover-contains "Context"
+
+`ctx`
+
+````text
+FAIL: does not contain "Context"
+````
+
+## features/inheritance/inh_overrides/ide_inh_overrides.py:21:15 ^completion mouse_x
+
+`event.mouse_x`
+
+````text
+- mouse_x: FAIL: not offered
+````
+
+## features/inheritance/inh_overrides/ide_inh_overrides.py:28:11 ^hover-contains "UILayout"
+
+`layout`
+
+````text
+FAIL: does not contain "UILayout"
+````
+
+## features/inheritance/inh_overrides/ide_inh_overrides.py:33:16 ^signature
+
+`op.execute(context)`
+
+````text
+label: (ctx) -> Unknown
+active parameter: 0
+parameters:
+- ctx: (no documentation)
+documentation:
+(none)
+````
+
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py:13:30 ^signature
 
 `bpy.ops.opcall_basic.all()`

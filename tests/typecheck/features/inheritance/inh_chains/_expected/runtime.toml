@@ -1,0 +1,29 @@
+[[probe]]
+code = "healthy(addon.INH_CHAINS_OT_leaf)"
+expect = true
+reason = "a registered leaf below unregistered bases works"
+
+[[probe]]
+code = "healthy(addon.INH_CHAINS_OT_sibling)"
+expect = true
+reason = "a registered leaf below unregistered bases works"
+
+[[probe]]
+code = "healthy(addon.INH_CHAINS_PT_main)"
+expect = true
+reason = "a registered leaf below unregistered bases works"
+
+[[probe]]
+code = "healthy(addon.INH_CHAINS_PT_sub)"
+expect = true
+reason = "a registered leaf below unregistered bases works"
+
+[[probe]]
+code = "healthy(addon.INH_CHAINS_MT_one)"
+expect = true
+reason = "a registered leaf below unregistered bases works"
+
+[[probe]]
+code = "healthy(addon.INH_CHAINS_MT_two)"
+expect = true
+reason = "a registered leaf below unregistered bases works"

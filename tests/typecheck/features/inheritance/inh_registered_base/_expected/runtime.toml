@@ -1,0 +1,61 @@
+# The add-on loads; the probes confirm which classes Blender still calls (scripts/check_load.py).
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_OT_parent)"
+expect = false
+reason = "registering OT_child after it detached its Python class"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_OT_child)"
+expect = true
+reason = "the subclass works"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_OT_early_child)"
+expect = true
+reason = "registered before its parent, the subclass works"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_OT_late_parent)"
+expect = true
+reason = "registered after its subclass, the parent works"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_PT_parent)"
+expect = false
+reason = "registering PT_child after it detached its Python class"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_PT_child)"
+expect = true
+reason = "the subclass works"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_MT_parent)"
+expect = false
+reason = "registering MT_child after it detached its Python class"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_MT_child)"
+expect = true
+reason = "the subclass works"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_UL_parent)"
+expect = false
+reason = "registering UL_child after it detached its Python class"
+
+[[probe]]
+code = "healthy(addon.INH_REGISTERED_BASE_UL_child)"
+expect = true
+reason = "the subclass works"
+
+[[probe]]
+code = "can_add_node('INH_REGISTERED_BASE_Tree', 'INH_REGISTERED_BASE_NodeParent')"
+expect = false
+reason = "registering NodeChild after it broke the parent node"
+
+[[probe]]
+code = "can_add_node('INH_REGISTERED_BASE_Tree', 'INH_REGISTERED_BASE_NodeChild')"
+expect = true
+reason = "the subclass node works"

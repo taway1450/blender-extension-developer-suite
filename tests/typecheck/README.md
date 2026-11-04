@@ -25,6 +25,7 @@ mise run check:features main --update # record the current results after a revie
 | [operator_calls](features/operator_calls/README.md) | `bpy.ops.<category>.<name>(...)` with the operator's properties as arguments |
 | [operator_properties](features/operator_properties/README.md) | an idname string gives that operator's properties (`layout.operator(...)`, keymaps, ...) |
 | [addon_preferences](features/addon_preferences/README.md) | `addons[__package__].preferences` is the add-on's own class |
+| [inheritance](features/inheritance/README.md) | unannotated overrides get the parent's types; subclass, mixin and override rules |
 
 ## Layout
 
@@ -77,6 +78,7 @@ The `blender-*` rules ty-blender is to add:
 | `blender-unregistered-class`, `blender-unreachable-registration`, `blender-register-order`, `blender-duplicate-registration`, `blender-invalid-idname`, `blender-unregister-mismatch` | registration_checks |
 | `blender-invalid-operator-property`, `blender-unknown-operator` | operator_calls, operator_properties |
 | `blender-preferences-idname` | addon_preferences |
+| `blender-invalid-override`, `blender-missing-callback`, `blender-mixin-order`, `blender-invalid-base`, `blender-registered-base` | inheritance |
 
 ## Reference stubs and the oracle (`check:oracle`)
 
@@ -105,9 +107,20 @@ register = "fails"   # "ok" is the default
 reason = "PropertyGroup registered after the class that points to it"
 packages = ["addons/ws_alpha", "addons/ws_beta"]  # a folder holding several add-ons
 load = false         # not an add-on (a library other add-ons import)
+error = "to have 2 args, found 1"   # text the error of a failing add-on must contain
+
+[[probe]]            # evaluated in Blender after register(); expect is the value it must give, or "raises"
+code = "healthy(addon.MY_PT_parent)"
+expect = false
+reason = "registering MY_PT_child detached the parent's Python class"
 ```
 
-An add-on that fails on purpose stops at its first error, so each invalid case in it was checked on its own in
+A probe is a Python expression with `bpy`, `addon` (the add-on module) and the helpers `healthy(cls)` and
+`can_add_node(tree_idname, node_idname)` from `scripts/blender/load_feature_addons.py`. Probes check what an add-on
+that loads does wrong (or right) at runtime.
+
+An add-on that fails on purpose stops at its first error. Where the mistakes can be split up, there is one add-on
+per mistake (the inheritance feature generates them); otherwise each invalid case in it was checked on its own in
 Blender (the add-on's docstring says so).
 
 ## Editor markers (`ide_*.py`)

@@ -10,6 +10,8 @@ root = [
     "features/addon_preferences",
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
+    "features/inheritance",
+    "features/inheritance/generated",
     "features/operator_calls",
     "features/operator_properties",
     "features/properties",

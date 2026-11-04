@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "inh_override_types"
+version = "1.0.0"
+name = "Feature test: overrides with types that do not fit"
+tagline = "overrides with types that do not fit"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

@@ -1,0 +1,6 @@
+"""Reference stub: bpy.ops.inh_chains as the checker synthesises it."""
+
+from typing import Literal
+
+def leaf(execution_context: str = ..., undo: bool = ..., /, *, count: int = ..., label: str = ..., factor: float = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...
+def sibling(execution_context: str = ..., undo: bool = ..., /, *, count: int = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...

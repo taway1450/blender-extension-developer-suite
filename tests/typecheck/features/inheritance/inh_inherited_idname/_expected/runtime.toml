@@ -1,0 +1,2 @@
+register = "fails"
+reason = "the child replaces the parent, so unregistering the parent fails"

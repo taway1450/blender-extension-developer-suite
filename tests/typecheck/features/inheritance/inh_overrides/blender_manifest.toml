@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "inh_overrides"
+version = "1.0.0"
+name = "Feature test: overridden callbacks typed from the parent"
+tagline = "overridden callbacks typed from the parent"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

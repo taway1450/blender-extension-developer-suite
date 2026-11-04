@@ -1,0 +1,29 @@
+[[probe]]
+code = "can_add_node('INH_MIXINS_Tree', 'INH_MIXINS_NodeFirst')"
+expect = true
+reason = "the mixin's poll accepts its own tree"
+
+[[probe]]
+code = "can_add_node('INH_MIXINS_OtherTree', 'INH_MIXINS_NodeFirst')"
+expect = false
+reason = "the mixin's poll rejects other trees"
+
+[[probe]]
+code = "can_add_node('INH_MIXINS_OtherTree', 'INH_MIXINS_NodeLast')"
+expect = true
+reason = "Node.poll wins over the mixin listed after Node"
+
+[[probe]]
+code = "addon.INH_MIXINS_OT_keywords_last.as_keywords is bpy.types.Operator.as_keywords"
+expect = true
+reason = "Operator.as_keywords wins over the mixin listed after Operator"
+
+[[probe]]
+code = "addon.INH_MIXINS_MT_append_last.append.__func__ is addon.AppendMixin.append.__func__"
+expect = false
+reason = "Menu.append wins over the mixin listed after Menu"
+
+[[probe]]
+code = "addon.INH_MIXINS_MT_append_first.append.__func__ is addon.AppendMixin.append.__func__"
+expect = true
+reason = "the mixin listed first wins"
