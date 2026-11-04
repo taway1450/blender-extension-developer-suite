@@ -53,9 +53,21 @@ def run_ty(ty: Path, version: str, source: Path, stubs: Path, generator: str) ->
     python_version = blender_python_version(source)
     results = CACHE_DIR / "ty-results" / results_name(version, generator)
 
-    cmd: list[str | Path] = [ty, "check", "--project", source, "--python-version", python_version,
-                             "--output-format", "concise", "--no-progress", "--color", "never",
-                             "--extra-search-path", stubs]
+    cmd: list[str | Path] = [
+        ty,
+        "check",
+        "--project",
+        source,
+        "--python-version",
+        python_version,
+        "--output-format",
+        "concise",
+        "--no-progress",
+        "--color",
+        "never",
+        "--extra-search-path",
+        stubs,
+    ]
     for path in BLENDER_SEARCH_PATHS:
         cmd += ["--extra-search-path", source / path]
     for excluded in EXCLUDED_DIRS:
@@ -71,8 +83,9 @@ def run_ty_with_summary(cmd: list[str | Path], cwd: Path, results: Path) -> Path
     results.parent.mkdir(parents=True, exist_ok=True)
     print(f"    $ {' '.join(str(c) for c in cmd)}", flush=True)
     start = time.monotonic()
-    result = subprocess.run([str(c) for c in cmd], cwd=cwd, capture_output=True, text=True,
-                            encoding="utf-8", errors="replace")
+    result = subprocess.run(
+        [str(c) for c in cmd], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
     elapsed = time.monotonic() - start
     results.write_text(result.stdout + result.stderr, encoding="utf-8")
 
@@ -86,8 +99,10 @@ def run_ty_with_summary(cmd: list[str | Path], cwd: Path, results: Path) -> Path
     for (severity, _), count in counts.items():
         by_severity[severity] += count
 
-    log(f"ty finished in {elapsed:.1f}s: {sum(counts.values())} diagnostics "
-        f"({', '.join(f'{n} {s}' for s, n in by_severity.most_common()) or 'none'})")
+    log(
+        f"ty finished in {elapsed:.1f}s: {sum(counts.values())} diagnostics "
+        f"({', '.join(f'{n} {s}' for s, n in by_severity.most_common()) or 'none'})"
+    )
     if counts:
         width = max(len(rule) for _, rule in counts)
         for (severity, rule), count in counts.most_common():
@@ -103,8 +118,10 @@ def main() -> int:
     args = parser.parse_args()
 
     generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-                 for g in generators}
+    all_stubs = {
+        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+        for g in generators
+    }
     source = ensure_worktree(args.version, args.ref)
     ty = build_ty(args.debug)
     for generator, stubs in all_stubs.items():

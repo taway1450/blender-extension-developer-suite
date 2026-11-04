@@ -40,9 +40,20 @@ def python_file(module: str, docstring: str, body: str) -> str:
     return f'"""{docstring}\n\n{note}\n"""\n\n{body.strip()}\n'
 
 
-EXECUTION_CONTEXTS = ["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW",
-                      "INVOKE_AREA", "INVOKE_SCREEN", "EXEC_DEFAULT", "EXEC_REGION_WIN", "EXEC_REGION_CHANNELS",
-                      "EXEC_REGION_PREVIEW", "EXEC_AREA", "EXEC_SCREEN"]
+EXECUTION_CONTEXTS = [
+    "INVOKE_DEFAULT",
+    "INVOKE_REGION_WIN",
+    "INVOKE_REGION_CHANNELS",
+    "INVOKE_REGION_PREVIEW",
+    "INVOKE_AREA",
+    "INVOKE_SCREEN",
+    "EXEC_DEFAULT",
+    "EXEC_REGION_WIN",
+    "EXEC_REGION_CHANNELS",
+    "EXEC_REGION_PREVIEW",
+    "EXEC_AREA",
+    "EXEC_SCREEN",
+]
 
 
 def literal(values: list[str]) -> str:
@@ -59,8 +70,10 @@ def ops_operator_stub(name: str, idname_py: str, params: list[tuple[str, str]]) 
     star = ", *" if params else ""
     return [
         f"class {cls}:",
-        f"    def __call__(self, execution_context: _ExecutionContext = ..., undo: bool = ..., /{star}{kwargs}) "
-        f"-> {OPERATOR_RESULT}: ...",
+        (
+            f"    def __call__(self, execution_context: _ExecutionContext = ..., undo: bool = ..., /{star}{kwargs}) "
+            f"-> {OPERATOR_RESULT}: ..."
+        ),
         "    def poll(self, execution_context: _ExecutionContext = ..., /) -> bool: ...",
         f'    def idname(self) -> Literal["{idname}"]: ...',
         f'    def idname_py(self) -> Literal["{idname_py}"]: ...',
@@ -72,9 +85,16 @@ def ops_operator_stub(name: str, idname_py: str, params: list[tuple[str, str]]) 
 
 def ops_module_stub(module: str, docstring: str, operators: list[list[str]], imports: list[str] = ()) -> str:
     """A ``bpy.ops.<category>`` reference stub made of ``ops_operator_stub`` blocks."""
-    lines = ["from collections.abc import Sequence", "from typing import Literal, TypeAlias", "",
-             "from bpy.types import Struct", *imports, "",
-             f"_ExecutionContext: TypeAlias = {literal(EXECUTION_CONTEXTS)}", ""]
+    lines = [
+        "from collections.abc import Sequence",
+        "from typing import Literal, TypeAlias",
+        "",
+        "from bpy.types import Struct",
+        *imports,
+        "",
+        f"_ExecutionContext: TypeAlias = {literal(EXECUTION_CONTEXTS)}",
+        "",
+    ]
     for operator in operators:
         lines += [*operator, ""]
     return python_file(module, docstring, "\n".join(lines))
@@ -83,8 +103,9 @@ def ops_module_stub(module: str, docstring: str, operators: list[list[str]], imp
 def ops_package_delta(module: str, categories: list[str]) -> str:
     """The ``bpy.ops`` delta that makes new categories attributes of ``bpy.ops``."""
     lines = [f"from bpy.ops import {c} as {c}" for c in categories]
-    return python_file(module, "Reference stub delta: the operator categories the addon adds to bpy.ops.",
-                       "\n".join(lines))
+    return python_file(
+        module, "Reference stub delta: the operator categories the addon adds to bpy.ops.", "\n".join(lines)
+    )
 
 
 def indent(lines: list[str], prefix: str = "    ") -> str:

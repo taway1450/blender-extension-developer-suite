@@ -77,7 +77,7 @@ def load(addon: dict) -> dict:
 
 
 def main() -> None:
-    argv = sys.argv[sys.argv.index("--") + 1:]
+    argv = sys.argv[sys.argv.index("--") + 1 :]
     with open(argv[0], encoding="utf-8") as f:
         addons = json.load(f)
     results = [load(a) for a in addons]

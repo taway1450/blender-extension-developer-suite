@@ -44,17 +44,30 @@ def main() -> int:
     addons = [EXAMPLE_ADDONS_DIR / name for name in (args.addons or available)]
 
     generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-                 for g in generators}
+    all_stubs = {
+        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+        for g in generators
+    }
     python_version = blender_python_version(ensure_worktree(args.version, args.ref))
     ty = build_ty(args.debug)
 
     code = 0
     for generator, stubs in all_stubs.items():
-        cmd = [ty, "check", "--project", EXAMPLE_ADDONS_DIR, "--python-version", python_version,
-               "--extra-search-path", stubs, *addons]
-        log(f"Running ty (Python {python_version}, Blender {args.version}, {generator} stubs) "
-            f"on {', '.join(a.name for a in addons)}")
+        cmd = [
+            ty,
+            "check",
+            "--project",
+            EXAMPLE_ADDONS_DIR,
+            "--python-version",
+            python_version,
+            "--extra-search-path",
+            stubs,
+            *addons,
+        ]
+        log(
+            f"Running ty (Python {python_version}, Blender {args.version}, {generator} stubs) "
+            f"on {', '.join(a.name for a in addons)}"
+        )
         print(f"    $ {' '.join(str(c) for c in cmd)}", flush=True)
         result = subprocess.run([str(c) for c in cmd], cwd=EXAMPLE_ADDONS_DIR)
         if result.returncode not in (0, 1):

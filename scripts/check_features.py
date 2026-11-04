@@ -81,9 +81,11 @@ def write_expected(path: Path, generator: str, version: str, lines: list[str]) -
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_stubs_arguments(parser)
-    parser.add_argument("features", nargs="*",
-                        help="Features (`properties`) or addons (`properties/props_hosts`) in tests/typecheck/features/ "
-                             "(default: all)")
+    parser.add_argument(
+        "features",
+        nargs="*",
+        help="Features (`properties`) or addons (`properties/props_hosts`) in tests/typecheck/features/ (default: all)",
+    )
     parser.add_argument("--debug", action="store_true", help="Use a debug build of ty")
     parser.add_argument("--update", action="store_true", help="Rewrite the expected results instead of comparing")
     args = parser.parse_args()
@@ -92,19 +94,33 @@ def main() -> int:
     prefixes = tuple(f"{a.rel}/" if a.path.is_dir() else f"{a.rel}:" for a in addons)
 
     generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-                 for g in generators}
+    all_stubs = {
+        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+        for g in generators
+    }
     python_version = blender_python_version(ensure_worktree(args.version, args.ref))
     ty = build_ty(args.debug)
 
     changed = False
     for generator, stubs in all_stubs.items():
-        cmd = [ty, "check", "--project", TYPECHECK_TESTS_DIR, "--python-version", python_version,
-               "--extra-search-path", stubs, "--output-format", "concise", "--no-progress",
-               *(a.path for a in addons)]
+        cmd = [
+            ty,
+            "check",
+            "--project",
+            TYPECHECK_TESTS_DIR,
+            "--python-version",
+            python_version,
+            "--extra-search-path",
+            stubs,
+            "--output-format",
+            "concise",
+            "--no-progress",
+            *(a.path for a in addons),
+        ]
         log(f"Running ty (Python {python_version}, Blender {args.version}, {generator} stubs) on {len(addons)} addons")
-        result = subprocess.run([str(c) for c in cmd], cwd=TYPECHECK_TESTS_DIR, capture_output=True, text=True,
-                                encoding="utf-8")
+        result = subprocess.run(
+            [str(c) for c in cmd], cwd=TYPECHECK_TESTS_DIR, capture_output=True, text=True, encoding="utf-8"
+        )
         if result.returncode not in (0, 1):
             raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
 
@@ -134,8 +150,10 @@ def main() -> int:
         gone = sorted(set(expected) - set(actual))
         if new or gone:
             changed = True
-            log(f"Results changed against {path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)} "
-                f"({len(new)} new, {len(gone)} gone; --update records them):")
+            log(
+                f"Results changed against {path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)} "
+                f"({len(new)} new, {len(gone)} gone; --update records them):"
+            )
             for line in gone:
                 print(f"    - {line}", flush=True)
             for line in new:

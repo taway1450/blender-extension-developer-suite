@@ -87,8 +87,9 @@ def main() -> int:
             continue
         for package in packages(addon, spec):
             name = f"{addon.feature}/{package.relative_to(addon.path.parent).as_posix()}"
-            entries.append({"name": name, "root": str(package.parent), "module": package.stem,
-                            "probes": spec.get("probe", [])})
+            entries.append(
+                {"name": name, "root": str(package.parent), "module": package.stem, "probes": spec.get("probe", [])}
+            )
             expectations[name] = spec
 
     blender = find_blender(args.version, args.blender)
@@ -105,8 +106,10 @@ def main() -> int:
         ok = result["error"] is None
         problems = probe_problems(spec.get("probe", []), result["probes"])
         if not ok and expected != "ok" and spec.get("error") and spec["error"] not in result["error"]:
-            problems.append(f"fails in {result['stage']}, but not with {spec['error']!r}:\n            "
-                            + result["error"].strip().replace("\n", "\n            "))
+            problems.append(
+                f"fails in {result['stage']}, but not with {spec['error']!r}:\n            "
+                + result["error"].strip().replace("\n", "\n            ")
+            )
         if ok == (expected == "ok") and not problems:
             note = "ok" if ok else f"fails as expected in {result['stage']} ({reason})"
             probes = f", {len(result['probes'])} probes hold" if result["probes"] else ""
@@ -119,8 +122,11 @@ def main() -> int:
         if ok:
             print(f"    {result['name']}: FAIL: loads, but _expected/runtime.toml says it fails ({reason})", flush=True)
         else:
-            print(f"    {result['name']}: FAIL in {result['stage']}:\n        "
-                  + result["error"].strip().replace("\n", "\n        "), flush=True)
+            print(
+                f"    {result['name']}: FAIL in {result['stage']}:\n        "
+                + result["error"].strip().replace("\n", "\n        "),
+                flush=True,
+            )
     log(f"{failures} of {len(entries)} addons did not load as expected")
     return 1 if failures else 0
 

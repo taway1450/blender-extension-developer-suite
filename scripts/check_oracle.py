@@ -97,13 +97,14 @@ def node_start(node: ast.stmt) -> int:
 
 
 def segment(lines: list[str], node: ast.stmt) -> str:
-    return textwrap.dedent("\n".join(lines[node_start(node):node.end_lineno]))
+    return textwrap.dedent("\n".join(lines[node_start(node) : node.end_lineno]))
 
 
 def is_overload(node: ast.stmt) -> bool:
     return isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and any(
         (isinstance(d, ast.Name) and d.id == "overload") or (isinstance(d, ast.Attribute) and d.attr == "overload")
-        for d in node.decorator_list)
+        for d in node.decorator_list
+    )
 
 
 def member_name(node: ast.stmt) -> str | None:
@@ -127,8 +128,14 @@ class Edit:
     lines: list[str]
 
 
-def merge_members(body: list[ast.stmt], delta_body: list[ast.stmt], delta_lines: list[str], prefix: str,
-                  append_at: int, edits: list[Edit]) -> bool:
+def merge_members(
+    body: list[ast.stmt],
+    delta_body: list[ast.stmt],
+    delta_lines: list[str],
+    prefix: str,
+    append_at: int,
+    edits: list[Edit],
+) -> bool:
     """Edits that merge ``delta_body`` into ``body`` (statements at indentation ``prefix``); returns whether an
     ``overload`` import is needed."""
     needs_overload = False
@@ -179,8 +186,12 @@ def merge_delta(stub_text: str, delta_text: str, stub_tree: ast.Module | None = 
     for node in delta.body:
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             continue
-        if isinstance(node, ast.ClassDef) and node.name in classes and class_header(node) and class_header(
-                node) != class_header(classes[node.name]):
+        if (
+            isinstance(node, ast.ClassDef)
+            and node.name in classes
+            and class_header(node)
+            and class_header(node) != class_header(classes[node.name])
+        ):
             target = classes[node.name]
             edits.append(Edit(node_start(target), target.end_lineno, segment(delta_lines, node).splitlines()))
         elif isinstance(node, ast.ClassDef) and node.name in classes:
@@ -200,7 +211,7 @@ def merge_delta(stub_text: str, delta_text: str, stub_tree: ast.Module | None = 
         edits.append(Edit(after, after, [line for imp in imports for line in imp.splitlines()]))
     # Apply from the bottom so that line numbers stay valid; inserts at the same line keep their order.
     for edit in sorted(edits, key=lambda e: (e.start, e.end), reverse=True):
-        lines[edit.start:edit.end] = edit.lines
+        lines[edit.start : edit.end] = edit.lines
     return "\n".join(lines) + "\n"
 
 
@@ -315,21 +326,26 @@ def judge(result: AddonResult, skipped: set[tuple[str, int]]) -> OracleResult:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_stubs_arguments(parser)
-    parser.add_argument("features", nargs="*",
-                        help="Features or addons (`feature/addon`) in tests/typecheck/features/ (default: all)")
+    parser.add_argument(
+        "features", nargs="*", help="Features or addons (`feature/addon`) in tests/typecheck/features/ (default: all)"
+    )
     args = parser.parse_args()
 
     addons = [a for a in select(args.features) if a.type_test_files()]
     generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-                 for g in generators}
+    all_stubs = {
+        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+        for g in generators
+    }
     python_version = blender_python_version(ensure_worktree(args.version, args.ref))
     ty = stock_ty_command()
 
     failed = False
     for generator, stubs in all_stubs.items():
-        log(f"Oracle run: stock ty with reference stubs (Python {python_version}, Blender {args.version}, "
-            f"{generator} stubs) on {len(addons)} addons")
+        log(
+            f"Oracle run: stock ty with reference stubs (Python {python_version}, Blender {args.version}, "
+            f"{generator} stubs) on {len(addons)} addons"
+        )
         work = ORACLE_DIR / args.version / generator
         base_paths = [stubs]
         if (BASELINE_DIR / generator).is_dir():
@@ -345,11 +361,22 @@ def main() -> int:
             if deltas and deltas.is_dir():
                 overlay.build(deltas, work / addon.module / "stubs")
                 search_paths.insert(0, work / addon.module / "stubs")
-            cmd = [*ty, "check", "--project", project, "--python-version", python_version, "--output-format",
-                   "concise", "--no-progress", *(a for p in search_paths for a in ("--extra-search-path", p)),
-                   project / addon.rel]
-            result = subprocess.run([str(c) for c in cmd], cwd=project, capture_output=True, text=True,
-                                    encoding="utf-8")
+            cmd = [
+                *ty,
+                "check",
+                "--project",
+                project,
+                "--python-version",
+                python_version,
+                "--output-format",
+                "concise",
+                "--no-progress",
+                *(a for p in search_paths for a in ("--extra-search-path", p)),
+                project / addon.rel,
+            ]
+            result = subprocess.run(
+                [str(c) for c in cmd], cwd=project, capture_output=True, text=True, encoding="utf-8"
+            )
             if result.returncode not in (0, 1):
                 raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
             (work / addon.module / "ty.txt").write_text(result.stdout, encoding="utf-8")
@@ -359,10 +386,15 @@ def main() -> int:
             status = "ok" if not outcome.failures else f"{len(outcome.failures)} failures"
             print(f"    {addon.feature}/{addon.name}: {outcome.checked} markers checked, {status}", flush=True)
 
-        lines = [f"# Oracle run: stock ty with reference stubs, {generator} stubs, Blender {args.version}", "",
-                 "| Feature | Addon | markers checked | failures |", "| --- | --- | --- | --- |"]
-        lines += [f"| {o.result.addon.feature} | {o.result.addon.name} | {o.checked} | {len(o.failures)} |"
-                  for o in outcomes]
+        lines = [
+            f"# Oracle run: stock ty with reference stubs, {generator} stubs, Blender {args.version}",
+            "",
+            "| Feature | Addon | markers checked | failures |",
+            "| --- | --- | --- | --- |",
+        ]
+        lines += [
+            f"| {o.result.addon.feature} | {o.result.addon.name} | {o.checked} | {len(o.failures)} |" for o in outcomes
+        ]
         for o in outcomes:
             if o.failures:
                 lines += ["", f"## {o.result.addon.feature}/{o.result.addon.name}", "", *(f"- {f}" for f in o.failures)]

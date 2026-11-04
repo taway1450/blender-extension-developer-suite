@@ -79,9 +79,7 @@ def fetch(url: str, target: Path) -> None:
 def verify_checksum(archive: Path, checksum_url: str) -> bool:
     with urllib.request.urlopen(checksum_url) as response:
         checksums = response.read().decode("utf-8", errors="replace")
-    expected = next(
-        (line.split()[0] for line in checksums.splitlines() if line.strip().endswith(archive.name)), None
-    )
+    expected = next((line.split()[0] for line in checksums.splitlines() if line.strip().endswith(archive.name)), None)
     if expected is None:
         raise StepError(f"Unable to find {archive.name} in {checksum_url}")
     md5 = hashlib.md5()
@@ -104,8 +102,9 @@ def extract(archive: Path, target: Path) -> None:
     elif archive.name.endswith(".dmg") and sys.platform == "darwin":
         mount = target.with_name(target.name + "-mnt")
         mount.mkdir(parents=True)
-        subprocess.run(["hdiutil", "attach", "-nobrowse", "-quiet", "-mountpoint", str(mount), str(archive)],
-                       check=True)
+        subprocess.run(
+            ["hdiutil", "attach", "-nobrowse", "-quiet", "-mountpoint", str(mount), str(archive)], check=True
+        )
         try:
             shutil.copytree(mount / "Blender.app", target / "Blender.app", symlinks=True)
         finally:

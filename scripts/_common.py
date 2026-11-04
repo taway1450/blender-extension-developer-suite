@@ -40,9 +40,7 @@ def run(cmd: list[str | Path], *, cwd: Path | None = None, env: dict[str, str] |
 
 
 def git_output(repo: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", "-C", str(repo), *args], check=True, capture_output=True, text=True
-    ).stdout.strip()
+    return subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=True).stdout.strip()
 
 
 def exe(name: str) -> str:
@@ -58,7 +56,8 @@ def validate_version(version: str) -> str:
     """A release version (X.Y) or the name of a Blender build from source (e.g. 'main')."""
     if not re.fullmatch(r"\w[\w.-]*", version):
         raise argparse.ArgumentTypeError(
-            f"version must be X.Y or a build name (letters, digits, '.', '-', '_'), got {version!r}")
+            f"version must be X.Y or a build name (letters, digits, '.', '-', '_'), got {version!r}"
+        )
     return version
 
 
@@ -71,7 +70,8 @@ def validate_release_version(version: str) -> str:
 def validate_build_name(name: str) -> str:
     if is_release(name):
         raise argparse.ArgumentTypeError(
-            f"{name!r} looks like a release version, which is downloaded instead of built; pick another name")
+            f"{name!r} looks like a release version, which is downloaded instead of built; pick another name"
+        )
     return validate_version(name)
 
 

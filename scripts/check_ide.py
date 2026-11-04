@@ -67,8 +67,9 @@ class LspClient:
     the server's own requests (we advertise no capabilities that need real answers)."""
 
     def __init__(self, cmd: list[str], cwd: Path) -> None:
-        self.process = subprocess.Popen(cmd, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL)
+        self.process = subprocess.Popen(
+            cmd, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
+        )
         self.next_id = 0
         self.responses: dict[int, Queue[dict[str, Any]]] = {}
         self.lock = threading.Lock()
@@ -142,24 +143,34 @@ class LspClient:
 def start_server(ty: Path, stubs: Path, python_version: str) -> LspClient:
     client = LspClient([str(ty), "server"], cwd=TYPECHECK_TESTS_DIR)
     markdown_first = ["markdown", "plaintext"]
-    client.request("initialize", {
-        "processId": None,
-        "rootUri": TYPECHECK_TESTS_DIR.as_uri(),
-        "workspaceFolders": [{"uri": TYPECHECK_TESTS_DIR.as_uri(), "name": "typecheck"}],
-        "capabilities": {
-            "textDocument": {
-                "hover": {"contentFormat": markdown_first},
-                "completion": {"completionItem": {"documentationFormat": markdown_first, "tagSupport": {"valueSet": [1]}}},
-                "signatureHelp": {"signatureInformation": {"documentationFormat": markdown_first,
-                                                           "parameterInformation": {"labelOffsetSupport": True}}},
-                "diagnostic": {},
+    client.request(
+        "initialize",
+        {
+            "processId": None,
+            "rootUri": TYPECHECK_TESTS_DIR.as_uri(),
+            "workspaceFolders": [{"uri": TYPECHECK_TESTS_DIR.as_uri(), "name": "typecheck"}],
+            "capabilities": {
+                "textDocument": {
+                    "hover": {"contentFormat": markdown_first},
+                    "completion": {
+                        "completionItem": {"documentationFormat": markdown_first, "tagSupport": {"valueSet": [1]}}
+                    },
+                    "signatureHelp": {
+                        "signatureInformation": {
+                            "documentationFormat": markdown_first,
+                            "parameterInformation": {"labelOffsetSupport": True},
+                        }
+                    },
+                    "diagnostic": {},
+                },
+                "general": {"positionEncodings": ["utf-16"]},
             },
-            "general": {"positionEncodings": ["utf-16"]},
+            # ty reads these like a ty.toml; the [rules] and [environment] root come from tests/typecheck/ty.toml.
+            "initializationOptions": {
+                "configuration": {"environment": {"extra-paths": [str(stubs)], "python-version": python_version}}
+            },
         },
-        # ty reads these like a ty.toml; the [rules] and [environment] root come from tests/typecheck/ty.toml.
-        "initializationOptions": {"configuration": {"environment": {
-            "extra-paths": [str(stubs)], "python-version": python_version}}},
-    })
+    )
     client.notify("initialized", {})
     return client
 
@@ -210,7 +221,7 @@ def find_markers(path: Path) -> list[Marker]:
 
 def quoted(arg: str | None) -> str:
     if not arg or not (len(arg) >= 2 and arg[0] == arg[-1] == '"'):
-        raise StepError(f'expected a quoted string after the marker, got {arg!r}')
+        raise StepError(f"expected a quoted string after the marker, got {arg!r}")
     return arg[1:-1]
 
 
@@ -283,7 +294,7 @@ def render(marker: Marker, response: Any, stubs: Path) -> str:
         lines = [f"label: {normalize(signature['label'], stubs)}", f"active parameter: {active}", "parameters:"]
         for param in params:
             label = param["label"]
-            name = signature["label"][label[0]:label[1]] if isinstance(label, list) else label
+            name = signature["label"][label[0] : label[1]] if isinstance(label, list) else label
             documentation = normalize(doc_text(param.get("documentation")), stubs)
             lines.append(f"- {name}: {documentation or '(no documentation)'}")
         documentation = normalize(doc_text(signature.get("documentation")), stubs)
@@ -301,17 +312,21 @@ def render(marker: Marker, response: Any, stubs: Path) -> str:
                 continue
             deprecated = 1 in (item.get("tags") or []) or item.get("deprecated")
             documentation = normalize(doc_text(item.get("documentation")), stubs).splitlines()
-            lines.append(f"- {label}: detail: {normalize(item.get('detail') or '', stubs) or '(none)'}"
-                         f"{' [deprecated]' if deprecated else ''}")
+            lines.append(
+                f"- {label}: detail: {normalize(item.get('detail') or '', stubs) or '(none)'}"
+                f"{' [deprecated]' if deprecated else ''}"
+            )
             lines.append(f"  documentation: {documentation[0] if documentation else '(none)'}")
         return "\n".join(lines)
 
     if kind == "deprecated":
         for diagnostic in (response or {}).get("items", []):
             start, end = diagnostic["range"]["start"], diagnostic["range"]["end"]
-            on_marker = start["line"] <= marker.line <= end["line"] and (
-                start["line"] < marker.line or start["character"] <= marker.character) and (
-                end["line"] > marker.line or marker.character < end["character"])
+            on_marker = (
+                start["line"] <= marker.line <= end["line"]
+                and (start["line"] < marker.line or start["character"] <= marker.character)
+                and (end["line"] > marker.line or marker.character < end["character"])
+            )
             if on_marker and (diagnostic.get("code") == "deprecated" or 2 in (diagnostic.get("tags") or [])):
                 return "PASS: " + diagnostic["message"]
         return "FAIL: no deprecated diagnostic at the caret"
@@ -369,9 +384,12 @@ def write_golden(path: Path, generator: str, version: str, sections: dict[str, s
         file, line, col = location.rsplit(":", 2)
         return file, int(line), int(col), rest
 
-    out = [f"# IDE results, {generator} stubs, Blender {version}", "",
-           f"Written by `mise run check:ide {version} --update`; the task fails when this file would change.",
-           "Each section is one marker: the queried code line, then what ty's language server returned for it."]
+    out = [
+        f"# IDE results, {generator} stubs, Blender {version}",
+        "",
+        f"Written by `mise run check:ide {version} --update`; the task fails when this file would change.",
+        "Each section is one marker: the queried code line, then what ty's language server returned for it.",
+    ]
     for title in sorted(sections, key=key):
         out += ["", f"## {title}", "", sections[title]]
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -384,9 +402,13 @@ def write_golden(path: Path, generator: str, version: str, sections: dict[str, s
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_stubs_arguments(parser)
-    parser.add_argument("features", nargs="*", help="Features (`operator_properties`) or addons "
-                                                    "(`operator_properties/opprops_layout`) in tests/typecheck/features/ "
-                                                    "(default: all)")
+    parser.add_argument(
+        "features",
+        nargs="*",
+        help="Features (`operator_properties`) or addons "
+        "(`operator_properties/opprops_layout`) in tests/typecheck/features/ "
+        "(default: all)",
+    )
     parser.add_argument("--debug", action="store_true", help="Use a debug build of ty")
     parser.add_argument("--update", action="store_true", help="Rewrite the golden files instead of comparing")
     args = parser.parse_args()
@@ -398,23 +420,35 @@ def main() -> int:
     selected_prefixes = tuple(f"{a.rel}/" for a in selected)
 
     generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-                 for g in generators}
+    all_stubs = {
+        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+        for g in generators
+    }
     python_version = blender_python_version(ensure_worktree(args.version, args.ref))
     ty = build_ty(args.debug)
 
     changed = False
     for generator, stubs in all_stubs.items():
-        log(f"Querying ty's language server (Python {python_version}, Blender {args.version}, {generator} stubs) "
-            f"at {len(markers)} markers in {len(selected)} addons")
+        log(
+            f"Querying ty's language server (Python {python_version}, Blender {args.version}, {generator} stubs) "
+            f"at {len(markers)} markers in {len(selected)} addons"
+        )
         client = start_server(ty, stubs, python_version)
         raw = []
         sections = {}
         try:
             for path in sorted({m.path for m in markers}):
-                client.notify("textDocument/didOpen", {"textDocument": {
-                    "uri": path.as_uri(), "languageId": "python", "version": 1,
-                    "text": path.read_text(encoding="utf-8")}})
+                client.notify(
+                    "textDocument/didOpen",
+                    {
+                        "textDocument": {
+                            "uri": path.as_uri(),
+                            "languageId": "python",
+                            "version": 1,
+                            "text": path.read_text(encoding="utf-8"),
+                        }
+                    },
+                )
             for marker in markers:
                 response = query(client, marker)
                 raw.append({"marker": marker.title, "response": response})
@@ -426,8 +460,10 @@ def main() -> int:
         results_dir.mkdir(parents=True, exist_ok=True)
         (results_dir / "ide.json").write_text(json.dumps(raw, indent=1), encoding="utf-8")
         failures = sum("FAIL" in body for body in sections.values())
-        log(f"{len(sections) - failures} of {len(sections)} markers without a FAIL; raw responses: "
-            f"{results_dir / 'ide.json'}")
+        log(
+            f"{len(sections) - failures} of {len(sections)} markers without a FAIL; raw responses: "
+            f"{results_dir / 'ide.json'}"
+        )
 
         path = golden_file(generator, args.version)
         recorded = parse_golden(path)
@@ -450,8 +486,14 @@ def main() -> int:
             if expected.get(title) == sections.get(title):
                 continue
             print(f"    ## {title}", flush=True)
-            diff = difflib.unified_diff((expected.get(title) or "").splitlines(), (sections.get(title) or "").splitlines(),
-                                        "recorded", "now", lineterm="", n=1)
+            diff = difflib.unified_diff(
+                (expected.get(title) or "").splitlines(),
+                (sections.get(title) or "").splitlines(),
+                "recorded",
+                "now",
+                lineterm="",
+                n=1,
+            )
             for line in list(diff)[2:]:
                 print(f"    {line}", flush=True)
     return 1 if changed else 0

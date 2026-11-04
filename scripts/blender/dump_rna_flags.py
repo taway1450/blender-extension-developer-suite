@@ -33,7 +33,7 @@ except ImportError:  # Blender < 4.4
     import rna_info
 
 PROBE_KW = "__flag_probe__"
-UNKNOWN_KW_MESSAGES = ("invalid keyword argument(s) (" + PROBE_KW, )
+UNKNOWN_KW_MESSAGES = ("invalid keyword argument(s) (" + PROBE_KW,)
 MAX_POOL_VISITS = 60000
 MAX_COLLECTION_ITEMS = 3
 
@@ -41,8 +41,10 @@ MAX_COLLECTION_ITEMS = 3
 # -----------------------------------------------------------------------------
 # Instances to probe on
 
+
 def seed_data():
     """Create data-blocks, modifiers, constraints, nodes... so the pool has instances of most types."""
+
     def attempt(fn):
         try:
             return fn()
@@ -114,8 +116,10 @@ def seed_data():
             attempt(lambda: strips.new_effect(effect, effect, 1, frame_start=1, frame_end=10))
 
     # One node of every node type, in each kind of node tree that accepts it.
-    trees = [attempt(lambda: data.node_groups.new(t, t)) for t in
-             ("ShaderNodeTree", "GeometryNodeTree", "CompositorNodeTree", "TextureNodeTree")]
+    trees = [
+        attempt(lambda: data.node_groups.new(t, t))
+        for t in ("ShaderNodeTree", "GeometryNodeTree", "CompositorNodeTree", "TextureNodeTree")
+    ]
     trees = [t for t in trees if t is not None]
     node_types = [t for t in dir(bpy.types) if _is_subclass(t, "Node")]
     for node_type in node_types:
@@ -147,8 +151,7 @@ def build_pool(progress, crashed):
             rna = rna.base
 
     seen = set()
-    roots = [bpy.data, bpy.context.window_manager, bpy.context.preferences, bpy.context.scene,
-             bpy.context.view_layer]
+    roots = [bpy.data, bpy.context.window_manager, bpy.context.preferences, bpy.context.scene, bpy.context.view_layer]
     queue = collections.deque((root, 0) for root in roots if root is not None)
     visits = 0
     while queue and visits < MAX_POOL_VISITS:
@@ -204,6 +207,7 @@ def build_pool(progress, crashed):
 # -----------------------------------------------------------------------------
 # Flags and docs
 
+
 def prop_flags(rna_prop):
     array_dimensions = tuple(getattr(rna_prop, "array_dimensions", ()))
     while array_dimensions and array_dimensions[-1] == 0:
@@ -248,7 +252,8 @@ def prop_docs(info_prop, **kwargs):
         type_str, type_info = description
         type_info = list(type_info)
         return {
-            "type": type_str, "info": type_info,
+            "type": type_str,
+            "info": type_info,
             "none": "None" in _top_level_union(type_str),
             "set": type_str.startswith("set["),
             "readonly": "readonly" in type_info,
@@ -259,9 +264,10 @@ def prop_docs(info_prop, **kwargs):
     text = description
     type_info = []
     if text.endswith(")") and ", (" in text:
-        type_info = [q.strip() for q in text[text.rindex(", (") + 3:-1].split(",")]
+        type_info = [q.strip() for q in text[text.rindex(", (") + 3 : -1].split(",")]
     return {
-        "type": text, "info": type_info,
+        "type": text,
+        "info": type_info,
         "none": info_prop.type == "pointer" and "never None" not in type_info,
         "set": " set in " in text,
         "readonly": "readonly" in type_info,
@@ -280,6 +286,7 @@ def func_flags(rna_func):
 
 # -----------------------------------------------------------------------------
 # Probes
+
 
 class _Unconvertible:
     """A value no RNA property type accepts."""
@@ -319,7 +326,7 @@ class Probe:
                     return []
                 flat = list(rna_prop.default_array)
                 for dim in reversed(dims[1:]):
-                    flat = [flat[i:i + dim] for i in range(0, len(flat), dim)]
+                    flat = [flat[i : i + dim] for i in range(0, len(flat), dim)]
                 return flat
             return rna_prop.default
         if ptype == "STRING":
@@ -327,8 +334,9 @@ class Probe:
         if ptype == "ENUM":
             if rna_prop.is_enum_flag:
                 return set()
-            items = [item.identifier for item in rna_prop.enum_items] or \
-                    [item.identifier for item in rna_prop.enum_items_static]
+            items = [item.identifier for item in rna_prop.enum_items] or [
+                item.identifier for item in rna_prop.enum_items_static
+            ]
             if rna_prop.default in items:
                 return rna_prop.default
             if items:
@@ -468,6 +476,7 @@ class Probe:
 
 # -----------------------------------------------------------------------------
 
+
 def bound_function(pool, struct_id, rna_func):
     """A bpy_func for ``rna_func`` to probe with, preferring one bound to an instance."""
     candidates = []
@@ -500,19 +509,23 @@ def dump(docs_kw_only, progress, crashed):
         struct_id = struct.identifier
         rna = struct.bl_rna
         progress(struct_id)
-        rows.append({
-            "kind": "class", "path": struct_id,
-            "base": struct.base.identifier if struct.base else None,
-            "registerable": any(f.is_registered for f in rna.functions)
-                            or any(p.is_registered for p in rna.properties),
-            "probed_instance": struct_id in pool,
-        })
+        rows.append(
+            {
+                "kind": "class",
+                "path": struct_id,
+                "base": struct.base.identifier if struct.base else None,
+                "registerable": any(f.is_registered for f in rna.functions)
+                or any(p.is_registered for p in rna.properties),
+                "probed_instance": struct_id in pool,
+            }
+        )
 
         instance = pool.get(struct_id)
         for prop in struct.properties:
             rna_prop = prop.bl_prop
             row = {
-                "kind": "property", "path": f"{struct_id}.{prop.identifier}",
+                "kind": "property",
+                "path": f"{struct_id}.{prop.identifier}",
                 "flags": prop_flags(rna_prop),
                 "docs": prop_docs(prop),
                 "runtime": {},
@@ -530,22 +543,29 @@ def dump(docs_kw_only, progress, crashed):
             path = f"{struct_id}.{func.identifier}"
             inputs = [p for p in rna_func.parameters if not p.is_output]
             outputs = [p for p in rna_func.parameters if p.is_output]
-            kw_only_index = next((i for i, p in enumerate(func.args) if not p.is_required), None) \
-                if docs_kw_only else None
-            rows.append({
-                "kind": "function", "path": path,
-                "flags": func_flags(rna_func),
-                "docs": {"kind": "classmethod" if func.is_classmethod else "method"},
-                "n_outputs": len(outputs),
-            })
-            fn, bound_to_instance = (None, False) if rna_func.is_registered else \
-                bound_function(pool, struct_id, rna_func)
+            kw_only_index = (
+                next((i for i, p in enumerate(func.args) if not p.is_required), None) if docs_kw_only else None
+            )
+            rows.append(
+                {
+                    "kind": "function",
+                    "path": path,
+                    "flags": func_flags(rna_func),
+                    "docs": {"kind": "classmethod" if func.is_classmethod else "method"},
+                    "n_outputs": len(outputs),
+                }
+            )
+            fn, bound_to_instance = (
+                (None, False) if rna_func.is_registered else bound_function(pool, struct_id, rna_func)
+            )
             info_args = {a.identifier: a for a in func.args}
             for index, param in enumerate(inputs):
                 info = info_args[param.identifier]
                 row = {
-                    "kind": "parameter", "path": f"{path}({param.identifier})",
-                    "function": path, "index": index,
+                    "kind": "parameter",
+                    "path": f"{path}({param.identifier})",
+                    "function": path,
+                    "index": index,
                     "callback": rna_func.is_registered,
                     "flags": prop_flags(param),
                     "docs": {
@@ -564,13 +584,18 @@ def dump(docs_kw_only, progress, crashed):
                 rows.append(row)
             info_returns = {r.identifier: r for r in func.return_values}
             for index, param in enumerate(outputs):
-                rows.append({
-                    "kind": "return", "path": f"{path} -> {param.identifier}",
-                    "function": path, "index": index, "n_outputs": len(outputs),
-                    "callback": rna_func.is_registered,
-                    "flags": prop_flags(param),
-                    "docs": prop_docs(info_returns[param.identifier], as_ret=True),
-                })
+                rows.append(
+                    {
+                        "kind": "return",
+                        "path": f"{path} -> {param.identifier}",
+                        "function": path,
+                        "index": index,
+                        "n_outputs": len(outputs),
+                        "callback": rna_func.is_registered,
+                        "flags": prop_flags(param),
+                        "docs": prop_docs(info_returns[param.identifier], as_ret=True),
+                    }
+                )
 
     window_manager = bpy.context.window_manager
     for op in sorted(ops.values(), key=lambda o: (o.module_name, o.func_name)):
@@ -584,7 +609,8 @@ def dump(docs_kw_only, progress, crashed):
         for prop in op.args:
             rna_prop = prop.bl_prop
             row = {
-                "kind": "operator argument", "path": f"{path}({prop.identifier})",
+                "kind": "operator argument",
+                "path": f"{path}({prop.identifier})",
                 "function": path,
                 "flags": prop_flags(rna_prop),
                 "docs": {**prop_docs(prop, as_arg=True), "signature": prop.get_arg_default(force=True)},
@@ -610,7 +636,7 @@ def dump(docs_kw_only, progress, crashed):
 
 
 def main():
-    argv = sys.argv[sys.argv.index("--") + 1:]
+    argv = sys.argv[sys.argv.index("--") + 1 :]
     output = argv[0]
     docs_kw_only = "--docs-kw-only" in argv
     crashed = set()
@@ -620,11 +646,13 @@ def main():
     # The last item is written before each probe, so a crash names its culprit.
     progress_path = output + ".progress"
     with open(progress_path, "w", encoding="utf-8") as progress_file:
+
         def progress(item):
             progress_file.seek(0)
             progress_file.write(item + "\n")
             progress_file.truncate()
             progress_file.flush()
+
         try:
             result = dump(docs_kw_only, progress, crashed)
         except Exception:

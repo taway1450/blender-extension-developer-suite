@@ -72,10 +72,12 @@ def resolve_git_ref(version: str, ref_override: str | None) -> str:
 def resolve_commit(ref: str, fetch: bool = False) -> str:
     """Return the commit ``ref`` names in the blender submodule, fetching it from origin if it is
     not known locally (or always with ``fetch``)."""
+
     def lookup(candidate: str) -> str | None:
         check = subprocess.run(
             ["git", "-C", str(BLENDER_SUBMODULE), "rev-parse", "--verify", "-q", f"{candidate}^{{commit}}"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         return check.stdout.strip() if check.returncode == 0 else None
 
@@ -160,8 +162,10 @@ def find_blender(version: str, explicit: Path | None) -> Path:
     elif not is_release(version):
         blender = cached_blender(version)
         if not blender:
-            raise StepError(f"No Blender build named {version!r}: build it with `mise run blender:build {version}` "
-                            "or pass --blender with a matching Blender binary")
+            raise StepError(
+                f"No Blender build named {version!r}: build it with `mise run blender:build {version}` "
+                "or pass --blender with a matching Blender binary"
+            )
     else:
         blender = download_blender(version)
 
@@ -173,14 +177,34 @@ def find_blender(version: str, explicit: Path | None) -> Path:
 
 
 def run_blender_script(blender: Path, script: Path, *script_args: str | Path) -> None:
-    run([blender, "--background", "--factory-startup", "-noaudio", "--python-exit-code", "1",
-         "--python", script, "--", *script_args])
+    run(
+        [
+            blender,
+            "--background",
+            "--factory-startup",
+            "-noaudio",
+            "--python-exit-code",
+            "1",
+            "--python",
+            script,
+            "--",
+            *script_args,
+        ]
+    )
 
 
 def uv_python_cmd() -> list[str | Path]:
     """Python with fake-bpy-module's requirements installed (in an ephemeral uv environment)."""
-    return ["uv", "run", "--no-project", "--python", ">=3.11",
-            "--with-requirements", FAKE_BPY_SRC / "requirements.txt", "python"]
+    return [
+        "uv",
+        "run",
+        "--no-project",
+        "--python",
+        ">=3.11",
+        "--with-requirements",
+        FAKE_BPY_SRC / "requirements.txt",
+        "python",
+    ]
 
 
 def has_builtin_generator(source: Path) -> bool:
@@ -222,8 +246,20 @@ def generate_rst(version: str, blender: Path, source: Path, force: bool) -> Path
 
 def generate_builtin_stubs(source: Path, rst: Path, stubs_dir: Path) -> None:
     log(f"Generating bpy stubs (Blender's {BUILTIN_STUB_GEN.as_posix()})")
-    cmd: list[str | Path] = ["uv", "run", "--no-project", "--python", ">=3.11", "--with", "docutils",
-                             "python", source / BUILTIN_STUB_GEN, rst, "--output", stubs_dir]
+    cmd: list[str | Path] = [
+        "uv",
+        "run",
+        "--no-project",
+        "--python",
+        ">=3.11",
+        "--with",
+        "docutils",
+        "python",
+        source / BUILTIN_STUB_GEN,
+        rst,
+        "--output",
+        stubs_dir,
+    ]
     printable = " ".join(str(c) for c in cmd)
     print(f"    $ {printable}", flush=True)
     result = subprocess.run([str(c) for c in cmd], env={**os.environ, "PYTHONUTF8": "1"})
@@ -233,12 +269,15 @@ def generate_builtin_stubs(source: Path, rst: Path, stubs_dir: Path) -> None:
     # those stubs are still usable (and finding such errors is what the check tasks are for).
     if not any(stubs_dir.rglob("*.pyi")):
         raise StepError(f"Command failed with exit code {result.returncode}: {printable}")
-    log(f"warning: {BUILTIN_STUB_GEN.name} exited with code {result.returncode} (errors above), "
-        "keeping the stubs it wrote")
+    log(
+        f"warning: {BUILTIN_STUB_GEN.name} exited with code {result.returncode} (errors above), "
+        "keeping the stubs it wrote"
+    )
 
 
-def generate_stubs(version: str, *, generator: str = FAKE_BPY, ref: str | None = None,
-                   blender: Path | None = None, force: bool = False) -> Path:
+def generate_stubs(
+    version: str, *, generator: str = FAKE_BPY, ref: str | None = None, blender: Path | None = None, force: bool = False
+) -> Path:
     """Return the bpy stubs directory of ``generator`` for ``version``, generating the stubs if needed."""
     stubs_dir = STUBS_DIRS[generator] / version
     marker = stubs_dir / COMPLETE_MARKER
@@ -252,8 +291,10 @@ def generate_stubs(version: str, *, generator: str = FAKE_BPY, ref: str | None =
 
     source = ensure_worktree(version, ref, force)
     if generator == BUILTIN and not has_builtin_generator(source):
-        raise StepError(f"Blender {version} has no built-in stub generator ({BUILTIN_STUB_GEN.as_posix()}, "
-                        f"added in Blender 5.2); use --generator {FAKE_BPY}")
+        raise StepError(
+            f"Blender {version} has no built-in stub generator ({BUILTIN_STUB_GEN.as_posix()}, "
+            f"added in Blender 5.2); use --generator {FAKE_BPY}"
+        )
     blender = find_blender(version, blender)
 
     shutil.rmtree(stubs_dir, ignore_errors=True)
@@ -277,41 +318,110 @@ def generate_fake_bpy_stubs(version: str, blender: Path, source: Path, rst: Path
     gen_modfile = FAKE_BPY_SRC / "gen_modfile"
     try:
         log("Generating fake-bpy-module mod files")
-        run_blender_script(blender, gen_modfile / "gen_external_modules_modfile.py",
-                           "-m", "addon_utils", "-o", generated_mods / "gen_modules_modfile", "-f", "rst")
-        run_blender_script(blender, gen_modfile / "gen_external_modules_modfile.py",
-                           "-m", "keyingsets_builtins", "-a", "-o", generated_mods / "gen_startup_modfile", "-f", "rst")
-        run_blender_script(blender, gen_modfile / "gen_node_inputs_outputs_for_node_class.py",
-                           "-o", generated_mods / "gen_node_inputs_outputs_for_node_class", "-f", "rst")
-        bgl_source = next((p for p in (source / "source/blender/python/generic/bgl.cc",
-                                       source / "source/blender/python/generic/bgl.c") if p.exists()), None)
+        run_blender_script(
+            blender,
+            gen_modfile / "gen_external_modules_modfile.py",
+            "-m",
+            "addon_utils",
+            "-o",
+            generated_mods / "gen_modules_modfile",
+            "-f",
+            "rst",
+        )
+        run_blender_script(
+            blender,
+            gen_modfile / "gen_external_modules_modfile.py",
+            "-m",
+            "keyingsets_builtins",
+            "-a",
+            "-o",
+            generated_mods / "gen_startup_modfile",
+            "-f",
+            "rst",
+        )
+        run_blender_script(
+            blender,
+            gen_modfile / "gen_node_inputs_outputs_for_node_class.py",
+            "-o",
+            generated_mods / "gen_node_inputs_outputs_for_node_class",
+            "-f",
+            "rst",
+        )
+        bgl_source = next(
+            (
+                p
+                for p in (
+                    source / "source/blender/python/generic/bgl.cc",
+                    source / "source/blender/python/generic/bgl.c",
+                )
+                if p.exists()
+            ),
+            None,
+        )
         if bgl_source:
             (generated_mods / "gen_bgl_modfile").mkdir()
-            run(uv_python_cmd() + [gen_modfile / "gen_bgl_modfile.py", "-i", bgl_source,
-                                   "-o", generated_mods / "gen_bgl_modfile" / "bgl.mod.rst", "-f", "rst"])
+            run(
+                uv_python_cmd()
+                + [
+                    gen_modfile / "gen_bgl_modfile.py",
+                    "-i",
+                    bgl_source,
+                    "-o",
+                    generated_mods / "gen_bgl_modfile" / "bgl.mod.rst",
+                    "-f",
+                    "rst",
+                ]
+            )
 
         log("Generating bpy stubs (fake-bpy-module gen.py)")
         # Same convention as fake-bpy-module's release tooling: the mod version is the Blender version.
         # For source builds (e.g. 'main') no mod version is passed, which applies all version-ranged mods.
         target_version = version if is_release(version) else "latest"
         mod_args = ["-m", version] if is_release(version) else []
-        run(uv_python_cmd() + [FAKE_BPY_SRC / "gen.py", "-i", rst, "-o", stubs_dir,
-                               "-f", "ruff", "-T", "blender", "-t", target_version, "-l", "warn", *mod_args],
-            cwd=FAKE_BPY_SRC)
+        run(
+            uv_python_cmd()
+            + [
+                FAKE_BPY_SRC / "gen.py",
+                "-i",
+                rst,
+                "-o",
+                stubs_dir,
+                "-f",
+                "ruff",
+                "-T",
+                "blender",
+                "-t",
+                target_version,
+                "-l",
+                "warn",
+                *mod_args,
+            ],
+            cwd=FAKE_BPY_SRC,
+        )
     finally:
         shutil.rmtree(generated_mods, ignore_errors=True)
 
 
 def add_stubs_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("version", type=validate_version,
-                        help="Blender version as X.Y (e.g. 5.2), or the name of a Blender build from source (e.g. main)")
+    parser.add_argument(
+        "version",
+        type=validate_version,
+        help="Blender version as X.Y (e.g. 5.2), or the name of a Blender build from source (e.g. main)",
+    )
     parser.add_argument("--ref", help="Blender git ref to check out instead of blender-vX.Y-release / the build name")
-    parser.add_argument("--blender", type=Path,
-                        help="Path to a Blender binary (or its directory) matching the version; by default the "
-                             "official release is downloaded into .cache/blender-bin/ (or built there by build_blender.py)")
+    parser.add_argument(
+        "--blender",
+        type=Path,
+        help="Path to a Blender binary (or its directory) matching the version; by default the "
+        "official release is downloaded into .cache/blender-bin/ (or built there by build_blender.py)",
+    )
     parser.add_argument("--force", action="store_true", help="Recreate the source worktree and regenerate the stubs")
-    parser.add_argument("--generator", choices=(*GENERATORS, ALL), default=ALL,
-                        help=f"Stub generator (default: {ALL}, i.e. both where Blender has its own)")
+    parser.add_argument(
+        "--generator",
+        choices=(*GENERATORS, ALL),
+        default=ALL,
+        help=f"Stub generator (default: {ALL}, i.e. both where Blender has its own)",
+    )
 
 
 def main() -> int:

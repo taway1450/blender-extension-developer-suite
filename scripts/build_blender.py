@@ -88,8 +88,12 @@ def ensure_libraries(source: Path) -> Path:
         shutil.rmtree(libs, ignore_errors=True)
         libs.parent.mkdir(parents=True, exist_ok=True)
         run(["git", "clone", "--no-checkout", "--filter=blob:none", url, libs])
-    if subprocess.run(["git", "-C", str(libs), "cat-file", "-e", f"{commit}^{{commit}}"],
-                      capture_output=True).returncode != 0:
+    if (
+        subprocess.run(
+            ["git", "-C", str(libs), "cat-file", "-e", f"{commit}^{{commit}}"], capture_output=True
+        ).returncode
+        != 0
+    ):
         log(f"Fetching library commit {commit[:10]}")
         run(["git", "-C", libs, "fetch", "origin"])
 
@@ -105,20 +109,34 @@ def ensure_libraries(source: Path) -> Path:
 
 def visual_studio_env() -> dict[str, str]:
     """The environment of a Visual Studio developer command prompt (compiler, Windows SDK, CMake, Ninja)."""
-    vswhere = Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
-                   "Microsoft Visual Studio", "Installer", "vswhere.exe")
+    vswhere = Path(
+        os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+        "Microsoft Visual Studio",
+        "Installer",
+        "vswhere.exe",
+    )
     if not vswhere.is_file():
         raise StepError(f"vswhere.exe not found at {vswhere}; install Visual Studio with the C++ workload")
     component = "Microsoft.VisualStudio.Component.VC.Tools." + ("ARM64" if is_arm64() else "x86.x64")
-    install = subprocess.run([str(vswhere), "-latest", "-products", "*", "-requires", component,
-                              "-property", "installationPath"], capture_output=True, text=True).stdout.strip()
+    install = subprocess.run(
+        [str(vswhere), "-latest", "-products", "*", "-requires", component, "-property", "installationPath"],
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     if not install:
-        raise StepError("No Visual Studio installation with the C++ build tools found "
-                        "(install the 'Desktop development with C++' workload)")
+        raise StepError(
+            "No Visual Studio installation with the C++ build tools found "
+            "(install the 'Desktop development with C++' workload)"
+        )
     vcvars = Path(install, "VC", "Auxiliary", "Build", "vcvarsall.bat")
     log(f"Using Visual Studio at {install}")
-    result = subprocess.run(f'"{vcvars}" {"arm64" if is_arm64() else "x64"} >nul && set', shell=True,
-                            capture_output=True, text=True, errors="replace")
+    result = subprocess.run(
+        f'"{vcvars}" {"arm64" if is_arm64() else "x64"} >nul && set',
+        shell=True,
+        capture_output=True,
+        text=True,
+        errors="replace",
+    )
     if result.returncode != 0:
         raise StepError(f"{vcvars} failed:\n{result.stdout}{result.stderr}")
     env = dict(line.split("=", 1) for line in result.stdout.splitlines() if "=" in line and not line.startswith("="))
@@ -140,16 +158,27 @@ def build_env() -> tuple[dict[str, str], Path, Path]:
     return env, cmake, ninja
 
 
-def build_blender(name: str, *, ref: str | None = None, update: bool = False, config: str = "full",
-                  build_type: str = "Release", force: bool = False) -> Path:
+def build_blender(
+    name: str,
+    *,
+    ref: str | None = None,
+    update: bool = False,
+    config: str = "full",
+    build_type: str = "Release",
+    force: bool = False,
+) -> Path:
     """Build Blender ``name`` from source and return the installed binary."""
     source = ensure_worktree(name, ref, update=update)
     commit = git_output(source, "rev-parse", "HEAD")
     install_dir = BLENDER_BIN_DIR / name
     blender = blender_executable(install_dir)
     build_info = install_dir / BUILD_INFO
-    if not force and blender.is_file() and build_info.is_file() and \
-            build_info.read_text().startswith(f"commit={commit}\nconfig={config}\nbuild_type={build_type}\n"):
+    if (
+        not force
+        and blender.is_file()
+        and build_info.is_file()
+        and build_info.read_text().startswith(f"commit={commit}\nconfig={config}\nbuild_type={build_type}\n")
+    ):
         log(f"Reusing Blender build {blender} ({commit[:10]})")
         return blender
 
@@ -169,14 +198,26 @@ def build_blender(name: str, *, ref: str | None = None, update: bool = False, co
         shutil.rmtree(build_dir, ignore_errors=True)
     build_dir.mkdir(parents=True, exist_ok=True)
     configure_cmd: list[str | Path] = [
-        cmake, "-G", "Ninja", "-S", source, "-B", build_dir, f"-C{config_file}",
-        f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}", f"-DCMAKE_BUILD_TYPE={build_type}", f"-DLIBDIR={libs.as_posix()}",
+        cmake,
+        "-G",
+        "Ninja",
+        "-S",
+        source,
+        "-B",
+        build_dir,
+        f"-C{config_file}",
+        f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
+        f"-DCMAKE_BUILD_TYPE={build_type}",
+        f"-DLIBDIR={libs.as_posix()}",
         f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
     ]
     configure_args = build_dir / CONFIGURE_ARGS
     configure_key = "\n".join(str(c) for c in configure_cmd)
-    if (build_dir / "build.ninja").is_file() and configure_args.is_file() and \
-            configure_args.read_text() == configure_key:
+    if (
+        (build_dir / "build.ninja").is_file()
+        and configure_args.is_file()
+        and configure_args.read_text() == configure_key
+    ):
         log(f"Reusing CMake configuration in {build_dir}")
     else:
         log(f"Configuring Blender ({config}, {build_type}) in {build_dir}")
@@ -198,18 +239,24 @@ def build_blender(name: str, *, ref: str | None = None, update: bool = False, co
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("name", type=validate_build_name,
-                        help="Build name, used as the version by the other scripts (e.g. main)")
+    parser.add_argument(
+        "name", type=validate_build_name, help="Build name, used as the version by the other scripts (e.g. main)"
+    )
     parser.add_argument("--ref", help="Blender git ref to build (default: the name)")
-    parser.add_argument("--update", action="store_true",
-                        help="Fetch the ref again and move the existing source worktree to its latest commit")
-    parser.add_argument("--config", default="full",
-                        help="CMake preset build_files/cmake/config/blender_<config>.cmake (default: full)")
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Fetch the ref again and move the existing source worktree to its latest commit",
+    )
+    parser.add_argument(
+        "--config", default="full", help="CMake preset build_files/cmake/config/blender_<config>.cmake (default: full)"
+    )
     parser.add_argument("--build-type", choices=BUILD_TYPES, default="Release", help="CMake build type")
     parser.add_argument("--force", action="store_true", help="Delete the build directory and build from scratch")
     args = parser.parse_args()
-    build_blender(args.name, ref=args.ref, update=args.update, config=args.config,
-                  build_type=args.build_type, force=args.force)
+    build_blender(
+        args.name, ref=args.ref, update=args.update, config=args.config, build_type=args.build_type, force=args.force
+    )
     return 0
 
 

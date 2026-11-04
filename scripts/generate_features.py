@@ -64,7 +64,7 @@ def updated_ty_toml(roots: list[str]) -> str:
     start, end = text.find(ROOTS_BEGIN), text.find(ROOTS_END)
     if start < 0 or end < 0:
         raise StepError(f"{TY_TOML} has no '{ROOTS_BEGIN}' ... '{ROOTS_END}' block")
-    return text[:start] + roots_block(roots) + text[end + len(ROOTS_END):]
+    return text[:start] + roots_block(roots) + text[end + len(ROOTS_END) :]
 
 
 def main() -> int:
@@ -103,7 +103,9 @@ def main() -> int:
     for pycache in FEATURES_DIR.glob(f"*/{GENERATED}/**/__pycache__"):
         shutil.rmtree(pycache, ignore_errors=True)
     TY_TOML.write_text(updated_ty_toml(import_roots(all_addons())), encoding="utf-8", newline="\n")
-    log(f"Wrote {len(changed)} of {len(files)} generated files, removed {len(stale)} stale ones, updated {TY_TOML.name}")
+    log(
+        f"Wrote {len(changed)} of {len(files)} generated files, removed {len(stale)} stale ones, updated {TY_TOML.name}"
+    )
     return 0
 
 

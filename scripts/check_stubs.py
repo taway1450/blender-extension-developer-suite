@@ -50,16 +50,32 @@ def main() -> int:
     args = parser.parse_args()
 
     generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-                 for g in generators}
+    all_stubs = {
+        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
+        for g in generators
+    }
     python_version = blender_python_version(ensure_worktree(args.version, args.ref))
     ty = build_ty(args.debug)
 
     for generator, stubs in all_stubs.items():
-        cmd: list[str | Path] = [ty, "check", "--project", stubs, "--python-version", python_version,
-                                 "--python", stubs_venv(python_version),
-                                 "--output-format", "concise", "--no-progress", "--color", "never",
-                                 "--extra-search-path", stubs, stubs]
+        cmd: list[str | Path] = [
+            ty,
+            "check",
+            "--project",
+            stubs,
+            "--python-version",
+            python_version,
+            "--python",
+            stubs_venv(python_version),
+            "--output-format",
+            "concise",
+            "--no-progress",
+            "--color",
+            "never",
+            "--extra-search-path",
+            stubs,
+            stubs,
+        ]
         log(f"Running ty (Python {python_version}) on the {generator} bpy stubs {stubs}")
         run_ty_with_summary(cmd, stubs, CACHE_DIR / "ty-results" / results_name(f"stubs-{args.version}", generator))
     return 0

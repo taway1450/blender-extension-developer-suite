@@ -18,7 +18,9 @@ EXPECTED_STUBS = "_expected"  # <addon>/_expected/: reference stubs for check:or
 IDE_PREFIX = "ide_"  # files for check:ide, not type tests
 
 # ty --output-format concise: `path:line:col: severity[rule] message`
-DIAGNOSTIC = re.compile(r"^(?P<path>.+?):(?P<line>\d+):(?P<col>\d+): (?P<severity>\w+)\[(?P<rule>[\w-]+)\] (?P<message>.*)$")
+DIAGNOSTIC = re.compile(
+    r"^(?P<path>.+?):(?P<line>\d+):(?P<col>\d+): (?P<severity>\w+)\[(?P<rule>[\w-]+)\] (?P<message>.*)$"
+)
 ASSERT_MARKER = re.compile(r"\bassert_type\(")
 IGNORE_MARKER = re.compile(r"#\s*ty:\s*ignore\[(?P<rules>[^\]]+)\]")
 # Rules that only ty-blender reports. Until it does, ty flags their ignore comments as unknown rules.
@@ -60,8 +62,11 @@ class Addon:
         """The addon's own ``.py`` files, without the reference stubs."""
         if self.path.is_file():
             return [self.path]
-        return sorted(p for p in self.path.rglob("*.py")
-                      if EXPECTED_STUBS not in p.relative_to(self.path).parts and "__pycache__" not in p.parts)
+        return sorted(
+            p
+            for p in self.path.rglob("*.py")
+            if EXPECTED_STUBS not in p.relative_to(self.path).parts and "__pycache__" not in p.parts
+        )
 
     def type_test_files(self) -> list[Path]:
         return [p for p in self.python_files() if not p.name.startswith(IDE_PREFIX)]
@@ -100,8 +105,10 @@ def all_addons() -> list[Addon]:
     for addon in addons:
         other = seen.setdefault(addon.module, addon)
         if other is not addon:
-            raise StepError(f"Two addons are the top-level module {addon.module!r}: {other.rel} and {addon.rel}; "
-                            "addon names must be unique across all features")
+            raise StepError(
+                f"Two addons are the top-level module {addon.module!r}: {other.rel} and {addon.rel}; "
+                "addon names must be unique across all features"
+            )
     return addons
 
 
@@ -191,8 +198,16 @@ def parse_diagnostics(output: str, base: Path = TYPECHECK_TESTS_DIR) -> list[Dia
             path = Path(match["path"])
             if path.is_absolute():
                 path = path.relative_to(base)
-            diagnostics.append(Diagnostic(path.as_posix(), int(match["line"]), int(match["col"]), match["severity"],
-                                          match["rule"], match["message"]))
+            diagnostics.append(
+                Diagnostic(
+                    path.as_posix(),
+                    int(match["line"]),
+                    int(match["col"]),
+                    match["severity"],
+                    match["rule"],
+                    match["message"],
+                )
+            )
     return diagnostics
 
 
@@ -234,12 +249,18 @@ def source_line(path: str, line: int) -> str:
 
 
 def summary_markdown(title: str, results: list[AddonResult]) -> str:
-    out = [f"# {title}", "", "| Feature | Addon | assert_type | expected errors | other diagnostics |",
-           "| --- | --- | --- | --- | --- |"]
+    out = [
+        f"# {title}",
+        "",
+        "| Feature | Addon | assert_type | expected errors | other diagnostics |",
+        "| --- | --- | --- | --- | --- |",
+    ]
     for r in results:
         a_pass, a_total = r.counts("assert_type")
         e_pass, e_total = r.counts("expected-error")
-        out.append(f"| {r.addon.feature} | {r.addon.name} | {a_pass}/{a_total} | {e_pass}/{e_total} | {len(r.unexpected)} |")
+        out.append(
+            f"| {r.addon.feature} | {r.addon.name} | {a_pass}/{a_total} | {e_pass}/{e_total} | {len(r.unexpected)} |"
+        )
     for r in results:
         failing = [m for m in r.markers if not m.passed]
         if not failing and not r.unexpected:
@@ -260,5 +281,7 @@ def print_table(results: list[AddonResult]) -> None:
     for name, r in zip(names, results):
         a_pass, a_total = r.counts("assert_type")
         e_pass, e_total = r.counts("expected-error")
-        print(f"    {name.ljust(width)}  {f'{a_pass}/{a_total}':>11}  {f'{e_pass}/{e_total}':>15}  {len(r.unexpected):>5}",
-              flush=True)
+        print(
+            f"    {name.ljust(width)}  {f'{a_pass}/{a_total}':>11}  {f'{e_pass}/{e_total}':>15}  {len(r.unexpected):>5}",
+            flush=True,
+        )
