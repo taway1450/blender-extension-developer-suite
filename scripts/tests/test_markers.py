@@ -1,6 +1,7 @@
 from textwrap import dedent
 
 import pytest
+
 from _markers import (
     ASSERT,
     EXPECTED,
