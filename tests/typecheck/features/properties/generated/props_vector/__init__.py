@@ -143,7 +143,7 @@ class PROPS_VECTOR_Values(PropertyGroup):
     f_no_subtype: FloatVectorProperty()
     f_translation_default: FloatVectorProperty(subtype="TRANSLATION", default=(0.0, 0.0, 1.0))
     # only a 3-component color is a mathutils.Color
-    f_color_4: FloatVectorProperty(subtype="COLOR", size=4, min=0.0, max=1.0)
+    f_color_4_clamped: FloatVectorProperty(subtype="COLOR", size=4, min=0.0, max=1.0)
     i_vec_dflt: IntVectorProperty()
     i_vec_2: IntVectorProperty(size=2)
     i_vec_3: IntVectorProperty(size=3)

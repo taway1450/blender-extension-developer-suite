@@ -227,12 +227,12 @@ def vector_fields() -> list[Field]:
             ],
         ),
         Field(
-            "f_color_4",
+            "f_color_4_clamped",
             'FloatVectorProperty(subtype="COLOR", size=4, min=0.0, max=1.0)',
             "bpy_prop_array[float]",
             setter="Sequence[float]",
             comment="only a 3-component color is a mathutils.Color",
-            extra=["assert_type(s.f_color_4[3], float)"],
+            extra=["assert_type(s.f_color_4_clamped[3], float)"],
         ),
     ]
     for size in [None, 2, 3, 4, 32, (2, 2), (3, 3)]:
