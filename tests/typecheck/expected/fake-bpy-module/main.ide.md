@@ -1,0 +1,333 @@
+# IDE results, fake-bpy-module stubs, Blender main
+
+Written by `mise run check:ide main --update`; the task fails when this file would change.
+Each section is one marker: the queried code line, then what ty's language server returned for it.
+
+## features/props_annotations/ide_props_annotations.py:9:7 ^hover
+
+`s.count`
+
+````text
+```python
+Unknown
+```
+````
+
+## features/props_annotations/ide_props_annotations.py:9:7 ^hover-contains "int"
+
+`s.count`
+
+````text
+FAIL: does not contain "int"
+````
+
+## features/props_annotations/ide_props_annotations.py:12:7 ^hover-contains "Object"
+
+`s.target`
+
+````text
+FAIL: does not contain "Object"
+````
+
+## ide/completion_docs/ide_completion_docs.py:14:14 ^completion location
+
+`obj.locat`
+
+````text
+- location: detail: Vector
+  documentation: This object gives access to Vectors in Blender.
+````
+
+## ide/completion_docs/ide_completion_docs.py:16:17 ^completion select_set
+
+`obj.select_s`
+
+````text
+- select_set: detail: bound method Object.select_set(state: bool | None, *, view_layer: None | ViewLayer = None) -> None
+  documentation: Select or deselect the object. The selection state is per view layer.
+````
+
+## ide/completion_docs/ide_completion_docs.py:21:34 ^completion primitive_cube_add
+
+`bpy.ops.mesh.primitive_cube_a`
+
+````text
+- primitive_cube_add: detail: <class 'primitive_cube_add'>
+  documentation: (none)
+````
+
+## ide/deprecation/ide_deprecation.py:12:11 ^deprecated
+
+`brush.falloff_angle`
+
+````text
+FAIL: no deprecated diagnostic at the caret
+````
+
+## ide/deprecation/ide_deprecation.py:12:11 ^hover
+
+`brush.falloff_angle`
+
+````text
+```python
+float
+```
+---
+Paint most on faces pointing towards the view according to this angle (in [0, 1.5708], default 0.0)Automasking 'View Normal' should be used instead5.3 removal planned in version 6.0
+````
+
+## ide/deprecation/ide_deprecation.py:12:11 ^hover-contains "Deprecated"
+
+`brush.falloff_angle`
+
+````text
+FAIL: does not contain "Deprecated"
+````
+
+## ide/enum_docs/ide_enum_docs.py:9:9 ^hover
+
+`obj.type`
+
+````text
+```python
+Literal["MESH", "CURVE", "SURFACE", "META", "FONT", ... omitted 11 literals]
+```
+---
+Type of object (default 'EMPTY', readonly)
+````
+
+## ide/enum_docs/ide_enum_docs.py:11:18 ^hover-contains "Mesh"
+
+`obj.type == "MESH"`
+
+````text
+FAIL: no hover
+````
+
+## ide/enum_docs/ide_enum_docs.py:16:17 ^hover-contains "Warning"
+
+`op.report({"WARNING"}, "x")`
+
+````text
+FAIL: no hover
+````
+
+## ide/enum_docs/ide_enum_docs.py:18:14 ^hover-contains "Finished"
+
+`return {"FINISHED"}`
+
+````text
+FAIL: no hover
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:9:9 ^hover
+
+`obj.location`
+
+````text
+```python
+Vector
+```
+---
+Location of the object (array of 3 items, in [-inf, inf], default (0.0, 0.0, 0.0))
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:9:9 ^hover-contains "Location of the object"
+
+`obj.location`
+
+````text
+PASS
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:12:9 ^hover-contains "Parent object"
+
+`obj.parent`
+
+````text
+PASS
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:14:9 ^hover-contains "Object data"
+
+`obj.data`
+
+````text
+FAIL: does not contain "Object data"
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:19:11 ^hover
+
+`scene.frame_current`
+
+````text
+```python
+int
+```
+---
+Current frame, to update animation data from Python frame\_set() instead (in [-1048574, 1048574], default 1)
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:19:11 ^hover-contains "Current frame"
+
+`scene.frame_current`
+
+````text
+PASS
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:25:13 ^hover
+
+`context.active_object`
+
+````text
+```python
+Object | None
+```
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:27:13 ^hover
+
+`context.scene`
+
+````text
+```python
+None | Scene
+```
+---
+(readonly)
+````
+
+## ide/hover_rna_props/ide_hover_rna_props.py:32:7 ^hover-contains "Object data-block defining an object in a scene"
+
+`Object`
+
+````text
+PASS
+````
+
+## ide/signature_docs/ide_signature_docs.py:11:20 ^signature
+
+`obj.select_set(True)`
+
+````text
+label: (state: bool | None, *, view_layer: None | ViewLayer = None) -> None
+active parameter: 0
+parameters:
+- state: bool | None: Selection state to define
+- view_layer: None | ViewLayer = None: Use this instead of the active view layer (optional)
+documentation:
+Select or deselect the object. The selection state is per view layer.
+
+:param state: Selection state to define
+:param view_layer: Use this instead of the active view layer (optional)
+````
+
+## ide/signature_docs/ide_signature_docs.py:11:20 ^signature-param "Selection state to define"
+
+`obj.select_set(True)`
+
+````text
+PASS
+````
+
+## ide/signature_docs/ide_signature_docs.py:14:26 ^hover-contains "Use this instead of the active view layer"
+
+`obj.select_set(True, view_layer=None)`
+
+````text
+PASS
+````
+
+## ide/signature_docs/ide_signature_docs.py:21:19 ^signature
+
+`obj.ray_cast((0, 0, 0), (0, 0, 1))`
+
+````text
+label: (origin: Sequence[float] | Vector | None, direction: Sequence[float] | Vector | None, *, distance: float | None = ..., depsgraph: Depsgraph | None = None) -> tuple[bool, Vector, Vector, int]
+active parameter: 0
+parameters:
+- origin: Sequence[float] | Vector | None: (no documentation)
+- direction: Sequence[float] | Vector | None: (no documentation)
+- distance: float | None = ...: (no documentation)
+- depsgraph: Depsgraph | None = None: (no documentation)
+documentation:
+Cast a ray onto evaluated geometry, in object space (using contexts or provided depsgraph to get evaluated mesh if needed)
+
+        :param origin: Origin of the ray, in object space (array of 3 items, in [-inf, inf])
+        :param direction: Direction of the ray, in object space (array of 3 items, in [-inf, inf])
+        :param distance: Maximum distance (in [0, inf], optional)
+        :param depsgraph: Depsgraph to use to get evaluated data, when called from original object (only needed if current Contexts depsgraph is not suitable) (optional)
+        :return: result, Whether the ray successfully hit the geometry, bool
+
+location, The hit location of this ray cast, `mathutils.Vector`
+
+normal, The face normal at the ray cast hit location, `mathutils.Vector`
+
+index, The face index, -1 when original data isnt available, int
+````
+
+## ide/signature_docs/ide_signature_docs.py:23:40 ^hover-contains "Maximum distance"
+
+`obj.ray_cast((0, 0, 0), (0, 0, 1), distance=1.0)`
+
+````text
+FAIL: does not contain "Maximum distance"
+````
+
+## ide/signature_docs/ide_signature_docs.py:28:41 ^hover-contains "tooltip"
+
+`bpy.props.IntProperty(name="Count", description="Number of items")`
+
+````text
+FAIL: does not contain "tooltip"
+````
+
+## ide/signature_docs/ide_signature_docs.py:33:37 ^signature
+
+`bpy.ops.mesh.primitive_cube_add(size=2.0)`
+
+````text
+label: (execution_context: int | str | None = None, undo: bool | None = None, /, *, size: float | None = ..., calc_uvs: bool | None = True, enter_editmode: bool | None = False, align: Literal["WORLD", "VIEW", "CURSOR"] | None = "WORLD", location: Sequence[float] | Vector | None = ..., rotation: Sequence[float] | Euler | None = ..., scale: Sequence[float] | Vector | None = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+active parameter: 2
+parameters:
+- execution_context: int | str | None = None: (no documentation)
+- undo: bool | None = None: (no documentation)
+- size: float | None = ...: (no documentation)
+- calc_uvs: bool | None = True: (no documentation)
+- enter_editmode: bool | None = False: (no documentation)
+- align: Literal["WORLD", "VIEW", "CURSOR"] | None = "WORLD": (no documentation)
+- location: Sequence[float] | Vector | None = ...: (no documentation)
+- rotation: Sequence[float] | Euler | None = ...: (no documentation)
+- scale: Sequence[float] | Vector | None = ...: (no documentation)
+documentation:
+Construct a cube mesh that consists of six square faces
+
+        :param execution_context:
+        :param undo:
+        :param size: Size, (in [0, inf], optional)
+        :param calc_uvs: Generate UVs, Generate a default UV map (optional)
+        :param enter_editmode: Enter Edit Mode, Enter edit mode when adding this object (optional)
+        :param align: Align, The alignment of the new object (optional)
+
+WORLD
+World -- Align the new object to the world.
+
+VIEW
+View -- Align the new object to the view.
+
+CURSOR
+3D Cursor -- Use the 3D cursor orientation for the new object.
+        :param location: Location, Location for the newly added object (array of 3 items, in [-inf, inf], optional)
+        :param rotation: Rotation, Rotation for the newly added object (array of 3 items, in [-inf, inf], optional)
+        :param scale: Scale, Scale for the newly added object (array of 3 items, in [-inf, inf], optional)
+        :return: Result of the operator call.
+````
+
+## ide/signature_docs/ide_signature_docs.py:33:37 ^signature-param "Size"
+
+`bpy.ops.mesh.primitive_cube_add(size=2.0)`
+
+````text
+FAIL: does not contain "Size"
+````

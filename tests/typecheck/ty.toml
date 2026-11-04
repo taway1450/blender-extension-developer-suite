@@ -1,0 +1,13 @@
+# ty configuration for the feature tests (mise run check:features / check:ide).
+# The stubs and the Python version are passed on the command line per stub generator and Blender version.
+
+[environment]
+# Every feature folder is an extension, i.e. a top-level package as Blender loads it.
+root = ["features", "ide"]
+
+[rules]
+# An expected error (`# ty: ignore[rule]`) that ty no longer reports is a failure.
+unused-ignore-comment = "error"
+unused-type-ignore-comment = "error"
+# Default already; stated because the assert_type markers rely on it.
+type-assertion-failure = "error"

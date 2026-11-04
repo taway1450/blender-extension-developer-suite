@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+
+id = "props_on_id"
+version = "1.0.0"
+name = "Feature test: Properties added to existing types"
+tagline = "Scene.x = PointerProperty(...), annotation and del forms"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]

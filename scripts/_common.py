@@ -15,6 +15,7 @@ FAKE_BPY_MODULE = REPO_ROOT / "fake-bpy-module"
 FAKE_BPY_SRC = FAKE_BPY_MODULE / "src"
 TY_SUBMODULE = REPO_ROOT / "ty-blender"
 EXAMPLE_ADDONS_DIR = REPO_ROOT / "examples" / "addons"
+TYPECHECK_TESTS_DIR = REPO_ROOT / "tests" / "typecheck"
 CACHE_DIR = REPO_ROOT / ".cache"
 
 COMPLETE_MARKER = ".complete"

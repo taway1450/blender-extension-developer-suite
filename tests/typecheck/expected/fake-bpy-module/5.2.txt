@@ -1,0 +1,88 @@
+# Feature-test results that are not passes, fake-bpy-module stubs, Blender 5.2.
+# `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
+# Format: path:line rule | source line
+features/addon_preferences/__init__.py:13 invalid-assignment | bl_idname = __package__
+features/addon_preferences/__init__.py:15 invalid-type-form | export_path: StringProperty(name="Export path", subtype="DIR_PATH")
+features/addon_preferences/__init__.py:16 invalid-type-form | verbose: BoolProperty(name="Verbose")
+features/addon_preferences/__init__.py:26 invalid-argument-type | return cast(ADDON_PREFERENCES_Prefs, context.preferences.addons[__package__].preferences)
+features/addon_preferences/__init__.py:26 unresolved-attribute | return cast(ADDON_PREFERENCES_Prefs, context.preferences.addons[__package__].preferences)
+features/addon_preferences/check_addon_preferences.py:13 unresolved-attribute | addon = context.preferences.addons["props_annotations"]
+features/addon_preferences/check_addon_preferences.py:23 type-assertion-failure | assert_type(prefs.export_path, str)
+features/addon_preferences/check_addon_preferences.py:24 type-assertion-failure | assert_type(prefs.verbose, bool)
+features/context_members/__init__.py:13 invalid-method-override | def execute(self, context: Context) -> set[str]:
+features/context_members/__init__.py:14 not-iterable | names = [obj.name for obj in context.selected_objects]
+features/context_members/__init__.py:18 unresolved-attribute | self.report({"INFO"}, ", ".join(names) or context.scene.name)
+features/context_members/check_context_members.py:17 type-assertion-failure | assert_type(context.scene, Scene)
+features/context_members/check_context_members.py:18 type-assertion-failure | assert_type(context.view_layer, ViewLayer)
+features/context_members/check_context_members.py:19 type-assertion-failure | assert_type(context.collection, Collection)
+features/context_members/check_context_members.py:20 type-assertion-failure | assert_type(context.blend_data, BlendData)
+features/context_members/check_context_members.py:21 type-assertion-failure | assert_type(context.preferences, Preferences)
+features/context_members/check_context_members.py:22 type-assertion-failure | assert_type(context.window_manager, WindowManager)
+features/context_members/check_context_members.py:28 type-assertion-failure | assert_type(context.selected_objects, list[Object])
+features/mathutils_ops/check_mathutils_ops.py:34 type-assertion-failure | assert_type(m.inverted(), Matrix)
+features/operator_basics/__init__.py:18 invalid-method-override | def poll(cls, context: Context) -> bool:
+features/operator_basics/__init__.py:21 invalid-method-override | def execute(self, context: Context) -> set[str]:
+features/operator_basics/__init__.py:30 invalid-method-override | def invoke(self, context: Context, event: Event) -> set[str]:
+features/operator_basics/__init__.py:31 unresolved-attribute | context.window_manager.modal_handler_add(self)
+features/operator_basics/__init__.py:34 invalid-method-override | def modal(self, context: Context, event: Event) -> set[str]:
+features/panel_draw/__init__.py:17 invalid-method-override | def poll(cls, context: Context) -> bool:
+features/panel_draw/__init__.py:20 invalid-method-override | def draw_header(self, context: Context) -> None:
+features/panel_draw/__init__.py:21 unresolved-attribute | self.layout.label(text="", icon="OBJECT_DATA")
+features/panel_draw/__init__.py:23 invalid-method-override | def draw(self, context: Context) -> None:
+features/panel_draw/__init__.py:27 invalid-assignment | layout.use_property_split = True
+features/panel_draw/__init__.py:28 unresolved-attribute | row = layout.row(align=True)
+features/panel_draw/__init__.py:30 unresolved-attribute | col = layout.column()
+features/panel_draw/__init__.py:32 unresolved-attribute | box = layout.box()
+features/panel_draw/__init__.py:34 unresolved-attribute | props = layout.operator("object.select_all", text="Select all")
+features/panel_draw/check_panel_draw.py:11 type-assertion-failure | assert_type(panel.layout, UILayout)  # never None inside draw()
+features/panel_draw/check_panel_draw.py:13 unresolved-attribute | assert_type(layout.row(), UILayout)
+features/panel_draw/check_panel_draw.py:14 unresolved-attribute | assert_type(layout.column(align=True), UILayout)
+features/panel_draw/check_panel_draw.py:15 unresolved-attribute | assert_type(layout.box(), UILayout)
+features/panel_draw/check_panel_draw.py:16 unresolved-attribute | assert_type(layout.split(factor=0.5), UILayout)
+features/panel_draw/check_panel_draw.py:17 unresolved-attribute | assert_type(layout.operator("object.select_all"), OperatorProperties)
+features/panel_draw/check_panel_draw.py:18 unresolved-attribute | assert_type(layout.use_property_split, bool)
+features/panel_draw/check_panel_draw.py:23 unresolved-attribute | layout.label(text="ok", icon="INFO")
+features/panel_draw/check_panel_draw.py:24 unresolved-attribute | layout.label(text="bad icon", icon="NOT_AN_ICON")  # ty: ignore[invalid-argument-type]
+features/panel_draw/check_panel_draw.py:25 unresolved-attribute | layout.prop(obj, "name", txt="typo")  # ty: ignore[unknown-argument]
+features/panel_draw/check_panel_draw.py:26 unresolved-attribute | layout.row(align="yes")  # ty: ignore[invalid-argument-type]
+features/props_annotations/__init__.py:12 invalid-type-form | label: StringProperty(name="Label")
+features/props_annotations/__init__.py:16 invalid-type-form | count: IntProperty(name="Count", default=1, min=0)
+features/props_annotations/__init__.py:17 invalid-type-form | factor: FloatProperty(name="Factor", default=0.5)
+features/props_annotations/__init__.py:18 invalid-type-form | enabled: BoolProperty(name="Enabled")
+features/props_annotations/__init__.py:19 invalid-type-form | title: StringProperty(name="Title")
+features/props_annotations/__init__.py:20 invalid-type-form | offset: FloatVectorProperty(name="Offset", subtype="TRANSLATION", size=3)
+features/props_annotations/__init__.py:21 invalid-type-form | weights: FloatVectorProperty(name="Weights", size=3)
+features/props_annotations/__init__.py:22 invalid-type-form | mode: EnumProperty(name="Mode", items=[("A", "A", ""), ("B", "B", "")])
+features/props_annotations/__init__.py:23 invalid-type-form | flags: EnumProperty(name="Flags", items=[("X", "X", ""), ("Y", "Y", "")], options={"ENUM_FLAG"})
+features/props_annotations/__init__.py:24 invalid-type-form | target: PointerProperty(name="Target", type=bpy.types.Object)
+features/props_annotations/__init__.py:25 invalid-type-form | item: PointerProperty(type=PROPS_ANNOTATIONS_Item)
+features/props_annotations/__init__.py:26 invalid-type-form | items: CollectionProperty(type=PROPS_ANNOTATIONS_Item)
+features/props_annotations/check_props_annotations.py:14 type-assertion-failure | assert_type(s.count, int)
+features/props_annotations/check_props_annotations.py:15 type-assertion-failure | assert_type(s.factor, float)
+features/props_annotations/check_props_annotations.py:16 type-assertion-failure | assert_type(s.enabled, bool)
+features/props_annotations/check_props_annotations.py:17 type-assertion-failure | assert_type(s.title, str)
+features/props_annotations/check_props_annotations.py:18 type-assertion-failure | assert_type(s.offset, Vector)  # a vector subtype (TRANSLATION) gives a mathutils.Vector
+features/props_annotations/check_props_annotations.py:19 not-subscriptable | assert_type(s.weights, bpy_prop_array[float])  # no subtype: a plain RNA array
+features/props_annotations/check_props_annotations.py:20 type-assertion-failure | assert_type(s.mode, str)
+features/props_annotations/check_props_annotations.py:21 type-assertion-failure | assert_type(s.flags, set[str])  # ENUM_FLAG: a set of identifiers
+features/props_annotations/check_props_annotations.py:22 type-assertion-failure | assert_type(s.target, Object | None)
+features/props_annotations/check_props_annotations.py:23 type-assertion-failure | assert_type(s.item, PROPS_ANNOTATIONS_Item)  # a PropertyGroup pointer is never None
+features/props_annotations/check_props_annotations.py:24 type-assertion-failure | assert_type(s.items, bpy_prop_collection[PROPS_ANNOTATIONS_Item])
+features/props_annotations/check_props_annotations.py:28 type-assertion-failure | assert_type(s.items.add(), PROPS_ANNOTATIONS_Item)
+features/props_annotations/check_props_annotations.py:29 type-assertion-failure | assert_type(s.items[0], PROPS_ANNOTATIONS_Item)
+features/props_annotations/check_props_annotations.py:31 type-assertion-failure | assert_type(item, PROPS_ANNOTATIONS_Item)
+features/props_annotations/check_props_annotations.py:32 type-assertion-failure | assert_type(item.label, str)
+features/props_annotations/check_props_annotations.py:43 unused-ignore-comment | s.count = "3"  # ty: ignore[invalid-assignment]
+features/props_annotations/check_props_annotations.py:44 unused-ignore-comment | s.enabled = "yes"  # ty: ignore[invalid-assignment]
+features/props_annotations/check_props_annotations.py:45 unused-ignore-comment | s.item = None  # ty: ignore[invalid-assignment]
+features/props_on_id/__init__.py:11 invalid-type-form | count: IntProperty(name="Count", default=1)
+features/props_on_id/__init__.py:17 unresolved-attribute | bpy.types.Scene.props_on_id = PointerProperty(type=PROPS_ON_ID_Settings)
+features/props_on_id/__init__.py:18 unresolved-attribute | bpy.types.Object.props_on_id_weight = FloatProperty(name="Weight", default=1.0)
+features/props_on_id/__init__.py:24 unresolved-attribute | del bpy.types.Object.props_on_id_weight
+features/props_on_id/__init__.py:25 unresolved-attribute | del bpy.types.Scene.props_on_id
+features/props_on_id/check_props_on_id.py:17 type-assertion-failure | assert_type(scene.props_on_id, PROPS_ON_ID_Settings)
+features/props_on_id/check_props_on_id.py:17 unresolved-attribute | assert_type(scene.props_on_id, PROPS_ON_ID_Settings)
+features/props_on_id/check_props_on_id.py:18 type-assertion-failure | assert_type(scene.props_on_id.count, int)
+features/props_on_id/check_props_on_id.py:18 unresolved-attribute | assert_type(scene.props_on_id.count, int)
+features/props_on_id/check_props_on_id.py:19 type-assertion-failure | assert_type(obj.props_on_id_weight, float)
+features/props_on_id/check_props_on_id.py:19 unresolved-attribute | assert_type(obj.props_on_id_weight, float)
