@@ -1,0 +1,2 @@
+register = "fails"
+reason = "class registered twice"

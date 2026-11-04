@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "sym_dotted"
+version = "1.0.0"
+name = "Feature test: sym_dotted"
+tagline = "import bpy, then bpy.props.X / bpy.types.X / bpy.utils.X"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

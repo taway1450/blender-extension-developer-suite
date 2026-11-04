@@ -1,0 +1,2 @@
+register = "fails"
+reason = "the second preferences class replaces the first, so unregistering the first fails"

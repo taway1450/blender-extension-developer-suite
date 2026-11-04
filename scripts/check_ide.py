@@ -11,14 +11,14 @@ deprecation. Markers are comment lines below the code they query, with a caret a
     obj.location
     #   ^hover-contains "Location of the object"
 
-They live in ``ide_*.py`` files in ``tests/typecheck/features/<feature>/`` and ``tests/typecheck/ide/<feature>/``.
+They live in ``ide_*.py`` files in the addons of ``tests/typecheck/features/<feature>/``.
 All results, passes and failures alike, are written to ``tests/typecheck/expected/<generator>/<version>.ide.md``;
 the task fails when that file would change, and ``--update`` rewrites it. The raw LSP responses go to
 ``.cache/typecheck-results/<version>/<generator>/ide.json``.
 
 Usage:
   uv run scripts/check_ide.py main
-  uv run scripts/check_ide.py 5.2 hover_rna_props --generator fake-bpy-module
+  uv run scripts/check_ide.py 5.2 operator_properties --generator fake-bpy-module
   uv run scripts/check_ide.py main --update
 """
 
@@ -36,6 +36,7 @@ from queue import Empty, Queue
 from typing import Any
 
 from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
+from _features import select
 from build_ty import build_ty
 from generate_stubs import (
     add_stubs_arguments,
@@ -45,7 +46,6 @@ from generate_stubs import (
     resolve_generators,
 )
 
-SEARCH_DIRS = (TYPECHECK_TESTS_DIR / "features", TYPECHECK_TESTS_DIR / "ide")
 EXPECTED_DIR = TYPECHECK_TESTS_DIR / "expected"
 RESULTS_DIR = CACHE_DIR / "typecheck-results"
 REQUEST_TIMEOUT = 120  # seconds; the first request loads the stubs
@@ -184,16 +184,6 @@ class Marker:
     def title(self) -> str:
         arg = f" {self.arg}" if self.arg else ""
         return f"{self.rel}:{self.line + 1}:{self.character + 1} ^{self.kind}{arg}"
-
-
-def feature_dirs() -> dict[str, Path]:
-    dirs = {}
-    for base in SEARCH_DIRS:
-        if base.is_dir():
-            for path in sorted(base.iterdir()):
-                if any(path.glob("ide_*.py")):
-                    dirs[path.name] = path
-    return dirs
 
 
 def find_markers(path: Path) -> list[Marker]:
@@ -394,19 +384,18 @@ def write_golden(path: Path, generator: str, version: str, sections: dict[str, s
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_stubs_arguments(parser)
-    parser.add_argument("features", nargs="*", help="Feature directory names in tests/typecheck/features/ or "
-                                                    "tests/typecheck/ide/ that have ide_*.py files (default: all)")
+    parser.add_argument("features", nargs="*", help="Features (`operator_properties`) or addons "
+                                                    "(`operator_properties/opprops_layout`) in tests/typecheck/features/ "
+                                                    "(default: all)")
     parser.add_argument("--debug", action="store_true", help="Use a debug build of ty")
     parser.add_argument("--update", action="store_true", help="Rewrite the golden files instead of comparing")
     args = parser.parse_args()
 
-    available = feature_dirs()
-    unknown = set(args.features) - set(available)
-    if unknown:
-        raise StepError(f"Unknown features {', '.join(sorted(unknown))} (with ide_*.py files: {', '.join(available)})")
-    selected = {name: available[name] for name in (args.features or available)}
-    markers = [m for directory in selected.values() for f in sorted(directory.glob("ide_*.py")) for m in find_markers(f)]
-    selected_prefixes = tuple(f"{d.relative_to(TYPECHECK_TESTS_DIR).as_posix()}/" for d in selected.values())
+    selected = [a for a in select(args.features) if a.ide_test_files()]
+    if not selected:
+        raise StepError("None of the selected addons has ide_*.py files")
+    markers = [m for addon in selected for f in addon.ide_test_files() for m in find_markers(f)]
+    selected_prefixes = tuple(f"{a.rel}/" for a in selected)
 
     generators = resolve_generators(args.version, args.ref, args.generator)
     all_stubs = {g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
@@ -417,7 +406,7 @@ def main() -> int:
     changed = False
     for generator, stubs in all_stubs.items():
         log(f"Querying ty's language server (Python {python_version}, Blender {args.version}, {generator} stubs) "
-            f"at {len(markers)} markers in {len(selected)} features")
+            f"at {len(markers)} markers in {len(selected)} addons")
         client = start_server(ty, stubs, python_version)
         raw = []
         sections = {}

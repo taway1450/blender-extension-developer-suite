@@ -1,0 +1,2 @@
+register = "fails"
+reason = "disabling the add-on calls unregister(), which does not exist"

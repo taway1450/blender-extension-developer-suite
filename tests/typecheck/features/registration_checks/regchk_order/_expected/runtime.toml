@@ -1,0 +1,2 @@
+register = "fails"
+reason = "PropertyGroup registered after the class that points to it"

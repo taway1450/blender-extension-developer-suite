@@ -1,0 +1,19 @@
+"""Classes registered by unreachable code are not in bpy.ops."""
+
+from __future__ import annotations
+
+from typing import Literal, TypeAlias, assert_type
+
+import bpy
+from bpy.types import Scene
+
+Result: TypeAlias = set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+
+
+def registered() -> None:
+    assert_type(bpy.ops.regchk_unreachable.used(), Result)
+
+
+def not_registered() -> None:
+    bpy.ops.regchk_unreachable.extra  # ty: ignore[unresolved-attribute]
+    bpy.ops.regchk_unreachable.lost  # ty: ignore[unresolved-attribute]

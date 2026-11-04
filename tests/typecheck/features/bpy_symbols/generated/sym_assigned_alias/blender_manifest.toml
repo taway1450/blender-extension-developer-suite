@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "sym_assigned_alias"
+version = "1.0.0"
+name = "Feature test: sym_assigned_alias"
+tagline = "module-level aliases: P = bpy.props, Int = bpy.props.IntProperty, Group = ..."
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

@@ -1,0 +1,2 @@
+register = "fails"
+reason = "PROPS_DEFAULTS_Invalid has arguments Blender rejects (ValueError at registration)"

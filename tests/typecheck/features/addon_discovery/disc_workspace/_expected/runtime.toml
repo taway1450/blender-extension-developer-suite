@@ -1,0 +1,2 @@
+# The folder is not a package: check:load loads the two extensions in it.
+packages = ["addons/ws_alpha", "addons/ws_beta"]

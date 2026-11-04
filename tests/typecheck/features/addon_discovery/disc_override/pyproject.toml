@@ -1,0 +1,9 @@
+# The add-on's blender_manifest.toml is written by a build step, so the source has neither a manifest
+# nor bl_info. The checker looks for pyproject.toml files above a source file and reads [tool.blender].
+[project]
+name = "disc-override"
+version = "1.0.0"
+
+[tool.blender]
+# Folders, relative to this file, that are add-on packages (extensions).
+addons = ["src/disc_override_addon"]

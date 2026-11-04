@@ -1,0 +1,6 @@
+"""Reference stub: bpy.ops.reg_submodule_factory as the checker synthesises it."""
+
+from typing import Literal
+
+def module(execution_context: str = ..., undo: bool = ..., /) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...
+def package(execution_context: str = ..., undo: bool = ..., /) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...

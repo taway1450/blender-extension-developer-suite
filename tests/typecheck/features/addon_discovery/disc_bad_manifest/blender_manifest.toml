@@ -1,0 +1,12 @@
+# Malformed on purpose: no id, and the type is not one Blender knows.
+schema_version = "1.0.0"
+
+version = "1.0.0"
+name = "Feature test: malformed manifest"
+tagline = "malformed manifest"
+maintainer = "Blender Extension Developer Suite"
+type = "add-in"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]

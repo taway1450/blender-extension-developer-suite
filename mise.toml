@@ -108,6 +108,42 @@ uv run scripts/check_features.py {{usage.version}}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 '''
 
+[tasks."check:oracle"]
+description = "Check the feature tests' markers with stock ty against their reference stubs (tests/typecheck/features/*/*/_expected/)"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
+arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/ (default: all)"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
+  choices "fake-bpy-module" "builtin" "all"
+}
+'''
+run = '''
+uv run scripts/check_oracle.py {{usage.version}}
+{%- for feature in usage.features %} {{feature}}{% endfor %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
+'''
+
+[tasks."check:load"]
+description = "Load every feature-test addon in Blender (import, register, unregister) and compare with its _expected/runtime.toml"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
+arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/ (default: all)"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+'''
+run = '''
+uv run scripts/check_load.py {{usage.version}}
+{%- for feature in usage.features %} {{feature}}{% endfor %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
+'''
+
+[tasks."features:generate"]
+description = "Write the generated feature-test addons (tests/typecheck/features/*/generated/) and the import roots in tests/typecheck/ty.toml"
+usage = '''
+flag "--check" help="Fail if the generated files are out of date instead of writing them"
+'''
+run = 'uv run scripts/generate_features.py {% if usage.check %}--check{% endif %}'
+
 [tasks."check:ide"]
 description = "Query ty's language server at the markers in tests/typecheck/ (hover, signature help, completions) and compare with tests/typecheck/expected/"
 usage = '''

@@ -1,9 +1,28 @@
-# ty configuration for the feature tests (mise run check:features / check:ide).
+# ty configuration for the feature tests (mise run check:features / check:ide / check:oracle).
 # The stubs and the Python version are passed on the command line per stub generator and Blender version.
 
 [environment]
-# Every feature folder is an extension, i.e. a top-level package as Blender loads it.
-root = ["features", "ide"]
+# Every addon is a top-level package (or module), as Blender loads it, so every directory that holds addons
+# is a root. ty has no glob patterns here; `mise run features:generate` keeps this list up to date.
+# BEGIN generated roots (scripts/generate_features.py)
+root = [
+    "features/addon_discovery",
+    "features/addon_preferences",
+    "features/bpy_symbols",
+    "features/bpy_symbols/generated",
+    "features/operator_calls",
+    "features/operator_properties",
+    "features/properties",
+    "features/properties/generated",
+    "features/property_wrappers",
+    "features/registration",
+    "features/registration_checks",
+]
+# END generated roots
+
+[src]
+# Reference stubs for check:oracle, not part of the addons.
+exclude = ["**/_expected/**"]
 
 [rules]
 # An expected error (`# ty: ignore[rule]`) that ty no longer reports is a failure.

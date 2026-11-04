@@ -3,7 +3,139 @@
 Written by `mise run check:ide main --update`; the task fails when this file would change.
 Each section is one marker: the queried code line, then what ty's language server returned for it.
 
-## features/props_annotations/ide_props_annotations.py:9:7 ^hover
+## features/addon_preferences/prefs_ext/ide_prefs_ext.py:13:51 ^completion scale
+
+`preferences.addons[__package__].preferences.sc`
+
+````text
+- scale: FAIL: not offered
+````
+
+## features/addon_preferences/prefs_ext/ide_prefs_ext.py:15:37 ^hover-contains "PREFS_EXT_Preferences"
+
+`preferences.addons[__package__].preferences`
+
+````text
+FAIL: does not contain "PREFS_EXT_Preferences"
+````
+
+## features/addon_preferences/prefs_ext/ide_prefs_ext.py:20:7 ^hover-contains "prefs_ext"
+
+`__package__`
+
+````text
+FAIL: does not contain "prefs_ext"
+````
+
+## features/operator_calls/opcall_basic/ide_opcall_basic.py:13:30 ^signature
+
+`bpy.ops.opcall_basic.all()`
+
+````text
+label: (...) -> Unknown
+active parameter: None
+parameters:
+documentation:
+(none)
+````
+
+## features/operator_calls/opcall_basic/ide_opcall_basic.py:18:28 ^completion all
+
+`bpy.ops.opcall_basic.al`
+
+````text
+- all: FAIL: not offered
+````
+
+## features/operator_calls/opcall_basic/ide_opcall_basic.py:20:35 ^completion int_value=
+
+`bpy.ops.opcall_basic.all(int_v)`
+
+````text
+- int_value=: FAIL: not offered
+````
+
+## features/operator_calls/opcall_basic/ide_opcall_basic.py:22:35 ^completion before=
+
+`bpy.ops.opcall_basic.dropped(a)`
+
+````text
+- before=: FAIL: not offered
+````
+
+## features/operator_calls/opcall_basic/ide_opcall_basic.py:27:26 ^hover
+
+`bpy.ops.opcall_basic.all`
+
+````text
+```python
+Unknown
+```
+````
+
+## features/operator_calls/opcall_basic/ide_opcall_basic.py:29:30 ^hover-contains "OPCALL_BASIC_OT_all"
+
+`bpy.ops.opcall_basic.all.idname()`
+
+````text
+FAIL: does not contain "OPCALL_BASIC_OT_all"
+````
+
+## features/operator_calls/opcall_macro/ide_opcall_macro.py:13:32 ^signature
+
+`bpy.ops.opcall_macro.combo()`
+
+````text
+label: (...) -> Unknown
+active parameter: None
+parameters:
+documentation:
+(none)
+````
+
+## features/operator_properties/opprops_sinks/ide_opprops_sinks.py:13:36 ^completion opprops_sinks.step opprops_sinks.bare
+
+`layout.operator("opprops_sinks.")`
+
+````text
+- opprops_sinks.step: FAIL: not offered
+- opprops_sinks.bare: FAIL: not offered
+````
+
+## features/operator_properties/opprops_sinks/ide_opprops_sinks.py:15:38 ^completion opprops_sinks.step opprops_sinks.bare
+
+`keymap.keymap_items.new("opprops_", "A", "PRESS")`
+
+````text
+- opprops_sinks.step: FAIL: not offered
+- opprops_sinks.bare: FAIL: not offered
+````
+
+## features/operator_properties/opprops_sinks/ide_opprops_sinks.py:20:45 ^completion amount
+
+`layout.operator("opprops_sinks.step").am`
+
+````text
+- amount: FAIL: not offered
+````
+
+## features/operator_properties/opprops_sinks/ide_opprops_sinks.py:22:43 ^hover-contains "Literal"
+
+`layout.operator("opprops_sinks.step").mode`
+
+````text
+FAIL: does not contain "Literal"
+````
+
+## features/operator_properties/opprops_sinks/ide_opprops_sinks.py:24:22 ^hover-contains "Step"
+
+`layout.operator("opprops_sinks.step")`
+
+````text
+FAIL: no hover
+````
+
+## features/properties/props_callbacks/ide_props_callbacks.py:13:7 ^hover
 
 `s.count`
 
@@ -13,7 +145,7 @@ Unknown
 ```
 ````
 
-## features/props_annotations/ide_props_annotations.py:9:7 ^hover-contains "int"
+## features/properties/props_callbacks/ide_props_callbacks.py:13:7 ^hover-contains "int"
 
 `s.count`
 
@@ -21,7 +153,7 @@ Unknown
 FAIL: does not contain "int"
 ````
 
-## features/props_annotations/ide_props_annotations.py:12:7 ^hover-contains "Object"
+## features/properties/props_callbacks/ide_props_callbacks.py:16:7 ^hover-contains "Object"
 
 `s.target`
 
@@ -29,258 +161,164 @@ FAIL: does not contain "int"
 FAIL: does not contain "Object"
 ````
 
-## ide/completion_docs/ide_completion_docs.py:14:14 ^completion location
+## features/properties/props_callbacks/ide_props_callbacks.py:18:7 ^hover-contains "float"
 
-`obj.locat`
-
-````text
-- location: detail: Vector
-  documentation: (none)
-````
-
-## ide/completion_docs/ide_completion_docs.py:16:17 ^completion select_set
-
-`obj.select_s`
+`s.ratio`
 
 ````text
-- select_set: detail: bound method Object.select_set(state: bool, *, view_layer: ViewLayer | None = None) -> None
-  documentation: (none)
+FAIL: does not contain "float"
 ````
 
-## ide/completion_docs/ide_completion_docs.py:21:34 ^completion primitive_cube_add
+## features/properties/props_callbacks/ide_props_callbacks.py:23:10 ^completion count
 
-`bpy.ops.mesh.primitive_cube_a`
+`s.cou`
 
 ````text
-- primitive_cube_add: detail: def primitive_cube_add(*, size: float = ..., calc_uvs: bool = True, enter_editmode: bool = False, align: Literal["WORLD", "VIEW", "CURSOR"] = "WORLD", location: Sequence[float] = ..., rotation: Sequence[float] = ..., scale: Sequence[float] = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
-  documentation: (none)
+- count: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
 ````
 
-## ide/deprecation/ide_deprecation.py:12:11 ^deprecated
+## features/properties/props_callbacks/ide_props_callbacks.py:25:14 ^completion lambda_update lambda_poll lambda_items lambda_get
 
-`brush.falloff_angle`
+`s.lambda_`
 
 ````text
-FAIL: no deprecated diagnostic at the caret
+- lambda_update: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- lambda_poll: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- lambda_items: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- lambda_get: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
 ````
 
-## ide/deprecation/ide_deprecation.py:12:11 ^hover
+## features/properties/props_registered/ide_props_registered.py:13:11 ^hover
 
-`brush.falloff_angle`
+`scene.reg_int`
 
 ````text
 ```python
-float
+Unknown
 ```
 ````
 
-## ide/deprecation/ide_deprecation.py:12:11 ^hover-contains "Deprecated"
+## features/properties/props_registered/ide_props_registered.py:13:11 ^hover-contains "int"
 
-`brush.falloff_angle`
+`scene.reg_int`
 
 ````text
-FAIL: does not contain "Deprecated"
+FAIL: does not contain "int"
 ````
 
-## ide/enum_docs/ide_enum_docs.py:9:9 ^hover
+## features/properties/props_registered/ide_props_registered.py:16:11 ^hover-contains "Literal"
 
-`obj.type`
+`scene.reg_mode`
+
+````text
+FAIL: does not contain "Literal"
+````
+
+## features/properties/props_registered/ide_props_registered.py:18:9 ^hover-contains "int"
+
+`obj.reg_id`
+
+````text
+FAIL: does not contain "int"
+````
+
+## features/properties/props_registered/ide_props_registered.py:23:15 ^completion reg_int reg_mode reg_group reg_items reg_object reg_id
+
+`scene.reg_`
+
+````text
+- reg_int: FAIL: not offered
+- reg_mode: FAIL: not offered
+- reg_group: FAIL: not offered
+- reg_items: FAIL: not offered
+- reg_object: FAIL: not offered
+- reg_id: FAIL: not offered
+````
+
+## features/property_wrappers/wrap_values/ide_wrap_values.py:13:7 ^hover-contains "int"
+
+`s.common_a`
+
+````text
+FAIL: does not contain "int"
+````
+
+## features/property_wrappers/wrap_values/ide_wrap_values.py:15:7 ^hover-contains "float"
+
+`s.alias`
+
+````text
+FAIL: does not contain "float"
+````
+
+## features/property_wrappers/wrap_values/ide_wrap_values.py:17:7 ^hover-contains "Color"
+
+`s.partial_color`
+
+````text
+FAIL: does not contain "Color"
+````
+
+## features/property_wrappers/wrap_values/ide_wrap_values.py:19:7 ^hover-contains "Vector"
+
+`s.wrapped_size`
+
+````text
+FAIL: does not contain "Vector"
+````
+
+## features/property_wrappers/wrap_values/ide_wrap_values.py:24:12 ^completion from_dict from_dict_str from_tuple from_tuple_bool
+
+`s.from_`
+
+````text
+- from_dict: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- from_dict_str: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- from_tuple: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- from_tuple_bool: detail: Unknown
+  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+````
+
+## features/registration/reg_explicit/ide_reg_explicit.py:13:20 ^completion reg_explicit
+
+`bpy.ops.reg_exp`
+
+````text
+- reg_explicit: FAIL: not offered
+````
+
+## features/registration/reg_explicit/ide_reg_explicit.py:15:26 ^completion dotted imported alias
+
+`bpy.ops.reg_explicit.`
+
+````text
+- dotted: FAIL: not offered
+- imported: FAIL: not offered
+- alias: FAIL: not offered
+````
+
+## features/registration/reg_explicit/ide_reg_explicit.py:20:26 ^hover
+
+`bpy.ops.reg_explicit.dotted`
 
 ````text
 ```python
-Literal["MESH", "CURVE", "SURFACE", "META", "FONT", ... omitted 11 literals]
+Unknown
 ```
 ````
 
-## ide/enum_docs/ide_enum_docs.py:11:18 ^hover-contains "Mesh"
+## features/registration/reg_explicit/ide_reg_explicit.py:20:26 ^hover-contains "count"
 
-`obj.type == "MESH"`
-
-````text
-FAIL: no hover
-````
-
-## ide/enum_docs/ide_enum_docs.py:16:17 ^hover-contains "Warning"
-
-`op.report({"WARNING"}, "x")`
+`bpy.ops.reg_explicit.dotted`
 
 ````text
-FAIL: no hover
-````
-
-## ide/enum_docs/ide_enum_docs.py:18:14 ^hover-contains "Finished"
-
-`return {"FINISHED"}`
-
-````text
-FAIL: no hover
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:9:9 ^hover
-
-`obj.location`
-
-````text
-```python
-Vector
-```
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:9:9 ^hover-contains "Location of the object"
-
-`obj.location`
-
-````text
-FAIL: does not contain "Location of the object"
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:12:9 ^hover-contains "Parent object"
-
-`obj.parent`
-
-````text
-FAIL: does not contain "Parent object"
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:14:9 ^hover-contains "Object data"
-
-`obj.data`
-
-````text
-FAIL: does not contain "Object data"
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:19:11 ^hover
-
-`scene.frame_current`
-
-````text
-```python
-int
-```
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:19:11 ^hover-contains "Current frame"
-
-`scene.frame_current`
-
-````text
-FAIL: does not contain "Current frame"
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:25:13 ^hover
-
-`context.active_object`
-
-````text
-```python
-Object
-```
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:27:13 ^hover
-
-`context.scene`
-
-````text
-```python
-Scene | None
-```
-````
-
-## ide/hover_rna_props/ide_hover_rna_props.py:32:7 ^hover-contains "Object data-block defining an object in a scene"
-
-`Object`
-
-````text
-FAIL: does not contain "Object data-block defining an object in a scene"
-````
-
-## ide/signature_docs/ide_signature_docs.py:11:20 ^signature
-
-`obj.select_set(True)`
-
-````text
-label: (state: bool, *, view_layer: ViewLayer | None = None) -> None
-active parameter: 0
-parameters:
-- state: bool: (no documentation)
-- view_layer: ViewLayer | None = None: (no documentation)
-documentation:
-(none)
-````
-
-## ide/signature_docs/ide_signature_docs.py:11:20 ^signature-param "Selection state to define"
-
-`obj.select_set(True)`
-
-````text
-FAIL: does not contain "Selection state to define"
-````
-
-## ide/signature_docs/ide_signature_docs.py:14:26 ^hover-contains "Use this instead of the active view layer"
-
-`obj.select_set(True, view_layer=None)`
-
-````text
-FAIL: does not contain "Use this instead of the active view layer"
-````
-
-## ide/signature_docs/ide_signature_docs.py:21:19 ^signature
-
-`obj.ray_cast((0, 0, 0), (0, 0, 1))`
-
-````text
-label: (origin: Sequence[float], direction: Sequence[float], *, distance: float = ..., depsgraph: Depsgraph | None = None) -> tuple[bool, Vector, Vector, int]
-active parameter: 0
-parameters:
-- origin: Sequence[float]: (no documentation)
-- direction: Sequence[float]: (no documentation)
-- distance: float = ...: (no documentation)
-- depsgraph: Depsgraph | None = None: (no documentation)
-documentation:
-(none)
-````
-
-## ide/signature_docs/ide_signature_docs.py:23:40 ^hover-contains "Maximum distance"
-
-`obj.ray_cast((0, 0, 0), (0, 0, 1), distance=1.0)`
-
-````text
-FAIL: does not contain "Maximum distance"
-````
-
-## ide/signature_docs/ide_signature_docs.py:28:41 ^hover-contains "tooltip"
-
-`bpy.props.IntProperty(name="Count", description="Number of items")`
-
-````text
-FAIL: does not contain "tooltip"
-````
-
-## ide/signature_docs/ide_signature_docs.py:33:37 ^signature
-
-`bpy.ops.mesh.primitive_cube_add(size=2.0)`
-
-````text
-label: (*, size: float = ..., calc_uvs: bool = True, enter_editmode: bool = False, align: Literal["WORLD", "VIEW", "CURSOR"] = "WORLD", location: Sequence[float] = ..., rotation: Sequence[float] = ..., scale: Sequence[float] = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
-active parameter: 0
-parameters:
-- size: float = ...: (no documentation)
-- calc_uvs: bool = True: (no documentation)
-- enter_editmode: bool = False: (no documentation)
-- align: Literal["WORLD", "VIEW", "CURSOR"] = "WORLD": (no documentation)
-- location: Sequence[float] = ...: (no documentation)
-- rotation: Sequence[float] = ...: (no documentation)
-- scale: Sequence[float] = ...: (no documentation)
-documentation:
-(none)
-````
-
-## ide/signature_docs/ide_signature_docs.py:33:37 ^signature-param "Size"
-
-`bpy.ops.mesh.primitive_cube_add(size=2.0)`
-
-````text
-FAIL: does not contain "Size"
+FAIL: does not contain "count"
 ````

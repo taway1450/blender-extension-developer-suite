@@ -1,0 +1,2 @@
+register = "fails"
+reason = "register() is called without arguments (TypeError)"

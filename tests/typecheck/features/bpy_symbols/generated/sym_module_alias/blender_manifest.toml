@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "sym_module_alias"
+version = "1.0.0"
+name = "Feature test: sym_module_alias"
+tagline = "import bpy.props as bp (and bpy.types as bt, bpy.utils as bu)"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

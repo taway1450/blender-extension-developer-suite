@@ -1,0 +1,2 @@
+register = "fails"
+reason = "Blender calls register() and unregister(), which do not exist"

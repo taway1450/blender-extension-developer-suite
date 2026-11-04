@@ -1,0 +1,2 @@
+register = "fails"
+reason = "unregister_class for a class that is not registered"
