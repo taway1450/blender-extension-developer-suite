@@ -1,0 +1,12 @@
+# prek (or pre-commit) hooks: `mise run lint:scripts` runs them on every file, `uvx prek@0.5.6 install`
+# runs them on each commit. Only scripts/ is linted and formatted here, with the pinned upstream ruff and
+# scripts/ruff.toml; Blender code goes through the ruff built from ty-blender (`mise run lint:*` / `format:*`).
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.2
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        files: ^scripts/
+      - id: ruff-format
+        files: ^scripts/

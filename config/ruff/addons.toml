@@ -1,0 +1,43 @@
+# Ruff profile for Blender add-ons: the example add-ons (lint:addons, format:addons) and the feature-test
+# add-ons (lint:features, format:features). The tasks also run stock ruff next to it, so the two results show
+# what this profile changes.
+#
+# It starts from ruff's default rules and only changes what misfires on idiomatic add-on code; see
+# docs/research/typecheck-feature-placement.md, section 5.2. The target Python version comes from the
+# Blender version on the command line.
+
+[lint]
+ignore = [
+    # mutable-class-default: every `bl_options = {"REGISTER", "UNDO"}` is a set literal class attribute
+    # that Blender reads once at registration.
+    "RUF012",
+]
+
+[lint.flake8-type-checking]
+# Blender evaluates the annotations of these classes at registration (bpy_rna.cc), so imports used only in
+# their annotations must stay at runtime (TC001-TC003) and quoted annotations must stay quoted (UP037: with
+# `from __future__ import annotations` its fix turns `PROPS["weight"]` into `PROPS[weight]`).
+# This only helps when the Blender base class is visible in the same file.
+runtime-evaluated-base-classes = [
+    "bpy.types.AddonPreferences",
+    "bpy.types.AssetShelf",
+    "bpy.types.FileHandler",
+    "bpy.types.Gizmo",
+    "bpy.types.GizmoGroup",
+    "bpy.types.Header",
+    "bpy.types.KeyingSetInfo",
+    "bpy.types.Macro",
+    "bpy.types.Menu",
+    "bpy.types.Node",
+    "bpy.types.NodeSocket",
+    "bpy.types.NodeTree",
+    "bpy.types.Operator",
+    "bpy.types.Panel",
+    "bpy.types.PropertyGroup",
+    "bpy.types.RenderEngine",
+    "bpy.types.UIList",
+]
+
+[lint.pep8-naming]
+# Blender's class naming convention (CATEGORY_OT_name and so on), for when N801 is selected.
+ignore-names = ["*_OT_*", "*_PT_*", "*_MT_*", "*_HT_*", "*_UL_*", "*_PG_*", "*_GT_*", "*_GGT_*", "*_AST_*", "*_FH_*"]

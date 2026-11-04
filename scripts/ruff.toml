@@ -1,0 +1,23 @@
+# Ruff settings for the tooling in scripts/, used by the prek hooks in .pre-commit-config.yaml.
+
+line-length = 120
+# scripts/blender/ runs inside Blender, whose Python can be as old as 3.11 (Blender 4.2).
+target-version = "py311"
+
+[lint]
+extend-select = [
+    "I",   # isort
+    "UP",  # pyupgrade
+]
+ignore = [
+    # subprocess-run-without-check: the scripts read the return code themselves (ty and ruff exit with 1
+    # when they report findings).
+    "PLW1510",
+]
+
+[lint.per-file-ignores]
+# The probes run inside Blender and must outlive any error in the API they poke at; the lambdas in loops
+# are called at once.
+"blender/*.py" = ["B023", "BLE001", "S110", "S112"]
+# Shutting down the language server: any failure means killing it.
+"check_ide.py" = ["BLE001"]

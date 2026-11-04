@@ -1,0 +1,21 @@
+# Ruff profile for the generated bpy stubs (lint:stubs, format:stubs). The tasks also run stock ruff next to
+# it, so the two results show what this profile changes.
+#
+# The stubs are generated, so findings point at the stub generators (fake-bpy-module or Blender's
+# sphinx_stub_gen.py), not at hand-written code. The target Python version comes from the Blender source on
+# the command line.
+
+# The formatter settings stay ruff's defaults: fake-bpy-module already formats its stubs with ruff at the
+# default line length, so any other width would report every file.
+
+[lint]
+# The flake8-pyi rules are written for .pyi files.
+extend-select = ["PYI"]
+ignore = [
+    # The bpy stubs carry the API docs and the real defaults on purpose: the docstrings are what an IDE shows
+    # on hover, the defaults what it shows in signature help.
+    "PYI021",  # docstring-in-stub
+    "PYI011",  # typed-argument-default-in-stub
+    "PYI014",  # argument-default-in-stub
+    "PYI054",  # numeric-literal-too-long (e.g. float limits)
+]

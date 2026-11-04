@@ -15,19 +15,28 @@ from _common import TY_SUBMODULE, StepError, exe, log, main_wrapper, run
 RUFF_DIR = TY_SUBMODULE / "ruff"
 
 
+def binary_path(name: str, debug: bool) -> Path:
+    return RUFF_DIR / "target" / ("debug" if debug else "release") / exe(name)
+
+
 def ty_path(debug: bool) -> Path:
-    return RUFF_DIR / "target" / ("debug" if debug else "release") / exe("ty")
+    return binary_path("ty", debug)
+
+
+def build_binary(name: str, debug: bool = False) -> Path:
+    """Build the ``name`` binary (``ty`` or ``ruff``) of the ruff workspace in ``ty-blender/ruff``."""
+    log(f"Building {name} ({'debug' if debug else 'release'})")
+    run(["git", "-C", TY_SUBMODULE, "submodule", "update", "--init", "ruff"])
+    run(["cargo", "build", *([] if debug else ["--release"]), "--bin", name], cwd=RUFF_DIR)
+    binary = binary_path(name, debug)
+    if not binary.is_file():
+        raise StepError(f"{name} binary not found at {binary} after building")
+    log(f"{name} binary: {binary}")
+    return binary
 
 
 def build_ty(debug: bool = False) -> Path:
-    log(f"Building ty ({'debug' if debug else 'release'})")
-    run(["git", "-C", TY_SUBMODULE, "submodule", "update", "--init", "ruff"])
-    run(["cargo", "build", *([] if debug else ["--release"]), "--bin", "ty"], cwd=RUFF_DIR)
-    ty = ty_path(debug)
-    if not ty.is_file():
-        raise StepError(f"ty binary not found at {ty} after building")
-    log(f"ty binary: {ty}")
-    return ty
+    return build_binary("ty", debug)
 
 
 def main() -> int:

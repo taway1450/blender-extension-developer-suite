@@ -1,0 +1,45 @@
+# Ruff profile for Blender's own Python code (lint:blender, format:blender). The tasks also run stock ruff
+# next to it, so the two results show what this profile changes.
+#
+# Blender has no ruff configuration; this follows the autopep8 and black settings in Blender's
+# pyproject.toml. The target Python version comes from the Blender source on the command line; lib/ and
+# extern/ are excluded on the command line for both runs.
+
+line-length = 120
+
+[format]
+# Blender's pyproject.toml: black "shouldn't change all the quote marks around strings".
+quote-style = "preserve"
+
+[lint]
+ignore = [
+    # The checks Blender's pyproject.toml disables for autopep8, for the same reasons:
+    "E402",  # module-import-not-at-top-of-file: reload checks before imports
+    "E721",  # type-comparison: exact type comparisons are intended
+    "E722",  # bare-except
+    # mutable-class-default: `bl_options = {...}` on every operator.
+    "RUF012",
+]
+
+[lint.flake8-type-checking]
+# The add-ons and UI scripts in Blender's source use the same registered classes as any add-on; see
+# addons.toml for why.
+runtime-evaluated-base-classes = [
+    "bpy.types.AddonPreferences",
+    "bpy.types.AssetShelf",
+    "bpy.types.FileHandler",
+    "bpy.types.Gizmo",
+    "bpy.types.GizmoGroup",
+    "bpy.types.Header",
+    "bpy.types.KeyingSetInfo",
+    "bpy.types.Macro",
+    "bpy.types.Menu",
+    "bpy.types.Node",
+    "bpy.types.NodeSocket",
+    "bpy.types.NodeTree",
+    "bpy.types.Operator",
+    "bpy.types.Panel",
+    "bpy.types.PropertyGroup",
+    "bpy.types.RenderEngine",
+    "bpy.types.UIList",
+]
