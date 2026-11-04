@@ -112,6 +112,24 @@ def all_addons() -> list[Addon]:
     return addons
 
 
+def result_prefixes(addons: list[Addon]) -> tuple[str, ...]:
+    """The prefixes of the recorded result lines (``path:line ...``) that belong to ``addons``."""
+    return tuple(f"{a.rel}/" if a.path.is_dir() else f"{a.rel}:" for a in addons)
+
+
+def split_recorded(recorded: list[str], selected: list[Addon]) -> tuple[list[str], list[str]]:
+    """Split recorded result lines (or IDE marker titles) into the ones this run compares and the ones it keeps.
+
+    The compared ones belong to a selected addon or to no addon that still exists: a stale line from a removed
+    or renamed addon then shows up as gone, and ``--update`` drops it. The kept ones belong to unselected addons.
+    """
+    selected_prefixes = result_prefixes(selected)
+    current_prefixes = result_prefixes(all_addons())
+    compared = [r for r in recorded if r.startswith(selected_prefixes) or not r.startswith(current_prefixes)]
+    kept = [r for r in recorded if not r.startswith(selected_prefixes) and r.startswith(current_prefixes)]
+    return compared, kept
+
+
 def import_roots(addons: list[Addon]) -> list[str]:
     """The ty ``environment.root`` entries (relative to tests/typecheck) that make every addon top-level."""
     return sorted({a.root.relative_to(TYPECHECK_TESTS_DIR).as_posix() for a in addons})

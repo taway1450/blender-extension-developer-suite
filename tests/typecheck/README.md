@@ -151,4 +151,5 @@ IDE test files must be ASCII, because LSP positions count UTF-16 code units.
 The `expected/` files record the current state, failures included. `check:features` and `check:ide` fail when the
 results differ from the recorded ones, so a checker improvement shows up as a diff just like a regression. Review
 the diff, then run the task with `--update`. Running a subset (`mise run check:features main properties`) compares
-and updates only those add-ons' entries.
+and updates only those add-ons' entries, plus any entries of add-ons that no longer exist: those show up as gone
+and `--update` drops them.

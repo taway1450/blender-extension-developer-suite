@@ -36,7 +36,7 @@ from queue import Empty, Queue
 from typing import Any
 
 from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import select
+from _features import select, split_recorded
 from build_ty import build_ty
 from generate_stubs import (
     add_stubs_arguments,
@@ -417,7 +417,6 @@ def main() -> int:
     if not selected:
         raise StepError("None of the selected addons has ide_*.py files")
     markers = [m for addon in selected for f in addon.ide_test_files() for m in find_markers(f)]
-    selected_prefixes = tuple(f"{a.rel}/" for a in selected)
 
     generators = resolve_generators(args.version, args.ref, args.generator)
     all_stubs = {
@@ -467,9 +466,10 @@ def main() -> int:
 
         path = golden_file(generator, args.version)
         recorded = parse_golden(path)
-        expected = {t: b for t, b in recorded.items() if t.startswith(selected_prefixes)}
+        compared, kept = split_recorded(list(recorded), selected)
+        expected = {t: recorded[t] for t in compared}
         if args.update:
-            others = {t: b for t, b in recorded.items() if not t.startswith(selected_prefixes)}
+            others = {t: recorded[t] for t in kept}
             write_golden(path, generator, args.version, {**others, **sections})
             log(f"Wrote {path}")
             continue

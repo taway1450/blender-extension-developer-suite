@@ -665,28 +665,6 @@ features/inheritance/inh_overrides/check_inh_overrides.py:29 unused-ignore-comme
 features/inheritance/inh_overrides/check_inh_overrides.py:34 type-assertion-failure | assert_type(menu.draw(context), None)
 features/inheritance/inh_overrides/check_inh_overrides.py:39 type-assertion-failure | assert_type(node.draw_label(), str)
 features/inheritance/inh_overrides/check_inh_overrides.py:41 unused-ignore-comment | node.draw_buttons(context, 1)  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides_invalid/__init__.py:101 ignore-comment-unknown-rule | def draw(self, context, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:101 invalid-method-override | def draw(self, context, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:105 ignore-comment-unknown-rule | class INH_OVERRIDES_INVALID_PT_no_draw(Panel):  # ty: ignore[blender-missing-callback]
-features/inheritance/inh_overrides_invalid/__init__.py:111 ignore-comment-unknown-rule | class INH_OVERRIDES_INVALID_MT_no_draw(Menu):  # ty: ignore[blender-missing-callback]
-features/inheritance/inh_overrides_invalid/__init__.py:115 ignore-comment-unknown-rule | class INH_OVERRIDES_INVALID_HT_no_draw(Header):  # ty: ignore[blender-missing-callback]
-features/inheritance/inh_overrides_invalid/__init__.py:15 ignore-comment-unknown-rule | def execute(self):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:15 invalid-method-override | def execute(self):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:23 ignore-comment-unknown-rule | def execute(self, context, extra=None):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:31 ignore-comment-unknown-rule | def execute(self, *args):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:31 invalid-method-override | def execute(self, *args):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:39 ignore-comment-unknown-rule | def invoke(self, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:39 invalid-method-override | def invoke(self, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:47 ignore-comment-unknown-rule | def poll(self, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:56 ignore-comment-unknown-rule | def poll(context):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:65 ignore-comment-unknown-rule | def poll(cls):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:65 invalid-method-override | def poll(cls):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:73 ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:82 ignore-comment-unknown-rule | def execute(cls, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:87 ignore-comment-unknown-rule | def draw_item(self, context, layout, data, item, icon):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:87 invalid-method-override | def draw_item(self, context, layout, data, item, icon):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:92 ignore-comment-unknown-rule | def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/inh_overrides_invalid/__init__.py:92 invalid-method-override | def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/inh_registered_base/__init__.py:103 invalid-type-form | extra: IntProperty()
 features/inheritance/inh_registered_base/__init__.py:19 invalid-type-form | count: IntProperty()
 features/inheritance/inh_registered_base/__init__.py:25 ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_child(INH_REGISTERED_BASE_OT_parent):  # ty: ignore[blender-registered-base]

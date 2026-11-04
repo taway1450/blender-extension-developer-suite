@@ -30,7 +30,16 @@ import subprocess
 from pathlib import Path
 
 from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import AddonResult, evaluate, parse_diagnostics, print_table, select, source_line, summary_markdown
+from _features import (
+    AddonResult,
+    evaluate,
+    parse_diagnostics,
+    print_table,
+    select,
+    source_line,
+    split_recorded,
+    summary_markdown,
+)
 from build_ty import build_ty
 from generate_stubs import (
     add_stubs_arguments,
@@ -91,7 +100,6 @@ def main() -> int:
     args = parser.parse_args()
 
     addons = select(args.features)
-    prefixes = tuple(f"{a.rel}/" if a.path.is_dir() else f"{a.rel}:" for a in addons)
 
     generators = resolve_generators(args.version, args.ref, args.generator)
     all_stubs = {
@@ -136,9 +144,8 @@ def main() -> int:
         path = expected_file(generator, args.version)
         actual = outcome_lines(results)
         recorded = read_expected(path)
-        expected = [line for line in recorded if line.startswith(prefixes)]
+        expected, others = split_recorded(recorded, addons)
         if args.update:
-            others = [line for line in recorded if not line.startswith(prefixes)]
             write_expected(path, generator, args.version, others + actual)
             log(f"Wrote {path}")
             continue
