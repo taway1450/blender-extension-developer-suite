@@ -12,7 +12,7 @@ from pathlib import Path
 
 from _common import TY_SUBMODULE, StepError, exe, log, main_wrapper, run
 
-RUFF_DIR = TY_SUBMODULE / "ruff"
+RUFF_DIR = TY_SUBMODULE / "ruff-blender"
 
 
 def binary_path(name: str, debug: bool) -> Path:
@@ -24,9 +24,9 @@ def ty_path(debug: bool) -> Path:
 
 
 def build_binary(name: str, debug: bool = False) -> Path:
-    """Build the ``name`` binary (``ty`` or ``ruff``) of the ruff workspace in ``ty-blender/ruff``."""
+    """Build the ``name`` binary (``ty`` or ``ruff``) of the ruff workspace in ``ty-blender/ruff-blender``."""
     log(f"Building {name} ({'debug' if debug else 'release'})")
-    run(["git", "-C", TY_SUBMODULE, "submodule", "update", "--init", "ruff"])
+    run(["git", "-C", TY_SUBMODULE, "submodule", "update", "--init", "ruff-blender"])
     run(["cargo", "build", *([] if debug else ["--release"]), "--bin", name], cwd=RUFF_DIR)
     binary = binary_path(name, debug)
     if not binary.is_file():
