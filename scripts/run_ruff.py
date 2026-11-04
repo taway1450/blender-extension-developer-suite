@@ -180,7 +180,7 @@ def jobs_for(tool: str, args: argparse.Namespace) -> list[Job]:
                     EXAMPLE_ADDONS_DIR, f"{stem}-{args.version}", [])]
     addons = select(args.names)
     return [Job(f"{len(addons)} feature-test addons", [a.path for a in addons], FEATURES_DIR.parent,
-                f"{stem}-{args.version}", [f"{FEATURES_DIR.as_posix()}/**/{EXPECTED_STUBS}"])]
+                f"{stem}-{args.version}", [EXPECTED_STUBS])]
 
 
 def main() -> int:
