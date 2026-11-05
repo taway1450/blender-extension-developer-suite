@@ -22,7 +22,6 @@ features/addon_discovery/disc_register_alias/__init__.py | unresolved-attribute 
 features/addon_discovery/disc_register_alias/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_register_alias_marker
 features/addon_discovery/disc_register_alias/check_disc_register_alias.py | type-assertion-failure | assert_type(scene.disc_register_alias_marker, str)
 features/addon_discovery/disc_register_alias/check_disc_register_alias.py | unresolved-attribute | assert_type(scene.disc_register_alias_marker, str)
-features/addon_discovery/disc_register_factory/__init__.py | invalid-type-form | count: IntProperty()
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(register, Callable[[], None])
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(unregister, Callable[[], None])
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(bpy.ops.disc_register_factory.run(count=1),
@@ -50,17 +49,9 @@ features/addon_discovery/disc_workspace/addons/ws_beta/__init__.py | unresolved-
 features/addon_discovery/disc_workspace/addons/ws_beta/check_ws_beta.py | type-assertion-failure | assert_type(scene.ws_value, str)  # oracle-skip: two extensions in one folder share one _expected/
 features/addon_discovery/disc_workspace/addons/ws_beta/check_ws_beta.py | unresolved-attribute | assert_type(scene.ws_value, str)  # oracle-skip: two extensions in one folder share one _expected/
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = "not_this_addon"  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | value: IntProperty()
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | class PREFS_BAD_Missing(AddonPreferences):  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | value: IntProperty() #2
-features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | value: IntProperty() #3
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | other: IntProperty()
 features/addon_preferences/prefs_bad/submodule.py | ignore-comment-unknown-rule | bl_idname = __name__  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/submodule.py | invalid-type-form | value: IntProperty()
-features/addon_preferences/prefs_ext/__init__.py | invalid-type-form | scale: FloatProperty(default=1.0)
-features/addon_preferences/prefs_ext/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/addon_preferences/prefs_ext/__init__.py | invalid-type-form | enabled: BoolProperty()
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[ADDON_ID].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | call-non-callable | assert_type(preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
@@ -74,9 +65,6 @@ features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute |
 features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-assignment | prefs.scale = 2.0  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(addon.preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
-features/addon_preferences/prefs_legacy/__init__.py | invalid-type-form | scale: FloatProperty(default=1.0)
-features/addon_preferences/prefs_legacy/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/addon_preferences/prefs_legacy/__init__.py | invalid-type-form | enabled: BoolProperty()
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs, PREFS_LEGACY_Preferences)
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.scale, float)
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.scale, float)
@@ -84,25 +72,9 @@ features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-f
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_unregistered/__init__.py | ignore-comment-unknown-rule | class PREFS_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
-features/addon_preferences/prefs_unregistered/__init__.py | invalid-type-form | value: IntProperty()
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | label: AliasStringProperty(name="Label")
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | count: AliasIntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | enabled: AliasBoolProperty()
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | mode: AliasEnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | offset: AliasFloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | item: AliasPointerProperty(type=SYM_ASSIGNED_ALIAS_Item)
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | factor: AliasFloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_assigned_alias/__init__.py | unresolved-attribute | AliasScene.sym_assigned_alias = AliasPointerProperty(type=SYM_ASSIGNED_ALIAS_Settings)
 features/bpy_symbols/generated/sym_assigned_alias/__init__.py | unresolved-attribute | del AliasScene.sym_assigned_alias
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.item, SYM_ASSIGNED_ALIAS_Item)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | bpy.ops.sym_assigned_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -111,24 +83,9 @@ features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | 
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(scene.sym_assigned_alias, SYM_ASSIGNED_ALIAS_Settings)
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(scene.sym_assigned_alias.count, int)
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(scene.sym_assigned_alias.count, int)
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | label: bpy.props.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | count: bpy.props.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | enabled: bpy.props.BoolProperty()
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | mode: bpy.props.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | offset: bpy.props.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | item: bpy.props.PointerProperty(type=SYM_DOTTED_Item)
-features/bpy_symbols/generated/sym_dotted/__init__.py | invalid-type-form | factor: bpy.props.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_dotted/__init__.py | unresolved-attribute | bpy.types.Scene.sym_dotted = bpy.props.PointerProperty(type=SYM_DOTTED_Settings)
 features/bpy_symbols/generated/sym_dotted/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_dotted
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.item, SYM_DOTTED_Item)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(bpy.ops.sym_dotted.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(bpy.ops.sym_dotted.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | bpy.ops.sym_dotted.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -137,24 +94,9 @@ features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-f
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(scene.sym_dotted, SYM_DOTTED_Settings)
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(scene.sym_dotted.count, int)
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(scene.sym_dotted.count, int)
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | label: props.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | count: props.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | enabled: props.BoolProperty()
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | mode: props.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | offset: props.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | item: props.PointerProperty(type=SYM_FROM_BPY_Item)
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | invalid-type-form | factor: props.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_from_bpy/__init__.py | unresolved-attribute | types.Scene.sym_from_bpy = props.PointerProperty(type=SYM_FROM_BPY_Settings)
 features/bpy_symbols/generated/sym_from_bpy/__init__.py | unresolved-attribute | del types.Scene.sym_from_bpy
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.item, SYM_FROM_BPY_Item)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(bpy.ops.sym_from_bpy.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(bpy.ops.sym_from_bpy.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | bpy.ops.sym_from_bpy.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -163,24 +105,9 @@ features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-asserti
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(scene.sym_from_bpy, SYM_FROM_BPY_Settings)
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(scene.sym_from_bpy.count, int)
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(scene.sym_from_bpy.count, int)
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | label: P.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | count: P.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | enabled: P.BoolProperty()
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | mode: P.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | offset: P.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | item: P.PointerProperty(type=SYM_FROM_BPY_ALIAS_Item)
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | invalid-type-form | factor: P.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | unresolved-attribute | T.Scene.sym_from_bpy_alias = P.PointerProperty(type=SYM_FROM_BPY_ALIAS_Settings)
 features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | unresolved-attribute | del T.Scene.sym_from_bpy_alias
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.item, SYM_FROM_BPY_ALIAS_Item)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_from_bpy_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_from_bpy_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | bpy.ops.sym_from_bpy_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -189,24 +116,9 @@ features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | 
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(scene.sym_from_bpy_alias, SYM_FROM_BPY_ALIAS_Settings)
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(scene.sym_from_bpy_alias.count, int)
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(scene.sym_from_bpy_alias.count, int)
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | label: StringProperty(name="Label")
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | count: IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | enabled: BoolProperty()
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | offset: FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | item: PointerProperty(type=SYM_FROM_IMPORT_Item)
-features/bpy_symbols/generated/sym_from_import/__init__.py | invalid-type-form | factor: FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_from_import/__init__.py | unresolved-attribute | Scene.sym_from_import = PointerProperty(type=SYM_FROM_IMPORT_Settings)
 features/bpy_symbols/generated/sym_from_import/__init__.py | unresolved-attribute | del Scene.sym_from_import
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.item, SYM_FROM_IMPORT_Item)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(bpy.ops.sym_from_import.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(bpy.ops.sym_from_import.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | bpy.ops.sym_from_import.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -215,24 +127,9 @@ features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-a
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(scene.sym_from_import, SYM_FROM_IMPORT_Settings)
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(scene.sym_from_import.count, int)
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(scene.sym_from_import.count, int)
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | label: MyStringProperty(name="Label")
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | count: MyIntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | enabled: MyBoolProperty()
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | mode: MyEnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | offset: MyFloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | item: MyPointerProperty(type=SYM_FROM_IMPORT_ALIAS_Item)
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | invalid-type-form | factor: MyFloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_from_import_alias/__init__.py | unresolved-attribute | MyScene.sym_from_import_alias = MyPointerProperty(type=SYM_FROM_IMPORT_ALIAS_Settings)
 features/bpy_symbols/generated/sym_from_import_alias/__init__.py | unresolved-attribute | del MyScene.sym_from_import_alias
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.item, SYM_FROM_IMPORT_ALIAS_Item)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_from_import_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_from_import_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | bpy.ops.sym_from_import_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -241,24 +138,9 @@ features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(scene.sym_from_import_alias, SYM_FROM_IMPORT_ALIAS_Settings)
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(scene.sym_from_import_alias.count, int)
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(scene.sym_from_import_alias.count, int)
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | label: bp.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | count: bp.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | enabled: bp.BoolProperty()
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | mode: bp.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | offset: bp.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | item: bp.PointerProperty(type=SYM_MODULE_ALIAS_Item)
-features/bpy_symbols/generated/sym_module_alias/__init__.py | invalid-type-form | factor: bp.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_module_alias/__init__.py | unresolved-attribute | bt.Scene.sym_module_alias = bp.PointerProperty(type=SYM_MODULE_ALIAS_Settings)
 features/bpy_symbols/generated/sym_module_alias/__init__.py | unresolved-attribute | del bt.Scene.sym_module_alias
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.item, SYM_MODULE_ALIAS_Item)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_module_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_module_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | bpy.ops.sym_module_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -267,24 +149,9 @@ features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(scene.sym_module_alias, SYM_MODULE_ALIAS_Settings)
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(scene.sym_module_alias.count, int)
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(scene.sym_module_alias.count, int)
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | label: P.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | count: P.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | enabled: P.BoolProperty()
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | mode: P.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | offset: P.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | item: P.PointerProperty(type=SYM_MODULE_ASSIGNED_Item)
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | invalid-type-form | factor: P.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_module_assigned/__init__.py | unresolved-attribute | T.Scene.sym_module_assigned = P.PointerProperty(type=SYM_MODULE_ASSIGNED_Settings)
 features/bpy_symbols/generated/sym_module_assigned/__init__.py | unresolved-attribute | del T.Scene.sym_module_assigned
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.item, SYM_MODULE_ASSIGNED_Item)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(bpy.ops.sym_module_assigned.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(bpy.ops.sym_module_assigned.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | bpy.ops.sym_module_assigned.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -293,24 +160,9 @@ features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py 
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(scene.sym_module_assigned, SYM_MODULE_ASSIGNED_Settings)
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(scene.sym_module_assigned.count, int)
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(scene.sym_module_assigned.count, int)
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | label: StringProperty(name="Label")
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | count: IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | enabled: BoolProperty()
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | offset: FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | item: PointerProperty(type=SYM_NESTED_REEXPORT_Item)
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | invalid-type-form | factor: FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_nested_reexport/__init__.py | unresolved-attribute | Scene.sym_nested_reexport = PointerProperty(type=SYM_NESTED_REEXPORT_Settings)
 features/bpy_symbols/generated/sym_nested_reexport/__init__.py | unresolved-attribute | del Scene.sym_nested_reexport
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.item, SYM_NESTED_REEXPORT_Item)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(bpy.ops.sym_nested_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(bpy.ops.sym_nested_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | bpy.ops.sym_nested_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -319,24 +171,9 @@ features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py 
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(scene.sym_nested_reexport, SYM_NESTED_REEXPORT_Settings)
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(scene.sym_nested_reexport.count, int)
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(scene.sym_nested_reexport.count, int)
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | label: StringProperty(name="Label")
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | count: IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | enabled: BoolProperty()
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | offset: FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | item: PointerProperty(type=SYM_REEXPORT_Item)
-features/bpy_symbols/generated/sym_reexport/__init__.py | invalid-type-form | factor: FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_reexport/__init__.py | unresolved-attribute | Scene.sym_reexport = PointerProperty(type=SYM_REEXPORT_Settings)
 features/bpy_symbols/generated/sym_reexport/__init__.py | unresolved-attribute | del Scene.sym_reexport
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.item, SYM_REEXPORT_Item)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | bpy.ops.sym_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -345,24 +182,9 @@ features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-asserti
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(scene.sym_reexport, SYM_REEXPORT_Settings)
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(scene.sym_reexport.count, int)
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(scene.sym_reexport.count, int)
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | label: props.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | count: props.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | enabled: props.BoolProperty()
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | mode: props.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | offset: props.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | item: props.PointerProperty(type=SYM_REEXPORT_MODULE_Item)
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | invalid-type-form | factor: props.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_reexport_module/__init__.py | unresolved-attribute | types.Scene.sym_reexport_module = props.PointerProperty(type=SYM_REEXPORT_MODULE_Settings)
 features/bpy_symbols/generated/sym_reexport_module/__init__.py | unresolved-attribute | del types.Scene.sym_reexport_module
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.item, SYM_REEXPORT_MODULE_Item)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport_module.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport_module.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | bpy.ops.sym_reexport_module.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -371,24 +193,9 @@ features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py 
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(scene.sym_reexport_module, SYM_REEXPORT_MODULE_Settings)
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(scene.sym_reexport_module.count, int)
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(scene.sym_reexport_module.count, int)
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | label: StringProperty(name="Label")
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | count: IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | enabled: BoolProperty()
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | offset: FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | item: PointerProperty(type=SYM_REEXPORT_STAR_Item)
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | invalid-type-form | factor: FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_reexport_star/__init__.py | unresolved-attribute | Scene.sym_reexport_star = PointerProperty(type=SYM_REEXPORT_STAR_Settings)
 features/bpy_symbols/generated/sym_reexport_star/__init__.py | unresolved-attribute | del Scene.sym_reexport_star
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.item, SYM_REEXPORT_STAR_Item)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | bpy.ops.sym_reexport_star.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -397,24 +204,9 @@ features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | ty
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(scene.sym_reexport_star, SYM_REEXPORT_STAR_Settings)
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(scene.sym_reexport_star.count, int)
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(scene.sym_reexport_star.count, int)
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | label: StringProperty(name="Label")
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | count: IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | enabled: BoolProperty()
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | offset: FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | item: PointerProperty(type=SYM_STAR_Item)
-features/bpy_symbols/generated/sym_star/__init__.py | invalid-type-form | factor: FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_star/__init__.py | unresolved-attribute | bpy.types.Scene.sym_star = PointerProperty(type=SYM_STAR_Settings)
 features/bpy_symbols/generated/sym_star/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_star
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.item, SYM_STAR_Item)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -425,24 +217,9 @@ features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failu
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(scene.sym_star.count, int)
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | PropertyGroup  # ty: ignore[unresolved-reference]  # oracle-skip: the stubs export all classes
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | Operator  # ty: ignore[unresolved-reference]  # oracle-skip: the stubs export all classes
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | label: bpy.props.StringProperty(name="Label")
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | count: bpy.props.IntProperty(name="Count", default=1)
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | enabled: bpy.props.BoolProperty()
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | mode: bpy.props.EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | offset: bpy.props.FloatVectorProperty(subtype="TRANSLATION")
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | item: bpy.props.PointerProperty(type=SYM_SUBMODULE_Item)
-features/bpy_symbols/generated/sym_submodule/__init__.py | invalid-type-form | factor: bpy.props.FloatProperty(default=0.5)
 features/bpy_symbols/generated/sym_submodule/__init__.py | unresolved-attribute | bpy.types.Scene.sym_submodule = bpy.props.PointerProperty(type=SYM_SUBMODULE_Settings)
 features/bpy_symbols/generated/sym_submodule/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_submodule
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.count, int)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.enabled, bool)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.mode, Literal["A", "B"])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.offset, Vector)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.item, SYM_SUBMODULE_Item)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.item.label, str)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unused-ignore-comment | s.count = "1"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unused-ignore-comment | s.mode = "C"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(op.factor, float)
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -452,12 +229,10 @@ features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(scene.sym_submodule.count, int)
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(scene.sym_submodule.count, int)
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
-features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-type-form | filter_glob: StringProperty(default="*.txt", options={"HIDDEN"})
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.filepath, str)
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(imp.filepath, str)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.filter_glob, str)
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.axis_forward, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(imp.axis_forward, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
@@ -481,15 +256,10 @@ features/bpy_symbols/sym_handlers/__init__.py | invalid-argument-type | bpy.app.
 features/bpy_symbols/sym_handlers/__init__.py | invalid-argument-type | bpy.app.handlers.frame_change_post.remove(on_frame_change)
 features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | location: FloatVectorProperty(subtype="TRANSLATION", default=mathutils.Vector((0.0, 0.0, 1.0)))
-features/bpy_symbols/sym_mathutils/__init__.py | invalid-type-form | location: FloatVectorProperty(subtype="TRANSLATION", default=mathutils.Vector((0.0, 0.0, 1.0)))
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | tint: FloatVectorProperty(subtype="COLOR", default=Color((1.0, 0.5, 0.0)), min=0.0, max=1.0)
-features/bpy_symbols/sym_mathutils/__init__.py | invalid-type-form | tint: FloatVectorProperty(subtype="COLOR", default=Color((1.0, 0.5, 0.0)), min=0.0, max=1.0)
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | rotation: FloatVectorProperty(subtype="EULER", default=E((0.0, 0.0, 0.5)))
-features/bpy_symbols/sym_mathutils/__init__.py | invalid-type-form | rotation: FloatVectorProperty(subtype="EULER", default=E((0.0, 0.0, 0.5)))
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | orientation: FloatVectorProperty(subtype="QUATERNION", size=4, default=Quaternion((1.0, 0.0, 0.0, 0.0)))
-features/bpy_symbols/sym_mathutils/__init__.py | invalid-type-form | orientation: FloatVectorProperty(subtype="QUATERNION", size=4, default=Quaternion((1.0, 0.0, 0.0, 0.0)))
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
-features/bpy_symbols/sym_mathutils/__init__.py | invalid-type-form | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
 features/bpy_symbols/sym_mathutils/__init__.py | unresolved-attribute | bpy.types.Scene.sym_mathutils = PointerProperty(type=SYM_MATHUTILS_Settings)
 features/bpy_symbols/sym_mathutils/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_mathutils
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.location, mathutils.Vector)
@@ -500,8 +270,6 @@ features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failu
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.transform @ s.location, mathutils.Vector)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(scene.sym_mathutils.location.z, float)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | unresolved-attribute | assert_type(scene.sym_mathutils.location.z, float)
-features/bpy_symbols/sym_negative/check_sym_negative.py | invalid-type-form | real: bpy.props.IntProperty()  # oracle-skip: stock ty rejects calls in annotations
-features/bpy_symbols/sym_negative/check_sym_negative.py | type-assertion-failure | assert_type(o.real, int)  # oracle-skip: the class is in this file, so no reference stub can type it
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | invalid-method-override | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
@@ -532,12 +300,6 @@ features/inheritance/inh_bases/__init__.py | ignore-comment-unknown-rule | class
 features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass]  # oracle-skip: the stubs do not declare Blender's metaclass
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict]  # oracle-skip: the stubs do not declare the C struct layout
-features/inheritance/inh_chains/__init__.py | invalid-type-form | count: IntProperty()
-features/inheritance/inh_chains/__init__.py | invalid-type-form | label: StringProperty()
-features/inheritance/inh_chains/__init__.py | invalid-type-form | factor: FloatProperty()
-features/inheritance/inh_chains/__init__.py | invalid-type-form | a: IntProperty()
-features/inheritance/inh_chains/__init__.py | invalid-type-form | b: StringProperty()
-features/inheritance/inh_chains/__init__.py | invalid-type-form | c: FloatProperty()
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.leaf")
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.sibling")
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | bpy.types.Scene.inh_chains_c = PointerProperty(type=INH_CHAINS_C)
@@ -554,13 +316,9 @@ features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | a
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(scene.inh_chains_c.b, str)
 features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(scene.inh_chains_c.c, float)
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(scene.inh_chains_c.c, float)
-features/inheritance/inh_inherited_idname/__init__.py | invalid-type-form | count: IntProperty()
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
-features/inheritance/inh_inherited_idname/__init__.py | invalid-type-form | label: StringProperty()
 features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | type-assertion-failure | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
 features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | unresolved-attribute | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
-features/inheritance/inh_mixins/__init__.py | invalid-type-form | count: IntProperty()
-features/inheritance/inh_mixins/__init__.py | invalid-type-form | label: StringProperty()
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_OT_keywords_last(Operator, KeywordsMixin):  # ty: ignore[blender-mixin-order]
@@ -586,7 +344,6 @@ features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | re
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return "FINISHED"  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return ["FINISHED"]  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | def execute(self, context):  # ty: ignore[invalid-return-type]
-features/inheritance/inh_overrides/__init__.py | invalid-type-form | count: IntProperty()
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #2
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(properties, OperatorProperties)
@@ -639,7 +396,6 @@ features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-commen
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(menu.draw(context), None)
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(node.draw_label(), str)
 features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | node.draw_buttons(context, 1)  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_registered_base/__init__.py | invalid-type-form | count: IntProperty()
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_child(INH_REGISTERED_BASE_OT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_early_child(INH_REGISTERED_BASE_OT_late_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | self.layout.label(text="parent")
@@ -648,8 +404,6 @@ features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | se
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_MT_child(INH_REGISTERED_BASE_MT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_UL_child(INH_REGISTERED_BASE_UL_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_NodeChild(INH_REGISTERED_BASE_NodeParent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | invalid-type-form | value: IntProperty()
-features/inheritance/inh_registered_base/__init__.py | invalid-type-form | extra: IntProperty()
 features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.parent(count=1), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.parent(count=1), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.child(count=1), Result)
@@ -658,25 +412,7 @@ features/inheritance/inh_registered_base/check_inh_registered_base.py | type-ass
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.late_parent(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | count: IntProperty()
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | int_value: IntProperty()
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | float_value: FloatProperty()
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | bool_value: BoolProperty()
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | string_value: StringProperty()
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | enum_value: EnumProperty(items=AB)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | flag_value: EnumProperty(items=AB, options={"ENUM_FLAG"})
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | dynamic_value: EnumProperty(items=dynamic_items)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | vector_value: FloatVectorProperty(size=3)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | int_vector_value: IntVectorProperty(size=2)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | bool_vector_value: BoolVectorProperty(size=2)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | matrix_value: FloatVectorProperty(size=(2, 2))
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | group_value: PointerProperty(type=OPCALL_BASIC_Group)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | items_value: CollectionProperty(type=OPCALL_BASIC_Group)
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | hidden_value: IntProperty(options={"HIDDEN", "SKIP_SAVE"})
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | before: IntProperty()
 features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
-features/operator_calls/opcall_basic/__init__.py | invalid-type-form | after: IntProperty()
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(), Result)
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all(), Result)
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.empty(), Result)
@@ -758,7 +494,6 @@ features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-fail
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.idname_py(), Literal["opcall_basic.all"])
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.get_rna_type(), Struct)
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.get_rna_type(), Struct)
-features/operator_calls/opcall_category/__init__.py | invalid-type-form | factor: FloatProperty()
 features/operator_calls/opcall_category/check_opcall_category.py | type-assertion-failure | assert_type(bpy.ops.object.opcall_category_scale(factor=2.0), Result)
 features/operator_calls/opcall_category/check_opcall_category.py | unresolved-attribute | assert_type(bpy.ops.object.opcall_category_scale(factor=2.0), Result)
 features/operator_calls/opcall_category/check_opcall_category.py | type-assertion-failure | assert_type(bpy.ops.object.opcall_category_scale.idname(), Literal["OBJECT_OT_opcall_category_scale"])
@@ -779,11 +514,6 @@ features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-
 features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.fstring_copy(), Result)
 features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-assertion-failure | assert_type(bpy.ops.opcall_idname_forms.from_mixin(), Result)
 features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.from_mixin(), Result)
-features/operator_calls/opcall_inherit/__init__.py | invalid-type-form | count: IntProperty()
-features/operator_calls/opcall_inherit/__init__.py | invalid-type-form | size: FloatProperty()
-features/operator_calls/opcall_inherit/__init__.py | invalid-type-form | mode: IntProperty()
-features/operator_calls/opcall_inherit/__init__.py | invalid-type-form | mode: StringProperty()
-features/operator_calls/opcall_inherit/__init__.py | invalid-type-form | label: StringProperty()
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | type-assertion-failure | assert_type(bpy.ops.opcall_inherit.derived(count=1, size=2.0, mode="text", label="x"), Result)
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | assert_type(bpy.ops.opcall_inherit.derived(count=1, size=2.0, mode="text", label="x"), Result)
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.derived(mode=1)  # ty: ignore[invalid-argument-type]
@@ -794,8 +524,6 @@ features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attr
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[unknown-argument]
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_macro/__init__.py | invalid-type-form | amount: IntProperty()
-features/operator_calls/opcall_macro/__init__.py | invalid-type-form | text: StringProperty()
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo(), Result)
@@ -807,7 +535,6 @@ features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribut
 features/operator_calls/opcall_macro/check_opcall_macro.py | unused-ignore-comment | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[unknown-argument]
 features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo.idname(), Literal["OPCALL_MACRO_OT_combo"])
 features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | assert_type(bpy.ops.opcall_macro.combo.idname(), Literal["OPCALL_MACRO_OT_combo"])
-features/operator_properties/opprops_idnames/__init__.py | invalid-type-form | factor: FloatProperty()
 features/operator_properties/opprops_idnames/__init__.py | invalid-assignment | self.layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor = 0.5
 features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor = 0.5
 features/operator_properties/opprops_idnames/__init__.py | invalid-assignment | self.layout.operator("object.select_all").action = "SELECT"
@@ -832,10 +559,6 @@ features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-ass
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("mesh.primitive_cube_add").calc_uvs, bool)
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | ignore-comment-unknown-rule | layout.operator("opprops_idnames.missing")  # ty: ignore[blender-unknown-operator]
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | ignore-comment-unknown-rule | layout.operator("opprops_sinks.step")  # ty: ignore[blender-unknown-operator]
-features/operator_properties/opprops_sinks/__init__.py | invalid-type-form | amount: IntProperty()
-features/operator_properties/opprops_sinks/__init__.py | invalid-type-form | mode: EnumProperty(items=AB)
-features/operator_properties/opprops_sinks/__init__.py | invalid-type-form | label: StringProperty()
-features/operator_properties/opprops_sinks/__init__.py | invalid-type-form | flags: EnumProperty(items=AB, options={"ENUM_FLAG"})
 features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | layout.operator("opprops_sinks.step").amount = 1
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.step").amount = 1
 features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | layout.operator("OPPROPS_SINKS_OT_step", text="Other form").mode = "B"
@@ -905,383 +628,24 @@ features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_list: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_tuple: EnumProperty(items=(("A", "A", ""), ("B", "B", "")))
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_numbers: EnumProperty(items=[("A", "A", "", 1), ("B", "B", "", 5)])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_icons: EnumProperty(items=[("A", "A", "", "MESH_CUBE", 1), ("B", "B", "", "NONE", 2)])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_separator: EnumProperty(items=[("A", "A", ""), None, ("B", "B", "")])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_default: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="B")
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_default_number: EnumProperty(items=[("A", "A", "", 1), ("B", "B", "", 5)], default=5)
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_single: EnumProperty(items=[("ONLY", "Only", "")])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_constant: EnumProperty(items=ENUM_ITEMS)
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_constant_tuple: EnumProperty(items=ENUM_ITEMS_TUPLE)
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_comprehension: EnumProperty(items=[(k, k.title(), "") for k in ("X", "Y")])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_callback: EnumProperty(items=enum_items_callback)
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_lambda: EnumProperty(items=lambda self, context: [("L", "L", "")])
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_flag: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], options={"ENUM_FLAG"})
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_flag_default: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A", "B"}, options={"ENUM_FLAG"})
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_flag_constant: EnumProperty(items=ENUM_ITEMS, options={"ENUM_FLAG", "ANIMATABLE"})
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_flag_callback: EnumProperty(items=enum_items_callback, options={"ENUM_FLAG"})
-features/properties/generated/props_enum/__init__.py | invalid-type-form | e_other_options: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], options={"HIDDEN", "SKIP_SAVE"})
 features/properties/generated/props_enum/__init__.py | unresolved-attribute | bpy.types.Scene.props_enum = PointerProperty(type=PROPS_ENUM_Values)
 features/properties/generated/props_enum/__init__.py | unresolved-attribute | del bpy.types.Scene.props_enum
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_list, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_tuple, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_numbers, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_icons, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_separator, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_default, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_default_number, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_single, Literal["ONLY"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_constant, Literal["RED", "GREEN"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_constant_tuple, Literal["ONE", "TWO"])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_comprehension, str)
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_callback, str)
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_lambda, str)
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_flag, set[Literal["A", "B"]])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_flag_default, set[Literal["A", "B"]])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_flag_constant, set[Literal["RED", "GREEN"]])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_flag_callback, set[str])
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(s.e_other_options, Literal["A", "B"])
-features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | s.e_list = "C"  # ty: ignore[invalid-assignment]
-features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | s.e_list = 1  # ty: ignore[invalid-assignment]
-features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | s.e_flag = {"C"}  # ty: ignore[invalid-assignment]
-features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | s.e_flag = "A"  # ty: ignore[invalid-assignment]
-features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | s.e_flag = ["A"]  # ty: ignore[invalid-assignment]
 features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(scene.props_enum, PROPS_ENUM_Values)
 features/properties/generated/props_enum/check_props_enum.py | unresolved-attribute | assert_type(scene.props_enum, PROPS_ENUM_Values)
 features/properties/generated/props_enum/check_props_enum.py | unresolved-attribute | scene.props_enum = None  # ty: ignore[invalid-assignment]
 features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | scene.props_enum = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | value: IntProperty()
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | label: StringProperty()
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | inner: PointerProperty(type=PROPS_POINTER_Inner)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_object: PointerProperty(type=bpy.types.Object)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_material: PointerProperty(type=bpy.types.Material)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_image: PointerProperty(type=bpy.types.Image)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_collection: PointerProperty(type=bpy.types.Collection)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_mesh: PointerProperty(type=bpy.types.Mesh)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_nodetree: PointerProperty(type=bpy.types.NodeTree)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_text: PointerProperty(type=bpy.types.Text)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_world: PointerProperty(type=bpy.types.World)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_camera: PointerProperty(type=bpy.types.Camera)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_action: PointerProperty(type=bpy.types.Action)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_scene: PointerProperty(type=bpy.types.Scene)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_alias: PointerProperty(type=Obj)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | p_group: PointerProperty(type=PROPS_POINTER_Item)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | c_items: CollectionProperty(type=PROPS_POINTER_Item)
-features/properties/generated/props_pointer/__init__.py | invalid-type-form | c_inner: CollectionProperty(type=PROPS_POINTER_Inner, name="Inner items")
 features/properties/generated/props_pointer/__init__.py | unresolved-attribute | bpy.types.Scene.props_pointer = PointerProperty(type=PROPS_POINTER_Values)
 features/properties/generated/props_pointer/__init__.py | unresolved-attribute | del bpy.types.Scene.props_pointer
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_object, Object | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_object.name, str)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_material, Material | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_image, Image | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_collection, Collection | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_mesh, Mesh | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_nodetree, NodeTree | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_text, Text | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_world, World | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_camera, Camera | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_action, Action | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_scene, Scene | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_alias, Object | None)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_group, PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_group.label, str)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.p_group.inner.value, int)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items.add(), PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items[0], PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items["name"], PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(entry, PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner, bpy_prop_collection_idprop[PROPS_POINTER_Inner])
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner.add().value, int)
-features/properties/generated/props_pointer/check_props_pointer.py | unused-ignore-comment | s.p_object = material  # ty: ignore[invalid-assignment]
-features/properties/generated/props_pointer/check_props_pointer.py | unused-ignore-comment | s.p_group = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_pointer/check_props_pointer.py | unused-ignore-comment | s.p_group = s.p_group  # ty: ignore[invalid-assignment]
-features/properties/generated/props_pointer/check_props_pointer.py | unused-ignore-comment | s.c_items = []  # ty: ignore[invalid-assignment]
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(scene.props_pointer, PROPS_POINTER_Values)
 features/properties/generated/props_pointer/check_props_pointer.py | unresolved-attribute | assert_type(scene.props_pointer, PROPS_POINTER_Values)
 features/properties/generated/props_pointer/check_props_pointer.py | unresolved-attribute | scene.props_pointer = None  # ty: ignore[invalid-assignment]
 features/properties/generated/props_pointer/check_props_pointer.py | unused-ignore-comment | scene.props_pointer = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | b: BoolProperty()
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | b_default: BoolProperty(default=True)
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i: IntProperty()
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_minmax: IntProperty(default=5, min=0, max=10, soft_min=1, soft_max=9, step=2)
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f: FloatProperty()
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_precision: FloatProperty(default=0.5, min=0.0, max=1.0, precision=3, step=10)
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s: StringProperty()
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_maxlen: StringProperty(default="x", maxlen=8)
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_none: IntProperty(subtype="NONE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_pixel: IntProperty(subtype="PIXEL")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_unsigned: IntProperty(subtype="UNSIGNED")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_percentage: IntProperty(subtype="PERCENTAGE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_factor: IntProperty(subtype="FACTOR")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_angle: IntProperty(subtype="ANGLE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_time: IntProperty(subtype="TIME")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_time_absolute: IntProperty(subtype="TIME_ABSOLUTE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_distance: IntProperty(subtype="DISTANCE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_distance_camera: IntProperty(subtype="DISTANCE_CAMERA")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_power: IntProperty(subtype="POWER")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_temperature: IntProperty(subtype="TEMPERATURE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_wavelength: IntProperty(subtype="WAVELENGTH")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_color_temperature: IntProperty(subtype="COLOR_TEMPERATURE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_frequency: IntProperty(subtype="FREQUENCY")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_none: FloatProperty(subtype="NONE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_pixel: FloatProperty(subtype="PIXEL")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unsigned: FloatProperty(subtype="UNSIGNED")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_percentage: FloatProperty(subtype="PERCENTAGE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_factor: FloatProperty(subtype="FACTOR")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_angle: FloatProperty(subtype="ANGLE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_time: FloatProperty(subtype="TIME")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_time_absolute: FloatProperty(subtype="TIME_ABSOLUTE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_distance: FloatProperty(subtype="DISTANCE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_distance_camera: FloatProperty(subtype="DISTANCE_CAMERA")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_power: FloatProperty(subtype="POWER")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_temperature: FloatProperty(subtype="TEMPERATURE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_wavelength: FloatProperty(subtype="WAVELENGTH")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_color_temperature: FloatProperty(subtype="COLOR_TEMPERATURE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_frequency: FloatProperty(subtype="FREQUENCY")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_none: FloatProperty(unit="NONE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_length: FloatProperty(unit="LENGTH")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_area: FloatProperty(unit="AREA")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_volume: FloatProperty(unit="VOLUME")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_rotation: FloatProperty(unit="ROTATION")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_time: FloatProperty(unit="TIME")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_time_absolute: FloatProperty(unit="TIME_ABSOLUTE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_velocity: FloatProperty(unit="VELOCITY")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_acceleration: FloatProperty(unit="ACCELERATION")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_mass: FloatProperty(unit="MASS")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_camera: FloatProperty(unit="CAMERA")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_power: FloatProperty(unit="POWER")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_temperature: FloatProperty(unit="TEMPERATURE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_wavelength: FloatProperty(unit="WAVELENGTH")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_color_temperature: FloatProperty(unit="COLOR_TEMPERATURE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | f_unit_frequency: FloatProperty(unit="FREQUENCY")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_none: StringProperty(subtype="NONE")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_file_path: StringProperty(subtype="FILE_PATH")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_dir_path: StringProperty(subtype="DIR_PATH")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_file_name: StringProperty(subtype="FILE_NAME")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_byte_string: StringProperty(subtype="BYTE_STRING")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_password: StringProperty(subtype="PASSWORD")
-features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_read_only: IntProperty(options={"READ_ONLY"})
 features/properties/generated/props_scalar/__init__.py | unresolved-attribute | bpy.types.Scene.props_scalar = PointerProperty(type=PROPS_SCALAR_Values)
 features/properties/generated/props_scalar/__init__.py | unresolved-attribute | del bpy.types.Scene.props_scalar
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.b, bool)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.b_default, bool)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_minmax, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_precision, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_maxlen, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_none, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_pixel, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_unsigned, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_percentage, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_factor, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_angle, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_time, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_time_absolute, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_distance, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_distance_camera, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_power, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_temperature, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_wavelength, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_color_temperature, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_frequency, int)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_none, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_pixel, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unsigned, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_percentage, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_factor, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_angle, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_time, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_time_absolute, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_distance, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_distance_camera, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_power, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_temperature, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_wavelength, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_color_temperature, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_frequency, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_none, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_length, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_area, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_volume, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_rotation, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_time, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_time_absolute, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_velocity, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_acceleration, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_mass, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_camera, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_power, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_temperature, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_wavelength, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_color_temperature, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.f_unit_frequency, float)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_none, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_file_path, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_dir_path, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_file_name, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_byte_string, bytes)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_password, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_read_only, int)
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.b = "yes"  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.i = "3"  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.i = 1.5  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.f = "1.5"  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.s = 1  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.s = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.i_read_only = 1  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(scene.props_scalar, PROPS_SCALAR_Values)
 features/properties/generated/props_scalar/check_props_scalar.py | unresolved-attribute | assert_type(scene.props_scalar, PROPS_SCALAR_Values)
 features/properties/generated/props_scalar/check_props_scalar.py | unresolved-attribute | scene.props_scalar = None  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | scene.props_scalar = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_dflt: FloatVectorProperty(subtype="NONE")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_2: FloatVectorProperty(subtype="NONE", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_3: FloatVectorProperty(subtype="NONE", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_4: FloatVectorProperty(subtype="NONE", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_16: FloatVectorProperty(subtype="NONE", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_2x2: FloatVectorProperty(subtype="NONE", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_3x3: FloatVectorProperty(subtype="NONE", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_none_4x4: FloatVectorProperty(subtype="NONE", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_dflt: FloatVectorProperty(subtype="COLOR")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_2: FloatVectorProperty(subtype="COLOR", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_3: FloatVectorProperty(subtype="COLOR", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_4: FloatVectorProperty(subtype="COLOR", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_16: FloatVectorProperty(subtype="COLOR", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_2x2: FloatVectorProperty(subtype="COLOR", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_3x3: FloatVectorProperty(subtype="COLOR", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_4x4: FloatVectorProperty(subtype="COLOR", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_dflt: FloatVectorProperty(subtype="COLOR_GAMMA")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_2: FloatVectorProperty(subtype="COLOR_GAMMA", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_3: FloatVectorProperty(subtype="COLOR_GAMMA", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_4: FloatVectorProperty(subtype="COLOR_GAMMA", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_16: FloatVectorProperty(subtype="COLOR_GAMMA", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_2x2: FloatVectorProperty(subtype="COLOR_GAMMA", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_3x3: FloatVectorProperty(subtype="COLOR_GAMMA", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_gamma_4x4: FloatVectorProperty(subtype="COLOR_GAMMA", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_dflt: FloatVectorProperty(subtype="TRANSLATION")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_2: FloatVectorProperty(subtype="TRANSLATION", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_3: FloatVectorProperty(subtype="TRANSLATION", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_4: FloatVectorProperty(subtype="TRANSLATION", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_16: FloatVectorProperty(subtype="TRANSLATION", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_2x2: FloatVectorProperty(subtype="TRANSLATION", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_3x3: FloatVectorProperty(subtype="TRANSLATION", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_4x4: FloatVectorProperty(subtype="TRANSLATION", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_dflt: FloatVectorProperty(subtype="DIRECTION")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_2: FloatVectorProperty(subtype="DIRECTION", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_3: FloatVectorProperty(subtype="DIRECTION", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_4: FloatVectorProperty(subtype="DIRECTION", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_16: FloatVectorProperty(subtype="DIRECTION", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_2x2: FloatVectorProperty(subtype="DIRECTION", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_3x3: FloatVectorProperty(subtype="DIRECTION", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_direction_4x4: FloatVectorProperty(subtype="DIRECTION", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_dflt: FloatVectorProperty(subtype="VELOCITY")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_2: FloatVectorProperty(subtype="VELOCITY", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_3: FloatVectorProperty(subtype="VELOCITY", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_4: FloatVectorProperty(subtype="VELOCITY", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_16: FloatVectorProperty(subtype="VELOCITY", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_2x2: FloatVectorProperty(subtype="VELOCITY", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_3x3: FloatVectorProperty(subtype="VELOCITY", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_velocity_4x4: FloatVectorProperty(subtype="VELOCITY", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_dflt: FloatVectorProperty(subtype="ACCELERATION")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_2: FloatVectorProperty(subtype="ACCELERATION", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_3: FloatVectorProperty(subtype="ACCELERATION", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_4: FloatVectorProperty(subtype="ACCELERATION", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_16: FloatVectorProperty(subtype="ACCELERATION", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_2x2: FloatVectorProperty(subtype="ACCELERATION", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_3x3: FloatVectorProperty(subtype="ACCELERATION", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_acceleration_4x4: FloatVectorProperty(subtype="ACCELERATION", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_dflt: FloatVectorProperty(subtype="MATRIX")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_2: FloatVectorProperty(subtype="MATRIX", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_3: FloatVectorProperty(subtype="MATRIX", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_4: FloatVectorProperty(subtype="MATRIX", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_16: FloatVectorProperty(subtype="MATRIX", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_2x2: FloatVectorProperty(subtype="MATRIX", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_3x3: FloatVectorProperty(subtype="MATRIX", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_matrix_4x4: FloatVectorProperty(subtype="MATRIX", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_dflt: FloatVectorProperty(subtype="EULER")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_2: FloatVectorProperty(subtype="EULER", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_3: FloatVectorProperty(subtype="EULER", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_4: FloatVectorProperty(subtype="EULER", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_16: FloatVectorProperty(subtype="EULER", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_2x2: FloatVectorProperty(subtype="EULER", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_3x3: FloatVectorProperty(subtype="EULER", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_euler_4x4: FloatVectorProperty(subtype="EULER", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_dflt: FloatVectorProperty(subtype="QUATERNION")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_2: FloatVectorProperty(subtype="QUATERNION", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_3: FloatVectorProperty(subtype="QUATERNION", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_4: FloatVectorProperty(subtype="QUATERNION", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_16: FloatVectorProperty(subtype="QUATERNION", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_2x2: FloatVectorProperty(subtype="QUATERNION", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_3x3: FloatVectorProperty(subtype="QUATERNION", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_quaternion_4x4: FloatVectorProperty(subtype="QUATERNION", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_dflt: FloatVectorProperty(subtype="AXISANGLE")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_2: FloatVectorProperty(subtype="AXISANGLE", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_3: FloatVectorProperty(subtype="AXISANGLE", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_4: FloatVectorProperty(subtype="AXISANGLE", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_16: FloatVectorProperty(subtype="AXISANGLE", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_2x2: FloatVectorProperty(subtype="AXISANGLE", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_3x3: FloatVectorProperty(subtype="AXISANGLE", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_axisangle_4x4: FloatVectorProperty(subtype="AXISANGLE", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_dflt: FloatVectorProperty(subtype="XYZ")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_2: FloatVectorProperty(subtype="XYZ", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_3: FloatVectorProperty(subtype="XYZ", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_4: FloatVectorProperty(subtype="XYZ", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_16: FloatVectorProperty(subtype="XYZ", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_2x2: FloatVectorProperty(subtype="XYZ", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_3x3: FloatVectorProperty(subtype="XYZ", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_4x4: FloatVectorProperty(subtype="XYZ", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_dflt: FloatVectorProperty(subtype="XYZ_LENGTH")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_2: FloatVectorProperty(subtype="XYZ_LENGTH", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_3: FloatVectorProperty(subtype="XYZ_LENGTH", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_4: FloatVectorProperty(subtype="XYZ_LENGTH", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_16: FloatVectorProperty(subtype="XYZ_LENGTH", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_2x2: FloatVectorProperty(subtype="XYZ_LENGTH", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_3x3: FloatVectorProperty(subtype="XYZ_LENGTH", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_xyz_length_4x4: FloatVectorProperty(subtype="XYZ_LENGTH", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_dflt: FloatVectorProperty(subtype="COORDINATES")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_2: FloatVectorProperty(subtype="COORDINATES", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_3: FloatVectorProperty(subtype="COORDINATES", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_4: FloatVectorProperty(subtype="COORDINATES", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_16: FloatVectorProperty(subtype="COORDINATES", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_2x2: FloatVectorProperty(subtype="COORDINATES", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_3x3: FloatVectorProperty(subtype="COORDINATES", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_coordinates_4x4: FloatVectorProperty(subtype="COORDINATES", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_dflt: FloatVectorProperty(subtype="LAYER")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_2: FloatVectorProperty(subtype="LAYER", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_3: FloatVectorProperty(subtype="LAYER", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_4: FloatVectorProperty(subtype="LAYER", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_16: FloatVectorProperty(subtype="LAYER", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_2x2: FloatVectorProperty(subtype="LAYER", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_3x3: FloatVectorProperty(subtype="LAYER", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_4x4: FloatVectorProperty(subtype="LAYER", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_dflt: FloatVectorProperty(subtype="LAYER_MEMBER")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_2: FloatVectorProperty(subtype="LAYER_MEMBER", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_3: FloatVectorProperty(subtype="LAYER_MEMBER", size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_4: FloatVectorProperty(subtype="LAYER_MEMBER", size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_16: FloatVectorProperty(subtype="LAYER_MEMBER", size=16)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_2x2: FloatVectorProperty(subtype="LAYER_MEMBER", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_3x3: FloatVectorProperty(subtype="LAYER_MEMBER", size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_layer_member_4x4: FloatVectorProperty(subtype="LAYER_MEMBER", size=(4, 4))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_no_subtype: FloatVectorProperty()
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_translation_default: FloatVectorProperty(subtype="TRANSLATION", default=(0.0, 0.0, 1.0))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | f_color_4_clamped: FloatVectorProperty(subtype="COLOR", size=4, min=0.0, max=1.0)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_dflt: IntVectorProperty()
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_2: IntVectorProperty(size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_3: IntVectorProperty(size=3)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_4: IntVectorProperty(size=4)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_32: IntVectorProperty(size=32)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_2x2: IntVectorProperty(size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_3x3: IntVectorProperty(size=(3, 3))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | i_vec_xyz: IntVectorProperty(subtype="XYZ")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | b_vec_none_dflt: BoolVectorProperty(subtype="NONE")
-features/properties/generated/props_vector/__init__.py | invalid-type-form | b_vec_none_2: BoolVectorProperty(subtype="NONE", size=2)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | b_vec_none_2x2: BoolVectorProperty(subtype="NONE", size=(2, 2))
-features/properties/generated/props_vector/__init__.py | invalid-type-form | b_vec_layer_20: BoolVectorProperty(subtype="LAYER", size=20)
-features/properties/generated/props_vector/__init__.py | invalid-type-form | b_vec_layer_member_20: BoolVectorProperty(subtype="LAYER_MEMBER", size=20)
 features/properties/generated/props_vector/__init__.py | unresolved-attribute | bpy.types.Scene.props_vector = PointerProperty(type=PROPS_VECTOR_Values)
 features/properties/generated/props_vector/__init__.py | unresolved-attribute | del bpy.types.Scene.props_vector
 features/properties/generated/props_vector/check_props_vector.py | not-subscriptable | assert_type(s.f_none_dflt, bpy_prop_array[float])
@@ -1540,100 +904,31 @@ features/properties/generated/props_vector/check_props_vector.py | type-assertio
 features/properties/generated/props_vector/check_props_vector.py | unresolved-attribute | assert_type(scene.props_vector, PROPS_VECTOR_Values)
 features/properties/generated/props_vector/check_props_vector.py | unresolved-attribute | scene.props_vector = None  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | scene.props_vector = None  # ty: ignore[invalid-assignment]
-features/properties/props_callbacks/__init__.py | invalid-type-form | count: IntProperty(update=count_update)
-features/properties/props_callbacks/__init__.py | invalid-type-form | label: StringProperty()
-features/properties/props_callbacks/__init__.py | invalid-type-form | ratio: FloatProperty(get=get_ratio, set=set_ratio)
-features/properties/props_callbacks/__init__.py | invalid-type-form | target: PointerProperty(type=Object, poll=poll_mesh)
-features/properties/props_callbacks/__init__.py | invalid-type-form | mode: EnumProperty(items=mode_items)
-features/properties/props_callbacks/__init__.py | invalid-type-form | untyped: IntProperty(update=untyped_update)
-features/properties/props_callbacks/__init__.py | invalid-type-form | lambda_update: IntProperty(update=lambda self, context: assert_type(self, PROPS_CALLBACKS_Settings) and None)
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_update: IntProperty(update=lambda self, context: assert_type(self, PROPS_CALLBACKS_Settings) and None)
-features/properties/props_callbacks/__init__.py | invalid-type-form | lambda_poll: PointerProperty(type=Object, poll=lambda self, obj: assert_type(obj, Object).type == "MESH")
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_poll: PointerProperty(type=Object, poll=lambda self, obj: assert_type(obj, Object).type == "MESH")
-features/properties/props_callbacks/__init__.py | invalid-type-form | lambda_items: EnumProperty(items=lambda self, context: [(assert_type(self, PROPS_CALLBACKS_Settings).label, "", "")])
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_items: EnumProperty(items=lambda self, context: [(assert_type(self, PROPS_CALLBACKS_Settings).label, "", "")])
-features/properties/props_callbacks/__init__.py | invalid-type-form | lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)
-features/properties/props_callbacks/__init__.py | invalid-type-form | wrong_get: StringProperty(get=get_label_wrong)  # ty: ignore[invalid-argument-type]
-features/properties/props_callbacks/__init__.py | invalid-type-form | wrong_set: IntProperty(get=lambda self: 0, set=set_count_wrong)  # ty: ignore[invalid-argument-type]
-features/properties/props_callbacks/__init__.py | invalid-type-form | wrong_poll: PointerProperty(type=Object, poll=poll_wrong_type)  # ty: ignore[invalid-argument-type]
 features/properties/props_callbacks/__init__.py | unused-ignore-comment | wrong_poll: PointerProperty(type=Object, poll=poll_wrong_type)  # ty: ignore[invalid-argument-type]
-features/properties/props_callbacks/check_props_callbacks.py | type-assertion-failure | assert_type(s.count, int)
-features/properties/props_callbacks/check_props_callbacks.py | type-assertion-failure | assert_type(s.ratio, float)
-features/properties/props_callbacks/check_props_callbacks.py | type-assertion-failure | assert_type(s.target, Object | None)
-features/properties/props_callbacks/check_props_callbacks.py | type-assertion-failure | assert_type(s.mode, str)  # dynamic items: only str is known
-features/properties/props_defaults/__init__.py | invalid-type-form | ints_for_floats: FloatVectorProperty(size=3, default=(1, 2, 3))
-features/properties/props_defaults/__init__.py | invalid-type-form | enum_by_identifier: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="B")
-features/properties/props_defaults/__init__.py | invalid-type-form | enum_by_number: EnumProperty(items=[("A", "A", "", 1), ("B", "B", "", 7)], default=7)
-features/properties/props_defaults/__init__.py | invalid-type-form | flag_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A", "B"}, options={"ENUM_FLAG"})
 features/properties/props_defaults/__init__.py | invalid-argument-type | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
-features/properties/props_defaults/__init__.py | invalid-type-form | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_not_a_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="A", options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | flag_not_a_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="A", options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"C"}, options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | flag_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"C"}, options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | plain_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | plain_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A"})  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | vector_length: FloatVectorProperty(size=3, default=(1.0, 2.0))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | vector_length: FloatVectorProperty(size=3, default=(1.0, 2.0))  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | int_vector_length: IntVectorProperty(size=2, default=(1, 2, 3))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | int_vector_length: IntVectorProperty(size=2, default=(1, 2, 3))  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | matrix_shape: FloatVectorProperty(size=(2, 2), default=(1.0, 0.0, 0.0, 1.0))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | matrix_shape: FloatVectorProperty(size=(2, 2), default=(1.0, 0.0, 0.0, 1.0))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | int_float: IntProperty(default=1.5)  # ty: ignore[invalid-argument-type]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | set_without_get: IntProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | set_without_get: IntProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | invalid-type-form | update_one_parameter: IntProperty(update=lambda self: None)  # ty: ignore[invalid-argument-type]
-features/properties/props_defaults/__init__.py | invalid-type-form | get_two_parameters: IntProperty(get=lambda self, extra: 0)  # ty: ignore[invalid-argument-type]
-features/properties/props_defaults/__init__.py | invalid-type-form | poll_one_parameter: PointerProperty(type=Object, poll=lambda self: True)  # ty: ignore[invalid-argument-type]
-features/properties/props_defaults/__init__.py | invalid-type-form | items_one_parameter: EnumProperty(items=lambda self: [])  # ty: ignore[invalid-argument-type]
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #2
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #3
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #4
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #5
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #6
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #7
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #8
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #9
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host]
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host]
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #2
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #2
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #3
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #3
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #4
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #4
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #5
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #5
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #6
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #6
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #7
-features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #7
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(group.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.value, int)
 features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.properties.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(macro.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(prefs.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(ui_list.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(tree.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(socket.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(node.value, int)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(gizmo.value, int)
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | panel.value  # ty: ignore[unresolved-attribute]
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | menu.value  # ty: ignore[unresolved-attribute]
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | header.value  # ty: ignore[unresolved-attribute]
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | keying_set.value  # ty: ignore[unresolved-attribute]
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | engine.value  # ty: ignore[unresolved-attribute]
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | handler.value  # ty: ignore[unresolved-attribute]
-features/properties/props_hosts/check_props_hosts.py | unused-ignore-comment | shelf.value  # ty: ignore[unresolved-attribute]
-features/properties/props_registered/__init__.py | invalid-type-form | label: StringProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Camera.reg_module_level = IntProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_int = IntProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_mode = EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
@@ -1735,36 +1030,9 @@ features/properties/props_registered/check_props_registered.py | type-assertion-
 features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(bpy.data.objects["Cube"].reg_float, float)
 features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(context.scene.reg_int, int)
 features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(context.scene.reg_int, int)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(p.count, int)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(p.quoted, bool)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(f.later, PROPS_STYLES_Later)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(f.later.ratio, float)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(f.factor, float)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(b.base_value, int)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(c.base_value, int)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(c.child_value, float)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(o.base_value, str)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(m.count, int)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(m.label, str)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(m.own, float)
-features/properties/props_styles/check_props_styles.py | type-assertion-failure | assert_type(last.count, int)
-features/properties/props_styles/check_props_styles.py | unused-ignore-comment | PROPS_STYLES_Base.base_value  # ty: ignore[unresolved-attribute]  # oracle-skip: a stub cannot make class-level access an error
-features/properties/props_styles/check_props_styles.py | unused-ignore-comment | PROPS_STYLES_Plain.count  # ty: ignore[unresolved-attribute]  # oracle-skip: a stub cannot make class-level access an error
-features/properties/props_styles/future_annotations.py | invalid-type-form | later: PointerProperty(type=PROPS_STYLES_Later)
-features/properties/props_styles/future_annotations.py | invalid-type-form | factor: FloatProperty()
-features/properties/props_styles/future_annotations.py | invalid-type-form | ratio: FloatProperty()
-features/properties/props_styles/inheritance.py | invalid-type-form | count: IntProperty()
-features/properties/props_styles/inheritance.py | invalid-type-form | label: StringProperty()
-features/properties/props_styles/inheritance.py | invalid-type-form | base_value: IntProperty()
-features/properties/props_styles/inheritance.py | invalid-type-form | child_value: FloatProperty()
-features/properties/props_styles/inheritance.py | invalid-type-form | base_value: StringProperty()  # replaces the base class's property
-features/properties/props_styles/inheritance.py | invalid-type-form | own: FloatProperty()
-features/properties/props_styles/plain_annotations.py | invalid-type-form | count: IntProperty()
-features/properties/props_styles/plain_annotations.py | invalid-type-form | quoted: "BoolProperty()"  # a string annotation: Blender evaluates it at registration
 features/properties/props_styles/plain_annotations.py | ignore-comment-unknown-rule | legacy = IntProperty()  # ty: ignore[blender-legacy-property]
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_a: COMMON
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_b: COMMON  # the same deferred property for two fields
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | alias: Float(default=1.0)
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | partial_color: ColorProperty()
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | partial_override: ColorProperty(size=4)  # a keyword of the call replaces the partial's: a 4-float array
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | from_dict: PROPS["weight"]
@@ -1777,12 +1045,9 @@ features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped_enum: enum_of([("A", "A", ""), ("B", "B", "")])
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | either: float_or_int(USE_FLOAT)  # one of the returns: float | int
 features/property_wrappers/wrap_values/__init__.py | invalid-argument-type | unknown_options: FloatVectorProperty(**SETTINGS)  # FloatVector with unknown subtype and size: Any
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | unknown_options: FloatVectorProperty(**SETTINGS)  # FloatVector with unknown subtype and size: Any
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | scalar_unknown_options: IntProperty(**{"min": 0})  # no option changes an int: int
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | opaque: getattr(bpy.props, "".join(["Int", "Property"]))()
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.common_a, int)
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.common_b, int)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.alias, float)
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.partial_color, Color)
 features/property_wrappers/wrap_values/check_wrap_values.py | not-subscriptable | assert_type(s.partial_override, bpy_prop_array[float])
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.from_dict, float)
@@ -1794,7 +1059,6 @@ features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-fai
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped_kwargs, Color)
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped_enum, Literal["A", "B"])
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.either, float | int)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.scalar_unknown_options, int)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.second(), Result)
@@ -1830,7 +1094,6 @@ features/registration/reg_delegation/check_reg_delegation.py | type-assertion-fa
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.static_method(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(scene.reg_delegation_factor, float)
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(scene.reg_delegation_factor, float)
-features/registration/reg_explicit/__init__.py | invalid-type-form | count: IntProperty()
 features/registration/reg_explicit/__init__.py | ignore-comment-unknown-rule | class REG_EXPLICIT_OT_never(Operator):  # ty: ignore[blender-unregistered-class]
 features/registration/reg_explicit/__init__.py | unresolved-attribute | bpy.types.Scene.reg_explicit_count = IntProperty()
 features/registration/reg_explicit/__init__.py | unresolved-attribute | del bpy.types.Scene.reg_explicit_count
@@ -1924,9 +1187,6 @@ features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | ty
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | unresolved-attribute | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | type-assertion-failure | assert_type(scene.regchk_isolation_b_value, int)
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | unresolved-attribute | assert_type(scene.regchk_isolation_b_value, int)
-features/registration_checks/regchk_order/__init__.py | invalid-type-form | leaf: PointerProperty(type=REGCHK_ORDER_Leaf)
-features/registration_checks/regchk_order/__init__.py | invalid-type-form | leaves: CollectionProperty(type=REGCHK_ORDER_Leaf)
-features/registration_checks/regchk_order/__init__.py | invalid-type-form | leaf: PointerProperty(type=REGCHK_ORDER_Leaf) #2
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | REGCHK_ORDER_Pointer,  # ty: ignore[blender-register-order]
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_ORDER_Collection)  # ty: ignore[blender-register-order]
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.types.Scene.regchk_order_leaf = PointerProperty(type=REGCHK_ORDER_Leaf)  # ty: ignore[blender-register-order]
@@ -1949,13 +1209,11 @@ features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argume
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | del bpy.types.Scene.regchk_paired
 features/registration_checks/regchk_unregister_unknown/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTER_UNKNOWN_OT_never(Operator):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregister_unknown/__init__.py | ignore-comment-unknown-rule | bpy.utils.unregister_class(REGCHK_UNREGISTER_UNKNOWN_OT_never)  # ty: ignore[blender-unregister-mismatch]
-features/registration_checks/regchk_unregistered/__init__.py | invalid-type-form | steps: IntProperty()
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_OT_forgotten(_ExecuteMixin, Operator):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_PT_forgotten(REGCHK_UNREGISTERED_PT_base):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_MT_forgotten(Menu):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_UL_forgotten(UIList):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_Forgotten(PropertyGroup):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | invalid-type-form | value: IntProperty()
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | type-assertion-failure | assert_type(bpy.ops.regchk_unregistered.used(), Result)
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | assert_type(bpy.ops.regchk_unregistered.used(), Result)

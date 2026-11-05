@@ -6,14 +6,14 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 
 | Feature | assert_type | expected errors | guards | IDE | other diagnostics |
 | --- | --- | --- | --- | --- | --- |
-| addon_discovery | 6/19 | 7/8 | 1/1 | - | 22 |
-| addon_preferences | 1/13 | 0/5 | 7/7 | 1/3 | 14 |
-| bpy_symbols | 0/157 | 1/48 | 3/3 | - | 146 |
-| inheritance | 0/62 | 0/41 | 12/12 | 0/3 | 25 |
-| operator_calls | 0/21 | 0/25 | 4/4 | 0/4 | 58 |
-| operator_properties | 0/43 | 0/9 | 7/7 | 0/5 | 23 |
-| properties | 0/417 | 0/65 | 4/4 | 0/9 | 307 |
-| property_wrappers | 0/15 | - | 2/2 | 0/5 | 18 |
-| registration | 0/40 | 0/5 | 3/3 | 0/3 | 11 |
-| registration_checks | 0/8 | 0/36 | 10/10 | - | 15 |
-| **total** | 7/795 | 8/242 | 53/53 | 1/32 | 639 |
+| addon_discovery | 6/19 | 7/8 | 1/1 | - | 21 |
+| addon_preferences | 1/13 | 0/5 | 7/7 | 1/3 | 2 |
+| bpy_symbols | 86/157 | 29/48 | 3/3 | - | 41 |
+| inheritance | 0/62 | 0/41 | 12/12 | 0/3 | 11 |
+| operator_calls | 0/21 | 0/25 | 4/4 | 0/4 | 33 |
+| operator_properties | 0/43 | 0/9 | 7/7 | 0/5 | 18 |
+| properties | 128/417 | 32/65 | 4/4 | 5/9 | 34 |
+| property_wrappers | 2/15 | - | 2/2 | 1/5 | 15 |
+| registration | 0/40 | 0/5 | 3/3 | 0/3 | 10 |
+| registration_checks | 0/8 | 0/36 | 10/10 | - | 10 |
+| **total** | 223/795 | 68/242 | 53/53 | 7/32 | 195 |
