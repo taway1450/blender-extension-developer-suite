@@ -19,6 +19,8 @@ class Scene:
     @property
     def reg_items(self) -> bpy_prop_collection_idprop[PROPS_REGISTERED_Item]: ...
     reg_object: Object | None
+    @property
+    def reg_locked(self) -> int: ...
 
 class Object:
     reg_float: float

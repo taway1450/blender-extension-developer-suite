@@ -28,6 +28,7 @@ def register():
     bpy.types.Scene.reg_group = PointerProperty(type=PROPS_REGISTERED_Item)
     bpy.types.Scene.reg_items = CollectionProperty(type=PROPS_REGISTERED_Item)
     bpy.types.Scene.reg_object = PointerProperty(type=bpy.types.Object)
+    bpy.types.Scene.reg_locked = IntProperty(options={"READ_ONLY"})
     bpy.types.Object.reg_float = FloatProperty()
     bpy.types.Material.reg_str = StringProperty()
     bpy.types.WindowManager.reg_bool = BoolProperty()
@@ -58,7 +59,7 @@ def register():
 
 def unregister():
     for cls, name in [(bpy.types.Scene, "reg_int"), (bpy.types.Scene, "reg_mode"), (bpy.types.Scene, "reg_group"),
-                      (bpy.types.Scene, "reg_items"), (bpy.types.Scene, "reg_object"),
+                      (bpy.types.Scene, "reg_items"), (bpy.types.Scene, "reg_object"), (bpy.types.Scene, "reg_locked"),
                       (bpy.types.Object, "reg_float"), (bpy.types.Material, "reg_str"),
                       (bpy.types.WindowManager, "reg_bool"), (bpy.types.ID, "reg_id"),
                       (bpy.types.ID, "reg_owner_first"), (bpy.types.Scene, "reg_owner_first"),

@@ -24,6 +24,12 @@ def on_scene(scene: Scene) -> None:
     scene.reg_int = 2
     scene.reg_int = "2"  # ty: ignore[invalid-assignment]
     scene.reg_mode = "C"  # ty: ignore[invalid-assignment]
+    # A PropertyGroup pointer, a collection and a READ_ONLY property cannot be written, even with their own value.
+    assert_type(scene.reg_locked, int)
+    scene.reg_group = scene.reg_group  # ty: ignore[invalid-assignment]
+    scene.reg_items = scene.reg_items  # ty: ignore[invalid-assignment]
+    scene.reg_locked = scene.reg_locked  # ty: ignore[invalid-assignment]
+    scene.reg_object = None  # an ID pointer stays writable
     scene.reg_float  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
