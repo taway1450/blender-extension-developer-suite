@@ -20,4 +20,4 @@ def registered(scene: Scene) -> None:
 
 
 def not_registered() -> None:
-    bpy.ops.reg_explicit.never  # ty: ignore[unresolved-attribute]
+    bpy.ops.reg_explicit.never  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it

@@ -28,10 +28,10 @@ class LayoutSubclass(UILayout):
 def register_unsupported() -> None:
     # Blender: "... does not support registration". The stubs already type register_class with the
     # registrable bases, so this is ty's own invalid-argument-type.
-    bpy.utils.register_class(ObjectSubclass)  # ty: ignore[invalid-argument-type]
-    bpy.utils.register_class(MeshSubclass)  # ty: ignore[invalid-argument-type]
-    bpy.utils.register_class(ModifierSubclass)  # ty: ignore[invalid-argument-type]
-    bpy.utils.register_class(LayoutSubclass)  # ty: ignore[invalid-argument-type]
+    bpy.utils.register_class(ObjectSubclass)  # ty: ignore[invalid-argument-type]  # bare-ok: stock ty's error must stay: not a registrable base
+    bpy.utils.register_class(MeshSubclass)  # ty: ignore[invalid-argument-type]  # bare-ok: stock ty's error must stay: not a registrable base
+    bpy.utils.register_class(ModifierSubclass)  # ty: ignore[invalid-argument-type]  # bare-ok: stock ty's error must stay: not a registrable base
+    bpy.utils.register_class(LayoutSubclass)  # ty: ignore[invalid-argument-type]  # bare-ok: stock ty's error must stay: not a registrable base
 
 
 class AbcMixin(ABC):

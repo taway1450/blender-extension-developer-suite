@@ -14,7 +14,7 @@ def literal_key(preferences: Preferences) -> None:
     assert_type(prefs, PREFS_LEGACY_Preferences)
     assert_type(prefs.scale, float)
     assert_type(prefs.mode, Literal["A", "B"])
-    prefs.mode = "C"  # ty: ignore[invalid-assignment]
+    prefs.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
 
 
 def package_key(preferences: Preferences) -> None:
@@ -22,4 +22,4 @@ def package_key(preferences: Preferences) -> None:
 
 
 def other_keys(preferences: Preferences) -> None:
-    assert_type(preferences.addons["prefs_ext"].preferences, AddonPreferences | None)
+    assert_type(preferences.addons["prefs_ext"].preferences, AddonPreferences | None)  # bare-ok: the stub type is kept for another add-on's key

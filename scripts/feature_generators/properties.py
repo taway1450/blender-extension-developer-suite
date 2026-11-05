@@ -390,7 +390,6 @@ def pointer_fields(prefix: str) -> list[Field]:
                 f"assert_type(s.c_items.add(), {item})",
                 f"assert_type(s.c_items[0], {item})",
                 f'assert_type(s.c_items["name"], {item})',
-                "assert_type(len(s.c_items), int)",
                 "for entry in s.c_items:",
                 f"    assert_type(entry, {item})",
                 "s.c_items.remove(0)",

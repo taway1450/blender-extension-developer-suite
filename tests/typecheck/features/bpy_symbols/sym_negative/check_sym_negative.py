@@ -11,8 +11,8 @@ from .fakes import IntProperty, PropertyGroup
 
 
 class LocalFunctions(bpy.types.PropertyGroup):
-    count: IntProperty()  # ty: ignore[invalid-type-form]
-    factor: props.FloatProperty()  # ty: ignore[invalid-type-form]
+    count: IntProperty()  # ty: ignore[invalid-type-form]  # bare-ok: stock ty's error must stay on a class Blender does not register
+    factor: props.FloatProperty()  # ty: ignore[invalid-type-form]  # bare-ok: stock ty's error must stay on a class Blender does not register
 
 
 class OnFakeBase(PropertyGroup):
@@ -27,4 +27,4 @@ def mixin_values(o: OnFakeBase) -> None:
 def shadowed(bpy: Any) -> None:
     # A parameter called bpy is not the bpy module.
     class Local(bpy.types.PropertyGroup):
-        value: bpy.props.IntProperty()  # ty: ignore[invalid-type-form]
+        value: bpy.props.IntProperty()  # ty: ignore[invalid-type-form]  # bare-ok: stock ty's error must stay on a class Blender does not register

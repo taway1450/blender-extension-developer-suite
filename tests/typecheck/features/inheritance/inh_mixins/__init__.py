@@ -19,7 +19,7 @@ class ExecuteMixin:
     count: IntProperty()
 
     def execute(self, context):
-        assert_type(context, Any)  # no Blender parent: nothing to take the type from
+        assert_type(context, Any)  # no Blender parent: nothing to take the type from  # bare-ok: without a Blender parent the type stays unknown
         return {"FINISHED"}
 
 

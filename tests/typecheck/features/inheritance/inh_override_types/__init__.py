@@ -14,10 +14,10 @@ class INH_OVERRIDE_TYPES_OT_annotations(Operator):
     bl_idname = "inh_override_types.annotations"
     bl_label = "Annotations"
 
-    def execute(self, context: int):  # ty: ignore[invalid-method-override]
+    def execute(self, context: int):  # ty: ignore[invalid-method-override]  # bare-ok: stock ty's error must stay for an annotated override
         return {"FINISHED"}
 
-    def invoke(self, context, event) -> str:  # ty: ignore[invalid-method-override]
+    def invoke(self, context, event) -> str:  # ty: ignore[invalid-method-override]  # bare-ok: stock ty's error must stay for an annotated override
         return "FINISHED"
 
     def draw(self, context: Context | None):  # wider than the parent: fine

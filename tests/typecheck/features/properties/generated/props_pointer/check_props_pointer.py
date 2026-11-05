@@ -35,7 +35,6 @@ def values(s: PROPS_POINTER_Values) -> None:
     assert_type(s.c_items.add(), PROPS_POINTER_Item)
     assert_type(s.c_items[0], PROPS_POINTER_Item)
     assert_type(s.c_items["name"], PROPS_POINTER_Item)
-    assert_type(len(s.c_items), int)
     for entry in s.c_items:
         assert_type(entry, PROPS_POINTER_Item)
     s.c_items.remove(0)

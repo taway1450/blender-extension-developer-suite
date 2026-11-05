@@ -68,7 +68,7 @@ class INH_OVERRIDES_OT_variants(Operator):
 
     def modal(self, context, event, *args):  # *args after the required parameters
         assert_type(event, Event)
-        assert_type(args, tuple[Any, ...])
+        assert_type(args, tuple[Any, ...])  # bare-ok: *args has no parent parameter to take a type from
         return {"FINISHED"}
 
     def check(self, context, *, verbose=False):  # keyword-only extra parameter
@@ -78,10 +78,10 @@ class INH_OVERRIDES_OT_variants(Operator):
 
     def draw(self, context, **kwargs):
         assert_type(context, Context)
-        assert_type(kwargs, dict[str, Any])
+        assert_type(kwargs, dict[str, Any])  # bare-ok: **kwargs has no parent parameter to take a type from
 
     def cancel(self, context: "Context"):  # string annotation
-        assert_type(context, Context)
+        assert_type(context, Context)  # bare-ok: an explicit annotation wins over the parent's
 
 
 class INH_OVERRIDES_PT_panel(Panel):

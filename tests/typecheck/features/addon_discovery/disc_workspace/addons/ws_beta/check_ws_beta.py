@@ -9,4 +9,4 @@ from bpy.types import Scene
 
 def registered(scene: Scene) -> None:
     assert_type(scene.ws_value, str)  # oracle-skip: two extensions in one folder share one _expected/
-    scene.ws_alpha_only  # ty: ignore[unresolved-attribute]
+    scene.ws_alpha_only  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it

@@ -631,9 +631,9 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #8
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(verbose, bool)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #9
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(self.layout, UILayout)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)  # the stubs' type for Menu.draw
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)
@@ -641,14 +641,14 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #2
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def draw_item(self, context, layout, data, item, icon, active_data):  # Blender passes only as many arguments as there are parameters
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #3
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(node, Node)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(text, str)
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def poll(cls, ntree):
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ntree, NodeTree | None)
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #16
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(context), Result)
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.invoke(context, event), Result)

@@ -14,5 +14,5 @@ def registered() -> None:
 
 
 def not_registered() -> None:
-    bpy.ops.regchk_unreachable.extra  # ty: ignore[unresolved-attribute]
-    bpy.ops.regchk_unreachable.lost  # ty: ignore[unresolved-attribute]
+    bpy.ops.regchk_unreachable.extra  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    bpy.ops.regchk_unreachable.lost  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it

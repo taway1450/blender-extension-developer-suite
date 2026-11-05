@@ -633,9 +633,9 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(verbose, bool)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #9
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def cancel(self, context: "Context"):  # string annotation
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(self.layout, UILayout)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)  # the stubs' type for Menu.draw
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)
@@ -643,14 +643,14 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #2
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def draw_item(self, context, layout, data, item, icon, active_data):  # Blender passes only as many arguments as there are parameters
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #3
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(node, Node)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(text, str)
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def poll(cls, ntree):
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ntree, NodeTree | None)
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #16
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(context), Result)
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.invoke(context, event), Result)
@@ -847,8 +847,8 @@ features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-ass
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("OBJECT_OT_select_all").action, Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"])
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("mesh.primitive_cube_add").size, float)
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("mesh.primitive_cube_add").calc_uvs, bool)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | layout.operator("object.select_all").action = "NOPE"  # ty: ignore[invalid-assignment]
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | layout.operator("object.select_all").action = "NOPE"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | ignore-comment-unknown-rule | layout.operator("opprops_idnames.missing")  # ty: ignore[blender-unknown-operator]
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | ignore-comment-unknown-rule | layout.operator("opprops_sinks.step")  # ty: ignore[blender-unknown-operator]
 features/operator_properties/opprops_sinks/__init__.py | invalid-type-form | amount: IntProperty()
@@ -869,11 +869,11 @@ features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-asserti
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"])
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]])
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.amount = "2"  # ty: ignore[invalid-assignment]
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.mode = "C"  # ty: ignore[invalid-assignment]
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.missing  # ty: ignore[unresolved-attribute]
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.amount = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.missing  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.operator("OPPROPS_SINKS_OT_step", text="Step", icon="ADD").amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | layout.operator("opprops_sinks.bare").amount  # ty: ignore[unresolved-attribute]
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | layout.operator("opprops_sinks.bare").amount  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #2
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #2
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #2

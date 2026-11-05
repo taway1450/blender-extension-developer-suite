@@ -14,7 +14,7 @@ def builtin_category() -> None:
     assert_type(bpy.ops.object.opcall_category_scale.idname(), Literal["OBJECT_OT_opcall_category_scale"])
     bpy.ops.object.opcall_category_scale(factor="2")  # ty: ignore[invalid-argument-type]
     bpy.ops.object.select_all(action="SELECT")  # the built-in operators stay
-    bpy.ops.object.opcall_category_missing  # ty: ignore[unresolved-attribute]
+    bpy.ops.object.opcall_category_missing  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def shared_category() -> None:

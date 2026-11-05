@@ -15,5 +15,5 @@ def registered() -> None:
 
 
 def not_registered() -> None:
-    bpy.ops.reg_submodule_factory.unlisted  # ty: ignore[unresolved-attribute]
-    bpy.ops.reg_submodule_factory.unlisted_module  # ty: ignore[unresolved-attribute]
+    bpy.ops.reg_submodule_factory.unlisted  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    bpy.ops.reg_submodule_factory.unlisted_module  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it

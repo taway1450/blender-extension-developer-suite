@@ -16,11 +16,11 @@ def layout_operator(layout: UILayout) -> None:
     assert_type(props.label, str)
     assert_type(props.flags, set[Literal["A", "B"]])
     props.amount = 2
-    props.amount = "2"  # ty: ignore[invalid-assignment]
-    props.mode = "C"  # ty: ignore[invalid-assignment]
-    props.missing  # ty: ignore[unresolved-attribute]
+    props.amount = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
+    props.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
+    props.missing  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
     assert_type(layout.operator("OPPROPS_SINKS_OT_step", text="Step", icon="ADD").amount, int)
-    layout.operator("opprops_sinks.bare").amount  # ty: ignore[unresolved-attribute]
+    layout.operator("opprops_sinks.bare").amount  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def other_layout_functions(layout: UILayout) -> None:
@@ -42,7 +42,7 @@ def keymap_items(keymap: KeyMap) -> None:
     assert_type(props.mode, Literal["A", "B"])
     assert_type(props.label, str)
     assert_type(props.flags, set[Literal["A", "B"]])
-    item.properties.mode = "C"  # ty: ignore[invalid-assignment]
+    item.properties.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
 
 
 def last_properties(wm: WindowManager) -> None:

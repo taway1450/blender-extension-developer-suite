@@ -86,5 +86,5 @@ def operator_functions() -> None:
 
 
 def unknown_operators() -> None:
-    bpy.ops.opcall_basic.missing  # ty: ignore[unresolved-attribute]
-    bpy.ops.opcall_basic.OPCALL_BASIC_OT_all  # ty: ignore[unresolved-attribute]
+    bpy.ops.opcall_basic.missing  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    bpy.ops.opcall_basic.OPCALL_BASIC_OT_all  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it

@@ -18,4 +18,4 @@ def evaluated() -> None:
 
 
 def runtime_only() -> None:
-    bpy.ops.opcall_idname_forms.runtime  # ty: ignore[unresolved-attribute]
+    bpy.ops.opcall_idname_forms.runtime  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it

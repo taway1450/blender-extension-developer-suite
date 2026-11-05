@@ -21,7 +21,7 @@ def on_scene(scene: Scene) -> None:
     scene.reg_int = 2
     scene.reg_int = "2"  # ty: ignore[invalid-assignment]
     scene.reg_mode = "C"  # ty: ignore[invalid-assignment]
-    scene.reg_float  # ty: ignore[unresolved-attribute]
+    scene.reg_float  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def on_ids(obj: Object, material: Material, camera: Camera, collection: Collection, image: Image) -> None:
@@ -32,7 +32,7 @@ def on_ids(obj: Object, material: Material, camera: Camera, collection: Collecti
     assert_type(camera.reg_module_level, int)
     assert_type(collection.reg_alias, str)
     assert_type(image.reg_setattr, float)
-    obj.reg_str  # ty: ignore[unresolved-attribute]
+    obj.reg_str  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def on_other_structs(wm: WindowManager, bone: Bone, edit_bone: EditBone, pose_bone: PoseBone,

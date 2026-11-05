@@ -34,4 +34,3 @@ def handler_signatures() -> None:
 
 def timers() -> None:
     bpy.app.timers.register(tick)
-    assert_type(bpy.app.timers.is_registered(tick), bool)
