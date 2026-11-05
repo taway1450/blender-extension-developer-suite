@@ -2,9 +2,10 @@
 # requires-python = ">=3.12"
 # dependencies = ["pyyaml"]
 # ///
-"""Lint or format-check Blender code with the ruff built from the ``ty-blender`` submodule.
+"""Lint or format-check Blender code with ruff.
 
-Builds ruff (see build_ruff.py) and runs it on one target, twice: with stock ruff settings (``--isolated``) and
+Runs stock ruff (``uvx ruff@<version ruff-blender is based on>``, no build: ruff-blender changes no ruff crate; see
+build_ty.py) or the binary given with ``--ruff <path>``, on one target, twice: with stock ruff settings (``--isolated``) and
 with this repo's profile for the target (``config/ruff/<profile>.toml``). The formatter only checks
 (``ruff format --check --diff``) and never writes files. The full output of each run goes to
 ``.cache/ruff-results/<tool>-<target>-<version>[-builtin]-{default,profile}.txt``, and the finding counts of
@@ -40,6 +41,7 @@ from pathlib import Path
 from _common import CACHE_DIR, EXAMPLE_ADDONS_DIR, REPO_ROOT, StepError, log, main_wrapper
 from _features import EXPECTED_STUBS, FEATURES_DIR, select
 from _target import Target, add_target_arguments
+from build_ty import stock_command
 from check_blender import EXCLUDED_DIRS
 from generate_stubs import results_name
 
@@ -77,8 +79,10 @@ class Job:
     exclude: list[str]
 
 
-def ruff_command(ruff: Path, tool: str, config: str, profile: str, python_version: str, job: Job) -> list[str | Path]:
-    cmd: list[str | Path] = [ruff, "check" if tool == "lint" else "format"]
+def ruff_command(
+    ruff: list[str | Path], tool: str, config: str, profile: str, python_version: str, job: Job
+) -> list[str | Path]:
+    cmd: list[str | Path] = [*ruff, "check" if tool == "lint" else "format"]
     cmd += ["--isolated"] if config == "default" else ["--config", PROFILES_DIR / f"{profile}.toml"]
     cmd += ["--target-version", f"py{python_version.replace('.', '')}", "--cache-dir", RUFF_CACHE]
     if tool == "lint":
@@ -140,7 +144,7 @@ def print_side_by_side(runs: list[Run]) -> None:
     print(f"    {'total':<{width}}  {runs[0].total:>8}  {runs[1].total:>8}")
 
 
-def run_job(ruff: Path, tool: str, profile: str, python_version: str, job: Job) -> list[Run]:
+def run_job(ruff: list[str | Path], tool: str, profile: str, python_version: str, job: Job) -> list[Run]:
     log(f"Running ruff {'check' if tool == 'lint' else 'format --check'} (Python {python_version}) on {job.label}")
     runs = []
     for config in CONFIGS:
@@ -210,7 +214,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("tool", choices=TOOLS, help="lint (ruff check) or format (ruff format --check --diff)")
     parser.add_argument("target", choices=TARGETS, help="What to run ruff on")
-    add_target_arguments(parser, binary="ruff")
+    add_target_arguments(parser, binary=None)
+    parser.add_argument(
+        "--ruff", type=Path, help="Use this ruff binary (e.g. from build_ruff.py) instead of stock ruff"
+    )
     parser.add_argument(
         "names",
         nargs="*",
@@ -222,13 +229,18 @@ def main() -> int:
         parser.error(f"the {args.target} target takes no names")
 
     target = Target.from_args(args, stubs=args.target == "stubs")
-    assert target.binary is not None
+    if args.ruff is None:
+        ruff: list[str | Path] = stock_command("ruff")
+    elif args.ruff.is_file():
+        ruff = [args.ruff.resolve()]
+    else:
+        raise StepError(f"--ruff {args.ruff}: no such file")
     jobs = jobs_for(args.tool, args, target)
     profile = PROFILE_OF_TARGET[args.target]
 
     code = 0
     for job in jobs:
-        runs = run_job(target.binary, args.tool, profile, target.python_version, job)
+        runs = run_job(ruff, args.tool, profile, target.python_version, job)
         if args.target == "addons" and runs[1].total:
             code = 1
     return code

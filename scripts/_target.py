@@ -5,14 +5,14 @@ Every check, lint and report task starts the same way: take a Blender version (a
 Blender's Python version, and build ty or ruff. ``Target`` does all of that once:
 
     parser = argparse.ArgumentParser(...)
-    add_target_arguments(parser, binary="ty")   # or "ruff", or None for a task that runs neither
+    add_target_arguments(parser, binary="ty")   # or None for a task that builds nothing
     args = parser.parse_args()
     target = Target.from_args(args)
     for generator, stubs in target.stubs.items():
         run(target.binary, ..., "--python-version", target.python_version, "--extra-search-path", stubs)
 
-The binary comes from ``--profile`` (release, profiling or dev, see build_ty.py) or is given with
-``--ty <path>`` / ``--ruff <path>``, which skips the build.
+The binary comes from ``--profile`` (dev by default, see build_ty.py) or is given with ``--ty <path>``, which
+skips the build.
 """
 
 from __future__ import annotations

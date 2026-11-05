@@ -11,7 +11,7 @@ code if ty reports any diagnostics.
 Usage:
   uv run scripts/check_addons.py 5.2                  # all example addons
   uv run scripts/check_addons.py 5.2 hello_cube       # only the named addons
-  uv run scripts/check_addons.py 5.2 --debug
+  uv run scripts/check_addons.py 5.2 --profile profiling
 """
 
 from __future__ import annotations

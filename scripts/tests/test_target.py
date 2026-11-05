@@ -4,7 +4,7 @@ import pytest
 
 from _common import StepError
 from _target import add_target_arguments
-from build_ty import binary_from_args, binary_path
+from build_ty import binary_from_args, stock_command
 
 
 def parse(binary, *argv):
@@ -13,11 +13,9 @@ def parse(binary, *argv):
     return parser.parse_args(["main", *argv])
 
 
-def test_profile_defaults_to_release_and_debug_is_dev():
-    assert parse("ty").profile == "release"
-    assert parse("ty", "--debug").profile == "dev"
+def test_profile_defaults_to_dev():
+    assert parse("ty").profile == "dev"
     assert parse("ty", "--profile", "profiling").profile == "profiling"
-    assert binary_path("ty", "dev").parent.name == "debug"
 
 
 def test_no_binary_arguments_without_a_binary():
@@ -28,8 +26,13 @@ def test_no_binary_arguments_without_a_binary():
 
 
 def test_given_binary_is_used_without_building(tmp_path):
-    ruff = tmp_path / "ruff.exe"
-    ruff.write_text("")
-    assert binary_from_args(parse("ruff", "--ruff", str(ruff)), "ruff") == ruff.resolve()
+    ty = tmp_path / "ty.exe"
+    ty.write_text("")
+    assert binary_from_args(parse("ty", "--ty", str(ty)), "ty") == ty.resolve()
     with pytest.raises(StepError):
-        binary_from_args(parse("ruff", "--ruff", str(tmp_path / "missing")), "ruff")
+        binary_from_args(parse("ty", "--ty", str(tmp_path / "missing")), "ty")
+
+
+def test_stock_commands_pin_the_fork_base():
+    assert stock_command("ty")[1].startswith("ty@0.")
+    assert stock_command("ruff")[1].startswith("ruff@0.")

@@ -9,8 +9,9 @@ cached under `.cache/`.
 
 | Task | What it does |
 | --- | --- |
-| `mise run ty:build [--profile release|profiling|dev]` | Build ty from the `ty-blender` submodule. `release` (the default) is what ty ships, with fat LTO, so every change pays a long link; `profiling` has the same optimisations without LTO and rebuilds much faster, so use it while working on ty; `dev` (`--debug`) is an unoptimised build. |
-| `mise run ruff:build [--profile ...]` | Build ruff (linter and formatter) from the `ty-blender` submodule, in the same cargo `target/` as ty. |
+| `mise run ty:build [--profile dev|profiling|release]` | Build ty from the `ty-blender` submodule. `dev` (the default) is incremental and rebuilds in well under a minute; `profiling` has release optimisations without LTO (fast binary, rebuilds take minutes); `release` is what ty ships, with fat LTO. |
+| `mise run ty:test [--mdtest <path>]` | Run ty-blender's upstream Rust tests and mdtests (`ty_python_semantic`, `ty_blender`) with the dev build, without updating snapshots: a regression check for a change to the fork, whose Blender support is tested by the feature tests here. |
+| `mise run ruff:build [--profile ...]` | Build ruff from the `ty-blender` submodule, in the same cargo `target/` as ty. Only to test a change to ruff itself: the fork changes no ruff crate, so the `lint:*` / `format:*` tasks run stock ruff. |
 | `mise run blender:download <version>` | Download the official Blender release into `.cache/blender-bin/<version>` (URLs and checksums from `fake-bpy-module/src/versions.yml`). |
 | `mise run blender:build <name> [--ref <ref>] [--update]` | Build Blender from source: a worktree of the `blender` submodule at `<ref>` (default `<name>`, e.g. `main`) in `.cache/blender-src/<name>`, CMake/Ninja build in `.cache/blender-build/<name>`, installed into `.cache/blender-bin/<name>` like a download. The precompiled libraries are shared by all builds in `.cache/blender-libs/`. `--update` fetches the ref again and rebuilds incrementally; `--config lite` builds faster. |
 | `mise run stubs:generate <version>` | Generate bpy stubs with `fake-bpy-module` into `.cache/bpy-stubs/<version>` and with Blender's own stub generator (`doc/python_api/sphinx_stub_gen.py`, Blender 5.2 and later) into `.cache/bpy-stubs-builtin/<version>`, using a worktree of the `blender` submodule and the downloaded Blender binary. Both work from the rst API docs Blender generates, cached in `.cache/bpy-rst/<version>`. |
@@ -22,7 +23,7 @@ cached under `.cache/`.
 | `mise run check:oracle <version> [feature...]` | Run stock ty on each feature-test add-on with its reference stubs (`_expected/` deltas merged into the bpy stubs of both generators) and check that every marker holds; a disagreement means the hand-written expectations are inconsistent. Summary in `.cache/typecheck-results/<version>/<generator>/oracle.md`. |
 | `mise run check:load <version> [feature...]` | Import, register and unregister every feature-test add-on in Blender and compare with its `_expected/runtime.toml`: add-ons that fail on purpose say so and with which error, and probes check what an add-on does at runtime after register. |
 | `mise run features:generate [--check]` | Write the generated feature-test add-ons (`tests/typecheck/features/*/generated/`, from `scripts/feature_generators/`) and the import roots in `tests/typecheck/ty.toml`; `--check` fails if they are out of date. |
-| `mise run lint:blender <version>`, `lint:stubs`, `lint:addons [addon...]`, `lint:features [feature...]` | Lint the Blender source (without `lib/` and `extern/`), the generated bpy stubs (once per stub generator), the example add-ons or the feature-test add-ons with the ruff from `ty-blender`, twice: with stock settings (`--isolated`) and with the profile in `config/ruff/` (`blender.toml`, `stubs.toml`, `addons.toml`, `features.toml`). The counts per rule of both runs are printed side by side; the full output goes to `.cache/ruff-results/lint-<target>-<version>[-builtin]-{default,profile}.txt`. `lint:addons` fails when the profile run has findings. |
+| `mise run lint:blender <version>`, `lint:stubs`, `lint:addons [addon...]`, `lint:features [feature...]` | Lint the Blender source (without `lib/` and `extern/`), the generated bpy stubs (once per stub generator), the example add-ons or the feature-test add-ons with stock ruff (`uvx ruff@<version ruff-blender is based on>`, or `--ruff <path>`), twice: with stock settings (`--isolated`) and with the profile in `config/ruff/` (`blender.toml`, `stubs.toml`, `addons.toml`, `features.toml`). The counts per rule of both runs are printed side by side; the full output goes to `.cache/ruff-results/lint-<target>-<version>[-builtin]-{default,profile}.txt`. `lint:addons` fails when the profile run has findings. |
 | `mise run format:blender <version>`, `format:stubs`, `format:addons`, `format:features` | The same targets and configurations with `ruff format --check --diff`, which never writes files; the diffs go to `.cache/ruff-results/format-…`. |
 | `mise run lint:scripts` | Lint (with fixes) and format the tooling in `scripts/` with the pinned upstream ruff through [prek](https://github.com/j178/prek) (`.pre-commit-config.yaml`, settings in `scripts/ruff.toml`). `uvx prek@0.5.6 install` runs the hooks on every commit. |
 | `mise run report:flags <version>` | For every documented class, property, function, parameter, return value and operator argument, compare its RNA flags with the behaviour probed in Blender, the API docs and the bpy stubs; per-flag counts and wrong flag combinations go to `.cache/flag-report/<version>/summary.md`, all rows to `rows.md` / `rows.csv`. |
@@ -38,13 +39,12 @@ mise run blender:build my-fix --ref my-feature-branch
 ```
 
 `--blender <path>` uses any other Blender binary instead. The check tasks build ty and generate missing stubs
-themselves. The ty and ruff tasks take `--profile release|profiling|dev` (`--debug` is short for `dev`) for that
-build, or `--ty <path>` / `--ruff <path>` to use a binary that is already built. While working on ty-blender,
-`--profile profiling` avoids the release profile's slow LTO link:
+themselves. The ty tasks take `--profile dev|profiling|release` for that build (default `dev`, incremental), or
+`--ty <path>` to use a binary that is already built; `check:oracle` and the ruff tasks build nothing:
 
 ```sh
-mise run check:features main properties --profile profiling
-mise run check:ide main properties --ty ty-blender/ruff-blender/target/profiling/ty.exe
+mise run check:features main properties
+mise run check:ide main properties --ty ty-blender/ruff-blender/target/debug/ty.exe
 ```
 
 When results change, `check:features` and `check:ide` list each entry as `-` gone, `~` changed or `+` new, with

@@ -11,7 +11,7 @@ generate_stubs.py) and runs ty on all Python files of the worktree (excluding ``
 
 Usage:
   uv run scripts/check_blender.py 5.2
-  uv run scripts/check_blender.py 5.2 --debug
+  uv run scripts/check_blender.py 5.2 --profile profiling
   uv run scripts/check_blender.py main --blender "C:/path/to/blender-5.4/blender.exe"
 """
 

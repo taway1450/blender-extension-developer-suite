@@ -45,24 +45,18 @@ import os
 import shutil
 import subprocess
 import textwrap
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from _common import CACHE_DIR, TY_SUBMODULE, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
+from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
 from _features import FEATURES_DIR, Addon, AddonResult, MarkerResult, evaluate, parse_diagnostics, select
 from _markers import UNKNOWN_RULE, is_check_file
 from _target import Target, add_target_arguments
+from build_ty import stock_command
 from generate_stubs import ALL
 
 ORACLE_DIR = CACHE_DIR / "typecheck-oracle"
 BASELINE_DIR = TYPECHECK_TESTS_DIR / "oracle"
-
-
-def stock_ty_command() -> list[str]:
-    """Stock ty from PyPI at the version ty-blender is based on."""
-    version = tomllib.loads((TY_SUBMODULE / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
-    return ["uvx", f"ty@{version}"]
 
 
 # --- merging reference-stub deltas into the bpy stubs ------------------------------------------------------------
@@ -386,7 +380,7 @@ def main() -> int:
     addons = [a for a in select(args.features) if a.type_test_files()]
     target = Target.from_args(args)
     python_version = target.python_version
-    ty = stock_ty_command()
+    ty = stock_command("ty")
 
     failed = False
     bare: dict[str, dict[BareKey, MarkerResult]] = {}

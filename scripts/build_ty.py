@@ -1,19 +1,25 @@
-"""Build ty from the ``ty-blender`` submodule.
+"""Build ty from the ``ty-blender`` submodule, and choose the ty or ruff a task runs.
 
 Cargo profiles (``--profile``):
-  release     what ty ships: fat LTO, so every change pays a long link (the default)
-  profiling   release optimisations without LTO: fast binary, much faster rebuilds; the one for working on ty
-  dev         unoptimised debug build (``--debug``): fastest to compile, slow on the full feature tests
+  dev         the default: opt-level 1, incremental, so a change in ty_python_semantic rebuilds in well under a
+              minute; fast enough for the feature tests
+  profiling   release optimisations without LTO, built incrementally; a fast binary for whole-Blender runs, but
+              every rebuild recompiles the big crates at opt-level 3 (minutes)
+  release     what ty ships: fat LTO, so every change pays a long link; only to measure the shipped binary
+
+Only ty differs from upstream: ruff-blender changes no ruff crate, so the lint and format tasks run stock ruff
+(``stock_command``) at the version ruff-blender is based on, and need no build.
 
 Usage:
   uv run scripts/build_ty.py
   uv run scripts/build_ty.py --profile profiling
-  uv run scripts/build_ty.py --debug
 """
 
 from __future__ import annotations
 
 import argparse
+import os
+import tomllib
 from pathlib import Path
 
 from _common import TY_SUBMODULE, StepError, exe, git_output, log, main_wrapper, run
@@ -21,12 +27,24 @@ from _common import TY_SUBMODULE, StepError, exe, git_output, log, main_wrapper,
 RUFF_DIR = TY_SUBMODULE / "ruff-blender"
 
 # Cargo profile -> its directory in target/.
-PROFILES = {"release": "release", "profiling": "profiling", "dev": "debug"}
-DEFAULT_PROFILE = "release"
+PROFILES = {"dev": "debug", "profiling": "profiling", "release": "release"}
+DEFAULT_PROFILE = "dev"
+# Profiles that inherit from release are not incremental by default; release itself stays so, LTO undoes it anyway.
+INCREMENTAL_PROFILES = ("profiling",)
 
 
 def binary_path(name: str, profile: str = DEFAULT_PROFILE) -> Path:
     return RUFF_DIR / "target" / PROFILES[profile] / exe(name)
+
+
+def stock_command(name: str) -> list[str]:
+    """Upstream ``ty`` or ``ruff`` from PyPI (through uvx) at the version ty-blender / ruff-blender is based on."""
+    if name == "ty":
+        version = tomllib.loads((TY_SUBMODULE / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+    else:
+        cargo = tomllib.loads((RUFF_DIR / "crates" / name / "Cargo.toml").read_text(encoding="utf-8"))
+        version = cargo["package"]["version"]
+    return ["uvx", f"{name}@{version}"]
 
 
 def ensure_checkout() -> None:
@@ -45,10 +63,15 @@ def ensure_checkout() -> None:
 
 
 def build_binary(name: str, profile: str = DEFAULT_PROFILE) -> Path:
-    """Build the ``name`` binary (``ty`` or ``ruff``) of the ruff workspace in ``ty-blender/ruff-blender``."""
+    """Build the ``name`` binary (``ty`` or ``ruff``) of the ruff workspace in ``ty-blender/ruff-blender``.
+
+    Nothing changed since the last build of that profile makes this a cargo no-op of a few seconds."""
     log(f"Building {name} ({profile} profile)")
     ensure_checkout()
-    run(["cargo", "build", "--profile", profile, "--bin", name], cwd=RUFF_DIR)
+    env = dict(os.environ)
+    if profile in INCREMENTAL_PROFILES:
+        env[f"CARGO_PROFILE_{profile.upper()}_INCREMENTAL"] = "true"
+    run(["cargo", "build", "--profile", profile, "--bin", name], cwd=RUFF_DIR, env=env)
     binary = binary_path(name, profile)
     if not binary.is_file():
         raise StepError(f"{name} binary not found at {binary} after building")
@@ -57,15 +80,14 @@ def build_binary(name: str, profile: str = DEFAULT_PROFILE) -> Path:
 
 
 def add_binary_arguments(parser: argparse.ArgumentParser, name: str) -> None:
-    """``--profile``/``--debug``, and ``--<name> <path>`` to use a binary that is already built."""
+    """``--profile``, and ``--<name> <path>`` to use a binary that is already built."""
     group = parser.add_argument_group(f"{name} binary")
     group.add_argument(
         "--profile",
         choices=PROFILES,
         default=DEFAULT_PROFILE,
-        help=f"Cargo profile to build {name} with (default: {DEFAULT_PROFILE}; profiling skips the slow LTO link)",
+        help=f"Cargo profile to build {name} with (default: {DEFAULT_PROFILE}, incremental)",
     )
-    group.add_argument("--debug", dest="profile", action="store_const", const="dev", help="Shorthand for --profile dev")
     group.add_argument(f"--{name}", dest="binary", type=Path, help=f"Use this {name} binary instead of building one")
 
 
@@ -87,9 +109,6 @@ def build_ty(profile: str = DEFAULT_PROFILE) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--profile", choices=PROFILES, default=DEFAULT_PROFILE, help="Cargo profile")
-    parser.add_argument(
-        "--debug", dest="profile", action="store_const", const="dev", help="Shorthand for --profile dev"
-    )
     args = parser.parse_args()
     build_ty(args.profile)
     return 0

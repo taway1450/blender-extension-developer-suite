@@ -11,7 +11,7 @@ stubs) and ``stubs-<version>-builtin.txt`` (Blender's own stubs).
 
 Usage:
   uv run scripts/check_stubs.py 5.2
-  uv run scripts/check_stubs.py 5.2 --debug
+  uv run scripts/check_stubs.py 5.2 --profile profiling
 """
 
 from __future__ import annotations

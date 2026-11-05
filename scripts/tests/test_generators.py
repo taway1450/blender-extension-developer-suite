@@ -71,7 +71,9 @@ def test_every_addon_is_a_package_with_markers_and_says_it_is_generated(name):
         assert f"{addon}/__init__.py" in files
         # in check_*.py, or in the add-on's own code (a rejected override is marked where it is written)
         markers = [
-            m for rel, text in files.items() if rel.startswith(f"{addon}/") and rel.endswith(".py")
+            m
+            for rel, text in files.items()
+            if rel.startswith(f"{addon}/") and rel.endswith(".py")
             for m in parse_type_file(rel, text).markers
         ]
         assert markers, f"{addon} tests nothing"
