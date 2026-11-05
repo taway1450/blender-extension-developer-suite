@@ -18,7 +18,7 @@ FAIL: does not contain "PREFS_EXT_Preferences"
 ## features/addon_preferences/prefs_legacy/ide_prefs_legacy.py | ^hover-contains "prefs_legacy" @7 | __package__
 
 ````text
-FAIL: does not contain "prefs_legacy"
+PASS
 ````
 
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "Context" @11 | ctx

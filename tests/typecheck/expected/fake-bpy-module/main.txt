@@ -6,18 +6,14 @@ features/addon_discovery/disc_bad_bl_info/__init__.py | ignore-comment-unknown-r
 features/addon_discovery/disc_bad_manifest/__init__.py | ignore-comment-unknown-rule | """Feature test: blender_manifest.toml without an id and with an unknown type."""  # ty: ignore[blender-invalid-addon-metadata]
 features/addon_discovery/disc_both/__init__.py | unresolved-attribute | bpy.types.Scene.disc_both_marker = StringProperty()
 features/addon_discovery/disc_both/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_both_marker
-features/addon_discovery/disc_both/check_disc_both.py | type-assertion-failure | assert_type(__package__, str)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_discovery/disc_both/check_disc_both.py | type-assertion-failure | assert_type(scene.disc_both_marker, str)
 features/addon_discovery/disc_both/check_disc_both.py | unresolved-attribute | assert_type(scene.disc_both_marker, str)
 features/addon_discovery/disc_extension/__init__.py | unresolved-attribute | bpy.types.Scene.disc_extension_marker = IntProperty(default=helpers.DEFAULT)
 features/addon_discovery/disc_extension/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_extension_marker
-features/addon_discovery/disc_extension/check_disc_extension.py | type-assertion-failure | assert_type(__package__, str)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_discovery/disc_extension/check_disc_extension.py | type-assertion-failure | assert_type(scene.disc_extension_marker, int)  # the register() of this addon is found
 features/addon_discovery/disc_extension/check_disc_extension.py | unresolved-attribute | assert_type(scene.disc_extension_marker, int)  # the register() of this addon is found
-features/addon_discovery/disc_extension/sub/check_disc_extension_sub.py | type-assertion-failure | assert_type(__package__, str)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_discovery/disc_legacy/__init__.py | unresolved-attribute | bpy.types.Scene.disc_legacy_marker = IntProperty()
 features/addon_discovery/disc_legacy/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_legacy_marker
-features/addon_discovery/disc_legacy/check_disc_legacy.py | type-assertion-failure | assert_type(__package__, Literal["disc_legacy"])  # oracle-skip: stock ty types __package__ as str | None
 features/addon_discovery/disc_legacy/check_disc_legacy.py | type-assertion-failure | assert_type(scene.disc_legacy_marker, int)
 features/addon_discovery/disc_legacy/check_disc_legacy.py | unresolved-attribute | assert_type(scene.disc_legacy_marker, int)
 features/addon_discovery/disc_no_register/__init__.py | ignore-comment-unknown-rule | """Feature test: an extension without register() and unregister()."""  # ty: ignore[blender-invalid-register]
@@ -25,7 +21,6 @@ features/addon_discovery/disc_no_unregister/__init__.py | ignore-comment-unknown
 features/addon_discovery/disc_no_unregister/__init__.py | unresolved-attribute | bpy.types.Scene.disc_no_unregister_marker = IntProperty()
 features/addon_discovery/disc_override/src/disc_override_addon/__init__.py | unresolved-attribute | bpy.types.Scene.disc_override_marker = FloatProperty()
 features/addon_discovery/disc_override/src/disc_override_addon/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_override_marker
-features/addon_discovery/disc_override/src/disc_override_addon/check_disc_override.py | type-assertion-failure | assert_type(__package__, str)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_discovery/disc_override/src/disc_override_addon/check_disc_override.py | type-assertion-failure | assert_type(scene.disc_override_marker, float)
 features/addon_discovery/disc_override/src/disc_override_addon/check_disc_override.py | unresolved-attribute | assert_type(scene.disc_override_marker, float)
 features/addon_discovery/disc_register_alias/__init__.py | unresolved-attribute | bpy.types.Scene.disc_register_alias_marker = StringProperty()
@@ -47,7 +42,6 @@ features/addon_discovery/disc_register_signature/__init__.py | ignore-comment-un
 features/addon_discovery/disc_register_signature/__init__.py | ignore-comment-unknown-rule | def unregister(context, extra):  # ty: ignore[blender-invalid-register]
 features/addon_discovery/disc_single.py | unresolved-attribute | bpy.types.Scene.disc_single_marker = IntProperty()
 features/addon_discovery/disc_single.py | unresolved-attribute | del bpy.types.Scene.disc_single_marker
-features/addon_discovery/disc_single.py | type-assertion-failure | assert_type(__package__, Literal[""])  # oracle-skip: stock ty types __package__ as str | None
 features/addon_discovery/disc_single.py | type-assertion-failure | assert_type(scene.disc_single_marker, int)  # oracle-skip: a single-file add-on has no _expected/ folder
 features/addon_discovery/disc_single.py | unresolved-attribute | assert_type(scene.disc_single_marker, int)  # oracle-skip: a single-file add-on has no _expected/ folder
 features/addon_discovery/disc_workspace/addons/ws_alpha/__init__.py | unresolved-attribute | bpy.types.Scene.ws_value = IntProperty(default=START)
@@ -66,36 +60,27 @@ features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule |
 features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | value: IntProperty()
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | class PREFS_BAD_Missing(AddonPreferences):  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | value: IntProperty() #2
-features/addon_preferences/prefs_bad/__init__.py | invalid-assignment | bl_idname = __package__
 features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | value: IntProperty() #3
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/__init__.py | invalid-assignment | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | invalid-type-form | other: IntProperty()
 features/addon_preferences/prefs_bad/submodule.py | ignore-comment-unknown-rule | bl_idname = __name__  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/submodule.py | invalid-type-form | value: IntProperty()
-features/addon_preferences/prefs_ext/__init__.py | invalid-assignment | bl_idname = __package__
 features/addon_preferences/prefs_ext/__init__.py | invalid-type-form | scale: FloatProperty(default=1.0)
 features/addon_preferences/prefs_ext/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
 features/addon_preferences/prefs_ext/__init__.py | invalid-type-form | enabled: BoolProperty()
-features/addon_preferences/prefs_ext/__init__.py | invalid-argument-type | return preferences.addons[__package__].preferences
-features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-argument-type | assert_type(preferences.addons[__package__].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-argument-type | assert_type(preferences.addons[ADDON_ID].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[ADDON_ID].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | call-non-callable | assert_type(preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(helpers.preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(panel.preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-argument-type | prefs = preferences.addons[__package__].preferences  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(prefs.scale, float)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(prefs.scale, float)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-assignment | prefs.scale = 2.0  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-argument-type | addon = preferences.addons.get(__package__)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(addon.preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
-features/addon_preferences/prefs_ext/ui/panel.py | invalid-argument-type | return preferences.addons[base_package].preferences
 features/addon_preferences/prefs_legacy/__init__.py | invalid-type-form | scale: FloatProperty(default=1.0)
 features/addon_preferences/prefs_legacy/__init__.py | invalid-type-form | mode: EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
 features/addon_preferences/prefs_legacy/__init__.py | invalid-type-form | enabled: BoolProperty()
@@ -104,13 +89,9 @@ features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-f
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.scale, float)
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | invalid-argument-type | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_unregistered/__init__.py | ignore-comment-unknown-rule | class PREFS_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
-features/addon_preferences/prefs_unregistered/__init__.py | invalid-assignment | bl_idname = __package__
 features/addon_preferences/prefs_unregistered/__init__.py | invalid-type-form | value: IntProperty()
-features/addon_preferences/prefs_unregistered/check_prefs_unregistered.py | invalid-argument-type | assert_type(preferences.addons[__package__].preferences, AddonPreferences | None)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_unregistered/check_prefs_unregistered.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, AddonPreferences | None)  # oracle-skip: stock ty types __package__ as str | None
 features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | label: AliasStringProperty(name="Label")
 features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | count: AliasIntProperty(name="Count", default=1)
 features/bpy_symbols/generated/sym_assigned_alias/__init__.py | invalid-type-form | enabled: AliasBoolProperty()
@@ -1620,7 +1601,6 @@ features/properties/props_defaults/__init__.py | invalid-type-form | items_one_p
 features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty()
 features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #2
 features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #3
-features/properties/props_hosts/__init__.py | invalid-assignment | bl_idname = __package__
 features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #4
 features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #5
 features/properties/props_hosts/__init__.py | invalid-type-form | value: IntProperty() #6
@@ -1822,7 +1802,6 @@ features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-fai
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped_enum, Literal["A", "B"])
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.either, float | int)
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.scalar_unknown_options, int)
-features/registration/reg_autoload/auto_load.py | invalid-argument-type | package = importlib.import_module(__package__)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.second(), Result)
@@ -1985,7 +1964,6 @@ features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-un
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_Forgotten(PropertyGroup):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/__init__.py | invalid-type-form | value: IntProperty()
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | invalid-assignment | bl_idname = __package__
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | type-assertion-failure | assert_type(bpy.ops.regchk_unregistered.used(), Result)
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | assert_type(bpy.ops.regchk_unregistered.used(), Result)
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | bpy.ops.regchk_unregistered.used(steps=3)
