@@ -63,11 +63,17 @@ def packages(addon: Addon, spec: dict) -> list[Path]:
 
 
 def probe_problems(probes: list[dict], results: list) -> list[str]:
-    """The probes whose result is not the expected one (an addon that failed to register has no results)."""
+    """The probes whose result is not the expected one (an addon that failed to register has no results).
+
+    A bool only matches a bool: Python's ``False == 0`` would let ``expect = false`` hold for a probe giving ``0``.
+    """
     problems = []
     for probe, got in zip(probes, results):
         expect = probe["expect"]
-        holds = isinstance(got, str) and got.startswith("raises") if expect == "raises" else got == expect
+        if expect == "raises":
+            holds = isinstance(got, str) and got.startswith("raises")
+        else:
+            holds = got == expect and isinstance(got, bool) == isinstance(expect, bool)
         if not holds:
             problems.append(f"probe {probe['code']} gave {got!r}, expected {expect!r} ({probe.get('reason', '')})")
     return problems
