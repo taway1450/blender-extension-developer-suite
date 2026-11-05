@@ -25,7 +25,11 @@ Markers that only ty-blender can satisfy are left out: expected errors whose rul
 lines with an ``# oracle-skip: <reason>`` comment. Only ``check_*.py`` files are judged: the addon's own modules are
 checked from their source, and their idiomatic code (``x: IntProperty()``) is what ty-blender has to understand.
 
-Results go to ``.cache/typecheck-results/<version>/<generator>/oracle.md``; the task fails on any failure.
+Then the bare run: stock ty on the addons with the bpy stubs alone (no baseline, no reference stubs), which shows that
+the markers need the checker. A marker that still holds there on every generator (``bare_hits``) tests nothing of
+ty-blender, unless it is a guard marked ``# bare-ok: <reason>``. The bare run only reports, for now.
+
+Results go to ``.cache/typecheck-results/<version>/<generator>/oracle.md``; the task fails on any oracle failure.
 
 Usage:
   uv run scripts/check_oracle.py main
@@ -45,8 +49,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from _common import CACHE_DIR, TY_SUBMODULE, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import FEATURES_DIR, Addon, AddonResult, evaluate, parse_diagnostics, select
-from _markers import is_check_file
+from _features import FEATURES_DIR, Addon, AddonResult, MarkerResult, evaluate, parse_diagnostics, select
+from _markers import UNKNOWN_RULE, is_check_file
 from _target import Target, add_target_arguments
 
 ORACLE_DIR = CACHE_DIR / "typecheck-oracle"
@@ -280,6 +284,14 @@ def build_project(addon: Addon, target: Path) -> None:
             shutil.copy2(stub, out)
 
 
+def run_ty(cmd: list, cwd: Path) -> str:
+    """ty's concise output; ty exits with 1 when it reports errors."""
+    result = subprocess.run([str(c) for c in cmd], cwd=cwd, capture_output=True, text=True, encoding="utf-8")
+    if result.returncode not in (0, 1):
+        raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
+    return result.stdout
+
+
 @dataclass
 class OracleResult:
     result: AddonResult
@@ -305,6 +317,57 @@ def judge(result: AddonResult) -> OracleResult:
     return OracleResult(result, checked, failures)
 
 
+# --- the bare run -------------------------------------------------------------------------------------------------
+
+
+def bare_hits(result: AddonResult) -> list[MarkerResult]:
+    """Markers that claim to need ty-blender (``TypeMarker.needs_checker``) yet hold in the bare run: stock ty
+    reported nothing on their line apart from unknown ``blender-*`` rules. An ``assert_type`` that passes but whose
+    line has another error (an unresolved attribute, say) still needs the checker."""
+    return [m for m in result.markers if m.marker.needs_checker and all(d.rule == UNKNOWN_RULE for d in m.diagnostics)]
+
+
+BareKey = tuple[str, str]  # path and line key of a marker, the same on every generator
+
+
+def bare_run(ty: list[str], addons: list[Addon], stubs: Path, python_version: str) -> dict[BareKey, MarkerResult]:
+    """Stock ty on the add-ons as they are, with nothing but the bpy stubs: no oracle baseline, no reference stubs."""
+    cmd = [
+        *ty,
+        "check",
+        "--project",
+        TYPECHECK_TESTS_DIR,
+        "--python-version",
+        python_version,
+        "--extra-search-path",
+        stubs,
+        "--output-format",
+        "concise",
+        "--no-progress",
+        *(a.path for a in addons),
+    ]
+    results = evaluate(addons, parse_diagnostics(run_ty(cmd, TYPECHECK_TESTS_DIR)))
+    return {(m.marker.path, m.marker.key): m for r in results for m in bare_hits(r)}
+
+
+def bare_markdown(generator: str, hits: dict[BareKey, MarkerResult], everywhere: set[BareKey]) -> list[str]:
+    lines = [
+        "",
+        "## Bare run: markers that hold without ty-blender",
+        "",
+        f"Stock ty on the {generator} stubs alone. A marker that holds on every generator does not test the checker:",
+        "make it need the checker, drop it, or mark it `# bare-ok: <reason>`. Report only, for now.",
+        "",
+    ]
+    for key in sorted(hits):
+        m = hits[key]
+        where = "every generator" if key in everywhere else "this generator only"
+        lines.append(f"- {where}: `{m.marker.path}:{m.marker.line}` `{m.marker.source}`")
+    if not hits:
+        lines.append("None.")
+    return lines
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_target_arguments(parser, binary=None)  # stock ty from PyPI, not ty-blender
@@ -319,6 +382,8 @@ def main() -> int:
     ty = stock_ty_command()
 
     failed = False
+    bare: dict[str, dict[BareKey, MarkerResult]] = {}
+    reports: dict[str, list[str]] = {}
     for generator, stubs in target.stubs.items():
         log(
             f"Oracle run: stock ty with reference stubs (Python {python_version}, Blender {args.version}, "
@@ -352,13 +417,9 @@ def main() -> int:
                 *(a for p in search_paths for a in ("--extra-search-path", p)),
                 project / addon.rel,
             ]
-            result = subprocess.run(
-                [str(c) for c in cmd], cwd=project, capture_output=True, text=True, encoding="utf-8"
-            )
-            if result.returncode not in (0, 1):
-                raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
-            (work / addon.module / "ty.txt").write_text(result.stdout, encoding="utf-8")
-            [addon_result] = evaluate([addon], parse_diagnostics(result.stdout, base=project))
+            output = run_ty(cmd, project)
+            (work / addon.module / "ty.txt").write_text(output, encoding="utf-8")
+            [addon_result] = evaluate([addon], parse_diagnostics(output, base=project))
             outcome = judge(addon_result)
             outcomes.append(outcome)
             status = "ok" if not outcome.failures else f"{len(outcome.failures)} failures"
@@ -376,11 +437,22 @@ def main() -> int:
         for o in outcomes:
             if o.failures:
                 lines += ["", f"## {o.result.addon.feature}/{o.result.addon.name}", "", *(f"- {f}" for f in o.failures)]
-        results_dir = target.results_dir(generator)
-        (results_dir / "oracle.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
         total = sum(len(o.failures) for o in outcomes)
-        log(f"{total} oracle failures; summary: {results_dir / 'oracle.md'}")
+        log(f"{total} oracle failures")
         failed |= total > 0
+
+        log(f"Bare run: stock ty on the {generator} stubs alone")
+        bare[generator] = bare_run(ty, addons, stubs, python_version)
+        reports[generator] = lines
+
+    # A marker only fails to test the checker when it holds on every generator; see bare_markdown.
+    everywhere = set.intersection(*(set(hits) for hits in bare.values())) if bare else set()
+    for generator, lines in reports.items():
+        lines += bare_markdown(generator, bare[generator], everywhere)
+        path = target.results_dir(generator) / "oracle.md"
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        log(f"{generator}: {len(bare[generator])} markers hold on the bare stubs; summary: {path}")
+    log(f"{len(everywhere)} markers hold on the bare stubs of every generator (report only)")
     return 1 if failed else 0
 
 

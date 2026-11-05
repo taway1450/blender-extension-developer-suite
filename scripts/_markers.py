@@ -21,6 +21,7 @@ IDE_PREFIX = "ide_"  # editor markers for check:ide; check:features ignores thes
 ASSERT_TYPE = re.compile(r"\bassert_type\(")
 EXPECTED_ERROR = re.compile(r"#\s*ty:\s*ignore\[(?P<rules>[^\]]+)\]")
 ORACLE_SKIP = re.compile(r"#\s*oracle-skip\b")
+BARE_OK = re.compile(r"#\s*bare-ok\b(?P<reason>:\s*\S)?")
 IDE_MARKER = re.compile(r"^\s*#.*?\^(?P<kind>[a-z][a-z-]*)(?:\s+(?P<arg>.*?))?\s*$")
 IDE_KINDS = ("hover", "hover-contains", "hover-none", "signature", "signature-param", "completion", "deprecated")
 RECORDING_IDE_KINDS = ("hover", "signature")
@@ -77,6 +78,7 @@ class TypeMarker:
     key: str  # the line's key (``line_keys``)
     rules: tuple[str, ...] = ()  # the rules of an expected error
     oracle_skip: bool = False
+    bare_ok: bool = False  # a guard: meant to hold without ty-blender, so the bare run does not flag it
 
     @property
     def failure_rules(self) -> tuple[str, ...]:
@@ -96,6 +98,13 @@ class TypeMarker:
     def in_check_file(self) -> bool:
         return is_check_file(self.path)
 
+    @property
+    def needs_checker(self) -> bool:
+        """Whether the marker claims to need ty-blender, so that the bare run (stock ty on the bare stubs) must fail
+        it. Guards (``# bare-ok``) do not, and neither do ``blender-*``-only expected errors: stock ty cannot report
+        those at all."""
+        return not self.bare_ok and not self.blender_only
+
 
 @dataclass(frozen=True)
 class TypeFile:
@@ -110,7 +119,8 @@ def parse_type_file(path: str, text: str) -> TypeFile:
     """The ``assert_type`` and ``# ty: ignore[...]`` markers of a file.
 
     A line with an ignore comment is an expected error even when it also calls ``assert_type``. ``assert_type`` in
-    a comment or an import line is not a marker.
+    a comment or an import line is not a marker. ``# bare-ok: <reason>`` must give a reason and be on a marker line,
+    but not on a ``blender-*``-only expected error.
     """
     lines = text.splitlines()
     keys = line_keys(lines)
@@ -120,12 +130,22 @@ def parse_type_file(path: str, text: str) -> TypeFile:
         skip = ORACLE_SKIP.search(line) is not None
         if skip:
             skipped.add(number)
+        bare_ok = BARE_OK.search(line)
+        if bare_ok and not bare_ok["reason"]:
+            raise MarkerError(f"{path}:{number}: # bare-ok needs a reason (# bare-ok: <reason>)")
         source, key = line.strip(), keys[number - 1]
         if match := EXPECTED_ERROR.search(line):
             rules = tuple(r.strip() for r in match["rules"].split(","))
-            markers.append(TypeMarker(path, number, EXPECTED, source, key, rules, skip))
+            marker = TypeMarker(path, number, EXPECTED, source, key, rules, skip, bool(bare_ok))
         elif ASSERT_TYPE.search(line) and not line.lstrip().startswith(("#", "from ", "import ")):
-            markers.append(TypeMarker(path, number, ASSERT, source, key, oracle_skip=skip))
+            marker = TypeMarker(path, number, ASSERT, source, key, oracle_skip=skip, bare_ok=bool(bare_ok))
+        elif bare_ok:
+            raise MarkerError(f"{path}:{number}: # bare-ok on a line without a marker")
+        else:
+            continue
+        if marker.bare_ok and marker.blender_only:
+            raise MarkerError(f"{path}:{number}: # bare-ok on an expected error that only ty-blender can report")
+        markers.append(marker)
     return TypeFile(markers, frozenset(skipped), keys)
 
 

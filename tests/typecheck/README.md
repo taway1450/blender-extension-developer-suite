@@ -66,6 +66,8 @@ the generator and run `mise run features:generate`; `--check` fails when they ar
   share one comment.
 - `# oracle-skip: reason` keeps a line out of the oracle run, for what reference stubs cannot express (a class
   defined in the check file, `__package__`, class-level access after registration).
+- `# bare-ok: reason` marks a **guard**: a marker that is meant to hold without ty-blender, such as a stub type
+  the checker must keep. The bare run (below) does not flag it, and `progress.md` counts it on its own.
 - Any other diagnostic in an add-on folder, `__init__.py` included, is recorded as unexpected.
 
 Write assertions inside functions that take the objects as parameters (`def _(scene: Scene) -> None:`).
@@ -97,6 +99,20 @@ is involved at all. Deltas are merged per member:
 
 A delta is named after the module it changes (`bpy.types.pyi`, `bpy.ops.my_category.pyi`); a new operator
 category also needs `bpy.ops.pyi` with `from bpy.ops import my_category as my_category`.
+
+### The bare run
+
+The oracle shows that the markers are right; the **bare run** shows that they need the checker. `check:oracle` also
+runs stock ty on the add-ons with nothing but the bpy stubs: no `oracle/` baseline, no reference stubs. Every marker
+should then fail, because each one states something only ty-blender provides. A marker **holds on the bare stubs**
+when stock ty reports nothing on its line (apart from unknown `blender-*` rules): an `assert_type` that passes with no
+other error on the line, or an expected error whose stock rules stock ty already reports. `oracle-skip` lines are
+judged too; `blender-*`-only expected errors and guards are not.
+
+A marker that holds on the bare stubs of **every** generator tests nothing of the checker: make it need the checker,
+drop it (in a generator, for generated add-ons), or mark it `# bare-ok: reason` if it is a guard. One that holds on
+a single generator is listed for information. The hits go to the end of `oracle.md`; for now they are reported only
+and do not fail the task.
 
 ## Runtime check (`check:load`)
 
@@ -161,7 +177,7 @@ a file, the later lines get ` #2`, ` #3` ... So adding, removing or moving code 
 is a copy of a line further down. The terminal output of a run still shows line numbers.
 
 `<version>.progress.md` counts the markers that pass per feature, for type markers, expected errors and IDE markers
-(`^hover` and `^signature` only record, so they are not counted). Its last column counts recorded diagnostics on lines
+(`^hover` and `^signature` only record, so they are not counted). Guards (`# bare-ok`) get a column of their own. Its last column counts recorded diagnostics on lines
 without a marker. `--update` of either task rewrites it for every feature, from the recorded results and the current
 markers, so it also stays complete after a partial run.
 

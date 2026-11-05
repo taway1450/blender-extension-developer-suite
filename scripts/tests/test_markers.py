@@ -69,6 +69,35 @@ def test_oracle_skip_without_marker():
     assert parsed.oracle_skip_lines == {1}
 
 
+def test_bare_ok_marks_a_guard():
+    text = dedent(
+        """\
+        assert_type(props, OperatorProperties)  # bare-ok: a non-literal idname keeps the stub type
+        x = "a"  # ty: ignore[blender-x, invalid-assignment]  # bare-ok: stock ty already rejects it
+        assert_type(scene.count, int)
+        del scene.count  # ty: ignore[blender-a]
+        """
+    )
+    guard, mixed, plain, blender = parse_type_file(PATH, text).markers
+    assert guard.bare_ok and mixed.bare_ok
+    assert not guard.needs_checker and not mixed.needs_checker
+    assert plain.needs_checker
+    assert not blender.needs_checker  # stock ty cannot report blender-* rules
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ("assert_type(x, int)  # bare-ok\n", "needs a reason"),
+        ("x = 1  # bare-ok: no marker here\n", "without a marker"),
+        ("del x  # ty: ignore[blender-a]  # bare-ok: why\n", "only ty-blender can report"),
+    ],
+)
+def test_bare_ok_errors(text, message):
+    with pytest.raises(MarkerError, match=message):
+        parse_type_file(PATH, text)
+
+
 def test_file_kinds():
     assert is_check_file("features/f/a/check_a.py")
     assert not is_check_file("features/f/check_dir/__init__.py")

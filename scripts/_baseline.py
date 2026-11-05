@@ -262,6 +262,7 @@ class FeatureProgress:
     feature: str
     asserts: list[int] = field(default_factory=lambda: [0, 0])  # passed, total
     expected_errors: list[int] = field(default_factory=lambda: [0, 0])
+    guards: list[int] = field(default_factory=lambda: [0, 0])  # ``# bare-ok`` markers, of either kind
     ide: list[int] = field(default_factory=lambda: [0, 0])
     other: int = 0
 
@@ -281,14 +282,16 @@ def progress(
 ) -> list[FeatureProgress]:
     """Passes per feature. A type marker passes when no failure of it is recorded; an IDE marker that asserts
     something passes when its recorded section has no FAIL (``^hover`` and ``^signature`` only record, and are not
-    counted). Recorded type entries that are no marker failure count as other diagnostics."""
+    counted). Guards (``# bare-ok``) hold without ty-blender, so they measure no progress: they get their own count
+    instead of the assert_type or expected-error one. Recorded type entries that are no marker failure count as other
+    diagnostics."""
     rows = {f: FeatureProgress(f) for f in features}
     consumed = set()
     for m in type_markers:
         row = rows[feature_of(m.path)]
         failures = {type_entry(m.path, r, m.key) for r in m.failure_rules} & recorded_types.keys()
         consumed |= failures
-        counts = row.asserts if m.kind == ASSERT else row.expected_errors
+        counts = row.guards if m.bare_ok else row.asserts if m.kind == ASSERT else row.expected_errors
         counts[0] += not failures
         counts[1] += 1
     for key in recorded_types.keys() - consumed:
@@ -310,7 +313,7 @@ def progress_markdown(title: str, rows: list[FeatureProgress], with_ide: bool) -
 
     total = FeatureProgress("**total**")
     for r in rows:
-        for name in ("asserts", "expected_errors", "ide"):
+        for name in ("asserts", "expected_errors", "guards", "ide"):
             getattr(total, name)[0] += getattr(r, name)[0]
             getattr(total, name)[1] += getattr(r, name)[1]
         total.other += r.other
@@ -318,14 +321,17 @@ def progress_markdown(title: str, rows: list[FeatureProgress], with_ide: bool) -
         f"# {title}",
         "",
         "Markers that pass, per feature, and the diagnostics on lines without a marker. Written by `--update` of",
-        "`check:features` and `check:ide` from the recorded results next to this file; do not edit.",
+        "`check:features` and `check:ide` from the recorded results next to this file; do not edit. Guards are markers",
+        "that hold without ty-blender (`# bare-ok`) and are not counted in the assert_type and expected-error columns.",
         "",
-        "| Feature | assert_type | expected errors | IDE | other diagnostics |",
-        "| --- | --- | --- | --- | --- |",
+        "| Feature | assert_type | expected errors | guards | IDE | other diagnostics |",
+        "| --- | --- | --- | --- | --- | --- |",
     ]
     for r in [*rows, total]:
         ide = cell(r.ide) if with_ide else "not recorded"
-        out.append(f"| {r.feature} | {cell(r.asserts)} | {cell(r.expected_errors)} | {ide} | {r.other} |")
+        out.append(
+            f"| {r.feature} | {cell(r.asserts)} | {cell(r.expected_errors)} | {cell(r.guards)} | {ide} | {r.other} |"
+        )
     return "\n".join(out) + "\n"
 
 
