@@ -111,8 +111,8 @@ judged too; `blender-*`-only expected errors and guards are not.
 
 A marker that holds on the bare stubs of **every** generator tests nothing of the checker: make it need the checker,
 drop it (in a generator, for generated add-ons), or mark it `# bare-ok: reason` if it is a guard. One that holds on
-a single generator is listed for information. The hits go to the end of `oracle.md`; for now they are reported only
-and do not fail the task.
+a single generator is listed for information. The hits go to the end of `oracle.md`, and hits on every generator
+fail the task. A run of one `--generator` cannot tell, so there the hits are only reported.
 
 ## Runtime check (`check:load`)
 

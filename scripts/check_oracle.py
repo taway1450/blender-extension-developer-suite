@@ -27,7 +27,8 @@ checked from their source, and their idiomatic code (``x: IntProperty()``) is wh
 
 Then the bare run: stock ty on the addons with the bpy stubs alone (no baseline, no reference stubs), which shows that
 the markers need the checker. A marker that still holds there on every generator (``bare_hits``) tests nothing of
-ty-blender, unless it is a guard marked ``# bare-ok: <reason>``. The bare run only reports, for now.
+ty-blender, unless it is a guard marked ``# bare-ok: <reason>``, and fails the task. A run of one ``--generator``
+only reports the bare run's hits, since it cannot tell whether they hold on the other generators.
 
 Results go to ``.cache/typecheck-results/<version>/<generator>/oracle.md``; the task fails on any oracle failure.
 
@@ -52,6 +53,7 @@ from _common import CACHE_DIR, TY_SUBMODULE, TYPECHECK_TESTS_DIR, StepError, log
 from _features import FEATURES_DIR, Addon, AddonResult, MarkerResult, evaluate, parse_diagnostics, select
 from _markers import UNKNOWN_RULE, is_check_file
 from _target import Target, add_target_arguments
+from generate_stubs import ALL
 
 ORACLE_DIR = CACHE_DIR / "typecheck-oracle"
 BASELINE_DIR = TYPECHECK_TESTS_DIR / "oracle"
@@ -350,18 +352,23 @@ def bare_run(ty: list[str], addons: list[Addon], stubs: Path, python_version: st
     return {(m.marker.path, m.marker.key): m for r in results for m in bare_hits(r)}
 
 
-def bare_markdown(generator: str, hits: dict[BareKey, MarkerResult], everywhere: set[BareKey]) -> list[str]:
+def bare_markdown(
+    generator: str, hits: dict[BareKey, MarkerResult], everywhere: set[BareKey], complete: bool
+) -> list[str]:
     lines = [
         "",
         "## Bare run: markers that hold without ty-blender",
         "",
-        f"Stock ty on the {generator} stubs alone. A marker that holds on every generator does not test the checker:",
-        "make it need the checker, drop it, or mark it `# bare-ok: <reason>`. Report only, for now.",
+        f"Stock ty on the {generator} stubs alone. A marker that holds on every generator does not test the checker",
+        "and fails the task: make it need the checker, drop it, or mark it `# bare-ok: <reason>`.",
         "",
     ]
     for key in sorted(hits):
         m = hits[key]
-        where = "every generator" if key in everywhere else "this generator only"
+        if not complete:
+            where = "not judged (one generator run)"
+        else:
+            where = "FAIL, every generator" if key in everywhere else "this generator only"
         lines.append(f"- {where}: `{m.marker.path}:{m.marker.line}` `{m.marker.source}`")
     if not hits:
         lines.append("None.")
@@ -445,14 +452,20 @@ def main() -> int:
         bare[generator] = bare_run(ty, addons, stubs, python_version)
         reports[generator] = lines
 
-    # A marker only fails to test the checker when it holds on every generator; see bare_markdown.
-    everywhere = set.intersection(*(set(hits) for hits in bare.values())) if bare else set()
+    # A marker only fails to test the checker when it holds on every generator, so a run of one generator (when there
+    # are more) can only report its hits.
+    complete = args.generator == ALL
+    everywhere = set.intersection(*(set(hits) for hits in bare.values())) if bare and complete else set()
     for generator, lines in reports.items():
-        lines += bare_markdown(generator, bare[generator], everywhere)
+        lines += bare_markdown(generator, bare[generator], everywhere, complete)
         path = target.results_dir(generator) / "oracle.md"
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         log(f"{generator}: {len(bare[generator])} markers hold on the bare stubs; summary: {path}")
-    log(f"{len(everywhere)} markers hold on the bare stubs of every generator (report only)")
+    if complete:
+        log(f"{len(everywhere)} markers hold on the bare stubs of every generator")
+        failed |= bool(everywhere)
+    else:
+        log(f"Bare run of --generator {args.generator} only: its hits are reported, not judged")
     return 1 if failed else 0
 
 
