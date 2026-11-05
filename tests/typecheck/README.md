@@ -68,7 +68,10 @@ the generator and run `mise run features:generate`; `--check` fails when they ar
   defined in the check file, `__package__`, class-level access after registration).
 - `# bare-ok: reason` marks a **guard**: a marker that is meant to hold without ty-blender, such as a stub type
   the checker must keep. The bare run (below) does not flag it, and `progress.md` counts it on its own.
-- Any other diagnostic in an add-on folder, `__init__.py` included, is recorded as unexpected.
+- Any other diagnostic in an add-on folder, `__init__.py` included, is recorded as unexpected. On a marker's line
+  it also fails the marker: an `assert_type` whose asserted type does not resolve (`bpy_prop_array[float]` where
+  the stubs' `bpy_prop_array` is not generic) compares Unknown with Unknown, so ty reports no
+  `type-assertion-failure` although nothing was checked.
 
 Write assertions inside functions that take the objects as parameters (`def _(scene: Scene) -> None:`).
 

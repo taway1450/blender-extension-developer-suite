@@ -11,7 +11,7 @@ Every folder in ``tests/typecheck/features/`` is a type-checker feature made of 
 - ``assert_type(expr, T)`` passes unless ty reports ``type-assertion-failure`` on its line;
 - ``# ty: ignore[rule]`` (an expected error) passes unless ty reports ``unused-ignore-comment`` on its line,
   or ``ignore-comment-unknown-rule`` for a ``blender-*`` rule ty does not know yet;
-- any other diagnostic is unexpected.
+- any other diagnostic is unexpected, and fails the marker on its line too (``MarkerResult.passed``).
 
 The results that are not passes go to ``tests/typecheck/expected/<generator>/<version>.txt`` (see ``_baseline.py``).
 The task fails when they differ from that file, so both regressions and fixes show up; ``--update`` rewrites it

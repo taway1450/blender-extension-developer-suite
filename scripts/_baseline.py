@@ -46,7 +46,7 @@ def type_entries(results: list[AddonResult]) -> dict[str, str]:
     located: dict[tuple[str, int, str], list[str]] = collections.defaultdict(list)
     for result in results:
         for m in result.markers:
-            if not m.passed:
+            if m.failures:  # the marker's other diagnostics are in result.unexpected
                 entry = type_entry(m.marker.path, m.failures[0].rule, m.marker.key)
                 located[(m.marker.path, m.marker.line, entry)] += [d.message for d in m.failures]
         for d in result.unexpected:
@@ -280,16 +280,20 @@ def progress(
     recorded_types: dict[str, str],
     recorded_ide: dict[str, str] | None,
 ) -> list[FeatureProgress]:
-    """Passes per feature. A type marker passes when no failure of it is recorded; an IDE marker that asserts
-    something passes when its recorded section has no FAIL (``^hover`` and ``^signature`` only record, and are not
-    counted). Guards (``# bare-ok``) hold without ty-blender, so they measure no progress: they get their own count
-    instead of the assert_type or expected-error one. Recorded type entries that are no marker failure count as other
-    diagnostics."""
+    """Passes per feature. A type marker passes when nothing is recorded on its line (``MarkerResult.passed``); an
+    IDE marker that asserts something passes when its recorded section has no FAIL (``^hover`` and ``^signature``
+    only record, and are not counted). Guards (``# bare-ok``) hold without ty-blender, so they measure no progress:
+    they get their own count instead of the assert_type or expected-error one. Recorded type entries on lines without
+    a marker count as other diagnostics."""
     rows = {f: FeatureProgress(f) for f in features}
+    by_line = collections.defaultdict(set)  # (path, line key) -> recorded entries
+    for key in recorded_types:
+        path, _, line_key = key.split(SEPARATOR, 2)
+        by_line[(path, line_key)].add(key)
     consumed = set()
     for m in type_markers:
         row = rows[feature_of(m.path)]
-        failures = {type_entry(m.path, r, m.key) for r in m.failure_rules} & recorded_types.keys()
+        failures = by_line.get((m.path, m.key), set())
         consumed |= failures
         counts = row.guards if m.bare_ok else row.asserts if m.kind == ASSERT else row.expected_errors
         counts[0] += not failures

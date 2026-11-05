@@ -80,6 +80,7 @@ def test_progress_counts_per_feature():
     text = (
         "assert_type(x, int)\nassert_type(y, str)\ny = 1  # ty: ignore[blender-x]\nfoo()\n"
         "assert_type(p, Props)  # bare-ok: the stub type is kept\n"
+        "assert_type(v, bpy_prop_array[float])\n"
     )
     markers = parse_type_file(check, text).markers
     ide_path = "features/props/alpha/ide_alpha.py"
@@ -89,6 +90,8 @@ def test_progress_counts_per_feature():
             entry(check, ASSERT_FAILURE, "assert_type(x, int)"),
             entry(check, UNKNOWN_RULE, "y = 1  # ty: ignore[blender-x]"),
             entry(check, "unresolved-reference", "foo()"),
+            # the asserted type does not resolve: no type-assertion-failure, but the marker fails all the same
+            entry(check, "not-subscriptable", "assert_type(v, bpy_prop_array[float])"),
             entry("features/regs/legacy.py", "invalid-type-form", "x: IntProperty()"),
         ],
         "",
@@ -96,14 +99,14 @@ def test_progress_counts_per_feature():
     # ^hover only records, so it counts neither as a pass nor at all
     recorded_ide = {ide[0].title: "PASS", ide[1].title: "FAIL: does not contain", ide[2].title: "(no hover)"}
     props, regs = progress(["props", "regs"], markers, ide, recorded, recorded_ide)
-    # the guard (bare-ok) is counted on its own, not with the assert_type markers
-    assert (props.asserts, props.expected_errors, props.guards) == ([1, 2], [0, 1], [1, 1])
+    # the guard (bare-ok) is counted on its own, not with the assert_type markers; "other" is off-marker lines only
+    assert (props.asserts, props.expected_errors, props.guards) == ([1, 3], [0, 1], [1, 1])
     assert (props.ide, props.other) == ([1, 2], 1)
     assert (regs.asserts, regs.other) == ([0, 0], 1)
     table = progress_markdown("t", [props, regs], with_ide=True)
-    assert "| props | 1/2 | 0/1 | 1/1 | 1/2 | 1 |" in table
+    assert "| props | 1/3 | 0/1 | 1/1 | 1/2 | 1 |" in table
     assert "| regs | - | - | - | - | 1 |" in table
-    assert "| **total** | 1/2 | 0/1 | 1/1 | 1/2 | 2 |" in table
+    assert "| **total** | 1/3 | 0/1 | 1/1 | 1/2 | 2 |" in table
 
 
 def test_progress_without_ide_results():

@@ -160,11 +160,15 @@ class MarkerResult:
 
     @property
     def failures(self) -> list[Diagnostic]:
+        """The diagnostics that say the marker itself failed (``TypeMarker.failure_rules``)."""
         return [d for d in self.diagnostics if d.rule in self.marker.failure_rules]
 
     @property
     def passed(self) -> bool:
-        return not self.failures
+        """Whether ty reported nothing on the line. Any other error fails the marker too: an ``assert_type`` whose
+        asserted type does not resolve (``bpy_prop_array[float]`` with non-generic stubs) compares Unknown with
+        Unknown and reports no ``type-assertion-failure``, though nothing was checked."""
+        return not self.diagnostics
 
 
 def type_files(addon: Addon) -> dict[str, TypeFile]:
@@ -266,7 +270,7 @@ def summary_markdown(title: str, results: list[AddonResult]) -> str:
             continue
         out += ["", f"## {r.addon.feature}/{r.addon.name}", ""]
         for m in failing:
-            messages = "; ".join(d.message for d in m.failures)
+            messages = "; ".join(f"{d.message} [{d.rule}]" for d in m.diagnostics)
             out.append(f"- FAIL `{m.marker.path}:{m.marker.line}` `{m.marker.source}`: {messages}")
         for d in r.unexpected:
             out.append(f"- {d.severity}[{d.rule}] `{d.path}:{d.line}:{d.col}`: {d.message}")

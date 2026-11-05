@@ -310,7 +310,7 @@ def judge(result: AddonResult) -> OracleResult:
         if marker.blender_only or not marker.in_check_file or marker.oracle_skip:
             continue
         checked += 1
-        if not m.passed:
+        if m.failures:  # other diagnostics on the line fail it below, as unexpected ones
             messages = "; ".join(d.message for d in m.failures)
             failures.append(f"FAIL `{marker.path}:{marker.line}` `{marker.source}`: {messages}")
     for d in result.unexpected:
