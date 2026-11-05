@@ -397,7 +397,7 @@ description = "Lint and format the tooling in scripts/ with the pinned upstream 
 run = 'uvx prek@0.5.6 run --all-files'
 
 [tasks."test:scripts"]
-description = "Unit-test the tooling in scripts/ (marker grammar, recorded results) with pytest"
+description = "Unit-test the feature-test harness in scripts/ (markers, verdicts, recorded results, stub merge) with pytest"
 run = 'uv run --no-project --with pytest pytest scripts/tests -q -p no:cacheprovider'
 
 [tasks."report:flags"]

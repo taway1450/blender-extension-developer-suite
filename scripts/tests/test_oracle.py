@@ -1,9 +1,31 @@
 from textwrap import dedent
 
+from test_features import CHECK as SCENARIO_CHECK
+from test_features import evaluated
+
 from _common import TYPECHECK_TESTS_DIR
 from _features import Addon, AddonResult, Diagnostic, MarkerResult
 from _markers import ASSERT_FAILURE, UNKNOWN_RULE, UNUSED_IGNORE, parse_type_file
-from check_oracle import bare_hits
+from check_oracle import bare_hits, judge
+
+
+def test_judge_fails_on_check_file_markers_and_diagnostics_stock_ty_can_satisfy():
+    outcome = judge(evaluated())
+    # blender-*-only expected errors (lines 5, 6) and the oracle-skip line 9 are left out; so is __init__.py, whose
+    # idiomatic code is what ty-blender has to understand
+    assert outcome.checked == 5
+    assert [f.split("`")[1] for f in outcome.failures] == [
+        f"{SCENARIO_CHECK}:2",  # wrong type
+        f"{SCENARIO_CHECK}:4",  # expected error gone
+        f"{SCENARIO_CHECK}:7:16",  # unresolved asserted type, reported once, as unexpected
+        f"{SCENARIO_CHECK}:8:1",
+    ]
+
+
+def test_judge_passes_when_ty_reports_nothing():
+    outcome = judge(evaluated(output=""))
+    assert outcome.failures == []
+
 
 PATH = "features/f/addon/check_addon.py"
 ADDON = Addon("f", TYPECHECK_TESTS_DIR / "features/f/addon")

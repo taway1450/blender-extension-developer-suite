@@ -185,4 +185,6 @@ without a marker. `--update` of either task rewrites it for every feature, from 
 markers, so it also stays complete after a partial run.
 
 The marker grammar is parsed in `scripts/_markers.py`, and the recorded results are read and written in
-`scripts/_baseline.py`. `mise run test:scripts` runs their unit tests.
+`scripts/_baseline.py`. `mise run test:scripts` runs the harness's own tests (`scripts/tests/`, no ty or Blender
+needed): the marker grammar, how ty's diagnostics become marker results and every way a marker fails, the recorded
+results and `progress.md`, the oracle's verdict and stub-delta merge, the bare run, IDE rendering and runtime probes.

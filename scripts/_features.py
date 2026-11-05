@@ -231,24 +231,31 @@ class AddonResult:
 
 
 def evaluate(addons: list[Addon], diagnostics: list[Diagnostic]) -> list[AddonResult]:
-    results = []
-    for addon in addons:
-        files = type_files(addon)
-        markers = [MarkerResult(m) for f in files.values() for m in f.markers]
-        by_line = {(m.marker.path, m.marker.line): m for m in markers}
-        unexpected = []
-        for diagnostic in diagnostics:
-            if not addon.contains(diagnostic.path):
-                continue
-            if is_ide_file(diagnostic.path) or EXPECTED_STUBS in diagnostic.path.split("/"):
-                continue  # editor tests (check:ide) hold unfinished code on purpose
-            marker = by_line.get((diagnostic.path, diagnostic.line))
-            if marker is not None:
-                marker.diagnostics.append(diagnostic)
-            if marker is None or diagnostic.rule not in marker.marker.failure_rules:
-                unexpected.append(diagnostic)
-        results.append(AddonResult(addon, markers, unexpected, files))
-    return results
+    """Each addon's markers with the diagnostics ty reported on their lines (reads the addons' files)."""
+    return [evaluate_addon(addon, type_files(addon), diagnostics) for addon in addons]
+
+
+def evaluate_addon(addon: Addon, files: dict[str, TypeFile], diagnostics: list[Diagnostic]) -> AddonResult:
+    """``evaluate`` for one addon whose type-test files are already parsed (``type_files``).
+
+    Diagnostics outside the addon, in ``ide_*.py`` files and in ``_expected/`` are dropped. One on a marker's line
+    belongs to the marker; unless it is the marker's own failure, it is unexpected too, as is any diagnostic on a line
+    without a marker.
+    """
+    markers = [MarkerResult(m) for f in files.values() for m in f.markers]
+    by_line = {(m.marker.path, m.marker.line): m for m in markers}
+    unexpected = []
+    for diagnostic in diagnostics:
+        if not addon.contains(diagnostic.path):
+            continue
+        if is_ide_file(diagnostic.path) or EXPECTED_STUBS in diagnostic.path.split("/"):
+            continue  # editor tests (check:ide) hold unfinished code on purpose
+        marker = by_line.get((diagnostic.path, diagnostic.line))
+        if marker is not None:
+            marker.diagnostics.append(diagnostic)
+        if marker is None or diagnostic.rule not in marker.marker.failure_rules:
+            unexpected.append(diagnostic)
+    return AddonResult(addon, markers, unexpected, files)
 
 
 def summary_markdown(title: str, results: list[AddonResult]) -> str:
