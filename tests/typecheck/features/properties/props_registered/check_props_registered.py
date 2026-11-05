@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Literal, assert_type
+from typing import Literal, TypeVar, assert_type
 
 import bpy
 from bpy.types import (Bone, Camera, Collection, Context, EditBone, Image, Material, NodeSocketFloat, Object,
                        PoseBone, Scene, ShaderNodeMath, Strip, ViewLayer, WindowManager, bpy_prop_collection_idprop)
 
 from . import PROPS_REGISTERED_Item
+
+SceneT = TypeVar("SceneT", bound=Scene)
+SceneOrObjectT = TypeVar("SceneOrObjectT", Scene, Object)
 
 
 def on_scene(scene: Scene) -> None:
@@ -45,6 +48,34 @@ def on_other_structs(wm: WindowManager, bone: Bone, edit_bone: EditBone, pose_bo
     assert_type(socket.reg_socket, int)
     assert_type(view_layer.reg_view_layer, int)
     assert_type(strip.reg_strip, int)
+
+
+def most_derived_owner(scene: Scene, obj: Object) -> None:
+    """ID and Scene both register reg_owner_first and reg_owner_last, in opposite orders: Scene's wins on a Scene."""
+    assert_type(scene.reg_owner_first, str)
+    assert_type(scene.reg_owner_last, str)
+    assert_type(obj.reg_owner_first, int)
+    assert_type(obj.reg_owner_last, int)
+
+
+def through_union(either: Scene | Object) -> None:
+    assert_type(either.reg_id, int)  # every arm has it
+
+
+def through_bound(scene: SceneT) -> SceneT:
+    assert_type(scene.reg_int, int)
+    return scene
+
+
+def through_constraints(either: SceneOrObjectT) -> SceneOrObjectT:
+    assert_type(either.reg_id, int)  # every constraint has it
+    return either
+
+
+def on_the_class(scene_class: type[Scene]) -> None:
+    """A class read gives the property declaration (_PropertyDeferred), not the value: the checker leaves it missing."""
+    Scene.reg_int  # ty: ignore[unresolved-attribute]  # oracle-skip: the reference stubs declare it on the class  # bare-ok: must stay missing: a class read is not the value
+    scene_class.reg_int  # ty: ignore[unresolved-attribute]  # oracle-skip: the reference stubs declare it on the class  # bare-ok: must stay missing: a class read is not the value
 
 
 def through_data(context: Context) -> None:

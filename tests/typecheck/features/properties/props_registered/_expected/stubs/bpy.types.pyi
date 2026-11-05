@@ -6,8 +6,12 @@ from props_registered import PROPS_REGISTERED_Item
 
 class ID:
     reg_id: int
+    reg_owner_first: int
+    reg_owner_last: int
 
 class Scene:
+    reg_owner_first: str
+    reg_owner_last: str
     reg_int: int
     reg_mode: Literal["A", "B"]
     @property

@@ -72,8 +72,11 @@ class PROPS_SCALAR_Values(PropertyGroup):
     s_file_path: StringProperty(subtype="FILE_PATH")
     s_dir_path: StringProperty(subtype="DIR_PATH")
     s_file_name: StringProperty(subtype="FILE_NAME")
+    # a BYTE_STRING property gives bytes, not str
     s_byte_string: StringProperty(subtype="BYTE_STRING")
     s_password: StringProperty(subtype="PASSWORD")
+    # READ_ONLY makes any property read-only (AttributeError at runtime)
+    i_read_only: IntProperty(options={"READ_ONLY"})
 
 
 classes = (PROPS_SCALAR_Values,)

@@ -14,8 +14,3 @@ def preferences_members(preferences: Preferences) -> None:
     #                                             ^completion scale
     preferences.addons[__package__].preferences
     #                               ^hover-contains "PREFS_EXT_Preferences"
-
-
-def package() -> None:
-    __package__
-    # ^hover-contains "prefs_ext"

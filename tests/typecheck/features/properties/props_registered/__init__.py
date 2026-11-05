@@ -32,6 +32,11 @@ def register():
     bpy.types.Material.reg_str = StringProperty()
     bpy.types.WindowManager.reg_bool = BoolProperty()
     bpy.types.ID.reg_id = IntProperty()  # every ID type: Scene, Object, Material, ...
+    # The same name on a class and on its base: the most-derived class wins, whichever is registered first.
+    bpy.types.ID.reg_owner_first = IntProperty()
+    bpy.types.Scene.reg_owner_first = StringProperty()
+    bpy.types.Scene.reg_owner_last = StringProperty()
+    bpy.types.ID.reg_owner_last = IntProperty()
     bpy.types.Bone.reg_bone = IntProperty()
     bpy.types.EditBone.reg_edit_bone = IntProperty()
     bpy.types.PoseBone.reg_pose_bone = IntProperty()
@@ -56,6 +61,8 @@ def unregister():
                       (bpy.types.Scene, "reg_items"), (bpy.types.Scene, "reg_object"),
                       (bpy.types.Object, "reg_float"), (bpy.types.Material, "reg_str"),
                       (bpy.types.WindowManager, "reg_bool"), (bpy.types.ID, "reg_id"),
+                      (bpy.types.ID, "reg_owner_first"), (bpy.types.Scene, "reg_owner_first"),
+                      (bpy.types.Scene, "reg_owner_last"), (bpy.types.ID, "reg_owner_last"),
                       (bpy.types.Bone, "reg_bone"), (bpy.types.EditBone, "reg_edit_bone"),
                       (bpy.types.PoseBone, "reg_pose_bone"), (bpy.types.Node, "reg_node"),
                       (bpy.types.NodeSocket, "reg_socket"), (bpy.types.ViewLayer, "reg_view_layer"),

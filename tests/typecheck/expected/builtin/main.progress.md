@@ -12,8 +12,8 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | inheritance | 0/62 | 0/41 | 12/12 | 0/3 | 26 |
 | operator_calls | 0/21 | 0/25 | 4/4 | 0/4 | 58 |
 | operator_properties | 0/43 | 1/9 | 7/7 | 0/5 | 25 |
-| properties | 0/409 | 0/64 | 2/2 | 0/9 | 308 |
+| properties | 0/417 | 0/65 | 4/4 | 0/9 | 313 |
 | property_wrappers | 0/15 | - | 2/2 | 0/5 | 18 |
 | registration | 0/40 | 0/5 | 3/3 | 0/3 | 13 |
 | registration_checks | 0/8 | 0/36 | 10/10 | - | 16 |
-| **total** | 2/787 | 1/241 | 51/51 | 0/32 | 653 |
+| **total** | 2/795 | 1/242 | 53/53 | 0/32 | 658 |

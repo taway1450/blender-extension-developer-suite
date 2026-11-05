@@ -1109,6 +1109,7 @@ features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_d
 features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_file_name: StringProperty(subtype="FILE_NAME")
 features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_byte_string: StringProperty(subtype="BYTE_STRING")
 features/properties/generated/props_scalar/__init__.py | invalid-type-form | s_password: StringProperty(subtype="PASSWORD")
+features/properties/generated/props_scalar/__init__.py | invalid-type-form | i_read_only: IntProperty(options={"READ_ONLY"})
 features/properties/generated/props_scalar/__init__.py | unresolved-attribute | bpy.types.Scene.props_scalar = PointerProperty(type=PROPS_SCALAR_Values)
 features/properties/generated/props_scalar/__init__.py | unresolved-attribute | del bpy.types.Scene.props_scalar
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.b, bool)
@@ -1169,14 +1170,16 @@ features/properties/generated/props_scalar/check_props_scalar.py | type-assertio
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_file_path, str)
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_dir_path, str)
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_file_name, str)
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_byte_string, str)
+features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_byte_string, bytes)
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.s_password, str)
+features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(s.i_read_only, int)
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.b = "yes"  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.i = "3"  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.i = 1.5  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.f = "1.5"  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.s = 1  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.s = None  # ty: ignore[invalid-assignment]
+features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | s.i_read_only = 1  # ty: ignore[invalid-assignment]
 features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(scene.props_scalar, PROPS_SCALAR_Values)
 features/properties/generated/props_scalar/check_props_scalar.py | unresolved-attribute | assert_type(scene.props_scalar, PROPS_SCALAR_Values)
 features/properties/generated/props_scalar/check_props_scalar.py | unresolved-attribute | scene.props_scalar = None  # ty: ignore[invalid-assignment]
@@ -1697,6 +1700,10 @@ features/properties/props_registered/__init__.py | unresolved-attribute | bpy.ty
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Material.reg_str = StringProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.WindowManager.reg_bool = BoolProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ID.reg_id = IntProperty()  # every ID type: Scene, Object, Material, ...
+features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ID.reg_owner_first = IntProperty()
+features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_owner_first = StringProperty()
+features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_owner_last = StringProperty()
+features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ID.reg_owner_last = IntProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Bone.reg_bone = IntProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.EditBone.reg_edit_bone = IntProperty()
 features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.PoseBone.reg_pose_bone = IntProperty()
@@ -1764,6 +1771,20 @@ features/properties/props_registered/check_props_registered.py | type-assertion-
 features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(view_layer.reg_view_layer, int)
 features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(strip.reg_strip, int)
 features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(strip.reg_strip, int)
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_owner_first, str)
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_owner_first, str)
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_owner_last, str)
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_owner_last, str)
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(obj.reg_owner_first, int)
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(obj.reg_owner_first, int)
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(obj.reg_owner_last, int)
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(obj.reg_owner_last, int)
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(either.reg_id, int)  # every arm has it
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(either.reg_id, int)  # every arm has it
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_int, int) #2
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_int, int) #2
+features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(either.reg_id, int)  # every constraint has it
+features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(either.reg_id, int)  # every constraint has it
 features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(bpy.data.scenes[0].reg_int, int)
 features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(bpy.data.scenes[0].reg_int, int)
 features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(bpy.data.objects["Cube"].reg_float, float)

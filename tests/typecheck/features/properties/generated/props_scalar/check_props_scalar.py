@@ -71,8 +71,9 @@ def values(s: PROPS_SCALAR_Values) -> None:
     assert_type(s.s_file_path, str)
     assert_type(s.s_dir_path, str)
     assert_type(s.s_file_name, str)
-    assert_type(s.s_byte_string, str)
+    assert_type(s.s_byte_string, bytes)
     assert_type(s.s_password, str)
+    assert_type(s.i_read_only, int)
 
 
 def assignments(s: PROPS_SCALAR_Values) -> None:
@@ -89,6 +90,7 @@ def assignments(s: PROPS_SCALAR_Values) -> None:
     s.s = "text"
     s.s = 1  # ty: ignore[invalid-assignment]
     s.s = None  # ty: ignore[invalid-assignment]
+    s.i_read_only = 1  # ty: ignore[invalid-assignment]
 
 
 def registered(scene: Scene) -> None:

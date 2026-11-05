@@ -7,9 +7,10 @@ The expected types are what Blender returns at runtime (probed in Blender 5.4, s
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 
-from ._common import manifest, python_file
+from ._common import GENERATOR_NOTE, manifest, python_file
 
 MODULE = "properties"
 
@@ -42,6 +43,7 @@ class Addon:
     check_params: str = ""  # extra parameters of the assignment check, e.g. ", obj: Object"
     check_imports: list[str] = field(default_factory=list)
     stub_preamble: list[str] = field(default_factory=list)
+    probes: list[tuple[str, str | int, str]] = field(default_factory=list)  # check:load probes: (code, expect, reason)
 
     @property
     def prefix(self) -> str:
@@ -116,8 +118,35 @@ def scalar_fields() -> list[Field]:
     fields += [Field(f"i_{sub.lower()}", f'IntProperty(subtype="{sub}")', "int") for sub in NUMBER_SUBTYPES]
     fields += [Field(f"f_{sub.lower()}", f'FloatProperty(subtype="{sub}")', "float") for sub in NUMBER_SUBTYPES]
     fields += [Field(f"f_unit_{unit.lower()}", f'FloatProperty(unit="{unit}")', "float") for unit in FLOAT_UNITS]
-    fields += [Field(f"s_{sub.lower()}", f'StringProperty(subtype="{sub}")', "str") for sub in STRING_SUBTYPES]
+    fields += [
+        Field(
+            f"s_{sub.lower()}",
+            f'StringProperty(subtype="{sub}")',
+            "bytes" if sub == "BYTE_STRING" else "str",
+            comment="a BYTE_STRING property gives bytes, not str" if sub == "BYTE_STRING" else "",
+        )
+        for sub in STRING_SUBTYPES
+    ]
+    fields.append(
+        Field(
+            "i_read_only",
+            'IntProperty(options={"READ_ONLY"})',
+            "int",
+            readonly=True,
+            bad=["1"],
+            comment="READ_ONLY makes any property read-only (AttributeError at runtime)",
+        )
+    )
     return fields
+
+
+# Probes for check:load (scripts/check_load.py), evaluated in Blender after register(): (code, expect, reason).
+SCALAR_GROUP = "bpy.context.scene.props_scalar"
+SCALAR_PROBES = [
+    (f"type({SCALAR_GROUP}.s_byte_string).__name__", "bytes", "a BYTE_STRING property gives bytes"),
+    (f"(setattr({SCALAR_GROUP}, 'i', 1), {SCALAR_GROUP}.i)[1]", 1, "a plain IntProperty can be written"),
+    (f"setattr({SCALAR_GROUP}, 'i_read_only', 1)", "raises", "a READ_ONLY property cannot be written"),
+]
 
 
 # --- vectors ------------------------------------------------------------------------------------------------------
@@ -427,6 +456,7 @@ def addons() -> list[Addon]:
             "scalar properties",
             "Bool, Int, Float and String properties with all subtypes and units",
             scalar_fields(),
+            probes=SCALAR_PROBES,
         ),
         Addon(
             "props_vector",
@@ -593,6 +623,14 @@ def types_delta(addon: Addon) -> str:
     return python_file(MODULE, f"Reference stub delta: bpy.types as {addon.name} registers it.", "\n".join(lines))
 
 
+def runtime_toml(addon: Addon) -> str:
+    lines = ["# " + GENERATOR_NOTE.format(module=MODULE)]
+    for code, expect, reason in addon.probes:
+        lines += ["", "[[probe]]", f"code = {json.dumps(code)}", f"expect = {json.dumps(expect)}"]
+        lines.append(f"reason = {json.dumps(reason)}")
+    return "\n".join(lines) + "\n"
+
+
 def generate() -> dict[str, str]:
     files = {}
     for addon in addons():
@@ -601,4 +639,6 @@ def generate() -> dict[str, str]:
         files[f"{addon.name}/check_{addon.name}.py"] = check_file(addon)
         files[f"{addon.name}/_expected/addon/__init__.pyi"] = addon_stub(addon)
         files[f"{addon.name}/_expected/stubs/bpy.types.pyi"] = types_delta(addon)
+        if addon.probes:
+            files[f"{addon.name}/_expected/runtime.toml"] = runtime_toml(addon)
     return files

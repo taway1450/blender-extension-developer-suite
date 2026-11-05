@@ -1,0 +1,24 @@
+[[probe]]
+code = "type(bpy.context.scene.reg_owner_first).__name__"
+expect = "str"
+reason = "Scene's reg_owner_first, registered after ID's, wins on a Scene"
+
+[[probe]]
+code = "type(bpy.context.scene.reg_owner_last).__name__"
+expect = "str"
+reason = "Scene's reg_owner_last, registered before ID's, still wins on a Scene"
+
+[[probe]]
+code = "type(bpy.data.objects.new('probe', None).reg_owner_first).__name__"
+expect = "int"
+reason = "an Object only has ID's reg_owner_first"
+
+[[probe]]
+code = "type(bpy.data.objects.new('probe', None).reg_owner_last).__name__"
+expect = "int"
+reason = "an Object only has ID's reg_owner_last"
+
+[[probe]]
+code = "type(bpy.types.Scene.reg_int).__name__"
+expect = "_PropertyDeferred"
+reason = "a class read gives the property declaration, not the value"

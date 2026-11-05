@@ -69,8 +69,10 @@ class PROPS_SCALAR_Values(PropertyGroup):
     s_file_path: str
     s_dir_path: str
     s_file_name: str
-    s_byte_string: str
+    s_byte_string: bytes
     s_password: str
+    @property
+    def i_read_only(self) -> int: ...
 
 def register() -> None: ...
 def unregister() -> None: ...
