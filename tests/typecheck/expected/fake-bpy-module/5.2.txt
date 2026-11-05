@@ -1,53 +1,12 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender 5.2.
 # `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_discovery/disc_both/__init__.py | unresolved-attribute | bpy.types.Scene.disc_both_marker = StringProperty()
-features/addon_discovery/disc_both/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_both_marker
-features/addon_discovery/disc_both/check_disc_both.py | type-assertion-failure | assert_type(scene.disc_both_marker, str)
-features/addon_discovery/disc_both/check_disc_both.py | unresolved-attribute | assert_type(scene.disc_both_marker, str)
-features/addon_discovery/disc_extension/__init__.py | unresolved-attribute | bpy.types.Scene.disc_extension_marker = IntProperty(default=helpers.DEFAULT)
-features/addon_discovery/disc_extension/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_extension_marker
-features/addon_discovery/disc_extension/check_disc_extension.py | type-assertion-failure | assert_type(scene.disc_extension_marker, int)  # the register() of this addon is found
-features/addon_discovery/disc_extension/check_disc_extension.py | unresolved-attribute | assert_type(scene.disc_extension_marker, int)  # the register() of this addon is found
-features/addon_discovery/disc_legacy/__init__.py | unresolved-attribute | bpy.types.Scene.disc_legacy_marker = IntProperty()
-features/addon_discovery/disc_legacy/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_legacy_marker
-features/addon_discovery/disc_legacy/check_disc_legacy.py | type-assertion-failure | assert_type(scene.disc_legacy_marker, int)
-features/addon_discovery/disc_legacy/check_disc_legacy.py | unresolved-attribute | assert_type(scene.disc_legacy_marker, int)
-features/addon_discovery/disc_no_unregister/__init__.py | unresolved-attribute | bpy.types.Scene.disc_no_unregister_marker = IntProperty()
-features/addon_discovery/disc_override/src/disc_override_addon/__init__.py | unresolved-attribute | bpy.types.Scene.disc_override_marker = FloatProperty()
-features/addon_discovery/disc_override/src/disc_override_addon/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_override_marker
-features/addon_discovery/disc_override/src/disc_override_addon/check_disc_override.py | type-assertion-failure | assert_type(scene.disc_override_marker, float)
-features/addon_discovery/disc_override/src/disc_override_addon/check_disc_override.py | unresolved-attribute | assert_type(scene.disc_override_marker, float)
-features/addon_discovery/disc_register_alias/__init__.py | unresolved-attribute | bpy.types.Scene.disc_register_alias_marker = StringProperty()
-features/addon_discovery/disc_register_alias/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_register_alias_marker
-features/addon_discovery/disc_register_alias/check_disc_register_alias.py | type-assertion-failure | assert_type(scene.disc_register_alias_marker, str)
-features/addon_discovery/disc_register_alias/check_disc_register_alias.py | unresolved-attribute | assert_type(scene.disc_register_alias_marker, str)
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(register, Callable[[], None])
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(unregister, Callable[[], None])
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(bpy.ops.disc_register_factory.run(count=1),
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | unresolved-attribute | assert_type(bpy.ops.disc_register_factory.run(count=1),
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | unresolved-attribute | bpy.ops.disc_register_factory.run(count="1")  # ty: ignore[invalid-argument-type]
 features/addon_discovery/disc_register_factory/check_disc_register_factory.py | unused-ignore-comment | bpy.ops.disc_register_factory.run(count="1")  # ty: ignore[invalid-argument-type]
-features/addon_discovery/disc_register_reexport/check_disc_register_reexport.py | type-assertion-failure | assert_type(scene.disc_register_reexport_marker, bool)
-features/addon_discovery/disc_register_reexport/check_disc_register_reexport.py | unresolved-attribute | assert_type(scene.disc_register_reexport_marker, bool)
-features/addon_discovery/disc_register_reexport/core.py | unresolved-attribute | bpy.types.Scene.disc_register_reexport_marker = BoolProperty()
-features/addon_discovery/disc_register_reexport/core.py | unresolved-attribute | del bpy.types.Scene.disc_register_reexport_marker
-features/addon_discovery/disc_single.py | unresolved-attribute | bpy.types.Scene.disc_single_marker = IntProperty()
-features/addon_discovery/disc_single.py | unresolved-attribute | del bpy.types.Scene.disc_single_marker
-features/addon_discovery/disc_single.py | type-assertion-failure | assert_type(scene.disc_single_marker, int)  # oracle-skip: a single-file add-on has no _expected/ folder
-features/addon_discovery/disc_single.py | unresolved-attribute | assert_type(scene.disc_single_marker, int)  # oracle-skip: a single-file add-on has no _expected/ folder
-features/addon_discovery/disc_workspace/addons/ws_alpha/__init__.py | unresolved-attribute | bpy.types.Scene.ws_value = IntProperty(default=START)
-features/addon_discovery/disc_workspace/addons/ws_alpha/__init__.py | unresolved-attribute | bpy.types.Scene.ws_alpha_only = IntProperty()
-features/addon_discovery/disc_workspace/addons/ws_alpha/__init__.py | unresolved-attribute | del bpy.types.Scene.ws_alpha_only
-features/addon_discovery/disc_workspace/addons/ws_alpha/__init__.py | unresolved-attribute | del bpy.types.Scene.ws_value
-features/addon_discovery/disc_workspace/addons/ws_alpha/check_ws_alpha.py | type-assertion-failure | assert_type(scene.ws_value, int)  # oracle-skip: two extensions in one folder share one _expected/
-features/addon_discovery/disc_workspace/addons/ws_alpha/check_ws_alpha.py | unresolved-attribute | assert_type(scene.ws_value, int)  # oracle-skip: two extensions in one folder share one _expected/
-features/addon_discovery/disc_workspace/addons/ws_alpha/check_ws_alpha.py | type-assertion-failure | assert_type(scene.ws_alpha_only, int)  # oracle-skip: two extensions in one folder share one _expected/
-features/addon_discovery/disc_workspace/addons/ws_alpha/check_ws_alpha.py | unresolved-attribute | assert_type(scene.ws_alpha_only, int)  # oracle-skip: two extensions in one folder share one _expected/
-features/addon_discovery/disc_workspace/addons/ws_beta/__init__.py | unresolved-attribute | bpy.types.Scene.ws_value = StringProperty()
-features/addon_discovery/disc_workspace/addons/ws_beta/__init__.py | unresolved-attribute | del bpy.types.Scene.ws_value
-features/addon_discovery/disc_workspace/addons/ws_beta/check_ws_beta.py | type-assertion-failure | assert_type(scene.ws_value, str)  # oracle-skip: two extensions in one folder share one _expected/
-features/addon_discovery/disc_workspace/addons/ws_beta/check_ws_beta.py | unresolved-attribute | assert_type(scene.ws_value, str)  # oracle-skip: two extensions in one folder share one _expected/
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = "not_this_addon"  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | class PREFS_BAD_Missing(AddonPreferences):  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
@@ -72,162 +31,78 @@ features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-f
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_unregistered/__init__.py | ignore-comment-unknown-rule | class PREFS_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | unresolved-attribute | AliasScene.sym_assigned_alias = AliasPointerProperty(type=SYM_ASSIGNED_ALIAS_Settings)
-features/bpy_symbols/generated/sym_assigned_alias/__init__.py | unresolved-attribute | del AliasScene.sym_assigned_alias
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | bpy.ops.sym_assigned_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unused-ignore-comment | bpy.ops.sym_assigned_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(scene.sym_assigned_alias, SYM_ASSIGNED_ALIAS_Settings)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(scene.sym_assigned_alias, SYM_ASSIGNED_ALIAS_Settings)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(scene.sym_assigned_alias.count, int)
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(scene.sym_assigned_alias.count, int)
-features/bpy_symbols/generated/sym_dotted/__init__.py | unresolved-attribute | bpy.types.Scene.sym_dotted = bpy.props.PointerProperty(type=SYM_DOTTED_Settings)
-features/bpy_symbols/generated/sym_dotted/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_dotted
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(bpy.ops.sym_dotted.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(bpy.ops.sym_dotted.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | bpy.ops.sym_dotted.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unused-ignore-comment | bpy.ops.sym_dotted.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(scene.sym_dotted, SYM_DOTTED_Settings)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(scene.sym_dotted, SYM_DOTTED_Settings)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(scene.sym_dotted.count, int)
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(scene.sym_dotted.count, int)
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | unresolved-attribute | types.Scene.sym_from_bpy = props.PointerProperty(type=SYM_FROM_BPY_Settings)
-features/bpy_symbols/generated/sym_from_bpy/__init__.py | unresolved-attribute | del types.Scene.sym_from_bpy
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(bpy.ops.sym_from_bpy.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(bpy.ops.sym_from_bpy.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | bpy.ops.sym_from_bpy.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unused-ignore-comment | bpy.ops.sym_from_bpy.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(scene.sym_from_bpy, SYM_FROM_BPY_Settings)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(scene.sym_from_bpy, SYM_FROM_BPY_Settings)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(scene.sym_from_bpy.count, int)
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(scene.sym_from_bpy.count, int)
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | unresolved-attribute | T.Scene.sym_from_bpy_alias = P.PointerProperty(type=SYM_FROM_BPY_ALIAS_Settings)
-features/bpy_symbols/generated/sym_from_bpy_alias/__init__.py | unresolved-attribute | del T.Scene.sym_from_bpy_alias
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_from_bpy_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_from_bpy_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | bpy.ops.sym_from_bpy_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unused-ignore-comment | bpy.ops.sym_from_bpy_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(scene.sym_from_bpy_alias, SYM_FROM_BPY_ALIAS_Settings)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(scene.sym_from_bpy_alias, SYM_FROM_BPY_ALIAS_Settings)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(scene.sym_from_bpy_alias.count, int)
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(scene.sym_from_bpy_alias.count, int)
-features/bpy_symbols/generated/sym_from_import/__init__.py | unresolved-attribute | Scene.sym_from_import = PointerProperty(type=SYM_FROM_IMPORT_Settings)
-features/bpy_symbols/generated/sym_from_import/__init__.py | unresolved-attribute | del Scene.sym_from_import
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(bpy.ops.sym_from_import.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(bpy.ops.sym_from_import.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | bpy.ops.sym_from_import.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unused-ignore-comment | bpy.ops.sym_from_import.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(scene.sym_from_import, SYM_FROM_IMPORT_Settings)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(scene.sym_from_import, SYM_FROM_IMPORT_Settings)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(scene.sym_from_import.count, int)
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(scene.sym_from_import.count, int)
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | unresolved-attribute | MyScene.sym_from_import_alias = MyPointerProperty(type=SYM_FROM_IMPORT_ALIAS_Settings)
-features/bpy_symbols/generated/sym_from_import_alias/__init__.py | unresolved-attribute | del MyScene.sym_from_import_alias
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_from_import_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_from_import_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | bpy.ops.sym_from_import_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unused-ignore-comment | bpy.ops.sym_from_import_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(scene.sym_from_import_alias, SYM_FROM_IMPORT_ALIAS_Settings)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(scene.sym_from_import_alias, SYM_FROM_IMPORT_ALIAS_Settings)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(scene.sym_from_import_alias.count, int)
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(scene.sym_from_import_alias.count, int)
-features/bpy_symbols/generated/sym_module_alias/__init__.py | unresolved-attribute | bt.Scene.sym_module_alias = bp.PointerProperty(type=SYM_MODULE_ALIAS_Settings)
-features/bpy_symbols/generated/sym_module_alias/__init__.py | unresolved-attribute | del bt.Scene.sym_module_alias
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_module_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_module_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | bpy.ops.sym_module_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unused-ignore-comment | bpy.ops.sym_module_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(scene.sym_module_alias, SYM_MODULE_ALIAS_Settings)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(scene.sym_module_alias, SYM_MODULE_ALIAS_Settings)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(scene.sym_module_alias.count, int)
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(scene.sym_module_alias.count, int)
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | unresolved-attribute | T.Scene.sym_module_assigned = P.PointerProperty(type=SYM_MODULE_ASSIGNED_Settings)
-features/bpy_symbols/generated/sym_module_assigned/__init__.py | unresolved-attribute | del T.Scene.sym_module_assigned
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(bpy.ops.sym_module_assigned.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(bpy.ops.sym_module_assigned.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | bpy.ops.sym_module_assigned.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unused-ignore-comment | bpy.ops.sym_module_assigned.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(scene.sym_module_assigned, SYM_MODULE_ASSIGNED_Settings)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(scene.sym_module_assigned, SYM_MODULE_ASSIGNED_Settings)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(scene.sym_module_assigned.count, int)
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(scene.sym_module_assigned.count, int)
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | unresolved-attribute | Scene.sym_nested_reexport = PointerProperty(type=SYM_NESTED_REEXPORT_Settings)
-features/bpy_symbols/generated/sym_nested_reexport/__init__.py | unresolved-attribute | del Scene.sym_nested_reexport
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(bpy.ops.sym_nested_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(bpy.ops.sym_nested_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | bpy.ops.sym_nested_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unused-ignore-comment | bpy.ops.sym_nested_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(scene.sym_nested_reexport, SYM_NESTED_REEXPORT_Settings)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(scene.sym_nested_reexport, SYM_NESTED_REEXPORT_Settings)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(scene.sym_nested_reexport.count, int)
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(scene.sym_nested_reexport.count, int)
-features/bpy_symbols/generated/sym_reexport/__init__.py | unresolved-attribute | Scene.sym_reexport = PointerProperty(type=SYM_REEXPORT_Settings)
-features/bpy_symbols/generated/sym_reexport/__init__.py | unresolved-attribute | del Scene.sym_reexport
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | bpy.ops.sym_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unused-ignore-comment | bpy.ops.sym_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(scene.sym_reexport, SYM_REEXPORT_Settings)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(scene.sym_reexport, SYM_REEXPORT_Settings)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(scene.sym_reexport.count, int)
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(scene.sym_reexport.count, int)
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | unresolved-attribute | types.Scene.sym_reexport_module = props.PointerProperty(type=SYM_REEXPORT_MODULE_Settings)
-features/bpy_symbols/generated/sym_reexport_module/__init__.py | unresolved-attribute | del types.Scene.sym_reexport_module
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport_module.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport_module.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | bpy.ops.sym_reexport_module.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unused-ignore-comment | bpy.ops.sym_reexport_module.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(scene.sym_reexport_module, SYM_REEXPORT_MODULE_Settings)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(scene.sym_reexport_module, SYM_REEXPORT_MODULE_Settings)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(scene.sym_reexport_module.count, int)
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(scene.sym_reexport_module.count, int)
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | unresolved-attribute | Scene.sym_reexport_star = PointerProperty(type=SYM_REEXPORT_STAR_Settings)
-features/bpy_symbols/generated/sym_reexport_star/__init__.py | unresolved-attribute | del Scene.sym_reexport_star
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | bpy.ops.sym_reexport_star.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unused-ignore-comment | bpy.ops.sym_reexport_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(scene.sym_reexport_star, SYM_REEXPORT_STAR_Settings)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(scene.sym_reexport_star, SYM_REEXPORT_STAR_Settings)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(scene.sym_reexport_star.count, int)
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(scene.sym_reexport_star.count, int)
-features/bpy_symbols/generated/sym_star/__init__.py | unresolved-attribute | bpy.types.Scene.sym_star = PointerProperty(type=SYM_STAR_Settings)
-features/bpy_symbols/generated/sym_star/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_star
 features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(scene.sym_star, SYM_STAR_Settings)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(scene.sym_star, SYM_STAR_Settings)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(scene.sym_star.count, int)
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(scene.sym_star.count, int)
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | PropertyGroup  # ty: ignore[unresolved-reference]  # oracle-skip: the stubs export all classes
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | Operator  # ty: ignore[unresolved-reference]  # oracle-skip: the stubs export all classes
-features/bpy_symbols/generated/sym_submodule/__init__.py | unresolved-attribute | bpy.types.Scene.sym_submodule = bpy.props.PointerProperty(type=SYM_SUBMODULE_Settings)
-features/bpy_symbols/generated/sym_submodule/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_submodule
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(s.offset, Vector)
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unused-ignore-comment | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(scene.sym_submodule, SYM_SUBMODULE_Settings)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(scene.sym_submodule, SYM_SUBMODULE_Settings)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(scene.sym_submodule.count, int)
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(scene.sym_submodule.count, int)
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):
@@ -260,8 +135,6 @@ features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | tint: F
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | rotation: FloatVectorProperty(subtype="EULER", default=E((0.0, 0.0, 0.5)))
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | orientation: FloatVectorProperty(subtype="QUATERNION", size=4, default=Quaternion((1.0, 0.0, 0.0, 0.0)))
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
-features/bpy_symbols/sym_mathutils/__init__.py | unresolved-attribute | bpy.types.Scene.sym_mathutils = PointerProperty(type=SYM_MATHUTILS_Settings)
-features/bpy_symbols/sym_mathutils/__init__.py | unresolved-attribute | del bpy.types.Scene.sym_mathutils
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.location, mathutils.Vector)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.tint, mathutils.Color)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.rotation, Euler)
@@ -269,7 +142,6 @@ features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failu
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.transform, Matrix)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.transform @ s.location, mathutils.Vector)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(scene.sym_mathutils.location.z, float)
-features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | unresolved-attribute | assert_type(scene.sym_mathutils.location.z, float)
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | invalid-method-override | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
@@ -302,20 +174,12 @@ features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | clas
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict]  # oracle-skip: the stubs do not declare the C struct layout
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.leaf")
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.sibling")
-features/inheritance/inh_chains/__init__.py | unresolved-attribute | bpy.types.Scene.inh_chains_c = PointerProperty(type=INH_CHAINS_C)
-features/inheritance/inh_chains/__init__.py | unresolved-attribute | del bpy.types.Scene.inh_chains_c
 features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
 features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[unknown-argument]
 features/inheritance/inh_chains/check_inh_chains.py | unused-ignore-comment | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[unknown-argument]
-features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(scene.inh_chains_c.a, int)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(scene.inh_chains_c.a, int)
-features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(scene.inh_chains_c.b, str)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(scene.inh_chains_c.b, str)
-features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(scene.inh_chains_c.c, float)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(scene.inh_chains_c.c, float)
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
 features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | type-assertion-failure | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
 features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | unresolved-attribute | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
@@ -611,26 +475,6 @@ features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
-features/properties/generated/props_enum/__init__.py | unresolved-attribute | bpy.types.Scene.props_enum = PointerProperty(type=PROPS_ENUM_Values)
-features/properties/generated/props_enum/__init__.py | unresolved-attribute | del bpy.types.Scene.props_enum
-features/properties/generated/props_enum/check_props_enum.py | type-assertion-failure | assert_type(scene.props_enum, PROPS_ENUM_Values)
-features/properties/generated/props_enum/check_props_enum.py | unresolved-attribute | assert_type(scene.props_enum, PROPS_ENUM_Values)
-features/properties/generated/props_enum/check_props_enum.py | unresolved-attribute | scene.props_enum = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_enum/check_props_enum.py | unused-ignore-comment | scene.props_enum = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_pointer/__init__.py | unresolved-attribute | bpy.types.Scene.props_pointer = PointerProperty(type=PROPS_POINTER_Values)
-features/properties/generated/props_pointer/__init__.py | unresolved-attribute | del bpy.types.Scene.props_pointer
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(scene.props_pointer, PROPS_POINTER_Values)
-features/properties/generated/props_pointer/check_props_pointer.py | unresolved-attribute | assert_type(scene.props_pointer, PROPS_POINTER_Values)
-features/properties/generated/props_pointer/check_props_pointer.py | unresolved-attribute | scene.props_pointer = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_pointer/check_props_pointer.py | unused-ignore-comment | scene.props_pointer = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/__init__.py | unresolved-attribute | bpy.types.Scene.props_scalar = PointerProperty(type=PROPS_SCALAR_Values)
-features/properties/generated/props_scalar/__init__.py | unresolved-attribute | del bpy.types.Scene.props_scalar
-features/properties/generated/props_scalar/check_props_scalar.py | type-assertion-failure | assert_type(scene.props_scalar, PROPS_SCALAR_Values)
-features/properties/generated/props_scalar/check_props_scalar.py | unresolved-attribute | assert_type(scene.props_scalar, PROPS_SCALAR_Values)
-features/properties/generated/props_scalar/check_props_scalar.py | unresolved-attribute | scene.props_scalar = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_scalar/check_props_scalar.py | unused-ignore-comment | scene.props_scalar = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_vector/__init__.py | unresolved-attribute | bpy.types.Scene.props_vector = PointerProperty(type=PROPS_VECTOR_Values)
-features/properties/generated/props_vector/__init__.py | unresolved-attribute | del bpy.types.Scene.props_vector
 features/properties/generated/props_vector/check_props_vector.py | not-subscriptable | assert_type(s.f_none_dflt, bpy_prop_array[float])
 features/properties/generated/props_vector/check_props_vector.py | type-assertion-failure | assert_type(s.f_none_dflt[0], float)
 features/properties/generated/props_vector/check_props_vector.py | not-subscriptable | assert_type(s.f_none_2, bpy_prop_array[float])
@@ -883,10 +727,6 @@ features/properties/generated/props_vector/check_props_vector.py | type-assertio
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.f_no_subtype = "xyz"  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.f_no_subtype = 1.0  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.i_vec_2 = ("1", "1")  # ty: ignore[invalid-assignment]
-features/properties/generated/props_vector/check_props_vector.py | type-assertion-failure | assert_type(scene.props_vector, PROPS_VECTOR_Values)
-features/properties/generated/props_vector/check_props_vector.py | unresolved-attribute | assert_type(scene.props_vector, PROPS_VECTOR_Values)
-features/properties/generated/props_vector/check_props_vector.py | unresolved-attribute | scene.props_vector = None  # ty: ignore[invalid-assignment]
-features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | scene.props_vector = None  # ty: ignore[invalid-assignment]
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_update: IntProperty(update=lambda self, context: assert_type(self, PROPS_CALLBACKS_Settings) and None)
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_poll: PointerProperty(type=Object, poll=lambda self, obj: assert_type(obj, Object).type == "MESH")
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_items: EnumProperty(items=lambda self, context: [(assert_type(self, PROPS_CALLBACKS_Settings).label, "", "")])
@@ -912,107 +752,12 @@ features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | valu
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.properties.value, int)
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Camera.reg_module_level = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_int = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_mode = EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_group = PointerProperty(type=PROPS_REGISTERED_Item)
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_items = CollectionProperty(type=PROPS_REGISTERED_Item)
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_object = PointerProperty(type=bpy.types.Object)
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Object.reg_float = FloatProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Material.reg_str = StringProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.WindowManager.reg_bool = BoolProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ID.reg_id = IntProperty()  # every ID type: Scene, Object, Material, ...
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ID.reg_owner_first = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_owner_first = StringProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Scene.reg_owner_last = StringProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ID.reg_owner_last = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Bone.reg_bone = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.EditBone.reg_edit_bone = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.PoseBone.reg_pose_bone = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Node.reg_node = IntProperty()  # every node class
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.NodeSocket.reg_socket = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.ViewLayer.reg_view_layer = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Strip.reg_strip = IntProperty()
-features/properties/props_registered/__init__.py | unresolved-attribute | Coll.reg_alias = StringProperty()  # through an import alias
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Area.reg_area = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Area.reg_area = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Modifier.reg_modifier = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Modifier.reg_modifier = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Window.reg_window = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Window.reg_window = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Preferences.reg_preferences = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Preferences.reg_preferences = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.SpaceView3D.reg_space = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.SpaceView3D.reg_space = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Context.reg_context = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | unresolved-attribute | bpy.types.Context.reg_context = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_int, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_int, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_mode, Literal["A", "B"])
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_mode, Literal["A", "B"])
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_group, PROPS_REGISTERED_Item)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_group, PROPS_REGISTERED_Item)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_object, Object | None)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_object, Object | None)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_id, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_id, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | scene.reg_int = 2
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | scene.reg_int = "2"  # ty: ignore[invalid-assignment]
-features/properties/props_registered/check_props_registered.py | unused-ignore-comment | scene.reg_int = "2"  # ty: ignore[invalid-assignment]
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | scene.reg_mode = "C"  # ty: ignore[invalid-assignment]
-features/properties/props_registered/check_props_registered.py | unused-ignore-comment | scene.reg_mode = "C"  # ty: ignore[invalid-assignment]
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(obj.reg_float, float)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(obj.reg_float, float)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(obj.reg_id, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(obj.reg_id, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(material.reg_str, str)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(material.reg_str, str)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(material.reg_id, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(material.reg_id, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(camera.reg_module_level, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(camera.reg_module_level, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(collection.reg_alias, str)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(collection.reg_alias, str)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(image.reg_setattr, float)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(image.reg_setattr, float)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(wm.reg_bool, bool)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(wm.reg_bool, bool)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(bone.reg_bone, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(bone.reg_bone, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(edit_bone.reg_edit_bone, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(edit_bone.reg_edit_bone, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(pose_bone.reg_pose_bone, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(pose_bone.reg_pose_bone, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(node.reg_node, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(node.reg_node, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(socket.reg_socket, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(socket.reg_socket, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(view_layer.reg_view_layer, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(view_layer.reg_view_layer, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(strip.reg_strip, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(strip.reg_strip, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_owner_first, str)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_owner_first, str)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_owner_last, str)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_owner_last, str)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(obj.reg_owner_first, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(obj.reg_owner_first, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(obj.reg_owner_last, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(obj.reg_owner_last, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(either.reg_id, int)  # every arm has it
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(either.reg_id, int)  # every arm has it
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_int, int) #2
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(scene.reg_int, int) #2
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(either.reg_id, int)  # every constraint has it
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(either.reg_id, int)  # every constraint has it
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(bpy.data.scenes[0].reg_int, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(bpy.data.scenes[0].reg_int, int)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(bpy.data.objects["Cube"].reg_float, float)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(bpy.data.objects["Cube"].reg_float, float)
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(context.scene.reg_int, int)
-features/properties/props_registered/check_props_registered.py | unresolved-attribute | assert_type(context.scene.reg_int, int)
 features/properties/props_styles/plain_annotations.py | ignore-comment-unknown-rule | legacy = IntProperty()  # ty: ignore[blender-legacy-property]
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_a: COMMON
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_b: COMMON  # the same deferred property for two fields
@@ -1059,8 +804,6 @@ features/registration/reg_conditional/check_reg_conditional.py | type-assertion-
 features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.hasattr(), Result)
 features/registration/reg_conditional/check_reg_conditional.py | type-assertion-failure | assert_type(bpy.ops.reg_conditional.environment(), Result)
 features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.environment(), Result)
-features/registration/reg_delegation/__init__.py | unresolved-attribute | bpy.types.Scene.reg_delegation_factor = FloatProperty()
-features/registration/reg_delegation/__init__.py | unresolved-attribute | del bpy.types.Scene.reg_delegation_factor
 features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.helper(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.helper(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.nested(), Result)
@@ -1075,11 +818,7 @@ features/registration/reg_delegation/check_reg_delegation.py | type-assertion-fa
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.function_loop(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.static_method(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.static_method(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(scene.reg_delegation_factor, float)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(scene.reg_delegation_factor, float)
 features/registration/reg_explicit/__init__.py | ignore-comment-unknown-rule | class REG_EXPLICIT_OT_never(Operator):  # ty: ignore[blender-unregistered-class]
-features/registration/reg_explicit/__init__.py | unresolved-attribute | bpy.types.Scene.reg_explicit_count = IntProperty()
-features/registration/reg_explicit/__init__.py | unresolved-attribute | del bpy.types.Scene.reg_explicit_count
 features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.dotted(), Result)
 features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | assert_type(bpy.ops.reg_explicit.dotted(), Result)
 features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.imported(), Result)
@@ -1089,18 +828,12 @@ features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute 
 features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | bpy.ops.reg_explicit.dotted(count=2)
 features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | bpy.ops.reg_explicit.dotted(count="2")  # ty: ignore[invalid-argument-type]
 features/registration/reg_explicit/check_reg_explicit.py | unused-ignore-comment | bpy.ops.reg_explicit.dotted(count="2")  # ty: ignore[invalid-argument-type]
-features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(scene.reg_explicit_count, int)
-features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | assert_type(scene.reg_explicit_count, int)
-features/registration/reg_factory/__init__.py | unresolved-attribute | bpy.types.Scene.reg_factory_label = StringProperty()
-features/registration/reg_factory/__init__.py | unresolved-attribute | del bpy.types.Scene.reg_factory_label
 features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_factory.first(), Result)
 features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_factory.first(), Result)
 features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_factory.second(), Result)
 features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_factory.second(), Result)
 features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_factory.tools(), Result)
 features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_factory.tools(), Result)
-features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(scene.reg_factory_label, str)
-features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(scene.reg_factory_label, str)
 features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)
 features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.reloaded(), Result)
 features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.reloaded(), Result)
@@ -1156,40 +889,27 @@ features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-
 features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname.menu"  # ty: ignore[blender-invalid-idname]
 features/registration_checks/regchk_idname/check_regchk_idname.py | type-assertion-failure | assert_type(bpy.ops.regchk_idname.valid_name_2(), Result)
 features/registration_checks/regchk_idname/check_regchk_idname.py | unresolved-attribute | assert_type(bpy.ops.regchk_idname.valid_name_2(), Result)
-features/registration_checks/regchk_isolation_a/__init__.py | unresolved-attribute | bpy.types.Scene.regchk_isolation_a_value = IntProperty()
-features/registration_checks/regchk_isolation_a/__init__.py | unresolved-attribute | del bpy.types.Scene.regchk_isolation_a_value
 features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | type-assertion-failure | assert_type(bpy.ops.regchk_isolation_a.run(), Result)
 features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | unresolved-attribute | assert_type(bpy.ops.regchk_isolation_a.run(), Result)
-features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | type-assertion-failure | assert_type(scene.regchk_isolation_a_value, int)
-features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | unresolved-attribute | assert_type(scene.regchk_isolation_a_value, int)
 features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | type-assertion-failure | assert_type(bpy.ops.regchk_shared.tool(), Result)
 features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | unresolved-attribute | assert_type(bpy.ops.regchk_shared.tool(), Result)
-features/registration_checks/regchk_isolation_b/__init__.py | unresolved-attribute | bpy.types.Scene.regchk_isolation_b_value = IntProperty()
-features/registration_checks/regchk_isolation_b/__init__.py | unresolved-attribute | del bpy.types.Scene.regchk_isolation_b_value
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | type-assertion-failure | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | unresolved-attribute | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
-features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | type-assertion-failure | assert_type(scene.regchk_isolation_b_value, int)
-features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | unresolved-attribute | assert_type(scene.regchk_isolation_b_value, int)
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | REGCHK_ORDER_Pointer,  # ty: ignore[blender-register-order]
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_ORDER_Collection)  # ty: ignore[blender-register-order]
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.types.Scene.regchk_order_leaf = PointerProperty(type=REGCHK_ORDER_Leaf)  # ty: ignore[blender-register-order]
-features/registration_checks/regchk_order/__init__.py | unresolved-attribute | bpy.types.Scene.regchk_order_leaf = PointerProperty(type=REGCHK_ORDER_Leaf)  # ty: ignore[blender-register-order]
 features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_ORDER_PT_child)  # ty: ignore[blender-register-order]
-features/registration_checks/regchk_order/__init__.py | unresolved-attribute | del bpy.types.Scene.regchk_order_leaf
 features/registration_checks/regchk_unreachable/__init__.py | ignore-comment-unknown-rule | def _register_extra():  # ty: ignore[blender-unreachable-registration]
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.used(), Result)
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.used(), Result)
 features/registration_checks/regchk_unreachable/forgotten.py | ignore-comment-unknown-rule | def register():  # ty: ignore[blender-unreachable-registration]
 features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_UNREGISTER_LEAK_OT_leaked)  # ty: ignore[blender-unregister-mismatch]
-features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.Scene.regchk_paired = IntProperty()
 features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.types.Scene.regchk_leaked = IntProperty()  # ty: ignore[blender-unregister-mismatch]
-features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.Scene.regchk_leaked = IntProperty()  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.app.handlers.save_post.append(on_save)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argument-type | bpy.types.VIEW3D_MT_object.append(draw_menu)
 features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argument-type | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argument-type | bpy.types.VIEW3D_MT_object.remove(draw_menu)
-features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | del bpy.types.Scene.regchk_paired
 features/registration_checks/regchk_unregister_unknown/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTER_UNKNOWN_OT_never(Operator):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregister_unknown/__init__.py | ignore-comment-unknown-rule | bpy.utils.unregister_class(REGCHK_UNREGISTER_UNKNOWN_OT_never)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_OT_forgotten(_ExecuteMixin, Operator):  # ty: ignore[blender-unregistered-class]

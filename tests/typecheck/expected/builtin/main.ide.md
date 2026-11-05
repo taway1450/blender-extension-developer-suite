@@ -184,37 +184,43 @@ PASS
 
 ````text
 ```python
-Unknown
+int
 ```
 ````
 
 ## features/properties/props_registered/ide_props_registered.py | ^hover-contains "int" @11 | scene.reg_int
 
 ````text
-FAIL: does not contain "int"
+PASS
 ````
 
 ## features/properties/props_registered/ide_props_registered.py | ^hover-contains "Literal" @11 | scene.reg_mode
 
 ````text
-FAIL: does not contain "Literal"
+PASS
 ````
 
 ## features/properties/props_registered/ide_props_registered.py | ^hover-contains "int" @9 | obj.reg_id
 
 ````text
-FAIL: does not contain "int"
+PASS
 ````
 
 ## features/properties/props_registered/ide_props_registered.py | ^completion reg_int reg_mode reg_group reg_items reg_object reg_id @15 | scene.reg_
 
 ````text
-- reg_int: FAIL: not offered
-- reg_mode: FAIL: not offered
-- reg_group: FAIL: not offered
-- reg_items: FAIL: not offered
-- reg_object: FAIL: not offered
-- reg_id: FAIL: not offered
+- reg_int: detail: int
+  documentation: int([x]) -&gt; integer<HB>
+- reg_mode: detail: Literal["A", "B"]
+  documentation: (none)
+- reg_group: detail: PROPS_REGISTERED_Item
+  documentation: (none)
+- reg_items: detail: bpy_prop_collection_idprop
+  documentation: (none)
+- reg_object: detail: Object | None
+  documentation: (none)
+- reg_id: detail: int
+  documentation: int([x]) -&gt; integer<HB>
 ````
 
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^hover-contains "int" @7 | s.common_a
