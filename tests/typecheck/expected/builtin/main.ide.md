@@ -163,20 +163,20 @@ FAIL: does not contain "float"
 ## features/properties/props_callbacks/ide_props_callbacks.py | ^completion count @10 | s.cou
 
 ````text
-- count: detail: Unknown
+- count: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
 ````
 
 ## features/properties/props_callbacks/ide_props_callbacks.py | ^completion lambda_update lambda_poll lambda_items lambda_get @14 | s.lambda_
 
 ````text
-- lambda_update: detail: Unknown
+- lambda_update: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- lambda_poll: detail: Unknown
+- lambda_poll: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- lambda_items: detail: Unknown
+- lambda_items: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- lambda_get: detail: Unknown
+- lambda_get: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
 ````
 
@@ -244,13 +244,13 @@ FAIL: does not contain "Vector"
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^completion from_dict from_dict_str from_tuple from_tuple_bool @12 | s.from_
 
 ````text
-- from_dict: detail: Unknown
+- from_dict: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- from_dict_str: detail: Unknown
+- from_dict_str: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- from_tuple: detail: Unknown
+- from_tuple: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- from_tuple_bool: detail: Unknown
+- from_tuple_bool: detail: Unknown FAIL: type not resolved
   documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
 ````
 

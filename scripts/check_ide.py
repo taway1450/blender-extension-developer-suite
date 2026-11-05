@@ -42,6 +42,7 @@ from _target import Target, add_target_arguments
 REQUEST_TIMEOUT = 120  # seconds; the first request loads the stubs
 
 MAX_LINES = 40  # longer hover/signature texts are cut in the golden file
+UNKNOWN = re.compile(r"\bUnknown\b")  # how ty shows a type it could not resolve
 
 
 # --- LSP client -----------------------------------------------------------------------------------------------
@@ -254,10 +255,10 @@ def render(marker: IdeMarker, response: Any, stubs: Path) -> str:
                 continue
             deprecated = 1 in (item.get("tags") or []) or item.get("deprecated")
             documentation = normalize(doc_text(item.get("documentation")), stubs).splitlines()
-            lines.append(
-                f"- {label}: detail: {normalize(item.get('detail') or '', stubs) or '(none)'}"
-                f"{' [deprecated]' if deprecated else ''}"
-            )
+            detail = normalize(item.get("detail") or "", stubs)
+            # ty offers every name annotated in the add-on's class, typed or not: an Unknown type was not resolved.
+            unresolved = " FAIL: type not resolved" if UNKNOWN.search(detail) else ""
+            lines.append(f"- {label}: detail: {detail or '(none)'}{' [deprecated]' if deprecated else ''}{unresolved}")
             lines.append(f"  documentation: {documentation[0] if documentation else '(none)'}")
         return "\n".join(lines)
 

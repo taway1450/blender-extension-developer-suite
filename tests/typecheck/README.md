@@ -160,7 +160,7 @@ scene.reg_int
 | `^hover-none` | PASS if there is no hover |
 | `^signature` | the signature label, parameters with their docs, and the documentation |
 | `^signature-param "text"` | PASS if the active parameter's documentation contains `text` |
-| `^completion a b` | `detail`, documentation and deprecated tag of the completion items `a` and `b` |
+| `^completion a b` | `detail`, documentation and deprecated tag of the completion items `a` and `b`; FAIL if one is not offered, or its `detail` holds `Unknown` (ty offers names it cannot type) |
 | `^deprecated` | PASS if a `deprecated` diagnostic covers the caret |
 
 Code under a `^completion` caret is unfinished on purpose (`scene.reg_`); `check:features` ignores `ide_*.py`.
