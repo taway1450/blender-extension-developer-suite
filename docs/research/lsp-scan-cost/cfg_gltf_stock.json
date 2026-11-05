@@ -1,0 +1,4 @@
+{"ty":"C:/Users/simon/AppData/Local/Temp/claude/59e2a8f474362c0d/b55a4416-4aea-4836-9ac4-0738079aaf38/scratchpad/bin/ty-stock.exe","workspace":"C:/Users/simon/AppData/Local/Temp/claude/59e2a8f474362c0d/b55a4416-4aea-4836-9ac4-0738079aaf38/scratchpad/ws_gltf","stubs":"C:/Users/simon/source/blender-extension-developer-suite/.cache/bpy-stubs/main",
+"reader1":"io_scene_gltf2/blender/com/gltf2_blender_ui.py","hover":[173,"gltf2_active_variant"],
+"reader2":"io_scene_gltf2/blender/exp/tree.py","registrar":"io_scene_gltf2/blender/com/gltf2_blender_ui.py",
+"reg_edit":["bpy.types.Scene.gltf2_active_variant = bpy.props.IntProperty()","    bpy.types.Scene.gltf2_bench = bpy.props.IntProperty()"]}

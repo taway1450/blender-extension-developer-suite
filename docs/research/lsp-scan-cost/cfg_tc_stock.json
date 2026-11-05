@@ -1,0 +1,4 @@
+{"ty":"C:/Users/simon/AppData/Local/Temp/claude/59e2a8f474362c0d/b55a4416-4aea-4836-9ac4-0738079aaf38/scratchpad/bin/ty-stock.exe","workspace":"C:/Users/simon/source/blender-extension-developer-suite/tests/typecheck","stubs":"C:/Users/simon/source/blender-extension-developer-suite/.cache/bpy-stubs/main",
+"reader1":"features/properties/props_registered/check_props_registered.py","hover":[14,"reg_int"],
+"reader2":"features/properties/props_registered/ide_props_registered.py","registrar":"features/properties/props_registered/__init__.py",
+"reg_edit":["bpy.types.Scene.reg_int = IntProperty()","    bpy.types.Scene.reg_bench = IntProperty()"]}
