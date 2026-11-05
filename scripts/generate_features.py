@@ -23,6 +23,7 @@ import importlib
 import pkgutil
 import shutil
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from _common import TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
@@ -50,8 +51,29 @@ def generated_files() -> dict[Path, str]:
     return files
 
 
-def existing_generated() -> set[Path]:
-    return {p for p in FEATURES_DIR.glob(f"*/{GENERATED}/**/*") if p.is_file() and "__pycache__" not in p.parts}
+def existing_generated() -> dict[Path, str]:
+    """The generated files on disk, with their text."""
+    paths = (p for p in FEATURES_DIR.glob(f"*/{GENERATED}/**/*") if p.is_file() and "__pycache__" not in p.parts)
+    return {p: p.read_text(encoding="utf-8") for p in paths}
+
+
+@dataclass
+class Diff:
+    changed: list[Path]  # to write: new, or with other text
+    stale: set[Path]  # to remove: on disk, but no generator writes them any more
+    missing: list[Path]  # the new ones among ``changed``
+
+    def __bool__(self) -> bool:
+        return bool(self.changed or self.stale)
+
+
+def diff(files: dict[Path, str], existing: dict[Path, str]) -> Diff:
+    """How the generators' ``files`` differ from the ``existing`` generated files on disk."""
+    return Diff(
+        changed=[p for p, text in files.items() if existing.get(p) != text],
+        stale=set(existing) - set(files),
+        missing=[p for p in files if p not in existing],
+    )
 
 
 def roots_block(roots: list[str]) -> str:
@@ -59,8 +81,8 @@ def roots_block(roots: list[str]) -> str:
     return f"{ROOTS_BEGIN}\nroot = [\n{entries}]\n{ROOTS_END}"
 
 
-def updated_ty_toml(roots: list[str]) -> str:
-    text = TY_TOML.read_text(encoding="utf-8")
+def updated_ty_toml(text: str, roots: list[str]) -> str:
+    """ty.toml's ``text`` with ``roots`` between the generated-roots comments; the rest is kept as it is."""
     start, end = text.find(ROOTS_BEGIN), text.find(ROOTS_END)
     if start < 0 or end < 0:
         raise StepError(f"{TY_TOML} has no '{ROOTS_BEGIN}' ... '{ROOTS_END}' block")
@@ -73,20 +95,20 @@ def main() -> int:
     args = parser.parse_args()
 
     files = generated_files()
-    stale = existing_generated() - set(files)
-    changed = [p for p, text in files.items() if not p.is_file() or p.read_text(encoding="utf-8") != text]
+    changes = diff(files, existing_generated())
+    stale, changed = changes.stale, changes.changed
+    ty_toml = TY_TOML.read_text(encoding="utf-8")
 
     if args.check:
         # The roots depend on which addons exist, so compare them as they will be after writing.
-        missing = [p for p in files if not p.is_file()]
-        roots_ok = not missing and TY_TOML.read_text(encoding="utf-8") == updated_ty_toml(import_roots(all_addons()))
+        roots_ok = not changes.missing and ty_toml == updated_ty_toml(ty_toml, import_roots(all_addons()))
         for path in sorted(changed):
             print(f"    out of date: {path.relative_to(TYPECHECK_TESTS_DIR).as_posix()}", flush=True)
         for path in sorted(stale):
             print(f"    stale: {path.relative_to(TYPECHECK_TESTS_DIR).as_posix()}", flush=True)
         if not roots_ok:
             print(f"    out of date: roots in {TY_TOML.relative_to(TYPECHECK_TESTS_DIR).as_posix()}", flush=True)
-        if changed or stale or not roots_ok:
+        if changes or not roots_ok:
             log("Generated feature tests are out of date; run `mise run features:generate`")
             return 1
         log(f"{len(files)} generated files and the ty.toml roots are up to date")
@@ -102,7 +124,7 @@ def main() -> int:
         path.write_text(files[path], encoding="utf-8", newline="\n")
     for pycache in FEATURES_DIR.glob(f"*/{GENERATED}/**/__pycache__"):
         shutil.rmtree(pycache, ignore_errors=True)
-    TY_TOML.write_text(updated_ty_toml(import_roots(all_addons())), encoding="utf-8", newline="\n")
+    TY_TOML.write_text(updated_ty_toml(ty_toml, import_roots(all_addons())), encoding="utf-8", newline="\n")
     log(
         f"Wrote {len(changed)} of {len(files)} generated files, removed {len(stale)} stale ones, updated {TY_TOML.name}"
     )

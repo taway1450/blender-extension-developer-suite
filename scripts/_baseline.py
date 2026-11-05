@@ -141,8 +141,13 @@ def write_sections(path: Path, header: list[str], sections: dict[str, str]) -> N
     path.write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
-def progress_file(generator: str, version: str) -> Path:
-    return EXPECTED_DIR / generator / f"{version}.progress.md"
+def progress_file(generator: str, version: str, directory: Path = EXPECTED_DIR) -> Path:
+    return directory / generator / f"{version}.progress.md"
+
+
+def shown(path: Path) -> str:
+    """``path`` for a log line: relative to the repository when it is inside it."""
+    return path.relative_to(REPO_ROOT).as_posix() if path.is_relative_to(REPO_ROOT) else str(path)
 
 
 # --- the two kinds of recorded results, and recording a run ---------------------------------------------------------
@@ -157,8 +162,8 @@ class Kind:
     write: Callable[[Path, list[str], dict[str, str]], None]
     header: Callable[[str, str], list[str]]
 
-    def file(self, generator: str, version: str) -> Path:
-        return EXPECTED_DIR / generator / f"{version}{self.suffix}"
+    def file(self, generator: str, version: str, directory: Path = EXPECTED_DIR) -> Path:
+        return directory / generator / f"{version}{self.suffix}"
 
 
 FEATURES = Kind(
@@ -225,28 +230,39 @@ def describe(changes: Changes, recorded: dict[str, str], actual: dict[str, str],
 
 
 def record(
-    kind: Kind, generator: str, version: str, actual: dict[str, str], selected: list[Addon], *, update: bool
+    kind: Kind,
+    generator: str,
+    version: str,
+    actual: dict[str, str],
+    selected: list[Addon],
+    *,
+    update: bool,
+    directory: Path = EXPECTED_DIR,
+    existing: list[Addon] | None = None,
 ) -> bool:
     """Compare a run over ``selected`` with the recorded results and print what changed, or with ``update`` merge
-    it into them and rewrite the progress table. Returns whether the run differs from the record (a failure)."""
-    path = kind.file(generator, version)
-    shown = path.relative_to(REPO_ROOT).as_posix()
+    it into them and rewrite the progress table. Returns whether the run differs from the record (a failure).
+
+    ``existing`` are all the addons there are (default: ``all_addons()``); recorded entries of none of them are stale.
+    """
+    path = kind.file(generator, version, directory)
     stored = actual if kind.keeps_bodies else dict.fromkeys(actual, "")
     recorded = kind.read(path)
-    existing = all_addons()
+    existing = all_addons() if existing is None else existing
     if update:
         kind.write(path, kind.header(generator, version), merge(recorded, stored, selected, existing))
-        log(f"Wrote {shown} and {write_progress(generator, version).relative_to(REPO_ROOT).as_posix()}")
+        progress = write_progress(generator, version, directory=directory, addons=existing)
+        log(f"Wrote {shown(path)} and {shown(progress)}")
         return False
     if not path.is_file():
-        log(f"No recorded results in {shown}; run with --update to record them")
+        log(f"No recorded results in {shown(path)}; run with --update to record them")
         return True
     changes = compare(recorded, stored, selected, existing)
     if not changes:
-        log(f"Results match {shown}")
+        log(f"Results match {shown(path)}")
         return False
     log(
-        f"Results changed against {shown} ({len(changes.gone)} gone, {len(changes.changed)} changed, "
+        f"Results changed against {shown(path)} ({len(changes.gone)} gone, {len(changes.changed)} changed, "
         f"{len(changes.new)} new; `mise run {kind.task} {version} --update` records them):"
     )
     for line in describe(changes, recorded, actual, kind):
@@ -339,15 +355,19 @@ def progress_markdown(title: str, rows: list[FeatureProgress], with_ide: bool) -
     return "\n".join(out) + "\n"
 
 
-def write_progress(generator: str, version: str) -> Path:
-    """Rewrite ``<version>.progress.md`` for every feature from the recorded results and the current markers."""
-    addons = all_addons()
+def write_progress(
+    generator: str, version: str, *, directory: Path = EXPECTED_DIR, addons: list[Addon] | None = None
+) -> Path:
+    """Rewrite ``<version>.progress.md`` for every feature from the recorded results and the current markers of
+    ``addons`` (default: ``all_addons()``)."""
+    addons = all_addons() if addons is None else addons
     type_markers = [m for a in addons for f in type_files(a).values() for m in f.markers]
     ide = [m for a in addons for m in ide_markers(a)]
-    ide_path = IDE.file(generator, version)
+    ide_path = IDE.file(generator, version, directory)
+    recorded_types = read_lines(FEATURES.file(generator, version, directory))
     recorded_ide = read_sections(ide_path) if ide_path.is_file() else None
-    rows = progress(feature_names(), type_markers, ide, read_lines(FEATURES.file(generator, version)), recorded_ide)
-    path = progress_file(generator, version)
+    rows = progress(feature_names(), type_markers, ide, recorded_types, recorded_ide)
+    path = progress_file(generator, version, directory)
     title = f"Feature-test progress, {generator} stubs, Blender {version}"
     path.write_text(progress_markdown(title, rows, recorded_ide is not None), encoding="utf-8")
     return path
