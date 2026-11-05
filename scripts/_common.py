@@ -76,9 +76,13 @@ def validate_build_name(name: str) -> str:
 
 
 def main_wrapper(func) -> None:
-    """Run ``func`` and turn a ``StepError`` into an error message and exit code 1."""
+    """Run ``func`` under the machine-wide resource limits (``_resources.guarded``) and turn a ``StepError`` into an
+    error message and exit code 1."""
+    from _resources import guarded
+
     try:
-        code = func()
+        with guarded():
+            code = func()
     except StepError as error:
         print(f"error: {error}", file=sys.stderr)
         code = 1
