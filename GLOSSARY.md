@@ -57,3 +57,12 @@ A Property declaration assigned to a Blender class at runtime (`bpy.types.Scene.
 **Value type**:
 The type Blender gives an instance attribute for a property (`int` for `IntProperty`, `Literal["A", "B"]` for a static enum).
 _Avoid_: property type (ambiguous with the declaration)
+
+**Property member**:
+The property behind an attribute of a Blender instance, whatever its origin (an Annotated property or a Registered property): it decides the attribute's Value type, whether it can be written and whether it is hidden. In the most derived class that mentions the name, a class body that declares the name wins over a registration.
+
+## Add-on code
+
+**Add-on index**:
+What an Add-on's code does to Blender as a whole, collected from all its files without type-checking them: today its Registered properties, later its registered classes and operators. It is read from the Add-on of the file that asks, so one Add-on's registrations never reach another.
+_Avoid_: registry, add-on cache
