@@ -212,12 +212,12 @@ def has_builtin_generator(source: Path) -> bool:
     return (source / BUILTIN_STUB_GEN).is_file()
 
 
-def resolve_generators(version: str, ref: str | None, generator: str) -> list[str]:
+def resolve_generators(version: str, source: Path, generator: str) -> list[str]:
     """The generators ``generator`` (one of GENERATORS or ALL) stands for; ALL leaves out the builtin
-    generator for Blender versions without one."""
+    generator for Blender versions without one (``source`` is the version's source worktree)."""
     if generator != ALL:
         return [generator]
-    if has_builtin_generator(ensure_worktree(version, ref)):
+    if has_builtin_generator(source):
         return list(GENERATORS)
     log(f"Blender {version} has no built-in stub generator ({BUILTIN_STUB_GEN.as_posix()}), using only {FAKE_BPY}")
     return [FAKE_BPY]
@@ -276,9 +276,19 @@ def generate_builtin_stubs(source: Path, rst: Path, stubs_dir: Path) -> None:
 
 
 def generate_stubs(
-    version: str, *, generator: str = FAKE_BPY, ref: str | None = None, blender: Path | None = None, force: bool = False
+    version: str,
+    *,
+    generator: str = FAKE_BPY,
+    ref: str | None = None,
+    blender: Path | None = None,
+    force: bool = False,
+    source: Path | None = None,
 ) -> Path:
-    """Return the bpy stubs directory of ``generator`` for ``version``, generating the stubs if needed."""
+    """Return the bpy stubs directory of ``generator`` for ``version``, generating the stubs if needed.
+
+    ``source`` is the Blender source worktree when the caller has prepared it already; ``force`` then regenerates
+    the stubs without recreating the worktree a second time.
+    """
     stubs_dir = STUBS_DIRS[generator] / version
     marker = stubs_dir / COMPLETE_MARKER
     if marker.exists() and not force:
@@ -289,7 +299,7 @@ def generate_stubs(
             return stubs_dir
         log(f"{generator} bpy stubs {stubs_dir} were generated from another commit, regenerating them")
 
-    source = ensure_worktree(version, ref, force)
+    source = source or ensure_worktree(version, ref, force)
     if generator == BUILTIN and not has_builtin_generator(source):
         raise StepError(
             f"Blender {version} has no built-in stub generator ({BUILTIN_STUB_GEN.as_posix()}, "
@@ -428,8 +438,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     add_stubs_arguments(parser)
     args = parser.parse_args()
-    for generator in resolve_generators(args.version, args.ref, args.generator):
-        generate_stubs(args.version, generator=generator, ref=args.ref, blender=args.blender, force=args.force)
+    source = ensure_worktree(args.version, args.ref, args.force)
+    for generator in resolve_generators(args.version, source, args.generator):
+        generate_stubs(
+            args.version, generator=generator, ref=args.ref, blender=args.blender, force=args.force, source=source
+        )
     return 0
 
 

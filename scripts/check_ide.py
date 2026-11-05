@@ -25,7 +25,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import difflib
 import json
 import re
 import subprocess
@@ -34,20 +33,12 @@ from pathlib import Path
 from queue import Empty, Queue
 from typing import Any
 
-from _baseline import Changes, compare, ide_file, merge, read_sections, write_progress, write_sections
-from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import all_addons, ide_markers, select
+from _baseline import IDE, record
+from _common import TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
+from _features import ide_markers, select
 from _markers import IdeMarker
-from build_ty import build_ty
-from generate_stubs import (
-    add_stubs_arguments,
-    blender_python_version,
-    ensure_worktree,
-    generate_stubs,
-    resolve_generators,
-)
+from _target import Target, add_target_arguments
 
-RESULTS_DIR = CACHE_DIR / "typecheck-results"
 REQUEST_TIMEOUT = 120  # seconds; the first request loads the stubs
 
 MAX_LINES = 40  # longer hover/signature texts are cut in the golden file
@@ -299,39 +290,12 @@ def query(client: LspClient, marker: IdeMarker) -> Any:
     raise AssertionError(marker.kind)
 
 
-# --- recorded results ---------------------------------------------------------------------------------------------
-
-
-def header(generator: str, version: str) -> list[str]:
-    return [
-        f"# IDE results, {generator} stubs, Blender {version}",
-        "",
-        f"Written by `mise run check:ide {version} --update`; the task fails when this file would change.",
-        "Each section is one marker, `path | ^marker @column | queried line`, and what ty's language server returned.",
-    ]
-
-
-def print_changes(changes: Changes, expected: dict[str, str], sections: dict[str, str]) -> None:
-    for title in [*changes.gone, *changes.changed, *changes.new]:
-        print(f"    ## {title}", flush=True)
-        diff = difflib.unified_diff(
-            (expected.get(title) or "").splitlines(),
-            (sections.get(title) or "").splitlines(),
-            "recorded",
-            "now",
-            lineterm="",
-            n=1,
-        )
-        for line in list(diff)[2:]:
-            print(f"    {line}", flush=True)
-
-
 # --- main ------------------------------------------------------------------------------------------------------
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    add_stubs_arguments(parser)
+    add_target_arguments(parser, binary="ty")
     parser.add_argument(
         "features",
         nargs="*",
@@ -339,7 +303,6 @@ def main() -> int:
         "(`operator_properties/opprops_layout`) in tests/typecheck/features/ "
         "(default: all)",
     )
-    parser.add_argument("--debug", action="store_true", help="Use a debug build of ty")
     parser.add_argument("--update", action="store_true", help="Rewrite the golden files instead of comparing")
     args = parser.parse_args()
 
@@ -348,21 +311,16 @@ def main() -> int:
         raise StepError("None of the selected addons has ide_*.py files")
     markers = sorted((m for addon in selected for m in ide_markers(addon)), key=lambda m: (m.path, m.line, m.character))
 
-    generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {
-        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-        for g in generators
-    }
-    python_version = blender_python_version(ensure_worktree(args.version, args.ref))
-    ty = build_ty(args.debug)
+    target = Target.from_args(args)
+    python_version = target.python_version
 
     changed = False
-    for generator, stubs in all_stubs.items():
+    for generator, stubs in target.stubs.items():
         log(
             f"Querying ty's language server (Python {python_version}, Blender {args.version}, {generator} stubs) "
             f"at {len(markers)} markers in {len(selected)} addons"
         )
-        client = start_server(ty, stubs, python_version)
+        client = start_server(target.binary, stubs, python_version)
         raw = []
         sections = {}
         try:
@@ -385,8 +343,7 @@ def main() -> int:
         finally:
             client.close()
 
-        results_dir = RESULTS_DIR / args.version / generator
-        results_dir.mkdir(parents=True, exist_ok=True)
+        results_dir = target.results_dir(generator)
         (results_dir / "ide.json").write_text(json.dumps(raw, indent=1), encoding="utf-8")
         failures = sum("FAIL" in body for body in sections.values())
         log(
@@ -394,25 +351,7 @@ def main() -> int:
             f"{results_dir / 'ide.json'}"
         )
 
-        path = ide_file(generator, args.version)
-        shown = path.relative_to(TYPECHECK_TESTS_DIR.parent.parent)
-        recorded = read_sections(path)
-        existing = all_addons()
-        if args.update:
-            write_sections(path, header(generator, args.version), merge(recorded, sections, selected, existing))
-            log(f"Wrote {path} and {write_progress(generator, args.version)}")
-            continue
-        if not path.is_file():
-            log(f"No recorded results in {path}; run with --update to record them")
-            changed = True
-            continue
-        changes = compare(recorded, sections, selected, existing)
-        if not changes:
-            log(f"Results match {shown}")
-            continue
-        changed = True
-        log(f"Results changed against {shown} (--update records them):")
-        print_changes(changes, recorded, sections)
+        changed |= record(IDE, generator, args.version, sections, selected, update=args.update)
     return 1 if changed else 0
 
 

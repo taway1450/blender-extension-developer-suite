@@ -47,17 +47,10 @@ from pathlib import Path
 from _common import CACHE_DIR, TY_SUBMODULE, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
 from _features import FEATURES_DIR, Addon, AddonResult, evaluate, parse_diagnostics, select
 from _markers import is_check_file
-from generate_stubs import (
-    add_stubs_arguments,
-    blender_python_version,
-    ensure_worktree,
-    generate_stubs,
-    resolve_generators,
-)
+from _target import Target, add_target_arguments
 
 ORACLE_DIR = CACHE_DIR / "typecheck-oracle"
 BASELINE_DIR = TYPECHECK_TESTS_DIR / "oracle"
-RESULTS_DIR = CACHE_DIR / "typecheck-results"
 
 
 def stock_ty_command() -> list[str]:
@@ -314,23 +307,19 @@ def judge(result: AddonResult) -> OracleResult:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    add_stubs_arguments(parser)
+    add_target_arguments(parser, binary=None)  # stock ty from PyPI, not ty-blender
     parser.add_argument(
         "features", nargs="*", help="Features or addons (`feature/addon`) in tests/typecheck/features/ (default: all)"
     )
     args = parser.parse_args()
 
     addons = [a for a in select(args.features) if a.type_test_files()]
-    generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {
-        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-        for g in generators
-    }
-    python_version = blender_python_version(ensure_worktree(args.version, args.ref))
+    target = Target.from_args(args)
+    python_version = target.python_version
     ty = stock_ty_command()
 
     failed = False
-    for generator, stubs in all_stubs.items():
+    for generator, stubs in target.stubs.items():
         log(
             f"Oracle run: stock ty with reference stubs (Python {python_version}, Blender {args.version}, "
             f"{generator} stubs) on {len(addons)} addons"
@@ -387,8 +376,7 @@ def main() -> int:
         for o in outcomes:
             if o.failures:
                 lines += ["", f"## {o.result.addon.feature}/{o.result.addon.name}", "", *(f"- {f}" for f in o.failures)]
-        results_dir = RESULTS_DIR / args.version / generator
-        results_dir.mkdir(parents=True, exist_ok=True)
+        results_dir = target.results_dir(generator)
         (results_dir / "oracle.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
         total = sum(len(o.failures) for o in outcomes)
         log(f"{total} oracle failures; summary: {results_dir / 'oracle.md'}")

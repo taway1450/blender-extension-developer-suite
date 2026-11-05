@@ -40,12 +40,12 @@ import json
 import tomllib
 from pathlib import Path
 
-from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper, validate_version
+from _common import REPO_ROOT, StepError, log, main_wrapper, validate_version
 from _features import Addon, select
+from _target import TYPECHECK_RESULTS_DIR
 from generate_stubs import find_blender, run_blender_script
 
 LOADER = REPO_ROOT / "scripts" / "blender" / "load_feature_addons.py"
-RESULTS_DIR = CACHE_DIR / "typecheck-results"
 
 
 def runtime_spec(addon: Addon) -> dict:
@@ -93,7 +93,7 @@ def main() -> int:
             expectations[name] = spec
 
     blender = find_blender(args.version, args.blender)
-    work = RESULTS_DIR / args.version
+    work = TYPECHECK_RESULTS_DIR / args.version
     work.mkdir(parents=True, exist_ok=True)
     (work / "load-input.json").write_text(json.dumps(entries, indent=1), encoding="utf-8")
     log(f"Loading {len(entries)} addons in Blender")

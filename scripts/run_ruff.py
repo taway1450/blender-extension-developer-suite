@@ -39,16 +39,9 @@ from pathlib import Path
 
 from _common import CACHE_DIR, EXAMPLE_ADDONS_DIR, REPO_ROOT, StepError, log, main_wrapper
 from _features import EXPECTED_STUBS, FEATURES_DIR, select
-from build_ruff import build_ruff
+from _target import Target, add_target_arguments
 from check_blender import EXCLUDED_DIRS
-from generate_stubs import (
-    add_stubs_arguments,
-    blender_python_version,
-    ensure_worktree,
-    generate_stubs,
-    resolve_generators,
-    results_name,
-)
+from generate_stubs import results_name
 
 TOOLS = ("lint", "format")
 TARGETS = ("blender", "stubs", "addons", "features")
@@ -160,10 +153,10 @@ def run_job(ruff: Path, tool: str, profile: str, python_version: str, job: Job) 
     return runs
 
 
-def jobs_for(tool: str, args: argparse.Namespace) -> list[Job]:
+def jobs_for(tool: str, args: argparse.Namespace, target: Target) -> list[Job]:
     stem = f"{tool}-{args.target}"
     if args.target == "blender":
-        source = ensure_worktree(args.version, args.ref, force=args.force)
+        source = target.source
         return [
             Job(
                 f"the Blender {args.version} source {source}",
@@ -174,12 +167,8 @@ def jobs_for(tool: str, args: argparse.Namespace) -> list[Job]:
             )
         ]
     if args.target == "stubs":
-        generators = resolve_generators(args.version, args.ref, args.generator)
         jobs = []
-        for generator in generators:
-            stubs = generate_stubs(
-                args.version, generator=generator, ref=args.ref, blender=args.blender, force=args.force
-            )
+        for generator, stubs in target.stubs.items():
             jobs.append(
                 Job(
                     f"the {generator} bpy stubs {stubs}",
@@ -221,26 +210,25 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("tool", choices=TOOLS, help="lint (ruff check) or format (ruff format --check --diff)")
     parser.add_argument("target", choices=TARGETS, help="What to run ruff on")
-    add_stubs_arguments(parser)
+    add_target_arguments(parser, binary="ruff")
     parser.add_argument(
         "names",
         nargs="*",
         help="addons: addon directory names in examples/addons/; features: features or "
         "feature/addon in tests/typecheck/features/ (default: all)",
     )
-    parser.add_argument("--debug", action="store_true", help="Use a debug build of ruff")
     args = parser.parse_args()
     if args.names and args.target not in ("addons", "features"):
         parser.error(f"the {args.target} target takes no names")
 
-    jobs = jobs_for(args.tool, args)
-    python_version = blender_python_version(ensure_worktree(args.version, args.ref))
-    ruff = build_ruff(args.debug)
+    target = Target.from_args(args, stubs=args.target == "stubs")
+    assert target.binary is not None
+    jobs = jobs_for(args.tool, args, target)
     profile = PROFILE_OF_TARGET[args.target]
 
     code = 0
     for job in jobs:
-        runs = run_job(ruff, args.tool, profile, python_version, job)
+        runs = run_job(target.binary, args.tool, profile, target.python_version, job)
         if args.target == "addons" and runs[1].total:
             code = 1
     return code

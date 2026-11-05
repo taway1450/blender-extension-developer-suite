@@ -41,15 +41,8 @@ import sys
 from pathlib import Path
 
 from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper
-from generate_stubs import (
-    BUILTIN,
-    FAKE_BPY,
-    add_stubs_arguments,
-    ensure_worktree,
-    find_blender,
-    generate_stubs,
-    resolve_generators,
-)
+from _target import Target, add_target_arguments
+from generate_stubs import BUILTIN, FAKE_BPY, find_blender
 
 STUB_NAMES = {FAKE_BPY: "fake-bpy-module stubs", BUILTIN: "stubs of Blender's own stub generator"}
 DUMP_SCRIPT = REPO_ROOT / "scripts" / "blender" / "dump_rna_flags.py"
@@ -998,19 +991,15 @@ def summarize(rows: list[Row], dump: dict, crashed: list[str], generator: str) -
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    add_stubs_arguments(parser)
+    add_target_arguments(parser, binary=None)
     parser.add_argument(
         "--reuse-dump", action="store_true", help="Compare the existing rna.json again instead of running Blender"
     )
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
 
-    generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {
-        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-        for g in generators
-    }
-    source = ensure_worktree(args.version, args.ref)
+    target = Target.from_args(args)
+    all_stubs, source = target.stubs, target.source
     blender = find_blender(args.version, args.blender)
     out_dir = CACHE_DIR / "flag-report" / args.version
 

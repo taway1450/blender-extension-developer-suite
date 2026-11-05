@@ -9,14 +9,14 @@ cached under `.cache/`.
 
 | Task | What it does |
 | --- | --- |
-| `mise run ty:build [--debug]` | Build ty from the `ty-blender` submodule (release or debug). |
-| `mise run ruff:build [--debug]` | Build ruff (linter and formatter) from the `ty-blender` submodule, in the same cargo `target/` as ty. |
+| `mise run ty:build [--profile release|profiling|dev]` | Build ty from the `ty-blender` submodule. `release` (the default) is what ty ships, with fat LTO, so every change pays a long link; `profiling` has the same optimisations without LTO and rebuilds much faster, so use it while working on ty; `dev` (`--debug`) is an unoptimised build. |
+| `mise run ruff:build [--profile ...]` | Build ruff (linter and formatter) from the `ty-blender` submodule, in the same cargo `target/` as ty. |
 | `mise run blender:download <version>` | Download the official Blender release into `.cache/blender-bin/<version>` (URLs and checksums from `fake-bpy-module/src/versions.yml`). |
 | `mise run blender:build <name> [--ref <ref>] [--update]` | Build Blender from source: a worktree of the `blender` submodule at `<ref>` (default `<name>`, e.g. `main`) in `.cache/blender-src/<name>`, CMake/Ninja build in `.cache/blender-build/<name>`, installed into `.cache/blender-bin/<name>` like a download. The precompiled libraries are shared by all builds in `.cache/blender-libs/`. `--update` fetches the ref again and rebuilds incrementally; `--config lite` builds faster. |
 | `mise run stubs:generate <version>` | Generate bpy stubs with `fake-bpy-module` into `.cache/bpy-stubs/<version>` and with Blender's own stub generator (`doc/python_api/sphinx_stub_gen.py`, Blender 5.2 and later) into `.cache/bpy-stubs-builtin/<version>`, using a worktree of the `blender` submodule and the downloaded Blender binary. Both work from the rst API docs Blender generates, cached in `.cache/bpy-rst/<version>`. |
-| `mise run check:blender <version> [--debug]` | Type-check the Blender source of that version with ty; the full output goes to `.cache/ty-results/<version>.txt` (`<version>-builtin.txt` with Blender's own stubs). |
-| `mise run check:stubs <version> [--debug]` | Type-check the generated bpy stubs themselves with ty; the full output goes to `.cache/ty-results/stubs-<version>.txt` (`stubs-<version>-builtin.txt` for Blender's own stubs). |
-| `mise run check:addons <version> [addon...] [--debug]` | Type-check the example addons in `examples/addons/` with ty against the bpy stubs. |
+| `mise run check:blender <version>` | Type-check the Blender source of that version with ty; the full output goes to `.cache/ty-results/<version>.txt` (`<version>-builtin.txt` with Blender's own stubs). |
+| `mise run check:stubs <version>` | Type-check the generated bpy stubs themselves with ty; the full output goes to `.cache/ty-results/stubs-<version>.txt` (`stubs-<version>-builtin.txt` for Blender's own stubs). |
+| `mise run check:addons <version> [addon...]` | Type-check the example addons in `examples/addons/` with ty against the bpy stubs. |
 | `mise run check:features <version> [feature...] [--update]` | Type-check the feature tests in `tests/typecheck/features/` (`assert_type` and expected-error markers) with ty-blender and compare with `tests/typecheck/expected/<generator>/<version>.txt`; fails when the results change. A summary per feature goes to `.cache/typecheck-results/<version>/<generator>/summary.md`. See [tests/typecheck/README.md](tests/typecheck/README.md). |
 | `mise run check:ide <version> [feature...] [--update]` | Query ty's language server at the `^hover` / `^signature` / `^completion` / `^deprecated` markers in `tests/typecheck/` and compare with `tests/typecheck/expected/<generator>/<version>.ide.md`; fails when the results change. |
 | `mise run check:oracle <version> [feature...]` | Run stock ty on each feature-test add-on with its reference stubs (`_expected/` deltas merged into the bpy stubs of both generators) and check that every marker holds; a disagreement means the hand-written expectations are inconsistent. Summary in `.cache/typecheck-results/<version>/<generator>/oracle.md`. |
@@ -38,7 +38,18 @@ mise run blender:build my-fix --ref my-feature-branch
 ```
 
 `--blender <path>` uses any other Blender binary instead. The check tasks build ty and generate missing stubs
-themselves.
+themselves. The ty and ruff tasks take `--profile release|profiling|dev` (`--debug` is short for `dev`) for that
+build, or `--ty <path>` / `--ruff <path>` to use a binary that is already built. While working on ty-blender,
+`--profile profiling` avoids the release profile's slow LTO link:
+
+```sh
+mise run check:features main properties --profile profiling
+mise run check:ide main properties --ty ty-blender/ruff-blender/target/profiling/ty.exe
+```
+
+When results change, `check:features` and `check:ide` list each entry as `-` gone, `~` changed or `+` new, with
+ty's message under a new `check:features` entry and a diff under a changed `check:ide` section, then the counts
+per feature.
 
 The stub, check and report tasks run once per stub generator: `fake-bpy-module` and, for Blender 5.2 and later,
 `builtin` (Blender's own). `--generator fake-bpy-module` or `--generator builtin` picks one; the report against

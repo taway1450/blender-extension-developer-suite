@@ -1,16 +1,22 @@
 [tasks."ty:build"]
 description = "Build ty from the ty-blender submodule"
 usage = '''
-flag "--debug" help="Build a debug binary instead of a release binary"
+flag "--profile <profile>" default="release" help="Cargo profile to build ty with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
 '''
-run = 'uv run scripts/build_ty.py {% if usage.debug %}--debug{% endif %}'
+run = 'uv run scripts/build_ty.py {% if usage.debug %}--debug{% else %}--profile "{{usage.profile}}"{% endif %}'
 
 [tasks."ruff:build"]
 description = "Build ruff (linter and formatter) from the ty-blender submodule"
 usage = '''
-flag "--debug" help="Build a debug binary instead of a release binary"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
 '''
-run = 'uv run scripts/build_ruff.py {% if usage.debug %}--debug{% endif %}'
+run = 'uv run scripts/build_ruff.py {% if usage.debug %}--debug{% else %}--profile "{{usage.profile}}"{% endif %}'
 
 [tasks."blender:download"]
 description = "Download an official Blender release binary into .cache/blender-bin/"
@@ -61,7 +67,11 @@ uv run scripts/generate_stubs.py {{usage.version}}
 description = "Type-check the Blender source code with ty"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-flag "--debug" help="Use a debug build of ty"
+flag "--profile <profile>" default="release" help="Cargo profile to build ty with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
@@ -71,7 +81,8 @@ flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
 run = '''
 uv run scripts/check_blender.py {{usage.version}}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 {%- if usage.force %} --force{% endif %}
@@ -82,7 +93,11 @@ description = "Type-check the example addons in examples/addons/ with ty"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[addons]" var=#true help="Addon directory names in examples/addons/ (default: all)"
-flag "--debug" help="Use a debug build of ty"
+flag "--profile <profile>" default="release" help="Cargo profile to build ty with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
   choices "fake-bpy-module" "builtin" "all"
@@ -91,7 +106,8 @@ flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-modu
 run = '''
 uv run scripts/check_addons.py {{usage.version}}
 {%- for addon in usage.addons %} {{addon}}{% endfor %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 '''
 
@@ -101,7 +117,11 @@ usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Feature directory names in tests/typecheck/features/ (default: all)"
 flag "--update" help="Rewrite tests/typecheck/expected/<generator>/<version>.txt and .progress.md instead of comparing"
-flag "--debug" help="Use a debug build of ty"
+flag "--profile <profile>" default="release" help="Cargo profile to build ty with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
   choices "fake-bpy-module" "builtin" "all"
@@ -111,7 +131,8 @@ run = '''
 uv run scripts/check_features.py {{usage.version}}
 {%- for feature in usage.features %} {{feature}}{% endfor %}
 {%- if usage.update %} --update{% endif %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 '''
 
@@ -157,7 +178,11 @@ usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Feature directory names in tests/typecheck/features/ or tests/typecheck/ide/ (default: all)"
 flag "--update" help="Rewrite tests/typecheck/expected/<generator>/<version>.ide.md and .progress.md instead of comparing"
-flag "--debug" help="Use a debug build of ty"
+flag "--profile <profile>" default="release" help="Cargo profile to build ty with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
   choices "fake-bpy-module" "builtin" "all"
@@ -167,7 +192,8 @@ run = '''
 uv run scripts/check_ide.py {{usage.version}}
 {%- for feature in usage.features %} {{feature}}{% endfor %}
 {%- if usage.update %} --update{% endif %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 '''
 
@@ -175,7 +201,11 @@ uv run scripts/check_ide.py {{usage.version}}
 description = "Type-check the generated bpy stubs themselves with ty"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-flag "--debug" help="Use a debug build of ty"
+flag "--profile <profile>" default="release" help="Cargo profile to build ty with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
@@ -185,7 +215,8 @@ flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
 run = '''
 uv run scripts/check_stubs.py {{usage.version}}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 {%- if usage.force %} --force{% endif %}
@@ -195,13 +226,18 @@ uv run scripts/check_stubs.py {{usage.version}}
 description = "Lint the Blender source code with ruff (ruff check), once with stock settings and once with config/ruff/"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
 run = '''
 uv run scripts/run_ruff.py lint blender {{usage.version}}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.force %} --force{% endif %}
 '''
@@ -210,7 +246,11 @@ uv run scripts/run_ruff.py lint blender {{usage.version}}
 description = "Lint the generated bpy stubs with ruff (ruff check), once with stock settings and once with config/ruff/"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
@@ -220,7 +260,8 @@ flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
 run = '''
 uv run scripts/run_ruff.py lint stubs {{usage.version}}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 {%- if usage.force %} --force{% endif %}
@@ -231,13 +272,18 @@ description = "Lint the example addons in examples/addons/ with ruff (ruff check
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[addons]" var=#true help="Addon directory names in examples/addons/ (default: all)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 '''
 run = '''
 uv run scripts/run_ruff.py lint addons {{usage.version}}
 {%- for name in usage.addons %} {{name}}{% endfor %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 '''
 
@@ -246,13 +292,18 @@ description = "Lint the feature-test addons in tests/typecheck/features/ with ru
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/ (default: all)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 '''
 run = '''
 uv run scripts/run_ruff.py lint features {{usage.version}}
 {%- for name in usage.features %} {{name}}{% endfor %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 '''
 
@@ -260,13 +311,18 @@ uv run scripts/run_ruff.py lint features {{usage.version}}
 description = "Format-check the Blender source code with ruff (ruff format --check --diff, writes nothing), once with stock settings and once with config/ruff/"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
 run = '''
 uv run scripts/run_ruff.py format blender {{usage.version}}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.force %} --force{% endif %}
 '''
@@ -275,7 +331,11 @@ uv run scripts/run_ruff.py format blender {{usage.version}}
 description = "Format-check the generated bpy stubs with ruff (ruff format --check --diff, writes nothing), once with stock settings and once with config/ruff/"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
@@ -285,7 +345,8 @@ flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
 run = '''
 uv run scripts/run_ruff.py format stubs {{usage.version}}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 {%- if usage.force %} --force{% endif %}
@@ -296,13 +357,18 @@ description = "Format-check the example addons in examples/addons/ with ruff (ru
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[addons]" var=#true help="Addon directory names in examples/addons/ (default: all)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 '''
 run = '''
 uv run scripts/run_ruff.py format addons {{usage.version}}
 {%- for name in usage.addons %} {{name}}{% endfor %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 '''
 
@@ -311,13 +377,18 @@ description = "Format-check the feature-test addons in tests/typecheck/features/
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/ (default: all)"
-flag "--debug" help="Use a debug build of ruff"
+flag "--profile <profile>" default="release" help="Cargo profile to build ruff with: release, profiling (no LTO, much faster to rebuild) or dev" {
+  choices "release" "profiling" "dev"
+}
+flag "--debug" help="Shorthand for --profile dev"
+flag "--ruff <path>" help="Use this ruff binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 '''
 run = '''
 uv run scripts/run_ruff.py format features {{usage.version}}
 {%- for name in usage.features %} {{name}}{% endfor %}
-{%- if usage.debug %} --debug{% endif %}
+{%- if usage.debug %} --debug{% else %} --profile "{{usage.profile}}"{% endif %}
+{%- if usage.ruff %} --ruff "{{usage.ruff}}"{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 '''
 

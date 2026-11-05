@@ -20,21 +20,13 @@ import argparse
 import subprocess
 
 from _common import EXAMPLE_ADDONS_DIR, StepError, log, main_wrapper
-from build_ty import build_ty
-from generate_stubs import (
-    add_stubs_arguments,
-    blender_python_version,
-    ensure_worktree,
-    generate_stubs,
-    resolve_generators,
-)
+from _target import Target, add_target_arguments
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    add_stubs_arguments(parser)
+    add_target_arguments(parser, binary="ty")
     parser.add_argument("addons", nargs="*", help=f"Addon directory names in {EXAMPLE_ADDONS_DIR} (default: all)")
-    parser.add_argument("--debug", action="store_true", help="Use a debug build of ty")
     args = parser.parse_args()
 
     available = sorted(p.name for p in EXAMPLE_ADDONS_DIR.iterdir() if (p / "__init__.py").is_file())
@@ -43,18 +35,13 @@ def main() -> int:
         raise StepError(f"Unknown addons {', '.join(sorted(unknown))} (available: {', '.join(available)})")
     addons = [EXAMPLE_ADDONS_DIR / name for name in (args.addons or available)]
 
-    generators = resolve_generators(args.version, args.ref, args.generator)
-    all_stubs = {
-        g: generate_stubs(args.version, generator=g, ref=args.ref, blender=args.blender, force=args.force)
-        for g in generators
-    }
-    python_version = blender_python_version(ensure_worktree(args.version, args.ref))
-    ty = build_ty(args.debug)
+    target = Target.from_args(args)
+    python_version = target.python_version
 
     code = 0
-    for generator, stubs in all_stubs.items():
+    for generator, stubs in target.stubs.items():
         cmd = [
-            ty,
+            target.binary,
             "check",
             "--project",
             EXAMPLE_ADDONS_DIR,

@@ -1,5 +1,9 @@
 from _baseline import (
+    FEATURES,
+    IDE,
+    Changes,
     compare,
+    describe,
     merge,
     progress,
     progress_markdown,
@@ -102,3 +106,21 @@ def test_progress_without_ide_results():
     [props] = progress(["props"], [], ide, {}, None)
     assert props.ide == [0, 1]
     assert "not recorded" in progress_markdown("t", [props], with_ide=False)
+
+
+def test_describe_shows_messages_of_new_feature_entries_but_never_records_them():
+    changes = Changes(new=[A2], gone=[A1])
+    lines = describe(changes, {A1: ""}, {A2: "Type `int` does not match asserted type `str | None`"}, FEATURES)
+    assert lines == [
+        f"    - {A1}",
+        f"    + {A2}",
+        "        Type `int` does not match asserted type `str | None`",
+    ]
+
+
+def test_describe_diffs_ide_sections_and_counts_per_feature():
+    changes = Changes(changed=[A1], new=[L1])
+    lines = describe(changes, {A1: "PASS\nint"}, {A1: "FAIL\nint", L1: "PASS"}, IDE)
+    assert lines[0] == f"    ~ {A1}"
+    assert "        -PASS" in lines and "        +FAIL" in lines
+    assert lines[-2:] == ["        +PASS", "    per feature: props ~1, regs +1"]

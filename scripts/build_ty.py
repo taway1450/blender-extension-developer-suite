@@ -1,8 +1,14 @@
 """Build ty from the ``ty-blender`` submodule.
 
+Cargo profiles (``--profile``):
+  release     what ty ships: fat LTO, so every change pays a long link (the default)
+  profiling   release optimisations without LTO: fast binary, much faster rebuilds; the one for working on ty
+  dev         unoptimised debug build (``--debug``): fastest to compile, slow on the full feature tests
+
 Usage:
-  uv run scripts/build_ty.py           # release build
-  uv run scripts/build_ty.py --debug   # debug build (faster to compile, slower to run)
+  uv run scripts/build_ty.py
+  uv run scripts/build_ty.py --profile profiling
+  uv run scripts/build_ty.py --debug
 """
 
 from __future__ import annotations
@@ -14,13 +20,13 @@ from _common import TY_SUBMODULE, StepError, exe, git_output, log, main_wrapper,
 
 RUFF_DIR = TY_SUBMODULE / "ruff-blender"
 
+# Cargo profile -> its directory in target/.
+PROFILES = {"release": "release", "profiling": "profiling", "dev": "debug"}
+DEFAULT_PROFILE = "release"
 
-def binary_path(name: str, debug: bool) -> Path:
-    return RUFF_DIR / "target" / ("debug" if debug else "release") / exe(name)
 
-
-def ty_path(debug: bool) -> Path:
-    return binary_path("ty", debug)
+def binary_path(name: str, profile: str = DEFAULT_PROFILE) -> Path:
+    return RUFF_DIR / "target" / PROFILES[profile] / exe(name)
 
 
 def ensure_checkout() -> None:
@@ -38,27 +44,54 @@ def ensure_checkout() -> None:
     run(["git", "-C", TY_SUBMODULE, "submodule", "update", "--init", "ruff-blender"])
 
 
-def build_binary(name: str, debug: bool = False) -> Path:
+def build_binary(name: str, profile: str = DEFAULT_PROFILE) -> Path:
     """Build the ``name`` binary (``ty`` or ``ruff``) of the ruff workspace in ``ty-blender/ruff-blender``."""
-    log(f"Building {name} ({'debug' if debug else 'release'})")
+    log(f"Building {name} ({profile} profile)")
     ensure_checkout()
-    run(["cargo", "build", *([] if debug else ["--release"]), "--bin", name], cwd=RUFF_DIR)
-    binary = binary_path(name, debug)
+    run(["cargo", "build", "--profile", profile, "--bin", name], cwd=RUFF_DIR)
+    binary = binary_path(name, profile)
     if not binary.is_file():
         raise StepError(f"{name} binary not found at {binary} after building")
     log(f"{name} binary: {binary}")
     return binary
 
 
-def build_ty(debug: bool = False) -> Path:
-    return build_binary("ty", debug)
+def add_binary_arguments(parser: argparse.ArgumentParser, name: str) -> None:
+    """``--profile``/``--debug``, and ``--<name> <path>`` to use a binary that is already built."""
+    group = parser.add_argument_group(f"{name} binary")
+    group.add_argument(
+        "--profile",
+        choices=PROFILES,
+        default=DEFAULT_PROFILE,
+        help=f"Cargo profile to build {name} with (default: {DEFAULT_PROFILE}; profiling skips the slow LTO link)",
+    )
+    group.add_argument("--debug", dest="profile", action="store_const", const="dev", help="Shorthand for --profile dev")
+    group.add_argument(f"--{name}", dest="binary", type=Path, help=f"Use this {name} binary instead of building one")
+
+
+def binary_from_args(args: argparse.Namespace, name: str) -> Path:
+    """The binary ``add_binary_arguments`` asked for: the one given with ``--<name>``, or a fresh build."""
+    if args.binary is None:
+        return build_binary(name, args.profile)
+    binary = args.binary.resolve()
+    if not binary.is_file():
+        raise StepError(f"--{name} {args.binary}: no such file")
+    log(f"Using {name} binary {binary} (not building)")
+    return binary
+
+
+def build_ty(profile: str = DEFAULT_PROFILE) -> Path:
+    return build_binary("ty", profile)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--debug", action="store_true", help="Build a debug binary instead of a release binary")
+    parser.add_argument("--profile", choices=PROFILES, default=DEFAULT_PROFILE, help="Cargo profile")
+    parser.add_argument(
+        "--debug", dest="profile", action="store_const", const="dev", help="Shorthand for --profile dev"
+    )
     args = parser.parse_args()
-    build_ty(args.debug)
+    build_ty(args.profile)
     return 0
 
 
