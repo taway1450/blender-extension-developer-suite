@@ -1,9 +1,6 @@
 # Feature-test results that are not passes, builtin stubs, Blender main.
 # `mise run check:features main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_discovery/disc_bad_bl_info/__init__.py | ignore-comment-unknown-rule | bl_info = {  # ty: ignore[blender-invalid-addon-metadata]
-features/addon_discovery/disc_bad_bl_info/__init__.py | ignore-comment-unknown-rule | "blender": "4.2",  # ty: ignore[blender-invalid-addon-metadata]
-features/addon_discovery/disc_bad_manifest/__init__.py | ignore-comment-unknown-rule | """Feature test: blender_manifest.toml without an id and with an unknown type."""  # ty: ignore[blender-invalid-addon-metadata]
 features/addon_discovery/disc_both/__init__.py | unresolved-attribute | bpy.types.Scene.disc_both_marker = StringProperty()
 features/addon_discovery/disc_both/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_both_marker
 features/addon_discovery/disc_both/check_disc_both.py | type-assertion-failure | assert_type(scene.disc_both_marker, str)
@@ -16,8 +13,6 @@ features/addon_discovery/disc_legacy/__init__.py | unresolved-attribute | bpy.ty
 features/addon_discovery/disc_legacy/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_legacy_marker
 features/addon_discovery/disc_legacy/check_disc_legacy.py | type-assertion-failure | assert_type(scene.disc_legacy_marker, int)
 features/addon_discovery/disc_legacy/check_disc_legacy.py | unresolved-attribute | assert_type(scene.disc_legacy_marker, int)
-features/addon_discovery/disc_no_register/__init__.py | ignore-comment-unknown-rule | """Feature test: an extension without register() and unregister()."""  # ty: ignore[blender-invalid-register]
-features/addon_discovery/disc_no_unregister/__init__.py | ignore-comment-unknown-rule | """Feature test: an extension with register() but no unregister()."""  # ty: ignore[blender-invalid-register]
 features/addon_discovery/disc_no_unregister/__init__.py | unresolved-attribute | bpy.types.Scene.disc_no_unregister_marker = IntProperty()
 features/addon_discovery/disc_override/src/disc_override_addon/__init__.py | unresolved-attribute | bpy.types.Scene.disc_override_marker = FloatProperty()
 features/addon_discovery/disc_override/src/disc_override_addon/__init__.py | unresolved-attribute | del bpy.types.Scene.disc_override_marker
@@ -36,8 +31,6 @@ features/addon_discovery/disc_register_reexport/check_disc_register_reexport.py 
 features/addon_discovery/disc_register_reexport/check_disc_register_reexport.py | unresolved-attribute | assert_type(scene.disc_register_reexport_marker, bool)
 features/addon_discovery/disc_register_reexport/core.py | unresolved-attribute | bpy.types.Scene.disc_register_reexport_marker = BoolProperty()
 features/addon_discovery/disc_register_reexport/core.py | unresolved-attribute | del bpy.types.Scene.disc_register_reexport_marker
-features/addon_discovery/disc_register_signature/__init__.py | ignore-comment-unknown-rule | def register(context):  # ty: ignore[blender-invalid-register]
-features/addon_discovery/disc_register_signature/__init__.py | ignore-comment-unknown-rule | def unregister(context, extra):  # ty: ignore[blender-invalid-register]
 features/addon_discovery/disc_single.py | unresolved-attribute | bpy.types.Scene.disc_single_marker = IntProperty()
 features/addon_discovery/disc_single.py | unresolved-attribute | del bpy.types.Scene.disc_single_marker
 features/addon_discovery/disc_single.py | type-assertion-failure | assert_type(scene.disc_single_marker, int)  # oracle-skip: a single-file add-on has no _expected/ folder
