@@ -104,31 +104,19 @@ features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-asser
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unused-ignore-comment | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
-features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
-features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):
-features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
-features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | invalid-type-form | def mixin_properties(imp: SYM_BPY_EXTRAS_OT_import, exp: SYM_BPY_EXTRAS_OT_export,
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | invalid-type-form | mod: SYM_BPY_EXTRAS_OT_export_module) -> None:
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.filepath, str)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.filter_glob, str)
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.axis_forward, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
+features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(imp.axis_forward, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(exp.filepath, str)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(exp.filepath, str)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(exp.check_existing, bool)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(exp.check_existing, bool)
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(mod.filepath, str)
+features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(imp.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(mod.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
+features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(mod.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
+features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | imp.axis_up = "W"  # ty: ignore[invalid-assignment]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comment | imp.axis_up = "W"  # ty: ignore[invalid-assignment]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(bpy.ops.sym_bpy_extras.import_file(filepath="a.txt", axis_up="Z"), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(bpy.ops.sym_bpy_extras.import_file(filepath="a.txt", axis_up="Z"), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comment | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
-features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]
-features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.location, mathutils.Vector)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.tint, mathutils.Color)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.rotation, Euler)
@@ -396,8 +384,6 @@ features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attr
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
-features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo(), Result)
 features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | assert_type(bpy.ops.opcall_macro.combo(), Result)
 features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": 2}, OPCALL_MACRO_OT_label={"text": "x"})
@@ -440,12 +426,10 @@ features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | la
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_menu_enum("opprops_sinks.step", "mode").label = "menu"
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_enum("opprops_sinks.step", "mode")
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.bare")
-features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | OPPROPS_SINKS_OT_combo.define("OPPROPS_SINKS_OT_step").properties.amount = 2
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | keyconfig = bpy.context.window_manager.keyconfigs.addon
 features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | item.properties.amount = 3
 features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | item.properties.mode = "B"
-features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"])
@@ -521,15 +505,6 @@ features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
-features/properties/generated/props_pointer/check_props_pointer.py | not-subscriptable | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items.add(), PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items[0], PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items["name"], PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(entry, PROPS_POINTER_Item)
-features/properties/generated/props_pointer/check_props_pointer.py | not-subscriptable | assert_type(s.c_inner, bpy_prop_collection_idprop[PROPS_POINTER_Inner])
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner, bpy_prop_collection_idprop[PROPS_POINTER_Inner])
-features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner.add().value, int)
 features/properties/generated/props_vector/check_props_vector.py | type-assertion-failure | assert_type(s.f_none_dflt, bpy_prop_array[float])
 features/properties/generated/props_vector/check_props_vector.py | type-assertion-failure | assert_type(s.f_none_dflt[0], float)
 features/properties/generated/props_vector/check_props_vector.py | type-assertion-failure | assert_type(s.f_none_2, bpy_prop_array[float])
@@ -782,7 +757,6 @@ features/properties/generated/props_vector/check_props_vector.py | type-assertio
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.f_no_subtype = "xyz"  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.f_no_subtype = 1.0  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.i_vec_2 = ("1", "1")  # ty: ignore[invalid-assignment]
-features/properties/props_callbacks/__init__.py | invalid-assignment | self["ratio"] = value
 features/properties/props_callbacks/__init__.py | invalid-argument-type | count: IntProperty(update=count_update)
 features/properties/props_callbacks/__init__.py | invalid-argument-type | ratio: FloatProperty(get=get_ratio, set=set_ratio)
 features/properties/props_callbacks/__init__.py | invalid-argument-type | target: PointerProperty(type=Object, poll=poll_mesh)
@@ -796,7 +770,6 @@ features/properties/props_callbacks/__init__.py | unresolved-attribute | lambda_
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)
 features/properties/props_callbacks/__init__.py | unresolved-attribute | lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)
 features/properties/props_callbacks/check_props_callbacks.py | unused-ignore-comment | s.lambda_get = 1  # ty: ignore[invalid-assignment]  # get= without set= makes the property read-only
-features/properties/props_defaults/__init__.py | invalid-argument-type | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_not_a_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="A", options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
@@ -827,8 +800,6 @@ features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | valu
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #5
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #6
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #7
-features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
-features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.properties.value, int)
 features/properties/props_hosts/check_props_hosts.py | unresolved-attribute | assert_type(op.properties.value, int)
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Area.reg_area = IntProperty()  # ty: ignore[blender-unsupported-property-target]
@@ -837,8 +808,6 @@ features/properties/props_registered/__init__.py | ignore-comment-unknown-rule |
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Preferences.reg_preferences = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.SpaceView3D.reg_space = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Context.reg_context = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/check_props_registered.py | not-subscriptable | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
-features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
 features/properties/props_registered/check_props_registered.py | unused-ignore-comment | area.reg_area  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 features/properties/props_styles/plain_annotations.py | ignore-comment-unknown-rule | legacy = IntProperty()  # ty: ignore[blender-legacy-property]
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_a: COMMON

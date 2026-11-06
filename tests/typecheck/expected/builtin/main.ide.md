@@ -215,7 +215,7 @@ PASS
   documentation: (none)
 - reg_group: detail: PROPS_REGISTERED_Item
   documentation: (none)
-- reg_items: detail: bpy_prop_collection_idprop
+- reg_items: detail: bpy_prop_collection_idprop[PROPS_REGISTERED_Item]
   documentation: (none)
 - reg_object: detail: Object | None
   documentation: (none)
