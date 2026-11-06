@@ -1,6 +1,8 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender 5.2.
 # `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | if context.preferences is not None:
+features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
 features/inheritance/generated/inh_invalid_header_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_HEADER_NO_DRAW_HT_header(Header):  # ty: ignore[blender-missing-callback]
 features/inheritance/generated/inh_invalid_menu_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_MENU_NO_DRAW_MT_menu(Menu):  # ty: ignore[blender-missing-callback]
 features/inheritance/generated/inh_invalid_panel_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_PANEL_NO_DRAW_PT_panel(Panel):  # ty: ignore[blender-missing-callback]
@@ -15,6 +17,7 @@ features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_ty
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_OT_keywords_last(Operator, KeywordsMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_MT_append_last(Menu, AppendMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
+features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return {"DONE"}  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return "FINISHED"  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return ["FINISHED"]  # ty: ignore[invalid-return-type]
@@ -34,44 +37,25 @@ features/inheritance/inh_overrides/__init__.py | invalid-method-override | def i
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #3
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #8
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(verbose, bool)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #9
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def cancel(self, context: "Context"):  # string annotation
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)  # the stubs' type for Menu.draw
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #2
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #3
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(node, Node)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(text, str)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ntree, NodeTree | None)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(context), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.invoke(context, event), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.modal(context, event), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.check(context), bool)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(INH_OVERRIDES_OT_all.poll(context), bool)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(INH_OVERRIDES_OT_all.description(context, op.properties), str)
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | op.execute(1)  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | op.invoke(context, context)  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(context), Result) #2
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(ctx=context), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.check(context, verbose=True), bool)
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | op.check(context, verbose="yes")  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(menu.draw(context), None)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(node.draw_label(), str)
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | node.draw_buttons(context, 1)  # ty: ignore[invalid-argument-type]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_child(INH_REGISTERED_BASE_OT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_early_child(INH_REGISTERED_BASE_OT_late_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_PT_child(INH_REGISTERED_BASE_PT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_MT_child(INH_REGISTERED_BASE_MT_parent):  # ty: ignore[blender-registered-base]
+features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | layout.label(text=item.name)
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_UL_child(INH_REGISTERED_BASE_UL_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_NodeChild(INH_REGISTERED_BASE_NodeParent):  # ty: ignore[blender-registered-base]
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
@@ -79,6 +63,9 @@ features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.u
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
+features/properties/props_data_blocks/__init__.py | unresolved-attribute | layout.label(text=item.name)
+features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=str(self.value))
+features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=text)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)

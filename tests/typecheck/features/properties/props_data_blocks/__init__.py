@@ -61,7 +61,8 @@ class PROPS_DATA_BLOCKS_UL_list(UIList):  # ty: ignore[blender-unregistered-clas
     target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-property]
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index=0, flt_flag=0):
-        layout.label(text=item.name)
+        if isinstance(item, bpy.types.ID):
+            layout.label(text=item.name)
 
 
 class PROPS_DATA_BLOCKS_GT_gizmo(Gizmo):  # ty: ignore[blender-unregistered-class]

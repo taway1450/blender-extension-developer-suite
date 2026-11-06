@@ -70,7 +70,8 @@ class INH_REGISTERED_BASE_MT_child(INH_REGISTERED_BASE_MT_parent):  # ty: ignore
 
 class INH_REGISTERED_BASE_UL_parent(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag):
-        layout.label(text=item.name)
+        if isinstance(item, bpy.types.ID):
+            layout.label(text=item.name)
 
 
 class INH_REGISTERED_BASE_UL_child(INH_REGISTERED_BASE_UL_parent):  # ty: ignore[blender-registered-base]

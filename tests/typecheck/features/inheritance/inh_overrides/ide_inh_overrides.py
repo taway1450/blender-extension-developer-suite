@@ -18,8 +18,8 @@ class IDE_OT_hover(Operator):  # ty: ignore[blender-unregistered-class]
     def invoke(self, ctx, event):
         ctx
         # ^hover-contains "Context"
-        event.mouse_x
-        #     ^completion mouse_x
+        event.mouse_
+        #           ^completion mouse_x
         return {"FINISHED"}
 
 

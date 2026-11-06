@@ -10,8 +10,6 @@ features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class 
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: fake-bpy-module's and Blender 5.2's stubs do not declare Blender's metaclass
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
-features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
-features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_OT_keywords_last(Operator, KeywordsMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_MT_append_last(Menu, AppendMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
@@ -19,53 +17,6 @@ features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | re
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return "FINISHED"  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return ["FINISHED"]  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | def execute(self, context):  # ty: ignore[invalid-return-type]
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #2
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(properties, OperatorProperties)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #3
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #4
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #2
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #5
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #6
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #7
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ctx, Context)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #3
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #4
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #8
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(verbose, bool)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #9
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)  # the stubs' type for Menu.draw
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #2
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #3
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #4
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(node, Node)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(text, str)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ntree, NodeTree | None)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(context), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.invoke(context, event), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.modal(context, event), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.check(context), bool)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(INH_OVERRIDES_OT_all.poll(context), bool)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(INH_OVERRIDES_OT_all.description(context, op.properties), str)
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | op.execute(1)  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | op.invoke(context, context)  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(context), Result) #2
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.execute(ctx=context), Result)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(op.check(context, verbose=True), bool)
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | op.check(context, verbose="yes")  # ty: ignore[invalid-argument-type]
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(menu.draw(context), None)
-features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(node.draw_label(), str)
-features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | node.draw_buttons(context, 1)  # ty: ignore[invalid-argument-type]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_child(INH_REGISTERED_BASE_OT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_early_child(INH_REGISTERED_BASE_OT_late_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_PT_child(INH_REGISTERED_BASE_PT_parent):  # ty: ignore[blender-registered-base]

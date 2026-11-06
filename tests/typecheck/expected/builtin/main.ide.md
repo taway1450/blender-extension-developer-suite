@@ -40,28 +40,29 @@ PASS
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "Context" @11 | ctx
 
 ````text
-FAIL: does not contain "Context"
+PASS
 ````
 
-## features/inheritance/inh_overrides/ide_inh_overrides.py | ^completion mouse_x @15 | event.mouse_x
+## features/inheritance/inh_overrides/ide_inh_overrides.py | ^completion mouse_x @21 | event.mouse_
 
 ````text
-- mouse_x: FAIL: not offered
+- mouse_x: detail: int
+  documentation: int([x]) -&gt; integer<HB>
 ````
 
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "UILayout" @11 | layout
 
 ````text
-FAIL: does not contain "UILayout"
+PASS
 ````
 
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^signature @16 | op.execute(context)
 
 ````text
-label: (ctx) -> Unknown
+label: (ctx: Context) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
 active parameter: 0
 parameters:
-- ctx: (no documentation)
+- ctx: Context: (no documentation)
 documentation:
 (none)
 ````
