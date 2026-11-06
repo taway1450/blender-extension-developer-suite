@@ -86,6 +86,7 @@ flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-modu
   choices "fake-bpy-module" "builtin" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
+flag "--update" help="Record the bucket summary in tests/blender/expected/<generator>/main-summary.txt (main only) instead of comparing"
 '''
 run = '''
 uv run scripts/check_blender.py {{usage.version}} --profile "{{usage.profile}}"
@@ -93,6 +94,7 @@ uv run scripts/check_blender.py {{usage.version}} --profile "{{usage.profile}}"
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 {%- if usage.force %} --force{% endif %}
+{%- if usage.update %} --update{% endif %}
 '''
 
 [tasks."check:addons"]

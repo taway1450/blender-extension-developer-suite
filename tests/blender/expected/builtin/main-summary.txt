@@ -1,0 +1,51 @@
+# check:blender main, builtin stubs, Blender dc491af090
+bucket            shipped  presets    other    total
+context-member       2757      277     1125     4159
+pointer-none         2127      411     1192     3730
+type-tag             1031       70      516     1617
+stub-gap              539        0      225      764
+operator-call          89        0      183      272
+check-setup           164       12      108      284
+dynamic               588        0      199      787
+rest                 1306       12     1106     2424
+total                8601      782     4654    14037
+
+rule                                 count
+blender-invalid-idname                   1
+blender-invalid-operator-property        1
+blender-invalid-property                 3
+blender-legacy-property                  3
+blender-unsupported-property-host        3
+blender-unsupported-property-target      1
+call-non-callable                       20
+deprecated                              15
+empty-body                              32
+import-not-found                       205
+index-out-of-bounds                      2
+invalid-argument-type                 2470
+invalid-assignment                    1421
+invalid-attribute-override              70
+invalid-base                             4
+invalid-context-manager                 21
+invalid-generic-class                    1
+invalid-method-override                138
+invalid-mutable-override                 5
+invalid-parameter-default                5
+invalid-property-type-override           6
+invalid-return-type                     84
+invalid-super-argument                   1
+invalid-type-form                        9
+mismatched-type-name                     1
+missing-argument                        10
+no-matching-overload                    23
+not-iterable                            93
+not-subscriptable                      106
+possibly-missing-submodule               4
+redundant-condition                     12
+too-many-positional-arguments          211
+unknown-argument                        34
+unresolved-attribute                  8787
+unresolved-global                       38
+unresolved-reference                    73
+unsupported-operator                    90
+unused-type-ignore-comment              34

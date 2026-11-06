@@ -1,0 +1,52 @@
+# check:blender main, fake-bpy-module stubs, Blender dc491af090
+bucket            shipped  presets    other    total
+context-member       1323      532      742     2597
+pointer-none         5152      475     1755     7382
+type-tag              922       16      596     1534
+stub-gap              928        0      364     1292
+operator-call          29        0      142      171
+check-setup           171       12      115      298
+dynamic               692        0      204      896
+rest                 1734        8     1199     2941
+total               10951     1043     5117    17111
+
+rule                                 count
+blender-invalid-idname                   1
+blender-invalid-operator-property        1
+blender-invalid-property                 3
+blender-legacy-property                  3
+blender-unsupported-property-host        3
+blender-unsupported-property-target      1
+call-non-callable                       21
+deprecated                              15
+empty-body                              32
+import-not-found                       209
+index-out-of-bounds                      2
+invalid-argument-type                 3316
+invalid-assignment                    1409
+invalid-attribute-override              71
+invalid-base                             4
+invalid-context-manager                 81
+invalid-exception-caught                 1
+invalid-generic-class                    1
+invalid-method-override                243
+invalid-mutable-override                 4
+invalid-parameter-default                5
+invalid-property-type-override           6
+invalid-return-type                     85
+invalid-super-argument                   1
+invalid-type-form                        9
+mismatched-type-name                     1
+missing-argument                        25
+no-matching-overload                    30
+not-iterable                           127
+not-subscriptable                      164
+possibly-missing-submodule               4
+redundant-condition                     67
+too-many-positional-arguments          171
+unknown-argument                       321
+unresolved-attribute                 10402
+unresolved-global                       38
+unresolved-reference                    73
+unsupported-operator                   127
+unused-type-ignore-comment              34
