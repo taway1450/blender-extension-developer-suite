@@ -31,31 +31,9 @@ features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comm
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | no-matching-overload | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
 features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]  # bare-ok: persistent is an identity decorator in the stubs
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
-features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | invalid-method-override | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_draw_item_fewer/__init__.py | ignore-comment-unknown-rule | def draw_item(self, context, layout, data, item, icon):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_draw_item_fewer/__init__.py | invalid-method-override | def draw_item(self, context, layout, data, item, icon):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_draw_item_more/__init__.py | ignore-comment-unknown-rule | def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_draw_item_more/__init__.py | invalid-method-override | def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_execute_classmethod/__init__.py | ignore-comment-unknown-rule | def execute(cls, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_execute_default/__init__.py | ignore-comment-unknown-rule | def execute(self, context, extra=None):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_execute_fewer/__init__.py | ignore-comment-unknown-rule | def execute(self):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_execute_fewer/__init__.py | invalid-method-override | def execute(self):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_execute_varargs/__init__.py | ignore-comment-unknown-rule | def execute(self, *args):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_execute_varargs/__init__.py | invalid-method-override | def execute(self, *args):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_header_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_HEADER_NO_DRAW_HT_header(Header):  # ty: ignore[blender-missing-callback]
-features/inheritance/generated/inh_invalid_invoke_fewer/__init__.py | ignore-comment-unknown-rule | def invoke(self, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_invoke_fewer/__init__.py | invalid-method-override | def invoke(self, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_menu_draw_default/__init__.py | ignore-comment-unknown-rule | def draw(self, context, extra=1):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_menu_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_MENU_NO_DRAW_MT_menu(Menu):  # ty: ignore[blender-missing-callback]
-features/inheritance/generated/inh_invalid_panel_draw_extra/__init__.py | ignore-comment-unknown-rule | def draw(self, context, extra):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_panel_draw_extra/__init__.py | invalid-method-override | def draw(self, context, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_panel_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_PANEL_NO_DRAW_PT_panel(Panel):  # ty: ignore[blender-missing-callback]
-features/inheritance/generated/inh_invalid_poll_fewer/__init__.py | ignore-comment-unknown-rule | def poll(cls):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_poll_fewer/__init__.py | invalid-method-override | def poll(cls):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_poll_instance/__init__.py | ignore-comment-unknown-rule | def poll(self, context):  # ty: ignore[blender-invalid-override]
-features/inheritance/generated/inh_invalid_poll_static/__init__.py | ignore-comment-unknown-rule | def poll(context):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_socket_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_SOCKET_NO_DRAW_Socket(NodeSocket):  # ty: ignore[blender-missing-callback]
 features/inheritance/inh_bases/__init__.py | ignore-comment-unknown-rule | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
 features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
@@ -66,9 +44,7 @@ features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_ty
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_OT_keywords_last(Operator, KeywordsMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_MT_append_last(Menu, AppendMixin):  # ty: ignore[blender-mixin-order]
-features/inheritance/inh_mixins/__init__.py | invalid-method-override | class INH_MIXINS_NodeFirst(TreePollMixin, Node):
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
-features/inheritance/inh_mixins/__init__.py | invalid-method-override | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return {"DONE"}  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return "FINISHED"  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return ["FINISHED"]  # ty: ignore[invalid-return-type]
@@ -84,7 +60,6 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #6
 features/inheritance/inh_overrides/__init__.py | invalid-argument-type | self.layout.prop(self, "count")
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #7
-features/inheritance/inh_overrides/__init__.py | invalid-method-override | def execute(self, ctx):  # renamed parameter
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ctx, Context)
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def invoke(self, context: Context, event):  # partly annotated
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #3
@@ -100,13 +75,11 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #2
-features/inheritance/inh_overrides/__init__.py | invalid-method-override | def draw_item(self, context, layout, data, item, icon, active_data):  # Blender passes only as many arguments as there are parameters
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #3
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(node, Node)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(text, str)
-features/inheritance/inh_overrides/__init__.py | invalid-method-override | def poll(cls, ntree):
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ntree, NodeTree | None)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
