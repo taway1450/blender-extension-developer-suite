@@ -74,6 +74,15 @@ _Avoid_: hook, handler (a handler is a function in `bpy.app.handlers`)
 **Python base name**:
 A name that Blender's own Python class for a `bpy.types` class defines on top of the C type (`Operator.as_keywords`, `Menu.append`, `Node.poll`). A mixin listed after that Blender class loses the name to it.
 
+**Guaranteed context member**:
+A member of `bpy.types.Context` that Blender always fills when it calls a given Blender callback (`context.scene` in a `draw`, `context.space_data` in a Panel of a known space type), so it is never None there. Outside that callback the same member may be None.
+
+## Data
+
+**Type tag**:
+A property of a Blender instance whose value names the subclass that instance, or one of its pointers, really is: `Modifier.type` (`'SUBSURF'` is a `SubsurfModifier`), `Object.type` (`'MESH'` makes `Object.data` a `Mesh`), `Node.bl_idname`.
+_Avoid_: discriminator, kind
+
 ## Add-on code
 
 **Add-on index**:
