@@ -1,5 +1,6 @@
 """Feature test: operator properties declared on base operators and on mixins are keyword arguments too; a
-subclass can redeclare a property with another type. A registered base operator keeps its own properties."""
+subclass can redeclare a property with another type. A registered base operator keeps its own properties.
+Registering the base along with the subclass is blender-registered-base (see inheritance/inh_registered_base)."""
 
 import bpy
 from bpy.props import FloatProperty, IntProperty, StringProperty
@@ -21,7 +22,7 @@ class OPCALL_INHERIT_OT_base(Operator):
         return {"FINISHED"}
 
 
-class OPCALL_INHERIT_OT_derived(CountMixin, OPCALL_INHERIT_OT_base):
+class OPCALL_INHERIT_OT_derived(CountMixin, OPCALL_INHERIT_OT_base):  # ty: ignore[blender-registered-base]
     bl_idname = "opcall_inherit.derived"
     bl_label = "Derived"
 

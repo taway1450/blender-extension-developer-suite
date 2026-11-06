@@ -33,11 +33,6 @@ features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comm
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | no-matching-overload | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
 features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]  # bare-ok: persistent is an identity decorator in the stubs
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
-features/inheritance/generated/inh_invalid_header_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_HEADER_NO_DRAW_HT_header(Header):  # ty: ignore[blender-missing-callback]
-features/inheritance/generated/inh_invalid_menu_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_MENU_NO_DRAW_MT_menu(Menu):  # ty: ignore[blender-missing-callback]
-features/inheritance/generated/inh_invalid_panel_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_PANEL_NO_DRAW_PT_panel(Panel):  # ty: ignore[blender-missing-callback]
-features/inheritance/generated/inh_invalid_socket_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_SOCKET_NO_DRAW_Socket(NodeSocket):  # ty: ignore[blender-missing-callback]
-features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
@@ -71,13 +66,7 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
-features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_child(INH_REGISTERED_BASE_OT_parent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_early_child(INH_REGISTERED_BASE_OT_late_parent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_PT_child(INH_REGISTERED_BASE_PT_parent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_MT_child(INH_REGISTERED_BASE_MT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | layout.label(text=item.name)
-features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_UL_child(INH_REGISTERED_BASE_UL_parent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_NodeChild(INH_REGISTERED_BASE_NodeParent):  # ty: ignore[blender-registered-base]
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
