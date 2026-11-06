@@ -3,8 +3,9 @@ import sys
 import textwrap
 from pathlib import Path
 
-import _resources
 import pytest
+
+import _resources
 
 
 def test_limit_threads_keeps_variables_that_are_set(monkeypatch):

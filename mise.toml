@@ -14,6 +14,10 @@ flag "--mdtest <path>" help="Run only this mdtest file, relative to crates/ty_py
 '''
 run = 'uv run scripts/test_ty.py {% if usage.mdtest %}--mdtest "{{usage.mdtest}}"{% endif %}'
 
+[tasks."ty:generate"]
+description = "Regenerate ty-blender's generated docs and schemas (cargo dev generate-all, dev profile) after a change to its rules or options"
+run = 'uv run scripts/generate_ty.py'
+
 [tasks."ruff:build"]
 description = "Build ruff from the ty-blender submodule (only to test a ruff change: lint:*/format:* run stock ruff)"
 usage = '''
