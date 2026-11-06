@@ -7,13 +7,13 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | Feature | assert_type | expected errors | guards | IDE | other diagnostics |
 | --- | --- | --- | --- | --- | --- |
 | addon_discovery | 16/17 | 7/8 | 3/3 | - | 0 |
-| addon_preferences | 1/10 | 0/5 | 10/10 | 1/3 | 8 |
+| addon_preferences | 1/10 | 0/5 | 10/10 | 1/3 | 5 |
 | bpy_symbols | 138/153 | 31/47 | 9/9 | 2/2 | 1 |
-| inheritance | 3/62 | 0/42 | 12/12 | 0/3 | 10 |
+| inheritance | 3/62 | 0/42 | 12/12 | 0/3 | 9 |
 | operator_calls | 0/22 | 0/29 | 4/4 | 0/4 | 33 |
 | operator_properties | 0/43 | 1/9 | 7/7 | 0/5 | 18 |
 | properties | 420/421 | 93/95 | 5/5 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 3/40 | 0/4 | 3/3 | 0/3 | 5 |
 | registration_checks | 2/9 | 0/36 | 10/10 | - | 3 |
-| **total** | 600/794 | 132/275 | 66/66 | 18/35 | 78 |
+| **total** | 600/794 | 132/275 | 66/66 | 18/35 | 74 |
