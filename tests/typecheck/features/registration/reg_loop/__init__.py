@@ -70,7 +70,7 @@ class REG_LOOP_OT_nested_b(Operator):
 
 
 TUPLE_CLASSES = (REG_LOOP_OT_tuple,)
-LIST_CLASSES = [REG_LOOP_OT_list]
+LIST_CLASSES: list[type[Operator]] = [REG_LOOP_OT_list]
 LIST_CLASSES.append(REG_LOOP_OT_appended)
 LIST_CLASSES += [REG_LOOP_OT_extended]
 CONCAT_CLASSES = () + (REG_LOOP_OT_concat,)

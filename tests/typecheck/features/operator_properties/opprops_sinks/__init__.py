@@ -65,13 +65,15 @@ def register():
     bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
     bpy.utils.register_class(OPPROPS_SINKS_PT_panel)
     OPPROPS_SINKS_OT_combo.define("OPPROPS_SINKS_OT_step").properties.amount = 2
-    keyconfig = bpy.context.window_manager.keyconfigs.addon
-    if keyconfig is not None:
-        keymap = keyconfig.keymaps.new(name="3D View", space_type="VIEW_3D")
-        item = keymap.keymap_items.new("opprops_sinks.step", "S", "PRESS", ctrl=True)
-        item.properties.amount = 3
-        item.properties.mode = "B"
-        addon_keymaps.append((keymap, item))
+    window_manager = bpy.context.window_manager
+    if window_manager is not None:
+        keyconfig = window_manager.keyconfigs.addon
+        if keyconfig is not None:
+            keymap = keyconfig.keymaps.new(name="3D View", space_type="VIEW_3D")
+            item = keymap.keymap_items.new("opprops_sinks.step", "S", "PRESS", ctrl=True)
+            item.properties.amount = 3
+            item.properties.mode = "B"
+            addon_keymaps.append((keymap, item))
 
 
 def unregister():

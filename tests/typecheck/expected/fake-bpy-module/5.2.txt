@@ -119,13 +119,11 @@ features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | 
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_enum("opprops_sinks.step", "mode")
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.bare")
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | keyconfig = bpy.context.window_manager.keyconfigs.addon
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/registration/reg_autoload/panels.py | unresolved-attribute | self.layout.operator("reg_autoload.panel_helper")
 features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)
-features/registration/reg_loop/__init__.py | unsupported-operator | LIST_CLASSES += [REG_LOOP_OT_extended]
 features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argument-type | bpy.types.VIEW3D_MT_object.append(draw_menu)
 features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argument-type | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | invalid-argument-type | bpy.types.VIEW3D_MT_object.remove(draw_menu)
