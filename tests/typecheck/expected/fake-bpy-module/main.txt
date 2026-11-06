@@ -1,7 +1,6 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender main.
 # `mise run check:features main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | invalid-method-override | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
@@ -32,8 +31,6 @@ features/inheritance/inh_bases/__init__.py | ignore-comment-unknown-rule | class
 features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: fake-bpy-module's and Blender 5.2's stubs do not declare Blender's metaclass
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
-features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.leaf")
-features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.sibling")
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
@@ -55,7 +52,6 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #2
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #5
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #6
-features/inheritance/inh_overrides/__init__.py | unresolved-attribute | self.layout.prop(self, "count")
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #7
 features/inheritance/inh_overrides/__init__.py | invalid-method-override | def execute(self, ctx):  # renamed parameter
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ctx, Context)
@@ -67,7 +63,6 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(self.layout, UILayout)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)  # the stubs' type for Menu.draw
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context | None)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
@@ -100,18 +95,8 @@ features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failu
 features/inheritance/inh_overrides/check_inh_overrides.py | unused-ignore-comment | node.draw_buttons(context, 1)  # ty: ignore[invalid-argument-type]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_child(INH_REGISTERED_BASE_OT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_OT_early_child(INH_REGISTERED_BASE_OT_late_parent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | self.layout.label(text="parent")
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_PT_child(INH_REGISTERED_BASE_PT_parent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | self.layout.label(text="parent") #2
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_MT_child(INH_REGISTERED_BASE_MT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_UL_child(INH_REGISTERED_BASE_UL_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_NodeChild(INH_REGISTERED_BASE_NodeParent):  # ty: ignore[blender-registered-base]
-features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor = 0.5
-features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator("object.select_all").action = "SELECT"
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.step").amount = 1
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("OPPROPS_SINKS_OT_step", text="Other form").mode = "B"
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_menu_enum("opprops_sinks.step", "mode").label = "menu"
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_enum("opprops_sinks.step", "mode")
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.bare")
-features/registration/reg_autoload/panels.py | unresolved-attribute | self.layout.operator("reg_autoload.panel_helper")
 features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)
