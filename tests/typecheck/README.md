@@ -26,7 +26,7 @@ mise run check:features main --update # record the current results after a revie
 | [operator_properties](features/operator_properties/README.md) | an idname string gives that operator's properties (`layout.operator(...)`, keymaps, ...) |
 | [addon_preferences](features/addon_preferences/README.md) | `addons[__package__].preferences` is the add-on's own class |
 | [inheritance](features/inheritance/README.md) | unannotated overrides get the parent's types; subclass, mixin and override rules |
-| [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None |
+| [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None, the Type tags of refined subclasses |
 
 ## Layout
 

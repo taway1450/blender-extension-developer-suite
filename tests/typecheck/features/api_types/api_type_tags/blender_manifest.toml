@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "api_type_tags"
+version = "1.0.0"
+name = "Feature test: Type tag declarations of refined subclasses"
+tagline = "Type tags of refined subclasses"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

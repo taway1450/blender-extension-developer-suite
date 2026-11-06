@@ -1,0 +1,59 @@
+[[probe]]
+code = "addon.modifier('SUBSURF')"
+expect = "SubsurfModifier SUBSURF"
+reason = "a modifier is refined to the subclass its type names"
+
+[[probe]]
+code = "addon.object_data('MESH')"
+expect = "Mesh"
+reason = "an object of type MESH has a Mesh as its data"
+
+[[probe]]
+code = "addon.object_data('FONT')"
+expect = "TextCurve"
+reason = "the curve of a text object is refined again"
+
+[[probe]]
+code = "addon.object_data('SURFACE')"
+expect = "SurfaceCurve"
+reason = "the curve of a surface object is refined again"
+
+[[probe]]
+code = "addon.object_data('EMPTY')"
+expect = "NoneType"
+reason = "an empty has no data"
+
+[[probe]]
+code = "(lambda ob: (setattr(ob, 'data', bpy.data.images.new('api_type_tags', 4, 4)), f'{ob.type} {type(ob.data).__name__}')[1])(bpy.data.objects.new('api_type_tags', None))"
+expect = "EMPTY Image"
+reason = "an empty that displays an image has the image as its data"
+
+[[probe]]
+code = "addon.fluid_settings('DOMAIN')"
+expect = "FluidDomainSettings NoneType NoneType"
+reason = "a fluid domain has domain settings only"
+
+[[probe]]
+code = "addon.space('VIEW_3D')"
+expect = "SpaceView3D VIEW_3D"
+reason = "a space is refined to the subclass its type names, also in --background"
+
+[[probe]]
+code = "addon.space('PROPERTIES')"
+expect = "SpaceProperties PROPERTIES"
+reason = "a space is refined to the subclass its type names, also in --background"
+
+[[probe]]
+code = "addon.action_strip()"
+expect = "ActionKeyframeStrip ActionKeyframeStrip"
+reason = "the only strip type Blender creates is a keyframe strip"
+
+[[probe]]
+code = "addon.node('ShaderNodeTree', 'ShaderNodeMath', 'outputs', 0)"
+expect = "ShaderNodeMath ShaderNodeMath NodeSocketFloat NodeSocketFloat VALUE"
+reason = "a built-in node's or socket's bl_idname is its RNA identifier"
+
+[[probe]]
+code = "addon.node('ShaderNodeTree', 'ShaderNodeMix', 'inputs', 0)"
+expect = "ShaderNodeMix ShaderNodeMix NodeSocketFloatFactor NodeSocketFloatFactor VALUE"
+reason = "socket subclasses share a type: a factor socket's type is VALUE"
