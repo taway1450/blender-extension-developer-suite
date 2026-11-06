@@ -13,7 +13,7 @@ from . import on_load_post, tick
 
 def persistent_keeps_the_function() -> None:
     on_load_post("file.blend", None)
-    on_load_post(1)  # ty: ignore[missing-argument]
+    on_load_post(1)  # ty: ignore[missing-argument]  # bare-ok: persistent is an identity decorator in the stubs
 
 
 @persistent

@@ -111,7 +111,7 @@ features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribu
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comment | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
-features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]
+features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]  # bare-ok: persistent is an identity decorator in the stubs
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
 features/bpy_symbols/sym_negative/check_sym_negative.py | ignore-comment-unknown-rule | class LocalFunctions(bpy.types.PropertyGroup):  # ty: ignore[blender-unregistered-class]
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]

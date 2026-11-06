@@ -11,8 +11,8 @@ from . import register, unregister
 
 
 def entry_points() -> None:
-    assert_type(register, Callable[[], None])
-    assert_type(unregister, Callable[[], None])
+    assert_type(register, Callable[[], None])  # bare-ok: the stubs type the factory's result; the checker must not change it
+    assert_type(unregister, Callable[[], None])  # bare-ok: the stubs type the factory's result; the checker must not change it
 
 
 def registered() -> None:
