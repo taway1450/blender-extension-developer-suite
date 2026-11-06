@@ -24,6 +24,10 @@ def dynamic_items(self, context):
     return AB
 
 
+# A shared declaration is rejected where a class uses it, but reported once, where it is written.
+SHARED_ENUM_UNKNOWN = EnumProperty(items=AB, default="C")  # ty: ignore[blender-invalid-property]
+
+
 class PROPS_DEFAULTS_Valid(PropertyGroup):
     ints_for_floats: FloatVectorProperty(size=3, default=(1, 2, 3))
     enum_by_identifier: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="B")
@@ -58,6 +62,7 @@ class PROPS_DEFAULTS_Invalid(PropertyGroup):
     size_too_big: IntVectorProperty(size=33)  # ty: ignore[blender-invalid-property]
     size_zero: IntVectorProperty(size=0)  # ty: ignore[blender-invalid-property]
     size_four_dimensions: FloatVectorProperty(size=(2, 2, 2, 2))  # ty: ignore[blender-invalid-property]
+    shared_enum_unknown: SHARED_ENUM_UNKNOWN
     # Blender checks how many parameters a callback takes.
     update_one_parameter: IntProperty(update=lambda self: None)  # ty: ignore[invalid-argument-type]
     get_two_parameters: IntProperty(get=lambda self, extra: 0)  # ty: ignore[invalid-argument-type]

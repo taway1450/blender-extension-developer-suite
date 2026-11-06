@@ -1,0 +1,14 @@
+[[probe]]
+code = "'value' in addon.PROPS_HOSTS_InterfaceSocket.bl_rna.properties"
+expect = true
+reason = "a NodeTreeInterfaceSocket turns its annotations into properties"
+
+[[probe]]
+code = "'value' in addon.PROPS_HOSTS_KeyConfigPreferences.bl_rna.properties"
+expect = true
+reason = "a KeyConfigPreferences turns its annotations into properties"
+
+[[probe]]
+code = "'value' in addon.PROPS_HOSTS_PT_panel.bl_rna.properties"
+expect = false
+reason = "a Panel ignores its annotations"

@@ -1,7 +1,8 @@
 """Reference stub of props_hosts."""
 
-from bpy.types import (AddonPreferences, AssetShelf, FileHandler, Gizmo, Header, KeyingSetInfo, Macro, Menu, Node,
-                       NodeSocket, NodeTree, Operator, OperatorProperties, Panel, PropertyGroup, RenderEngine, UIList)
+from bpy.types import (AddonPreferences, AssetShelf, FileHandler, Gizmo, Header, KeyConfigPreferences, KeyingSetInfo,
+                       Macro, Menu, Node, NodeSocket, NodeTree, NodeTreeInterfaceSocket, Operator, OperatorProperties,
+                       Panel, PropertyGroup, RenderEngine, UIList)
 
 class PROPS_HOSTS_Group(PropertyGroup):
     value: int
@@ -26,6 +27,12 @@ class PROPS_HOSTS_Tree(NodeTree):
     value: int
 
 class PROPS_HOSTS_Socket(NodeSocket):
+    value: int
+
+class PROPS_HOSTS_InterfaceSocket(NodeTreeInterfaceSocket):
+    value: int
+
+class PROPS_HOSTS_KeyConfigPreferences(KeyConfigPreferences):
     value: int
 
 class PROPS_HOSTS_Node(Node):

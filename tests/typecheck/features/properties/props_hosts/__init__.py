@@ -1,15 +1,17 @@
 """Feature test: property annotations on every kind of class Blender registers.
 
-Accepted (Blender 5.4): PropertyGroup, Operator, Macro, AddonPreferences, UIList, Node, NodeSocket, NodeTree and
-Gizmo (stored in its properties, read through the instance like an operator's). Ignored without an error: Panel,
+Accepted (Blender 5.4): PropertyGroup, Operator, Macro, AddonPreferences, UIList, Node, NodeSocket, NodeTree,
+NodeTreeInterfaceSocket, KeyConfigPreferences and Gizmo (stored in its properties, read through the instance like an
+operator's). Ignored without an error: Panel,
 Menu, Header, KeyingSetInfo, RenderEngine, FileHandler, AssetShelf; the annotation stays a plain annotation and
 reading the attribute raises AttributeError.
 """
 
 import bpy
 from bpy.props import IntProperty
-from bpy.types import (AddonPreferences, AssetShelf, FileHandler, Gizmo, Header, KeyingSetInfo, Macro, Menu, Node,
-                       NodeSocket, NodeTree, Operator, Panel, PropertyGroup, RenderEngine, UIList)
+from bpy.types import (AddonPreferences, AssetShelf, FileHandler, Gizmo, Header, KeyConfigPreferences, KeyingSetInfo,
+                       Macro, Menu, Node, NodeSocket, NodeTree, NodeTreeInterfaceSocket, Operator, Panel, PropertyGroup,
+                       RenderEngine, UIList)
 
 
 class PROPS_HOSTS_Group(PropertyGroup):
@@ -65,6 +67,18 @@ class PROPS_HOSTS_Socket(NodeSocket):
 
     def draw_color(self, context, node):
         return (1.0, 1.0, 1.0, 1.0)
+
+
+class PROPS_HOSTS_InterfaceSocket(NodeTreeInterfaceSocket):
+    bl_socket_idname = "PROPS_HOSTS_Socket"
+
+    value: IntProperty()
+
+
+class PROPS_HOSTS_KeyConfigPreferences(KeyConfigPreferences):
+    bl_idname = "PROPS_HOSTS_keyconfig"
+
+    value: IntProperty()
 
 
 class PROPS_HOSTS_Node(Node):
@@ -154,7 +168,8 @@ class PROPS_HOSTS_AST_shelf(AssetShelf):
 
 
 classes = (PROPS_HOSTS_Group, PROPS_HOSTS_OT_operator, PROPS_HOSTS_OT_macro, PROPS_HOSTS_Preferences,
-           PROPS_HOSTS_UL_list, PROPS_HOSTS_Tree, PROPS_HOSTS_Socket, PROPS_HOSTS_Node, PROPS_HOSTS_GT_gizmo,
+           PROPS_HOSTS_UL_list, PROPS_HOSTS_Tree, PROPS_HOSTS_Socket, PROPS_HOSTS_InterfaceSocket,
+           PROPS_HOSTS_KeyConfigPreferences, PROPS_HOSTS_Node, PROPS_HOSTS_GT_gizmo,
            PROPS_HOSTS_PT_panel, PROPS_HOSTS_MT_menu, PROPS_HOSTS_HT_header, PROPS_HOSTS_KSI_keying_set,
            PROPS_HOSTS_RenderEngine, PROPS_HOSTS_FH_handler, PROPS_HOSTS_AST_shelf)
 

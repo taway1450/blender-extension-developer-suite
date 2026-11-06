@@ -43,7 +43,7 @@ A call to a `bpy.props` function (`IntProperty(...)`), the deferred value that d
 _Avoid_: property definition, deferred property
 
 **Property host**:
-A Blender class whose annotations Blender turns into properties: PropertyGroup, Operator, Macro, AddonPreferences, UIList, Node, NodeSocket, NodeTree, Gizmo.
+A Blender class whose annotations Blender turns into properties: PropertyGroup, Operator, Macro, AddonPreferences, UIList, Node, NodeSocket, NodeTree, NodeTreeInterfaceSocket, KeyConfigPreferences, Gizmo.
 
 **Ignored host**:
 A Blender class that accepts annotations without creating properties from them (Panel, Menu, Header, ...).

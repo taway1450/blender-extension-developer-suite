@@ -445,47 +445,9 @@ features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_not_a_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="A", options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"C"}, options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | plain_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | vector_length: FloatVectorProperty(size=3, default=(1.0, 2.0))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | int_vector_length: IntVectorProperty(size=2, default=(1, 2, 3))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | matrix_shape: FloatVectorProperty(size=(2, 2), default=(1.0, 0.0, 0.0, 1.0))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | set_without_get: IntProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | bool_set_without_get: BoolProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | float_set_without_get: FloatProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | string_set_without_get: StringProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_set_without_get: EnumProperty(items=AB, set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | bool_vector_set_without_get: BoolVectorProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | int_vector_set_without_get: IntVectorProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | float_vector_set_without_get: FloatVectorProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | _underscore: IntProperty()  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | function_items_str_default: EnumProperty(items=dynamic_items, default="A")  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_too_many_items: EnumProperty(items=ITEMS_33, options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | size_too_big: IntVectorProperty(size=33)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | size_zero: IntVectorProperty(size=0)  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | size_four_dimensions: FloatVectorProperty(size=(2, 2, 2, 2))  # ty: ignore[blender-invalid-property]
-features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-property]
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host]
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #2
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #3
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #4
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #5
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #6
-features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #7
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.properties.value, int)
-features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Area.reg_area = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Modifier.reg_modifier = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Window.reg_window = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Preferences.reg_preferences = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.SpaceView3D.reg_space = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Context.reg_context = IntProperty()  # ty: ignore[blender-unsupported-property-target]
-features/properties/props_registered/check_props_registered.py | unused-ignore-comment | area.reg_area  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
-features/properties/props_styles/plain_annotations.py | ignore-comment-unknown-rule | legacy = IntProperty()  # ty: ignore[blender-legacy-property]
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.second(), Result)

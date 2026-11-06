@@ -30,7 +30,7 @@ what stock ty reports as `invalid-type-form`.
 | `CollectionProperty` | `bpy_prop_collection_idprop[T]` |
 
 Hosts that take annotations: PropertyGroup, Operator, Macro, AddonPreferences, UIList, Node, NodeSocket,
-NodeTree, Gizmo. Ignored on: Panel, Menu, Header, KeyingSetInfo, RenderEngine, FileHandler, AssetShelf.
+NodeTree, NodeTreeInterfaceSocket, KeyConfigPreferences, Gizmo. Ignored on: Panel, Menu, Header, KeyingSetInfo, RenderEngine, FileHandler, AssetShelf.
 Registered properties work on every ID type and on Bone, EditBone, PoseBone, Node, NodeSocket, ViewLayer, Strip;
 not on Area, Modifier, Window, Preferences, SpaceView3D or Context. After registration an annotated property's
 class attribute is gone (`AttributeError`), while a registered property's class attribute stays its property
