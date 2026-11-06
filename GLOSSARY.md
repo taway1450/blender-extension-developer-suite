@@ -63,7 +63,7 @@ The type Blender gives an instance attribute for a property (`int` for `IntPrope
 _Avoid_: property type (ambiguous with the declaration)
 
 **Property member**:
-The property behind an attribute of a Blender instance, whatever its origin (an Annotated property or a Registered property): it decides the attribute's Value type, whether it can be written and whether it is hidden. In the most derived class that mentions the name, a class body that declares the name wins over a registration.
+The property behind an attribute of a Blender instance, whatever its origin (an Annotated property, a Registered property, or one that a class decorator adds: `@orientation_helper(...)` gives `axis_forward` and `axis_up`): it decides the attribute's Value type, whether it can be written and whether it is hidden. In the most derived class that mentions the name, the decorator wins over the class body, and a class body that declares the name wins over a registration.
 
 ## Add-on code
 

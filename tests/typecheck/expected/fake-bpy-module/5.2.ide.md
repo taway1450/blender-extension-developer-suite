@@ -21,6 +21,21 @@ FAIL: does not contain "PREFS_EXT_Preferences"
 PASS
 ````
 
+## features/bpy_symbols/sym_bpy_extras/ide_sym_bpy_extras.py | ^hover-contains "-Z" @9 | imp.axis_up
+
+````text
+PASS
+````
+
+## features/bpy_symbols/sym_bpy_extras/ide_sym_bpy_extras.py | ^completion axis_forward axis_up @14 | imp.axis_
+
+````text
+- axis_forward: detail: Literal["X", "Y", "Z", "-X", "-Y", "-Z"]
+  documentation: (none)
+- axis_up: detail: Literal["X", "Y", "Z", "-X", "-Y", "-Z"]
+  documentation: (none)
+````
+
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "Context" @11 | ctx
 
 ````text

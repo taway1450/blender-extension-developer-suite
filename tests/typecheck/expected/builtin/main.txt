@@ -84,20 +84,10 @@ features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failu
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | PropertyGroup  # ty: ignore[unresolved-reference]  # oracle-skip: the stubs export all classes
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | Operator  # ty: ignore[unresolved-reference]  # oracle-skip: the stubs export all classes
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unused-ignore-comment | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.axis_forward, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(imp.axis_forward, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(imp.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(imp.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(mod.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(mod.axis_up, Literal["X", "Y", "Z", "-X", "-Y", "-Z"])
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | imp.axis_up = "W"  # ty: ignore[invalid-assignment]
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comment | imp.axis_up = "W"  # ty: ignore[invalid-assignment]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-failure | assert_type(bpy.ops.sym_bpy_extras.import_file(filepath="a.txt", axis_up="Z"), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(bpy.ops.sym_bpy_extras.import_file(filepath="a.txt", axis_up="Z"), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
