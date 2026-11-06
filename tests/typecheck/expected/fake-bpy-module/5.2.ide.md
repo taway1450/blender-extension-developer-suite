@@ -116,8 +116,10 @@ documentation:
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^hover @26 | bpy.ops.opcall_basic.all
 
 ````text
-```xml
-<Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
+Operator `opcall_basic.all` (`OPCALL_BASIC_OT_all`): All<HB>
+<HB>
+```python
+bpy.ops.opcall_basic.all(execution_context, undo, *, int_value: int, float_value: float, bool_value: bool, string_value: str, enum_value: Literal["A", "B"], flag_value: set[Literal["A", "B"]], dynamic_value: str, vector_value: Sequence[float] | bpy_prop_array[float] | Vector, int_vector_value: Sequence[int] | bpy_prop_array[int], bool_vector_value: Sequence[bool] | bpy_prop_array[bool], matrix_value: Sequence[Sequence[float]] | bpy_prop_array[bpy_prop_array[float]] | Matrix, group_value: <TypedDict with items 'count', 'name'>, items_value: Sequence[<TypedDict with items 'count', 'name'>], hidden_value: int)
 ```
 ````
 
@@ -334,13 +336,15 @@ PASS
 ## features/registration/reg_explicit/ide_reg_explicit.py | ^hover @26 | bpy.ops.reg_explicit.dotted
 
 ````text
-```xml
-<Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
+Operator `reg_explicit.dotted` (`REG_EXPLICIT_OT_dotted`): Run<HB>
+<HB>
+```python
+bpy.ops.reg_explicit.dotted(execution_context, undo, *, count: int)
 ```
 ````
 
 ## features/registration/reg_explicit/ide_reg_explicit.py | ^hover-contains "count" @26 | bpy.ops.reg_explicit.dotted
 
 ````text
-FAIL: does not contain "count"
+PASS
 ````

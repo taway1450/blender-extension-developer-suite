@@ -1,5 +1,6 @@
 """Feature test: the idname given to UILayout.operator in different forms: a literal (both forms), a module
-constant, the operator class's bl_idname and an f-string of constants. Blender's own operators have their
+constant, the operator class's bl_idname and an f-string of constants. An idname whose category contains `_ot_` is
+looked up as Blender converts it: `odd_ot_x.run` is `ODD_OT_X_OT_run`, which Blender splits after its first `_OT_`. Blender's own operators have their
 properties too. A str the checker cannot evaluate keeps the stub type; an idname no operator has is reported."""
 
 import bpy
@@ -20,6 +21,16 @@ class OPPROPS_IDNAMES_OT_step(Operator):
         return {"FINISHED"}
 
 
+class OPPROPS_IDNAMES_OT_odd(Operator):
+    bl_idname = "opprops_idnames_ot_odd.run"
+    bl_label = "Odd"
+
+    steps: FloatProperty()
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
 class OPPROPS_IDNAMES_PT_panel(Panel):
     bl_label = "Idnames"
     bl_space_type = "VIEW_3D"
@@ -30,5 +41,5 @@ class OPPROPS_IDNAMES_PT_panel(Panel):
         self.layout.operator("object.select_all").action = "SELECT"
 
 
-classes = (OPPROPS_IDNAMES_OT_step, OPPROPS_IDNAMES_PT_panel)
+classes = (OPPROPS_IDNAMES_OT_step, OPPROPS_IDNAMES_OT_odd, OPPROPS_IDNAMES_PT_panel)
 register, unregister = bpy.utils.register_classes_factory(classes)

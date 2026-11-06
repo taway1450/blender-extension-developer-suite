@@ -13,6 +13,7 @@ Other keys keep the stub type `AddonPreferences | None`.
 | `prefs_ext` | every key spelling in an extension, through helper functions in submodules |
 | `prefs_legacy` | a `bl_info` add-on: `__name__` and the literal name |
 | `prefs_bad` | `blender-preferences-idname`: a wrong literal, `__name__` in a submodule, no `bl_idname`, a second class for the add-on (it replaces the first, so unregister fails) |
+| `prefs_discovered` | `register()` picks its class at runtime: the preferences are either class that names the add-on |
 | `prefs_unregistered` | a preferences class that is never registered: the stub type |
 
 The oracle cannot check `__package__` keys (stock ty types `__package__` as `str | None`), so those lines are

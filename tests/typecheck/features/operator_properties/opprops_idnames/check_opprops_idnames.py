@@ -15,6 +15,8 @@ def evaluated(layout: UILayout) -> None:
     assert_type(layout.operator(STEP_IDNAME).factor, float)
     assert_type(layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor, float)
     assert_type(layout.operator(f"{CATEGORY}.step").factor, float)  # oracle-skip: stock ty does not evaluate f-strings
+    assert_type(layout.operator("opprops_idnames_ot_odd.run").steps, float)
+    assert_type(layout.operator("OPPROPS_IDNAMES_OT_ODD_OT_run").steps, float)
 
 
 def builtin(layout: UILayout) -> None:

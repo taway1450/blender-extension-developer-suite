@@ -1,0 +1,4 @@
+[[probe]]
+code = "('ODD_OT_run' in dir(bpy.ops.opprops_idnames), bpy.ops.opprops_idnames_ot_odd.run.poll())"
+expect = "(True, True)"
+reason = "Blender splits the idname after its first _OT_ (WM_operator_py_idname), and still finds the operator by the idname it registered with"

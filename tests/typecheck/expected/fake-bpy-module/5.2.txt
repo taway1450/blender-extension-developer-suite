@@ -1,7 +1,6 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender 5.2.
 # `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(addon.preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]

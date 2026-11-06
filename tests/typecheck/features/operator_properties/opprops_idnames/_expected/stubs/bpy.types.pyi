@@ -5,6 +5,9 @@ from typing import Any, Literal, overload
 class _opprops_idnames_step_properties(bpy_struct):
     factor: float
 
+class _opprops_idnames_odd_properties(bpy_struct):
+    steps: float
+
 class _object_select_all_properties(bpy_struct):
     action: Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"]
 
@@ -15,6 +18,8 @@ class _mesh_primitive_cube_add_properties(bpy_struct):
 class UILayout:
     @overload
     def operator(self, operator: Literal["opprops_idnames.step", "OPPROPS_IDNAMES_OT_step"], **kwargs: Any) -> _opprops_idnames_step_properties: ...
+    @overload
+    def operator(self, operator: Literal["opprops_idnames_ot_odd.run", "OPPROPS_IDNAMES_OT_ODD_OT_run"], **kwargs: Any) -> _opprops_idnames_odd_properties: ...
     @overload
     def operator(self, operator: Literal["object.select_all", "OBJECT_OT_select_all"], **kwargs: Any) -> _object_select_all_properties: ...
     @overload
