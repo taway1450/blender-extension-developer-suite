@@ -46,4 +46,3 @@ features/properties/props_hosts/__init__.py | unresolved-attribute | layout.labe
 features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=text)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
-features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)

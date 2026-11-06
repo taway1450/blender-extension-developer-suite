@@ -1,4 +1,3 @@
 # Feature-test results that are not passes, builtin stubs, Blender main.
 # `mise run check:features main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)
