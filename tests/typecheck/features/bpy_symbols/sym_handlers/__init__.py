@@ -8,7 +8,7 @@ from bpy.app.handlers import persistent
 
 @persistent
 def on_load_post(filepath, _unused):
-    # load_post handlers are called with two arguments: the file path and None.
+    # A load_post handler that takes one parameter gets the file path; any other gets the path and None.
     pass
 
 

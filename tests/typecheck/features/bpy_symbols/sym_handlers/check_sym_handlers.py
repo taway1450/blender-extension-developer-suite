@@ -25,11 +25,16 @@ def one_argument(filepath: str) -> None:
     pass
 
 
+def no_arguments() -> None:
+    pass
+
+
 def handler_signatures() -> None:
     handler: Callable[[str, None], None] = typed_handler
     bpy.app.handlers.load_post.append(typed_handler)
-    # load_post passes two arguments: a handler that takes one fails at runtime (the stubs accept it).
-    bpy.app.handlers.load_post.append(one_argument)  # ty: ignore[invalid-argument-type]  # oracle-skip: the stubs say Callable[[str], None]
+    # Blender passes a handler that takes one parameter only the file path, and any other handler two arguments.
+    bpy.app.handlers.load_post.append(one_argument)
+    bpy.app.handlers.load_post.append(no_arguments)  # ty: ignore[invalid-argument-type]  # bare-ok: the stubs already reject a handler without parameters; the checker must keep it so
 
 
 def timers() -> None:

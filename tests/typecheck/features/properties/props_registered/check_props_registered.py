@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Literal, TypeVar, assert_type
 
 import bpy
-from bpy.types import (Bone, Camera, Collection, Context, EditBone, Image, Material, NodeSocketFloat, Object,
+from bpy.types import (Area, Bone, Camera, Collection, Context, EditBone, Image, Material, NodeSocketFloat, Object,
                        PoseBone, Scene, ShaderNodeMath, Strip, ViewLayer, WindowManager, bpy_prop_collection_idprop)
 
 from . import PROPS_REGISTERED_Item
@@ -54,6 +54,11 @@ def on_other_structs(wm: WindowManager, bone: Bone, edit_bone: EditBone, pose_bo
     assert_type(socket.reg_socket, int)
     assert_type(view_layer.reg_view_layer, int)
     assert_type(strip.reg_strip, int)
+
+
+def on_unsupported_targets(area: Area) -> None:
+    # Blender keeps a property assigned to Area as a plain class attribute; an instance has no such property.
+    area.reg_area  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def most_derived_owner(scene: Scene, obj: Object) -> None:

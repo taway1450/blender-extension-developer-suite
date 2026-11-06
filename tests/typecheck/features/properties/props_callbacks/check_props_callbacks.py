@@ -14,3 +14,8 @@ def values(s: PROPS_CALLBACKS_Settings) -> None:
     assert_type(s.ratio, float)
     assert_type(s.target, Object | None)
     assert_type(s.mode, str)  # dynamic items: only str is known
+
+
+def get_without_set(s: PROPS_CALLBACKS_Settings) -> None:
+    assert_type(s.lambda_get, int)
+    s.lambda_get = 1  # ty: ignore[invalid-assignment]  # get= without set= makes the property read-only

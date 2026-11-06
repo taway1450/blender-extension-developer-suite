@@ -6,6 +6,7 @@ which options, the field has that property's type. See README.md for what is exp
 """
 
 import functools
+from typing import Any
 
 import bpy
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
@@ -18,7 +19,7 @@ ColorProperty = functools.partial(FloatVectorProperty, subtype="COLOR", size=3)
 PROPS = {"weight": FloatProperty(), "label": StringProperty()}
 PAIR = (IntProperty(), BoolProperty())
 USE_FLOAT = bpy.app.version >= (4, 0, 0)
-SETTINGS = dict(subtype="TRANSLATION", size=3)
+SETTINGS: dict[str, Any] = dict(subtype="TRANSLATION", size=3)  # typed loosely: the stubs reject **dict[str, str | int]
 
 
 # Wrapper functions.

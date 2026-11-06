@@ -1,0 +1,14 @@
+[[probe]]
+code = "(setattr(bpy.types.Scene, 'props_callbacks_probe', bpy.props.PointerProperty(type=addon.PROPS_CALLBACKS_Settings)), bpy.context.scene.props_callbacks_probe.lambda_get)[1]"
+expect = 0
+reason = "get= gives the value (count's default)"
+
+[[probe]]
+code = "setattr(bpy.context.scene.props_callbacks_probe, 'lambda_get', 1)"
+expect = "raises"
+reason = "get= without set= makes the property read-only"
+
+[[probe]]
+code = "delattr(bpy.types.Scene, 'props_callbacks_probe') is None"
+expect = true
+reason = "removes the probe's pointer again"

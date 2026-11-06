@@ -22,3 +22,22 @@ reason = "an Object only has ID's reg_owner_last"
 code = "type(bpy.types.Scene.reg_int).__name__"
 expect = "_PropertyDeferred"
 reason = "a class read gives the property declaration, not the value"
+
+# The Registered-target allowlist of blender-unsupported-property-target (spec #33, C4): the bpy.types roots whose
+# classes accept Registered properties. A class accepts them when its metaclass routes setattr to property
+# registration (bpy_struct_meta_idprop, or _RNAMetaPropGroup which derives from it). Roots a version lacks are skipped.
+# Both probes spell the same root list: keep them identical.
+[[probe]]
+code = "str((lambda roots, meta: sorted(n for n in dir(bpy.types) if isinstance(getattr(bpy.types, n, None), type) and issubclass(type(getattr(bpy.types, n)), meta) and not issubclass(getattr(bpy.types, n), roots)))(tuple(c for c in (getattr(bpy.types, r, None) for r in 'ID PropertyGroup Node NodeSocket NodeTreeInterfaceSocket Bone EditBone PoseBone BoneCollection ViewLayer Strip TimelineMarker View3DShading IDPropertyWrapPtr OperatorProperties GizmoProperties GizmoGroupProperties KeyConfigPreferences NodesModifierProperties NodesModifierPropertiesEmpty SceneCompositorEffectProperties SceneCompositorEffectPropertiesEmpty SequencerCompositorEffectProperties SequencerCompositorEffectPropertiesEmpty SequencerCompositorModifierProperties SequencerCompositorModifierPropertiesEmpty'.split()) if c is not None), type(bpy.types.Scene)))"
+expect = "[]"
+reason = "every bpy.types class that accepts Registered properties is under a root of the allowlist"
+
+[[probe]]
+code = "str((lambda roots, meta: sorted(n for n in dir(bpy.types) if isinstance(getattr(bpy.types, n, None), type) and issubclass(getattr(bpy.types, n), roots) and not issubclass(type(getattr(bpy.types, n)), meta)))(tuple(c for c in (getattr(bpy.types, r, None) for r in 'ID PropertyGroup Node NodeSocket NodeTreeInterfaceSocket Bone EditBone PoseBone BoneCollection ViewLayer Strip TimelineMarker View3DShading IDPropertyWrapPtr OperatorProperties GizmoProperties GizmoGroupProperties KeyConfigPreferences NodesModifierProperties NodesModifierPropertiesEmpty SceneCompositorEffectProperties SceneCompositorEffectPropertiesEmpty SequencerCompositorEffectProperties SequencerCompositorEffectPropertiesEmpty SequencerCompositorModifierProperties SequencerCompositorModifierPropertiesEmpty'.split()) if c is not None), type(bpy.types.Scene)))"
+expect = "[]"
+reason = "every bpy.types class under a root of the allowlist accepts Registered properties"
+
+[[probe]]
+code = "issubclass(type(bpy.types.UIList), type(bpy.types.Scene))"
+expect = false
+reason = "UIList has ID properties for its annotations, but its class does not accept Registered properties"

@@ -10,7 +10,7 @@ one declared through `bpy.props.IntProperty`.
 | `generated/sym_*` | one addon per import form (dotted, submodule, module alias, `from bpy import props`, from-imports with and without alias, star import, assigned aliases, re-exports through the addon's own modules, nested re-exports), made by `scripts/feature_generators/bpy_symbols.py` |
 | `sym_negative` | look-alikes that are not Blender's: local functions named like properties, fake base classes, a parameter called `bpy` |
 | `sym_mathutils` | `mathutils` types and operators |
-| `sym_handlers` | `bpy.app.handlers` and `@persistent` (it returns the function; `load_post` handlers get `(str, None)`) |
+| `sym_handlers` | `bpy.app.handlers` and `@persistent` (it returns the function; a `load_post` handler gets `(str,)` if it takes one parameter, `(str, None)` otherwise) |
 | `sym_bpy_extras` | `ImportHelper` / `ExportHelper` properties (`filepath`, `check_existing`), `orientation_helper` enums |
 
 **Runtime facts (Blender 5.4):** `from bpy.types import *` only binds the `bpy_*` base classes, so

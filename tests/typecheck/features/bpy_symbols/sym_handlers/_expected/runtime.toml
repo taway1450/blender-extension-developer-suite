@@ -1,0 +1,6 @@
+# Loading a file fires load_post. It also clears the handlers and timers that are not persistent, so the probe puts
+# the add-on's own back for its unregister().
+[[probe]]
+code = "(lambda calls, frames: (bpy.app.handlers.load_post.append(bpy.app.handlers.persistent(lambda path: calls.append(type(path).__name__))), bpy.app.handlers.load_post.append(bpy.app.handlers.persistent(lambda: calls.append('zero'))), bpy.ops.wm.read_homefile(), bpy.app.handlers.load_post.pop(), bpy.app.handlers.load_post.pop(), [bpy.app.handlers.frame_change_post.append(h) for h in frames if h not in bpy.app.handlers.frame_change_post], bpy.app.timers.is_registered(addon.tick) or bpy.app.timers.register(addon.tick, first_interval=0.5), str(calls))[-1])([], list(bpy.app.handlers.frame_change_post))"
+expect = "['str']"
+reason = "a one-parameter load_post handler gets the file path; a zero-parameter one fails (TypeError, printed)"

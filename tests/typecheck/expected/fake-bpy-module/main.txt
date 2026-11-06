@@ -129,6 +129,7 @@ features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribu
 features/bpy_symbols/sym_handlers/__init__.py | invalid-argument-type | bpy.app.handlers.frame_change_post.append(on_frame_change)
 features/bpy_symbols/sym_handlers/__init__.py | invalid-argument-type | bpy.app.handlers.frame_change_post.remove(on_frame_change)
 features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]
+features/bpy_symbols/sym_handlers/check_sym_handlers.py | invalid-argument-type | bpy.app.handlers.load_post.append(one_argument)
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | location: FloatVectorProperty(subtype="TRANSLATION", default=mathutils.Vector((0.0, 0.0, 1.0)))
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | tint: FloatVectorProperty(subtype="COLOR", default=Color((1.0, 0.5, 0.0)), min=0.0, max=1.0)
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | rotation: FloatVectorProperty(subtype="EULER", default=E((0.0, 0.0, 0.5)))
@@ -761,6 +762,7 @@ features/properties/props_callbacks/__init__.py | type-assertion-failure | lambd
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_items: EnumProperty(items=lambda self, context: [(assert_type(self, PROPS_CALLBACKS_Settings).label, "", "")])
 features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)
 features/properties/props_callbacks/__init__.py | unused-ignore-comment | wrong_poll: PointerProperty(type=Object, poll=poll_wrong_type)  # ty: ignore[invalid-argument-type]
+features/properties/props_callbacks/check_props_callbacks.py | unused-ignore-comment | s.lambda_get = 1  # ty: ignore[invalid-assignment]  # get= without set= makes the property read-only
 features/properties/props_defaults/__init__.py | invalid-argument-type | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
@@ -771,6 +773,20 @@ features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | v
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | int_vector_length: IntVectorProperty(size=2, default=(1, 2, 3))  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | matrix_shape: FloatVectorProperty(size=(2, 2), default=(1.0, 0.0, 0.0, 1.0))  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | set_without_get: IntProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | bool_set_without_get: BoolProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | float_set_without_get: FloatProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | string_set_without_get: StringProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_set_without_get: EnumProperty(items=AB, set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | bool_vector_set_without_get: BoolVectorProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | int_vector_set_without_get: IntVectorProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | float_vector_set_without_get: FloatVectorProperty(set=lambda self, value: None)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | _underscore: IntProperty()  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | function_items_str_default: EnumProperty(items=dynamic_items, default="A")  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | flag_too_many_items: EnumProperty(items=ITEMS_33, options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | size_too_big: IntVectorProperty(size=33)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | size_zero: IntVectorProperty(size=0)  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | size_four_dimensions: FloatVectorProperty(size=(2, 2, 2, 2))  # ty: ignore[blender-invalid-property]
+features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-property]
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host]
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #2
 features/properties/props_hosts/__init__.py | ignore-comment-unknown-rule | value: IntProperty()  # ty: ignore[blender-unsupported-property-host] #3
@@ -787,6 +803,7 @@ features/properties/props_registered/__init__.py | ignore-comment-unknown-rule |
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Preferences.reg_preferences = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.SpaceView3D.reg_space = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Context.reg_context = IntProperty()  # ty: ignore[blender-unsupported-property-target]
+features/properties/props_registered/check_props_registered.py | unused-ignore-comment | area.reg_area  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 features/properties/props_styles/plain_annotations.py | ignore-comment-unknown-rule | legacy = IntProperty()  # ty: ignore[blender-legacy-property]
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_a: COMMON
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_b: COMMON  # the same deferred property for two fields
@@ -801,7 +818,6 @@ features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped_kwargs: vector(subtype="COLOR")
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped_enum: enum_of([("A", "A", ""), ("B", "B", "")])
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | either: float_or_int(USE_FLOAT)  # one of the returns: float | int
-features/property_wrappers/wrap_values/__init__.py | invalid-argument-type | unknown_options: FloatVectorProperty(**SETTINGS)  # FloatVector with unknown subtype and size: Any
 features/property_wrappers/wrap_values/__init__.py | invalid-type-form | opaque: getattr(bpy.props, "".join(["Int", "Property"]))()
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.common_a, int)
 features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.common_b, int)

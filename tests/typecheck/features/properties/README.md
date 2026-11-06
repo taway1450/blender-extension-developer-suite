@@ -36,8 +36,11 @@ not on Area, Modifier, Window, Preferences, SpaceView3D or Context. After regist
 class attribute is gone (`AttributeError`), while a registered property's class attribute stays its property
 declaration (`bpy.types.Scene.reg_int` is a `_PropertyDeferred`); the checker leaves class reads of both unresolved. When a class
 and its base both register a name, the most-derived class wins on its instances, whichever was registered first.
-`StringProperty(subtype="BYTE_STRING")` gives `bytes`, and `options={"READ_ONLY"}` makes any property read-only.
+`StringProperty(subtype="BYTE_STRING")` gives `bytes`, and `options={"READ_ONLY"}` or `get=` without `set=` makes any
+property read-only. UIList does not take Registered properties: its class lacks the metaclass that registers them.
 
-**Rules:** `blender-unsupported-property-host`, `blender-legacy-property`, `blender-invalid-property` (defaults
-that do not fit, `set` without `get`), `blender-unsupported-property-target`. Wrong callback signatures are
-`invalid-argument-type`.
+**Rules:** `blender-unsupported-property-host`, `blender-legacy-property`, `blender-invalid-property` (defaults that
+do not fit, `set` without `get`, names starting with `_`, `size` outside 1-32 or with more than 3 dimensions, more
+than 32 `ENUM_FLAG` items, a `str` default with function items, a data-block pointer on add-on preferences),
+`blender-unsupported-property-target`. Wrong callback signatures and a `type=` of the wrong kind are
+`invalid-argument-type` from the stubs.
