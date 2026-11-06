@@ -7,16 +7,9 @@ features/inheritance/generated/inh_invalid_header_no_draw/__init__.py | ignore-c
 features/inheritance/generated/inh_invalid_menu_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_MENU_NO_DRAW_MT_menu(Menu):  # ty: ignore[blender-missing-callback]
 features/inheritance/generated/inh_invalid_panel_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_PANEL_NO_DRAW_PT_panel(Panel):  # ty: ignore[blender-missing-callback]
 features/inheritance/generated/inh_invalid_socket_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_SOCKET_NO_DRAW_Socket(NodeSocket):  # ty: ignore[blender-missing-callback]
-features/inheritance/inh_bases/__init__.py | ignore-comment-unknown-rule | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
-features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
-features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: fake-bpy-module's and Blender 5.2's stubs do not declare Blender's metaclass
-features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
-features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_OT_keywords_last(Operator, KeywordsMixin):  # ty: ignore[blender-mixin-order]
-features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_MT_append_last(Menu, AppendMixin):  # ty: ignore[blender-mixin-order]
-features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #2
