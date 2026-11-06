@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, assert_type
 
-from bpy.types import bpy_prop_array
+from bpy.types import Scene, bpy_prop_array
 from mathutils import Color, Vector
 
 from . import WRAP_VALUES_Settings
@@ -34,3 +34,8 @@ def partly_known(s: WRAP_VALUES_Settings) -> None:
     assert_type(s.unknown_options, Any)  # bare-ok: unknown options fall back to Any
     assert_type(s.scalar_unknown_options, int)
     assert_type(s.opaque, Any)  # bare-ok: an opaque value falls back to Any
+
+
+def registered(scene: Scene) -> None:
+    assert_type(scene.wrap_values_common, int)
+    assert_type(scene.wrap_values_color, Color)

@@ -486,33 +486,6 @@ features/properties/props_registered/__init__.py | ignore-comment-unknown-rule |
 features/properties/props_registered/__init__.py | ignore-comment-unknown-rule | bpy.types.Context.reg_context = IntProperty()  # ty: ignore[blender-unsupported-property-target]
 features/properties/props_registered/check_props_registered.py | unused-ignore-comment | area.reg_area  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 features/properties/props_styles/plain_annotations.py | ignore-comment-unknown-rule | legacy = IntProperty()  # ty: ignore[blender-legacy-property]
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_a: COMMON
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | common_b: COMMON  # the same deferred property for two fields
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | partial_color: ColorProperty()
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | partial_override: ColorProperty(size=4)  # a keyword of the call replaces the partial's: a 4-float array
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | from_dict: PROPS["weight"]
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | from_dict_str: PROPS["label"]
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | from_tuple: PAIR[0]
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | from_tuple_bool: PAIR[1]
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped: color_property()
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped_size: translation(2)
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped_kwargs: vector(subtype="COLOR")
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | wrapped_enum: enum_of([("A", "A", ""), ("B", "B", "")])
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | either: float_or_int(USE_FLOAT)  # one of the returns: float | int
-features/property_wrappers/wrap_values/__init__.py | invalid-type-form | opaque: getattr(bpy.props, "".join(["Int", "Property"]))()
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.common_a, int)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.common_b, int)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.partial_color, Color)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.partial_override, bpy_prop_array[float])
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.from_dict, float)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.from_dict_str, str)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.from_tuple, int)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.from_tuple_bool, bool)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped, Color)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped_size, Vector)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped_kwargs, Color)
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.wrapped_enum, Literal["A", "B"])
-features/property_wrappers/wrap_values/check_wrap_values.py | type-assertion-failure | assert_type(s.either, float | int)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.first(), Result)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.second(), Result)

@@ -226,7 +226,7 @@ PASS
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^hover-contains "int" @7 | s.common_a
 
 ````text
-FAIL: does not contain "int"
+PASS
 ````
 
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^hover-contains "float" @7 | s.alias
@@ -238,26 +238,26 @@ PASS
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^hover-contains "Color" @7 | s.partial_color
 
 ````text
-FAIL: does not contain "Color"
+PASS
 ````
 
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^hover-contains "Vector" @7 | s.wrapped_size
 
 ````text
-FAIL: does not contain "Vector"
+PASS
 ````
 
 ## features/property_wrappers/wrap_values/ide_wrap_values.py | ^completion from_dict from_dict_str from_tuple from_tuple_bool @12 | s.from_
 
 ````text
-- from_dict: detail: Unknown FAIL: type not resolved
-  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- from_dict_str: detail: Unknown FAIL: type not resolved
-  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- from_tuple: detail: Unknown FAIL: type not resolved
-  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
-- from_tuple_bool: detail: Unknown FAIL: type not resolved
-  documentation: `Unknown` is a dynamic type inferred due to missing type information or an inference error.<HB>
+- from_dict: detail: float
+  documentation: (none)
+- from_dict_str: detail: str
+  documentation: str(object='') -&gt; str<HB>
+- from_tuple: detail: int
+  documentation: int([x]) -&gt; integer<HB>
+- from_tuple_bool: detail: bool
+  documentation: Returns True when the argument is true, False otherwise.<HB>
 ````
 
 ## features/registration/reg_explicit/ide_reg_explicit.py | ^completion reg_explicit @20 | bpy.ops.reg_exp

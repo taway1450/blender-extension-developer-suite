@@ -1,0 +1,9 @@
+[[probe]]
+code = "type(bpy.context.scene.wrap_values_common).__name__"
+expect = "int"
+reason = "a module constant registered on a class is that property"
+
+[[probe]]
+code = "type(bpy.context.scene.wrap_values_color).__name__"
+expect = "Color"
+reason = "a functools.partial of FloatVectorProperty registered on a class is that property"

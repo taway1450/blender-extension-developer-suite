@@ -71,7 +71,12 @@ class WRAP_VALUES_Settings(PropertyGroup):
 
 def register():
     bpy.utils.register_class(WRAP_VALUES_Settings)
+    # Registered properties take the same values as annotations.
+    bpy.types.Scene.wrap_values_common = COMMON
+    bpy.types.Scene.wrap_values_color = ColorProperty()
 
 
 def unregister():
+    del bpy.types.Scene.wrap_values_color
+    del bpy.types.Scene.wrap_values_common
     bpy.utils.unregister_class(WRAP_VALUES_Settings)

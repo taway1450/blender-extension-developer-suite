@@ -2,8 +2,9 @@
 
 **The checker must:** evaluate an annotation as a value and, when the value is a property made by a `bpy.props`
 function, give the field that property's type, whatever the expression looks like: a module constant, an alias of
-the function, `functools.partial`, an item of a dict or tuple, the return of a small wrapper function. When the
-options that decide the type (subtype, size, items) are known, the type is exact.
+the function, `functools.partial`, an item of a dict or tuple, the return of a small wrapper function. The same
+holds for a property assigned to a Blender class (`bpy.types.Scene.x = COMMON`). When the options that decide the
+type (subtype, size, items) are known, the type is exact.
 
 When it cannot tell:
 
@@ -16,4 +17,4 @@ When it cannot tell:
 
 | Addon | Variant |
 | --- | --- |
-| `wrap_values` | all of the above on one PropertyGroup |
+| `wrap_values` | all of the above on one PropertyGroup; a constant and a `functools.partial` registered on `Scene` |
