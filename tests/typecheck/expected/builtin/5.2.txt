@@ -1,32 +1,12 @@
 # Feature-test results that are not passes, builtin stubs, Blender 5.2.
 # `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = "not_this_addon"  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | class PREFS_BAD_Missing(AddonPreferences):  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
-features/addon_preferences/prefs_bad/submodule.py | ignore-comment-unknown-rule | bl_idname = __name__  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_ext/__init__.py | unresolved-attribute | self.layout.prop(self, "scale")
-features/addon_preferences/prefs_ext/__init__.py | invalid-return-type | return preferences.addons[__package__].preferences
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[ADDON_ID].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(prefs.scale, float)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(prefs.scale, float)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-assignment | prefs.scale = 2.0  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(addon.preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(addon.preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/helpers.py | invalid-return-type | return preferences.addons[__name__.rpartition(".")[0]].preferences
 features/addon_preferences/prefs_ext/ui/panel.py | invalid-argument-type | self.layout.prop(preferences(context.preferences), "scale")
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
-features/addon_preferences/prefs_ext/ui/panel.py | invalid-return-type | return preferences.addons[base_package].preferences
 features/addon_preferences/prefs_legacy/__init__.py | unresolved-attribute | self.layout.prop(self, "scale")
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs, PREFS_LEGACY_Preferences)
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.scale, float)
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.scale, float)
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])
-features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):

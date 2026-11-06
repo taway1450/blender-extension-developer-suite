@@ -6,13 +6,14 @@ Each section is one marker, `path | ^marker @column | queried line`, and what ty
 ## features/addon_preferences/prefs_ext/ide_prefs_ext.py | ^completion scale @51 | preferences.addons[__package__].preferences.sc
 
 ````text
-- scale: FAIL: not offered
+- scale: detail: float
+  documentation: (none)
 ````
 
 ## features/addon_preferences/prefs_ext/ide_prefs_ext.py | ^hover-contains "PREFS_EXT_Preferences" @37 | preferences.addons[__package__].preferences
 
 ````text
-FAIL: does not contain "PREFS_EXT_Preferences"
+PASS
 ````
 
 ## features/addon_preferences/prefs_legacy/ide_prefs_legacy.py | ^hover-contains "prefs_legacy" @7 | __package__
