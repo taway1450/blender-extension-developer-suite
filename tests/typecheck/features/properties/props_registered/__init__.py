@@ -1,7 +1,7 @@
 """Feature test: properties assigned to Blender's own classes (bpy.types.X.name = Property(...)).
 
 Every ID type and the structs with ID properties (bones, nodes, sockets, view layers, strips) accept them.
-Other structs do not: the assignment silently becomes a plain class attribute holding the deferred property.
+Other structs do not: the assignment silently becomes a plain class attribute holding the `_PropertyDeferred` value.
 """
 
 import bpy

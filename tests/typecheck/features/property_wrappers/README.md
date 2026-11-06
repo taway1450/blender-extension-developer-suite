@@ -12,6 +12,7 @@ When it cannot tell:
 | --- | --- |
 | a wrapper that returns one of several properties | the union of their types |
 | a FloatVector whose subtype or size is not known | `Any` |
+| a Pointer or Collection whose `type=` is not known | `Any` |
 | an Int / Float / Bool / String with unknown options | the scalar type (no option changes it) |
 | a value the checker cannot evaluate at all | `Any`, and no error |
 

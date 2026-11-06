@@ -230,6 +230,7 @@ features/inheritance/inh_registered_base/check_inh_registered_base.py | type-ass
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.late_parent(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
+features/operator_calls/opcall_basic/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | group: PointerProperty(type=OPCALL_BASIC_IdGroup)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(), Result)
@@ -474,6 +475,10 @@ features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
+features/properties/props_data_blocks/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
+features/properties/props_data_blocks/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
+features/properties/props_data_blocks/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property] #2
+features/properties/props_data_blocks/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property] #2
 features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.properties.value, int)
 features/properties/props_hosts/check_props_hosts.py | unresolved-attribute | assert_type(op.properties.value, int)
 features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.first(), Result)

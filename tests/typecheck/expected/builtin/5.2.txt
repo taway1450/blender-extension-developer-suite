@@ -252,6 +252,7 @@ features/inheritance/inh_registered_base/check_inh_registered_base.py | type-ass
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.late_parent(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
+features/operator_calls/opcall_basic/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | group: PointerProperty(type=OPCALL_BASIC_IdGroup)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(), Result)
@@ -512,6 +513,10 @@ features/properties/generated/props_pointer/check_props_pointer.py | not-subscri
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner, bpy_prop_collection_idprop[PROPS_POINTER_Inner])
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner.add().value, int)
 features/properties/props_callbacks/__init__.py | invalid-assignment | self["ratio"] = value
+features/properties/props_data_blocks/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
+features/properties/props_data_blocks/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
+features/properties/props_data_blocks/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property] #2
+features/properties/props_data_blocks/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property] #2
 features/properties/props_defaults/__init__.py | invalid-argument-type | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)

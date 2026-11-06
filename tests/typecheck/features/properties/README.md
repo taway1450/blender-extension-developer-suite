@@ -12,9 +12,10 @@ what stock ty reports as `invalid-type-form`.
 | `generated/props_enum` | static items (`Literal`), `ENUM_FLAG` (`set[Literal]`), dynamic items (`str`) |
 | `generated/props_pointer` | pointers to PropertyGroups and to every ID type, collections |
 | `props_hosts` | the classes that take annotations, and those that silently ignore them |
-| `props_styles` | plain annotations, `from __future__ import annotations`, inherited and mixin annotations, the old `x = IntProperty()` form (ignored by Blender) |
+| `props_styles` | plain annotations, `from __future__ import annotations`, inherited and mixin annotations, the old `x = IntProperty()` form (ignored by Blender), a `.pyi` the add-on ships (no rules there) |
 | `props_callbacks` | `update` / `get` / `set` / `poll` / `items` callbacks: `self` is the declaring class |
 | `props_defaults` | arguments Blender rejects at registration (fails to load on purpose) |
+| `props_data_blocks` | the Property hosts that reject a pointer to a data-block, and two that accept one |
 | `props_registered` | properties assigned to Blender's classes: which classes accept them |
 
 **Runtime facts (Blender 5.4):**
@@ -41,6 +42,8 @@ property read-only. UIList does not take Registered properties: its class lacks 
 
 **Rules:** `blender-unsupported-property-host`, `blender-legacy-property`, `blender-invalid-property` (defaults that
 do not fit, `set` without `get`, names starting with `_`, `size` outside 1-32 or with more than 3 dimensions, more
-than 32 `ENUM_FLAG` items, a `str` default with function items, a data-block pointer on add-on preferences),
+than 32 `ENUM_FLAG` items, a `str` default with function items, a data-block pointer on an Operator, Macro, Gizmo,
+UIList, AddonPreferences or KeyConfigPreferences; checked at every `bpy.props` call, also in lambdas, comprehensions
+and annotations outside a class body),
 `blender-unsupported-property-target`. Wrong callback signatures and a `type=` of the wrong kind are
 `invalid-argument-type` from the stubs.

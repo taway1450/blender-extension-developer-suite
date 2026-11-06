@@ -1,0 +1,34 @@
+[[probe]]
+code = "'target' in addon.PROPS_DATA_BLOCKS_Group.bl_rna.properties"
+expect = true
+reason = "a PropertyGroup accepts a data-block pointer"
+
+[[probe]]
+code = "can_add_node('ShaderNodeTree', 'PROPS_DATA_BLOCKS_Node')"
+expect = true
+reason = "a Node accepts a data-block pointer"
+
+[[probe]]
+code = "(bpy.utils.register_class(addon.PROPS_DATA_BLOCKS_OT_operator), ' '.join(bpy.ops.props_data_blocks.operator.get_rna_type().properties.keys()))[1]"
+expect = "rna_type count"
+reason = "an Operator prints the ValueError (this type doesn't support data-block properties) and registers without the pointer"
+
+[[probe]]
+code = "(bpy.utils.register_class(addon.PROPS_DATA_BLOCKS_OT_macro), ' '.join(bpy.ops.props_data_blocks.macro.get_rna_type().properties.keys()))[1]"
+expect = "rna_type count"
+reason = "a Macro prints the ValueError (this type doesn't support data-block properties) and registers without the pointer"
+
+[[probe]]
+code = "bpy.utils.register_class(addon.PROPS_DATA_BLOCKS_Preferences)"
+expect = "raises"
+reason = "ValueError: this type doesn't support data-block properties"
+
+[[probe]]
+code = "bpy.utils.register_class(addon.PROPS_DATA_BLOCKS_KeyConfigPreferences)"
+expect = "raises"
+reason = "ValueError: this type doesn't support data-block properties"
+
+[[probe]]
+code = "bpy.utils.register_class(addon.PROPS_DATA_BLOCKS_UL_list)"
+expect = "raises"
+reason = "ValueError: this type doesn't support data-block properties"

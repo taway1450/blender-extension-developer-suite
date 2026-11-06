@@ -19,6 +19,7 @@ class WRAP_VALUES_Settings(PropertyGroup):
     wrapped_enum: Literal["A", "B"]
     either: float | int
     unknown_options: Any
+    unknown_pointer: Any
     scalar_unknown_options: int
     opaque: Any
 

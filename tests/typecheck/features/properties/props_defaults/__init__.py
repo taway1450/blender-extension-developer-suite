@@ -26,6 +26,10 @@ def dynamic_items(self, context):
 
 # A shared declaration is rejected where a class uses it, but reported once, where it is written.
 SHARED_ENUM_UNKNOWN = EnumProperty(items=AB, default="C")  # ty: ignore[blender-invalid-property]
+# So is one written in a lambda, a comprehension or an annotation outside a class body.
+FACTORIES = {"enum": lambda: EnumProperty(items=AB, default="D")}  # ty: ignore[blender-invalid-property]
+ENUMS = [EnumProperty(items=AB, default="E") for _ in range(2)]  # ty: ignore[blender-invalid-property]
+ANNOTATED_ENUM: EnumProperty(items=AB, default="F")  # ty: ignore[blender-invalid-property]
 
 
 class PROPS_DEFAULTS_Valid(PropertyGroup):

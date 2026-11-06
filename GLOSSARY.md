@@ -55,7 +55,7 @@ A Property declaration used as the annotation of a class member on a Property ho
 A Property declaration assigned to a Blender class at runtime (`bpy.types.Scene.x = IntProperty()`), giving every instance of that class the property.
 
 **Property evaluator**:
-The part of the checker that reads which Property declarations an expression evaluates to, so that a module constant (`x: COMMON`), a dict or tuple item, a `functools.partial` or a small wrapper function (`x: color_property()`) counts as the property it gives. What it cannot read, but ty types as a deferred property, is an *opaque* property of any type.
+The part of the checker that reads which Property declarations an expression evaluates to, so that a module constant (`x: COMMON`), a dict or tuple item, a `functools.partial` or a small wrapper function (`x: color_property()`) counts as the property it gives. What it cannot read, but ty types as a `_PropertyDeferred` value, is an *opaque* property of any type.
 _Avoid_: interpreter
 
 **Value type**:

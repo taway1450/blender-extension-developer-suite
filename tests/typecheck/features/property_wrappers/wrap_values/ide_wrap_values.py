@@ -23,3 +23,5 @@ def hover(s: WRAP_VALUES_Settings) -> None:
 def completion(s: WRAP_VALUES_Settings) -> None:
     s.from_
     #      ^completion from_dict from_dict_str from_tuple from_tuple_bool
+    s.unknown_
+    #         ^completion unknown_options unknown_pointer
