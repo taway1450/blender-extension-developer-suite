@@ -48,10 +48,6 @@ features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | clas
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_MT_append_last(Menu, AppendMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
-features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return {"DONE"}  # ty: ignore[invalid-return-type]
-features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return "FINISHED"  # ty: ignore[invalid-return-type]
-features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return ["FINISHED"]  # ty: ignore[invalid-return-type]
-features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | def execute(self, context):  # ty: ignore[invalid-return-type]
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #2
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(properties, OperatorProperties)
