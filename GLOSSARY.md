@@ -65,6 +65,15 @@ _Avoid_: property type (ambiguous with the declaration)
 **Property member**:
 The property behind an attribute of a Blender instance, whatever its origin (an Annotated property, a Registered property, or one that a class decorator adds: `@orientation_helper(...)` gives `axis_forward` and `axis_up`): it decides the attribute's Value type, whether it can be written and whether it is hidden. In the most derived class that mentions the name, the decorator wins over the class body, and a class body that declares the name wins over a registration.
 
+## Classes
+
+**Blender callback**:
+A method Blender calls on a registered class (`execute`, `poll`, `draw`, `draw_item`, ...). Blender checks it when the class is registered: whether it is a classmethod or a plain function, and how many positional parameters it has. It passes the arguments by position, so their names don't matter.
+_Avoid_: hook, handler (a handler is a function in `bpy.app.handlers`)
+
+**Python base name**:
+A name that Blender's own Python class for a `bpy.types` class defines on top of the C type (`Operator.as_keywords`, `Menu.append`, `Node.poll`). A mixin listed after that Blender class loses the name to it.
+
 ## Add-on code
 
 **Add-on index**:
