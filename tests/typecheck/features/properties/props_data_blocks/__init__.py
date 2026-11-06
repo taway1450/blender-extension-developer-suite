@@ -26,7 +26,7 @@ class PROPS_DATA_BLOCKS_Node(Node):
     target: PointerProperty(type=Object)
 
 
-class PROPS_DATA_BLOCKS_OT_operator(Operator):
+class PROPS_DATA_BLOCKS_OT_operator(Operator):  # ty: ignore[blender-unregistered-class]
     bl_idname = "props_data_blocks.operator"
     bl_label = "Operator"
 
@@ -37,7 +37,7 @@ class PROPS_DATA_BLOCKS_OT_operator(Operator):
         return {"FINISHED"}
 
 
-class PROPS_DATA_BLOCKS_OT_macro(Macro):
+class PROPS_DATA_BLOCKS_OT_macro(Macro):  # ty: ignore[blender-unregistered-class]
     bl_idname = "props_data_blocks.macro"
     bl_label = "Macro"
 
@@ -45,26 +45,26 @@ class PROPS_DATA_BLOCKS_OT_macro(Macro):
     target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
 
 
-class PROPS_DATA_BLOCKS_Preferences(AddonPreferences):
+class PROPS_DATA_BLOCKS_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
     bl_idname = __package__
 
     target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-property]
 
 
-class PROPS_DATA_BLOCKS_KeyConfigPreferences(KeyConfigPreferences):
+class PROPS_DATA_BLOCKS_KeyConfigPreferences(KeyConfigPreferences):  # ty: ignore[blender-unregistered-class]
     bl_idname = "PROPS_DATA_BLOCKS_keyconfig"
 
     target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-property]
 
 
-class PROPS_DATA_BLOCKS_UL_list(UIList):
+class PROPS_DATA_BLOCKS_UL_list(UIList):  # ty: ignore[blender-unregistered-class]
     target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-property]
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index=0, flt_flag=0):
         layout.label(text=item.name)
 
 
-class PROPS_DATA_BLOCKS_GT_gizmo(Gizmo):
+class PROPS_DATA_BLOCKS_GT_gizmo(Gizmo):  # ty: ignore[blender-unregistered-class]
     bl_idname = "PROPS_DATA_BLOCKS_GT_gizmo"
 
     count: IntProperty()

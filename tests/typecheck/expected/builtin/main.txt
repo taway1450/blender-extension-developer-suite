@@ -27,7 +27,6 @@ features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attri
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_unregistered/__init__.py | ignore-comment-unknown-rule | class PREFS_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | bpy.ops.sym_assigned_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
@@ -89,7 +88,6 @@ features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribu
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comment | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
-features/bpy_symbols/sym_negative/check_sym_negative.py | ignore-comment-unknown-rule | class LocalFunctions(bpy.types.PropertyGroup):  # ty: ignore[blender-unregistered-class]
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | invalid-method-override | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
@@ -118,7 +116,6 @@ features/inheritance/generated/inh_invalid_poll_static/__init__.py | ignore-comm
 features/inheritance/generated/inh_invalid_socket_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_SOCKET_NO_DRAW_Socket(NodeSocket):  # ty: ignore[blender-missing-callback]
 features/inheritance/inh_bases/__init__.py | ignore-comment-unknown-rule | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
 features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
-features/inheritance/inh_bases/check_inh_bases.py | ignore-comment-unknown-rule | def register_unsupported() -> None:  # ty: ignore[blender-unreachable-registration]
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: the stubs do not declare Blender's metaclass
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.leaf")
@@ -508,7 +505,6 @@ features/registration/reg_delegation/check_reg_delegation.py | type-assertion-fa
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.function_loop(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.static_method(), Result)
 features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.static_method(), Result)
-features/registration/reg_explicit/__init__.py | ignore-comment-unknown-rule | class REG_EXPLICIT_OT_never(Operator):  # ty: ignore[blender-unregistered-class]
 features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.dotted(), Result)
 features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | assert_type(bpy.ops.reg_explicit.dotted(), Result)
 features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.imported(), Result)
@@ -558,24 +554,6 @@ features/registration/reg_submodule_factory/check_reg_submodule_factory.py | typ
 features/registration/reg_submodule_factory/check_reg_submodule_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_submodule_factory.module(), Result)
 features/registration/reg_submodule_factory/check_reg_submodule_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_submodule_factory.package(), Result)
 features/registration/reg_submodule_factory/check_reg_submodule_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_submodule_factory.package(), Result)
-features/registration/reg_submodule_factory/ops_package/operators.py | ignore-comment-unknown-rule | class REG_SUBMODULE_FACTORY_OT_unlisted(Operator):  # ty: ignore[blender-unregistered-class]
-features/registration/reg_submodule_factory/unlisted.py | ignore-comment-unknown-rule | def register():  # ty: ignore[blender-unreachable-registration]
-features/registration_checks/regchk_duplicate/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_duplicate.same"  # ty: ignore[blender-duplicate-registration]
-features/registration_checks/regchk_duplicate/__init__.py | ignore-comment-unknown-rule | REGCHK_DUPLICATE_OT_sequence,  # ty: ignore[blender-duplicate-registration]
-features/registration_checks/regchk_duplicate/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_DUPLICATE_OT_twice)  # ty: ignore[blender-duplicate-registration]
-features/registration_checks/regchk_duplicate/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_DUPLICATE_OT_loop)  # ty: ignore[blender-duplicate-registration]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "REGCHK_IDNAME_OT_upper_form"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname.Upper"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname.a.b"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname.has-dash"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = ""  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "nocategory"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = ".name"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname."  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | class REGCHK_IDNAME_OT_missing(Operator):  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | class RegchkIdnamePanel(Panel):  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname_panel"  # ty: ignore[blender-invalid-idname]
-features/registration_checks/regchk_idname/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_idname.menu"  # ty: ignore[blender-invalid-idname]
 features/registration_checks/regchk_idname/check_regchk_idname.py | type-assertion-failure | assert_type(bpy.ops.regchk_idname.valid_name_2(), Result)
 features/registration_checks/regchk_idname/check_regchk_idname.py | unresolved-attribute | assert_type(bpy.ops.regchk_idname.valid_name_2(), Result)
 features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | type-assertion-failure | assert_type(bpy.ops.regchk_isolation_a.run(), Result)
@@ -584,33 +562,13 @@ features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | ty
 features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | unresolved-attribute | assert_type(bpy.ops.regchk_shared.tool(), Result)
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | type-assertion-failure | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
 features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | unresolved-attribute | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
-features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | REGCHK_ORDER_Pointer,  # ty: ignore[blender-register-order]
-features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_ORDER_Collection)  # ty: ignore[blender-register-order]
-features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.types.Scene.regchk_order_leaf = PointerProperty(type=REGCHK_ORDER_Leaf)  # ty: ignore[blender-register-order]
-features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_ORDER_PT_child)  # ty: ignore[blender-register-order]
-features/registration_checks/regchk_unreachable/__init__.py | ignore-comment-unknown-rule | def _register_extra():  # ty: ignore[blender-unreachable-registration]
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.used(), Result)
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.used(), Result)
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
-features/registration_checks/regchk_unreachable/forgotten.py | ignore-comment-unknown-rule | def register():  # ty: ignore[blender-unreachable-registration]
-features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_UNREGISTER_LEAK_OT_leaked)  # ty: ignore[blender-unregister-mismatch]
-features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.types.Scene.regchk_leaked = IntProperty()  # ty: ignore[blender-unregister-mismatch]
-features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.app.handlers.save_post.append(on_save)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.append(draw_menu)
-features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.remove(draw_menu)
-features/registration_checks/regchk_unregister_unknown/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTER_UNKNOWN_OT_never(Operator):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregister_unknown/__init__.py | ignore-comment-unknown-rule | bpy.utils.unregister_class(REGCHK_UNREGISTER_UNKNOWN_OT_never)  # ty: ignore[blender-unregister-mismatch]
-features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_OT_forgotten(_ExecuteMixin, Operator):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_PT_forgotten(REGCHK_UNREGISTERED_PT_base):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_MT_forgotten(Menu):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_UL_forgotten(UIList):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_Forgotten(PropertyGroup):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/__init__.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_Preferences(AddonPreferences):  # ty: ignore[blender-unregistered-class]
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | type-assertion-failure | assert_type(bpy.ops.regchk_unregistered.used(), Result)
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | assert_type(bpy.ops.regchk_unregistered.used(), Result)
 features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | bpy.ops.regchk_unregistered.used(steps=3)
-features/registration_checks/regchk_unregistered/imported_only.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_OT_imported(Operator):  # ty: ignore[blender-unregistered-class]
-features/registration_checks/regchk_unregistered/orphan.py | ignore-comment-unknown-rule | class REGCHK_UNREGISTERED_OT_orphan(Operator):  # ty: ignore[blender-unregistered-class]
