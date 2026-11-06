@@ -1,14 +1,14 @@
 # check:blender main, fake-bpy-module stubs, Blender d4ab3d704e
 bucket            shipped  presets    other    total
 context-member        583      532      714     1829
-pointer-none         3814      152     1732     5698
-type-tag              845        6      519     1370
+pointer-none         3819      152     1732     5703
+type-tag              833        6      519     1358
 stub-gap              924        0      363     1287
 operator-call          29        0      142      171
 check-setup           121       12      115      248
 dynamic               692        0      204      896
-rest                 1727        8     1204     2939
-total                8735      710     4993    14438
+rest                 1705        8     1204     2917
+total                8706      710     4993    14409
 
 rule                                 count
 blender-invalid-idname                   1
@@ -45,7 +45,7 @@ possibly-missing-submodule               4
 redundant-condition                     67
 too-many-positional-arguments          171
 unknown-argument                       321
-unresolved-attribute                  8695
+unresolved-attribute                  8666
 unresolved-global                       38
 unresolved-reference                    73
 unsupported-operator                   127

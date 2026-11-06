@@ -235,3 +235,39 @@ features/registration/reg_conditional/__init__.py | unresolved-attribute | if cl
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.append(draw_menu)
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.remove(draw_menu)
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | levels = max(levels, md.levels)
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, MultiresModifier)  # elif: the earlier tag is ruled out
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | levels = max(levels, md.levels) #2
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, ArrayModifier)  # the rest of the function after `!=` ... return
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return md.count
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier | MultiresModifier)
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return md.levels > 0
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return con.target
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(strip, ColorStrip)
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | colors.append(strip.color)
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(light, SunLight)
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return light.angle
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(light, PointLight | SpotLight)  # the rest of the function after `not in` ... return
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return light.shadow_soft_size
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath)
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return node.operation
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)  # a match on the tag
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return f"Subdivision {md.levels}"
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(socket, NodeSocketString | NodeSocketStringFilePath)  # several socket classes share a type
+features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return socket.default_value
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return len(ob.data.vertices)
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, TextCurve)  # the curve of a text object is refined again
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.body
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(meshes, list[Mesh])  # the test in a comprehension
+features/type_narrowing/narrow_views/__init__.py | invalid-return-type | return meshes
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a match on the tag
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.name
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | if md.type == 'FLUID' and md.fluid_type == 'DOMAIN':
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(md.domain_settings, FluidDomainSettings)
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | assert_type(md.domain_settings, FluidDomainSettings)
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return md.domain_settings.resolution_max
+features/type_narrowing/narrow_views/check_narrow_views.py | type-assertion-failure | assert_type(ob.data, Mesh)  # oracle-skip: narrowing by a Type tag needs the checker

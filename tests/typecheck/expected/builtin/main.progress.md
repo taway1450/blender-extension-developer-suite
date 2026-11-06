@@ -18,4 +18,5 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 40/40 | 4/4 | 3/3 | 3/3 | 0 |
 | registration_checks | 9/9 | 37/37 | 10/10 | - | 0 |
-| **total** | 850/850 | 288/288 | 121/121 | 35/35 | 0 |
+| type_narrowing | 18/18 | - | 2/2 | - | 0 |
+| **total** | 868/868 | 288/288 | 123/123 | 35/35 | 0 |

@@ -10,3 +10,15 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return len(ob.data.vertices)
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, TextCurve)  # the curve of a text object is refined again
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.body
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(meshes, list[Mesh])  # the test in a comprehension
+features/type_narrowing/narrow_views/__init__.py | invalid-return-type | return meshes
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a match on the tag
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.name
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(md.domain_settings, FluidDomainSettings)
+features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return md.domain_settings.resolution_max
+features/type_narrowing/narrow_views/check_narrow_views.py | type-assertion-failure | assert_type(ob.data, Mesh)  # oracle-skip: narrowing by a Type tag needs the checker

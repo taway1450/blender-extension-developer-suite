@@ -28,6 +28,7 @@ mise run check:features main --update # record the current results after a revie
 | [inheritance](features/inheritance/README.md) | unannotated overrides get the parent's types; subclass, mixin and override rules |
 | [context_members](features/context_members/README.md) | Guaranteed context members are non-None in Blender callbacks; `space_data` follows `bl_space_type` |
 | [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None, the Type tags of refined subclasses |
+| [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`) |
 
 ## Layout
 

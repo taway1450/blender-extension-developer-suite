@@ -21,6 +21,7 @@ root = [
     "features/property_wrappers",
     "features/registration",
     "features/registration_checks",
+    "features/type_narrowing",
 ]
 # END generated roots
 
