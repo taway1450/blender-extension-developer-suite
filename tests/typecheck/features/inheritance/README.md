@@ -75,8 +75,8 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
 | `inh_registered_base` | `blender-registered-base`: an operator, panel, menu, UI list and node registered together with a subclass, in both orders; a `PropertyGroup` chain (no error). Its probes confirm which classes break |
 | `inh_inherited_idname` | `blender-duplicate-registration` and `blender-registered-base`: a child without its own `bl_idname` replaces the parent (unregister fails) |
 | `inh_mixins` | mixins before and after the base, a mixin of a mixin, untyped plain mixins, a Blender-based intermediate base; `blender-mixin-order` for `Operator.as_keywords`, `Menu.append` and `Node.poll`. Its probes confirm which method wins |
-| `inh_bases` | `blender-invalid-base` for two Blender bases; in `check_inh_bases.py` unregistrable bases (the stubs already reject them: `invalid-argument-type`), an `ABC` mixin (`conflicting-metaclass`) and a `__slots__` mixin (`instance-layout-conflict`) |
-| `inh_overrides` | every Operator callback, Panel, Menu, Header, UIList, NodeTree, NodeSocket and Node callbacks without annotations; renamed, partly annotated, `*args`, keyword-only and `**kwargs` variants; `draw_item` with 7 and 10 parameters |
+| `inh_bases` | `blender-invalid-base` for two Blender bases; in `check_inh_bases.py` unregistrable bases (the stubs already reject them: `invalid-argument-type`), an `ABC` mixin (`conflicting-metaclass`) and a `__slots__` mixin (`instance-layout-conflict`), reported on that class only, not on its subclasses |
+| `inh_overrides` | every Operator callback, Panel, Menu, Header, UIList, NodeTree, NodeSocket and Node callbacks without annotations; renamed, partly annotated, `*args`, keyword-only and `**kwargs` variants; `draw_item` with 7 and 10 parameters; a callback behind a decorator other than `classmethod` / `staticmethod` (not checked); in `check_inh_overrides.py`, `self.layout` in a `draw` with a renamed `self` and through `layout = self.layout`, and another panel's `layout` (may be `None`) |
 | `inh_override_types` | incompatible annotations (`invalid-method-override`), compatible ones (no error), unannotated returns Blender cannot convert (`invalid-return-type`), `poll` returning any value |
 | `generated/inh_invalid_*` | `blender-invalid-override` and `blender-missing-callback`: one add-on per class Blender rejects (18 cases: wrong parameter counts, `poll`/`description` not a classmethod, a classmethod `execute`, `draw_item` with 6 or 11 parameters, `draw`/`draw_header` with an extra parameter, `Panel`/`Menu`/`Header`/`NodeSocket` without `draw`), from `scripts/feature_generators/inheritance.py`. Each fails at register with the error its `runtime.toml` names |
 
@@ -92,7 +92,11 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
   gets the parent's types.
 - Where Blender rejects an override, `blender-invalid-override` replaces ty's own `invalid-method-override`
   (fewer or more positional parameters, a missing classmethod or a wrong one). The renamed parameters and the short
-  `draw_item` that ty reports as `invalid-method-override` are no error.
+  `draw_item` that ty reports as `invalid-method-override` are no error. A `def` with any other decorator than
+  `classmethod` / `staticmethod` is neither checked nor typed: Blender gets what the decorator returns.
+- `self.layout` (the draw callback's first parameter, whatever its name) is `UILayout` in `Panel.draw` /
+  `draw_header` / `draw_header_preset`, `Menu.draw`, `Header.draw` and `Operator.draw`; another instance's
+  `layout` keeps the stubs' `UILayout | None`.
 - `blender-missing-callback` on the class line of a registered `Panel`, `Menu`, `Header` or `NodeSocket` without
   `draw`.
 - `blender-mixin-order` on the class line when a base listed after the Blender base defines a name that the Blender

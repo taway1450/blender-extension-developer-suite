@@ -9,11 +9,11 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | addon_discovery | 17/17 | 8/8 | 3/3 | - | 0 |
 | addon_preferences | 11/11 | 5/5 | 10/10 | 3/3 | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
-| inheritance | 62/62 | 42/42 | 12/12 | 3/3 | 0 |
+| inheritance | 64/64 | 45/45 | 13/13 | 3/3 | 0 |
 | operator_calls | 22/22 | 30/30 | 4/4 | 4/4 | 0 |
 | operator_properties | 45/45 | 9/9 | 7/7 | 5/5 | 0 |
 | properties | 421/421 | 101/101 | 5/5 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 40/40 | 4/4 | 3/3 | 3/3 | 0 |
 | registration_checks | 9/9 | 37/37 | 10/10 | - | 0 |
-| **total** | 797/797 | 283/283 | 66/66 | 35/35 | 0 |
+| **total** | 799/799 | 286/286 | 67/67 | 35/35 | 0 |

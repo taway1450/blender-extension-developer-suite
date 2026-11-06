@@ -38,7 +38,7 @@ class AbcMixin(ABC):
     pass
 
 
-class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: fake-bpy-module's and Blender 5.2's stubs do not declare Blender's metaclass
+class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass]  # oracle-skip: fake-bpy-module's and Blender 5.2's stubs do not declare Blender's metaclass
     """TypeError: metaclass conflict (Operator's metaclass is bpy's _RNAMeta)."""
 
 
@@ -46,5 +46,13 @@ class SlotsMixin:
     __slots__ = ("value",)
 
 
-class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
+class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict]  # oracle-skip: the stubs do not declare the C struct layout
     """TypeError: multiple bases have instance lay-out conflict."""
+
+
+class WithAbcSubclass(WithAbc):  # ty: ignore[blender-unregistered-class]
+    """Never created: Python raises on WithAbc, whose own bases conflict."""
+
+
+class WithSlotsSubclass(WithSlots):  # ty: ignore[blender-unregistered-class]
+    """Never created: Python raises on WithSlots, whose own bases conflict."""

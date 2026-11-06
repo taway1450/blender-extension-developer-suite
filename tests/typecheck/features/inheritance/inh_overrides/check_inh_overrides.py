@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal, TypeAlias, assert_type
 
-from bpy.types import Context, Event, UILayout
+from bpy.types import Context, Event, Panel, UILayout
 
 from . import INH_OVERRIDES_MT_menu, INH_OVERRIDES_Node, INH_OVERRIDES_OT_all, INH_OVERRIDES_OT_variants, INH_OVERRIDES_UL_short
 
@@ -39,3 +39,15 @@ def node(node: INH_OVERRIDES_Node, context: Context, layout: UILayout) -> None:
     assert_type(node.draw_label(), str)
     node.draw_buttons(context, layout)
     node.draw_buttons(context, 1)  # ty: ignore[invalid-argument-type]
+
+
+OTHER_PANELS: list[Panel] = []
+
+
+class CheckLayoutPanel(Panel):  # ty: ignore[blender-unregistered-class]
+    def draw(this, context):  # the first parameter, whatever its name, is the panel being drawn
+        assert_type(this.layout, UILayout)  # oracle-skip: a class defined in the check file
+        layout = this.layout
+        assert_type(layout, UILayout)  # oracle-skip: a class defined in the check file
+        for other in OTHER_PANELS:
+            assert_type(other.layout, UILayout | None)  # bare-ok: another panel is not being drawn, so its layout may be None

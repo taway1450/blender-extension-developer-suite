@@ -4,7 +4,8 @@ accepts (keyword-only, *args after the required ones, **kwargs) keep their own t
 and UIList.draw_item may drop its last three parameters (Blender accepts 7 to 10 positional parameters there).
 The assert_type calls in the bodies are no-ops at runtime."""
 
-from typing import Any, assert_type
+from collections.abc import Callable
+from typing import Any, TypeVar, assert_type, cast
 
 import bpy
 from bpy.props import IntProperty
@@ -82,6 +83,25 @@ class INH_OVERRIDES_OT_variants(Operator):
 
     def cancel(self, context: "Context"):  # string annotation
         assert_type(context, Context)  # bare-ok: an explicit annotation wins over the parent's
+
+
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+def without_extra(function: F) -> F:
+    """Typed as giving back the method, but Blender registers the wrapper, which has two parameters."""
+    def wrapper(self, context):
+        return function(self, context, None)
+    return cast(F, wrapper)
+
+
+class INH_OVERRIDES_OT_decorated(Operator):
+    bl_idname = "inh_overrides.decorated"
+    bl_label = "Decorated callback"
+
+    @without_extra  # neither classmethod nor staticmethod: the def is not what Blender checks
+    def execute(self, context, extra=None):
+        return {"FINISHED"}
 
 
 class INH_OVERRIDES_PT_panel(Panel):
@@ -173,7 +193,7 @@ class INH_OVERRIDES_Node(Node):
         pass
 
 
-classes = (INH_OVERRIDES_OT_all, INH_OVERRIDES_OT_variants, INH_OVERRIDES_PT_panel, INH_OVERRIDES_MT_menu,
-           INH_OVERRIDES_HT_header, INH_OVERRIDES_UL_full, INH_OVERRIDES_UL_short, INH_OVERRIDES_Tree,
-           INH_OVERRIDES_Socket, INH_OVERRIDES_Node)
+classes = (INH_OVERRIDES_OT_all, INH_OVERRIDES_OT_variants, INH_OVERRIDES_OT_decorated, INH_OVERRIDES_PT_panel,
+           INH_OVERRIDES_MT_menu, INH_OVERRIDES_HT_header, INH_OVERRIDES_UL_full, INH_OVERRIDES_UL_short,
+           INH_OVERRIDES_Tree, INH_OVERRIDES_Socket, INH_OVERRIDES_Node)
 register, unregister = bpy.utils.register_classes_factory(classes)
