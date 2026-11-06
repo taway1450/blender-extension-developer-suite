@@ -50,6 +50,98 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips.new(), ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips[0], ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(strip, ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #2
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings)
+features/context_members/ctx_members/__init__.py | unresolved-attribute | scene = context.scene
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(scene, Scene)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #2
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager) #2
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData) #2
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #3
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #3
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #2
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #2
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(ctx.scene, Scene)  # a renamed context parameter
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(ctx.scene, Scene)  # a renamed context parameter
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #3
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences) #3
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager) #3
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager) #3
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData) #3
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData) #3
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #4
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #4
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #3
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer) #3
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #3
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings) #3
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #4
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences) #4
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager) #4
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager) #4
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData) #4
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData) #4
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #5
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #5
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #4
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer) #4
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #4
+features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings) #4
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D) #2
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D) #2
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area)
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area)
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.region, Region)
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region)
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | space = context.space_data
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(space.shading, bpy.types.View3DShading)
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(space.shading, bpy.types.View3DShading)
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceImageEditor)  # bl_space_type from a base
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceImageEditor)  # bl_space_type from a base
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceProperties)
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceProperties)
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area) #2
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area) #2
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.region, Region) #2
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region) #2
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, Space)  # the top bar has no Space subclass
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space)  # the top bar has no Space subclass
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area) #3
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area) #3
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D) #3
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D) #3
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area) #4
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area) #4
+features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.region, Region) #3
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region) #3
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: a menu opens from any editor
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: a menu opens from any editor
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: a list is drawn in any layout
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an operator runs from anywhere, or in --background
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
+features/context_members/ctx_spaces/__init__.py | unresolved-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value

@@ -11,6 +11,7 @@ root = [
     "features/api_types",
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
+    "features/context_members",
     "features/inheritance",
     "features/inheritance/generated",
     "features/operator_calls",

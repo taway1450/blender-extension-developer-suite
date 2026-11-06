@@ -1,0 +1,4 @@
+[[probe]]
+code = "bpy.ops.ctx_spaces.run() == {'FINISHED'}"
+expect = true
+reason = "an operator run in --background has no editor: context.space_data is None"

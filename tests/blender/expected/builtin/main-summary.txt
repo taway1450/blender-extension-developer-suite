@@ -1,14 +1,14 @@
 # check:blender main, builtin stubs, Blender d4ab3d704e
 bucket            shipped  presets    other    total
-context-member       2403      277     1113     3793
-pointer-none         1871       88     1196     3155
-type-tag              958       60      442     1460
-stub-gap              535        0      224      759
+context-member        757      277     1066     2100
+pointer-none         2027       88     1196     3311
+type-tag              955       60      442     1457
+stub-gap              537        0      224      761
 operator-call          89        0      183      272
-check-setup           164       12      108      284
+check-setup           114       12      108      234
 dynamic               588        0      199      787
-rest                 1306       12     1116     2434
-total                7914      449     4581    12944
+rest                 1299       12     1117     2428
+total                6366      449     4535    11350
 
 rule                                 count
 blender-invalid-idname                   1
@@ -22,8 +22,8 @@ deprecated                              15
 empty-body                              32
 import-not-found                       205
 index-out-of-bounds                      2
-invalid-argument-type                 2258
-invalid-assignment                    1092
+invalid-argument-type                 1882
+invalid-assignment                    1044
 invalid-attribute-override              70
 invalid-base                             4
 invalid-context-manager                 21
@@ -44,7 +44,7 @@ possibly-missing-submodule               4
 redundant-condition                     12
 too-many-positional-arguments          211
 unknown-argument                        34
-unresolved-attribute                  8240
+unresolved-attribute                  7070
 unresolved-global                       38
 unresolved-reference                    73
 unsupported-operator                    90

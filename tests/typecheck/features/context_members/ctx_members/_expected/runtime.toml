@@ -1,0 +1,4 @@
+[[probe]]
+code = "bpy.ops.ctx_members.run() == {'FINISHED'}"
+expect = true
+reason = "Blender fills the guaranteed members when it calls execute, also in --background"
