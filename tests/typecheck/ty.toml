@@ -8,6 +8,7 @@
 root = [
     "features/addon_discovery",
     "features/addon_preferences",
+    "features/api_types",
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
     "features/inheritance",

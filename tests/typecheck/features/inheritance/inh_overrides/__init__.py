@@ -126,14 +126,14 @@ class INH_OVERRIDES_MT_menu(Menu):
     bl_label = "Overrides"
 
     def draw(self, context):
-        assert_type(context, Context | None)  # the stubs' type for Menu.draw
+        assert_type(context, Context)
 
 
 class INH_OVERRIDES_HT_header(Header):
     bl_space_type = "VIEW_3D"
 
     def draw(self, context):
-        assert_type(context, Context | None)
+        assert_type(context, Context)
 
 
 class INH_OVERRIDES_UL_full(UIList):

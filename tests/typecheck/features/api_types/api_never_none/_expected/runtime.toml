@@ -1,0 +1,9 @@
+[[probe]]
+code = "(lambda scene: all(x is not None for x in (scene.view_settings, scene.eevee, scene.render.ffmpeg, scene.tool_settings.image_paint, bpy.data.cameras.new('api_never_none').dof)))(bpy.data.scenes.new('api_never_none'))"
+expect = true
+reason = "pointers to structs embedded by value are set on new data"
+
+[[probe]]
+code = "(lambda scene, ob: all(x is None for x in (scene.tool_settings.sculpt, ob.pose, ob.animation_data)))(bpy.data.scenes.new('api_never_none'), bpy.data.objects.new('api_never_none', None))"
+expect = true
+reason = "DNA pointers are None on new data"

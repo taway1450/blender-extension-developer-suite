@@ -3,6 +3,23 @@
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | if context.preferences is not None:
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context)
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #2
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #3
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #4
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #5
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #6
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(camera.dof, CameraDOFSettings)  # bare-ok: a stub fact: the struct is a member of Camera
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.view_settings, ColorManagedViewSettings)  # bare-ok: a stub fact: the struct is a member of Scene
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.eevee, SceneEEVEE)  # bare-ok: a stub fact: the struct is a member of Scene
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(render.ffmpeg, FFmpegSettings)  # bare-ok: a stub fact: the struct is a member of RenderSettings
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tool_settings.image_paint, ImagePaint)  # bare-ok: a stub fact: the struct is a member of ToolSettings
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | header.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ui_list.draw_filter(None, layout)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
@@ -26,14 +43,16 @@ features/inheritance/inh_overrides/__init__.py | invalid-method-override | def c
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #2
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #3
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #13
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(node, Node)
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #14
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #15
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #16
+features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #17
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
 features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | layout.label(text=item.name)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
