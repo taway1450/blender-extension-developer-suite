@@ -110,5 +110,5 @@ check the cause, which the UI probes showed to stop every callback.
 
 The oracle cannot check the bodies of the overrides (stock ty types the parameters as `Unknown`), so the
 `assert_type` calls there are only judged by check:features; `check_inh_overrides.py` checks the call sites
-against reference stubs with explicit signatures. The `ABC` and `__slots__` cases are `oracle-skip`: the stubs
-declare neither Blender's metaclass nor the C layout.
+against reference stubs with explicit signatures. The `ABC` and `__slots__` cases are `oracle-skip`: no stubs
+declare the C layout, and only the builtin stubs of `main` declare Blender's metaclass (`_RNAMeta`).

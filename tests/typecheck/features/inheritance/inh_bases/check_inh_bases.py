@@ -38,7 +38,7 @@ class AbcMixin(ABC):
     pass
 
 
-class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: the stubs do not declare Blender's metaclass
+class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: fake-bpy-module's and Blender 5.2's stubs do not declare Blender's metaclass
     """TypeError: metaclass conflict (Operator's metaclass is bpy's _RNAMeta)."""
 
 
