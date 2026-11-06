@@ -163,120 +163,15 @@ features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.u
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor = 0.5
 features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator("object.select_all").action = "SELECT"
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("opprops_idnames.step").factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("opprops_idnames.step").factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("OPPROPS_IDNAMES_OT_step").factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("OPPROPS_IDNAMES_OT_step").factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(STEP_IDNAME).factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator(STEP_IDNAME).factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(f"{CATEGORY}.step").factor, float)  # oracle-skip: stock ty does not evaluate f-strings
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator(f"{CATEGORY}.step").factor, float)  # oracle-skip: stock ty does not evaluate f-strings
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("object.select_all").action, Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"])
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("object.select_all").action, Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"])
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("OBJECT_OT_select_all").action, Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"])
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("OBJECT_OT_select_all").action, Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"])
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("mesh.primitive_cube_add").size, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("mesh.primitive_cube_add").size, float)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("mesh.primitive_cube_add").calc_uvs, bool)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | assert_type(layout.operator("mesh.primitive_cube_add").calc_uvs, bool)
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unresolved-attribute | layout.operator("object.select_all").action = "NOPE"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | layout.operator("object.select_all").action = "NOPE"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | ignore-comment-unknown-rule | layout.operator("opprops_idnames.missing")  # ty: ignore[blender-unknown-operator]
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | ignore-comment-unknown-rule | layout.operator("opprops_sinks.step")  # ty: ignore[blender-unknown-operator]
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | self.properties.amount += 1
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.step").amount = 1
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("OPPROPS_SINKS_OT_step", text="Other form").mode = "B"
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_menu_enum("opprops_sinks.step", "mode").label = "menu"
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator_enum("opprops_sinks.step", "mode")
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | layout.operator("opprops_sinks.bare")
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
-features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | OPPROPS_SINKS_OT_combo.define("OPPROPS_SINKS_OT_step").properties.amount = 2
 features/operator_properties/opprops_sinks/__init__.py | unresolved-attribute | keyconfig = bpy.context.window_manager.keyconfigs.addon
-features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | item.properties.amount = 3
-features/operator_properties/opprops_sinks/__init__.py | invalid-assignment | item.properties.mode = "B"
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"])
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"])
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]])
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]])
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | props.amount = 2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | props.amount = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.amount = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | props.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | props.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.operator("OPPROPS_SINKS_OT_step", text="Step", icon="ADD").amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(layout.operator("OPPROPS_SINKS_OT_step", text="Step", icon="ADD").amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #2
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.operator_menu_enum("opprops_sinks.step", "mode").amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(layout.operator_menu_enum("opprops_sinks.step", "mode").amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | layout.operator_enum("opprops_sinks.step", "amount")  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | layout.operator_menu_enum("opprops_sinks.step", "missing")  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #3
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #4
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #5
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #6
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #7
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.mode, Literal["A", "B"]) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.label, str) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | unused-ignore-comment | {"properties": [("amount", "1")]}),  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | unused-ignore-comment | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | unused-ignore-comment | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
 features/properties/generated/props_pointer/check_props_pointer.py | not-subscriptable | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items.add(), PROPS_POINTER_Item)
@@ -290,8 +185,6 @@ features/properties/props_callbacks/__init__.py | invalid-assignment | self["rat
 features/properties/props_defaults/__init__.py | invalid-argument-type | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
-features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | assert_type(op.properties.value, int)
-features/properties/props_hosts/check_props_hosts.py | unresolved-attribute | assert_type(op.properties.value, int)
 features/properties/props_registered/check_props_registered.py | not-subscriptable | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
 features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
 features/registration/reg_autoload/panels.py | unresolved-attribute | self.layout.operator("reg_autoload.panel_helper")
