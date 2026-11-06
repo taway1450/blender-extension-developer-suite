@@ -71,7 +71,7 @@ def test_directory_that_is_not_a_checkout_is_an_error(repo):
         tree_revision(repo / "submodule", "src")
 
 
-MARKER ="blender=b.exe\nsource=s\ncommit=abc\ngenerator_rev=def+dirty.123\n"
+MARKER = "blender=b.exe\nsource=s\ncommit=abc\ngenerator_rev=def+dirty.123\n"
 
 
 def test_marker_matching_commit_and_generator_is_current():
