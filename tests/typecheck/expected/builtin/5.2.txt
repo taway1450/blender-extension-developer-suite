@@ -1,10 +1,6 @@
 # Feature-test results that are not passes, builtin stubs, Blender 5.2.
 # `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_discovery/disc_register_factory/check_disc_register_factory.py | type-assertion-failure | assert_type(bpy.ops.disc_register_factory.run(count=1),
-features/addon_discovery/disc_register_factory/check_disc_register_factory.py | unresolved-attribute | assert_type(bpy.ops.disc_register_factory.run(count=1),
-features/addon_discovery/disc_register_factory/check_disc_register_factory.py | unresolved-attribute | bpy.ops.disc_register_factory.run(count="1")  # ty: ignore[invalid-argument-type]
-features/addon_discovery/disc_register_factory/check_disc_register_factory.py | unused-ignore-comment | bpy.ops.disc_register_factory.run(count="1")  # ty: ignore[invalid-argument-type]
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = "not_this_addon"  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | class PREFS_BAD_Missing(AddonPreferences):  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
@@ -31,62 +27,6 @@ features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attri
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_LEGACY_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_assigned_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unresolved-attribute | bpy.ops.sym_assigned_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_assigned_alias/check_sym_assigned_alias.py | unused-ignore-comment | bpy.ops.sym_assigned_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | type-assertion-failure | assert_type(bpy.ops.sym_dotted.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | assert_type(bpy.ops.sym_dotted.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unresolved-attribute | bpy.ops.sym_dotted.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_dotted/check_sym_dotted.py | unused-ignore-comment | bpy.ops.sym_dotted.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | type-assertion-failure | assert_type(bpy.ops.sym_from_bpy.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | assert_type(bpy.ops.sym_from_bpy.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unresolved-attribute | bpy.ops.sym_from_bpy.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_bpy/check_sym_from_bpy.py | unused-ignore-comment | bpy.ops.sym_from_bpy.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_from_bpy_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_from_bpy_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unresolved-attribute | bpy.ops.sym_from_bpy_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_bpy_alias/check_sym_from_bpy_alias.py | unused-ignore-comment | bpy.ops.sym_from_bpy_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | type-assertion-failure | assert_type(bpy.ops.sym_from_import.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | assert_type(bpy.ops.sym_from_import.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unresolved-attribute | bpy.ops.sym_from_import.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_import/check_sym_from_import.py | unused-ignore-comment | bpy.ops.sym_from_import.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_from_import_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_from_import_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unresolved-attribute | bpy.ops.sym_from_import_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_from_import_alias/check_sym_from_import_alias.py | unused-ignore-comment | bpy.ops.sym_from_import_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | type-assertion-failure | assert_type(bpy.ops.sym_module_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | assert_type(bpy.ops.sym_module_alias.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unresolved-attribute | bpy.ops.sym_module_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_module_alias/check_sym_module_alias.py | unused-ignore-comment | bpy.ops.sym_module_alias.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | type-assertion-failure | assert_type(bpy.ops.sym_module_assigned.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | assert_type(bpy.ops.sym_module_assigned.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unresolved-attribute | bpy.ops.sym_module_assigned.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_module_assigned/check_sym_module_assigned.py | unused-ignore-comment | bpy.ops.sym_module_assigned.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | type-assertion-failure | assert_type(bpy.ops.sym_nested_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | assert_type(bpy.ops.sym_nested_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unresolved-attribute | bpy.ops.sym_nested_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_nested_reexport/check_sym_nested_reexport.py | unused-ignore-comment | bpy.ops.sym_nested_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unresolved-attribute | bpy.ops.sym_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport/check_sym_reexport.py | unused-ignore-comment | bpy.ops.sym_reexport.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport_module.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport_module.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unresolved-attribute | bpy.ops.sym_reexport_module.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport_module/check_sym_reexport_module.py | unused-ignore-comment | bpy.ops.sym_reexport_module.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | type-assertion-failure | assert_type(bpy.ops.sym_reexport_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | assert_type(bpy.ops.sym_reexport_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unresolved-attribute | bpy.ops.sym_reexport_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_reexport_star/check_sym_reexport_star.py | unused-ignore-comment | bpy.ops.sym_reexport_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_star/check_sym_star.py | type-assertion-failure | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | assert_type(bpy.ops.sym_star.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unresolved-attribute | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_star/check_sym_star.py | unused-ignore-comment | bpy.ops.sym_star.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | type-assertion-failure | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | assert_type(bpy.ops.sym_submodule.run(factor=1.0), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unresolved-attribute | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/generated/sym_submodule/check_sym_submodule.py | unused-ignore-comment | bpy.ops.sym_submodule.run(factor="x")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):
@@ -109,7 +49,7 @@ features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | type-assertion-fai
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | assert_type(bpy.ops.sym_bpy_extras.import_file(filepath="a.txt", axis_up="Z"), set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]])
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unused-ignore-comment | bpy.ops.sym_bpy_extras.import_file(axis_up="W")  # ty: ignore[invalid-argument-type]
-features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | unresolved-attribute | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
+features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | no-matching-overload | bpy.ops.sym_bpy_extras.export_file(filepath="a.txt", check_existing=False)
 features/bpy_symbols/sym_handlers/check_sym_handlers.py | unused-ignore-comment | on_load_post(1)  # ty: ignore[missing-argument]  # bare-ok: persistent is an identity decorator in the stubs
 features/bpy_symbols/sym_mathutils/__init__.py | invalid-argument-type | transform: FloatVectorProperty(subtype="MATRIX", size=(4, 4), default=Matrix.Identity(4))
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
@@ -144,15 +84,7 @@ features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | clas
 features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.leaf")
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.sibling")
-features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
-features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[no-matching-overload]
-features/inheritance/inh_chains/check_inh_chains.py | unused-ignore-comment | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[no-matching-overload]
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
-features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | type-assertion-failure | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
-features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | unresolved-attribute | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_OT_keywords_last(Operator, KeywordsMixin):  # ty: ignore[blender-mixin-order]
@@ -160,20 +92,6 @@ features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | clas
 features/inheritance/inh_mixins/__init__.py | invalid-method-override | class INH_MIXINS_NodeFirst(TreePollMixin, Node):
 features/inheritance/inh_mixins/__init__.py | ignore-comment-unknown-rule | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
 features/inheritance/inh_mixins/__init__.py | invalid-method-override | class INH_MIXINS_NodeLast(Node, TreePollMixin):  # ty: ignore[blender-mixin-order]
-features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.first(count=1, label="x"), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.first(count=1, label="x"), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.last(count=1, label="x"), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.last(count=1, label="x"), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.based(count=1), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.based(count=1), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | bpy.ops.inh_mixins.based(label="x")  # ty: ignore[no-matching-overload]
-features/inheritance/inh_mixins/check_inh_mixins.py | unused-ignore-comment | bpy.ops.inh_mixins.based(label="x")  # ty: ignore[no-matching-overload]
-features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.poll_last(), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.poll_last(), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.keywords_first(), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.keywords_first(), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.keywords_last(), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.keywords_last(), Result)
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return {"DONE"}  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return "FINISHED"  # ty: ignore[invalid-return-type]
 features/inheritance/inh_override_types/__init__.py | unused-ignore-comment | return ["FINISHED"]  # ty: ignore[invalid-return-type]
@@ -241,149 +159,8 @@ features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | se
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_MT_child(INH_REGISTERED_BASE_MT_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_UL_child(INH_REGISTERED_BASE_UL_parent):  # ty: ignore[blender-registered-base]
 features/inheritance/inh_registered_base/__init__.py | ignore-comment-unknown-rule | class INH_REGISTERED_BASE_NodeChild(INH_REGISTERED_BASE_NodeParent):  # ty: ignore[blender-registered-base]
-features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.parent(count=1), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.parent(count=1), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.child(count=1), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.child(count=1), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.late_parent(), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.late_parent(), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
-features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
-features/operator_calls/opcall_basic/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
-features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
-features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | group: PointerProperty(type=OPCALL_BASIC_IdGroup)  # ty: ignore[blender-invalid-operator-property]
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(), Result)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all(), Result)
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.empty(), Result)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.empty(), Result)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("INVOKE_DEFAULT")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("INVOKE_REGION_WIN")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("INVOKE_REGION_CHANNELS")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("INVOKE_REGION_PREVIEW")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("INVOKE_AREA")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("INVOKE_SCREEN")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_REGION_WIN")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_REGION_CHANNELS")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_REGION_PREVIEW")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_AREA")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_SCREEN")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", False, int_value=1)
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(False), Result)  # the undo flag alone
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all(False), Result)  # the undo flag alone
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(True, int_value=1)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | stored = bpy.ops.opcall_basic.all
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(stored(int_value=1), Result)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(True, "EXEC_DEFAULT")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(True, "EXEC_DEFAULT")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(int_value=1, float_value=1.5, bool_value=True, string_value="text")
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(float_value=1)  # an int is a float
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(enum_value="B", flag_value={"A", "B"})
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(flag_value=set())
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(dynamic_value="anything")  # the items are only known when the operator runs
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(vector_value=(1.0, 2.0, 3.0), int_vector_value=[1, 2], bool_vector_value=(True, False))
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(vector_value=vector)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(matrix_value=((1.0, 0.0), (0.0, 1.0)))
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(matrix_value=matrix)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(group_value={"count": 3})
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(group_value={})
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(items_value=[{"name": "a", "count": 1}, {"name": "b", "count": 2}])
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(items_value=[])
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(hidden_value=1)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(int_value=1.5)  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(int_value=1.5)  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(int_value="1")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(int_value="1")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(string_value=1)  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(string_value=1)  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(enum_value="C")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(enum_value="C")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(flag_value="A")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(flag_value="A")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(flag_value=["A"])  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(flag_value=["A"])  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(flag_value={"C"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(flag_value={"C"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(vector_value="abc")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(vector_value="abc")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(matrix_value=(1.0, 0.0, 0.0, 1.0))  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(matrix_value=(1.0, 0.0, 0.0, 1.0))  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(group_value={"count": "3"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(group_value={"count": "3"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(items_value=[{"count": 1}])  # ty: ignore[invalid-argument-type, missing-typed-dict-key]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(items_value=[{"count": 1}])  # ty: ignore[invalid-argument-type, missing-typed-dict-key]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(before=1)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped_group(before=1)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped_group(group={})  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped_group(group={})  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped_group(after=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped_group(after=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.poll(), bool)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.poll(), bool)
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.poll("EXEC_DEFAULT"), bool)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.poll("EXEC_DEFAULT"), bool)
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.idname(), Literal["OPCALL_BASIC_OT_all"])
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.idname(), Literal["OPCALL_BASIC_OT_all"])
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.idname_py(), Literal["opcall_basic.all"])
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.idname_py(), Literal["opcall_basic.all"])
-features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.get_rna_type(), Struct)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.get_rna_type(), Struct)
-features/operator_calls/opcall_category/check_opcall_category.py | type-assertion-failure | assert_type(bpy.ops.object.opcall_category_scale(factor=2.0), Result)
-features/operator_calls/opcall_category/check_opcall_category.py | unresolved-attribute | assert_type(bpy.ops.object.opcall_category_scale(factor=2.0), Result)
-features/operator_calls/opcall_category/check_opcall_category.py | type-assertion-failure | assert_type(bpy.ops.object.opcall_category_scale.idname(), Literal["OBJECT_OT_opcall_category_scale"])
-features/operator_calls/opcall_category/check_opcall_category.py | unresolved-attribute | assert_type(bpy.ops.object.opcall_category_scale.idname(), Literal["OBJECT_OT_opcall_category_scale"])
-features/operator_calls/opcall_category/check_opcall_category.py | unresolved-attribute | bpy.ops.object.opcall_category_scale(factor="2")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_category/check_opcall_category.py | unused-ignore-comment | bpy.ops.object.opcall_category_scale(factor="2")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_category/check_opcall_category.py | type-assertion-failure | assert_type(bpy.ops.opcall_category.first(), Result)
-features/operator_calls/opcall_category/check_opcall_category.py | unresolved-attribute | assert_type(bpy.ops.opcall_category.first(), Result)
-features/operator_calls/opcall_category/check_opcall_category.py | type-assertion-failure | assert_type(bpy.ops.opcall_category.second(), Result)
-features/operator_calls/opcall_category/check_opcall_category.py | unresolved-attribute | assert_type(bpy.ops.opcall_category.second(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-assertion-failure | assert_type(bpy.ops.opcall_idname_forms.constant(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.constant(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-assertion-failure | assert_type(bpy.ops.opcall_idname_forms.concat(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.concat(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-assertion-failure | assert_type(bpy.ops.opcall_idname_forms.fstring(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.fstring(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-assertion-failure | assert_type(bpy.ops.opcall_idname_forms.fstring_copy(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.fstring_copy(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | type-assertion-failure | assert_type(bpy.ops.opcall_idname_forms.from_mixin(), Result)
-features/operator_calls/opcall_idname_forms/check_opcall_idname_forms.py | unresolved-attribute | assert_type(bpy.ops.opcall_idname_forms.from_mixin(), Result)
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | type-assertion-failure | assert_type(bpy.ops.opcall_inherit.derived(count=1, size=2.0, mode="text", label="x"), Result)
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | assert_type(bpy.ops.opcall_inherit.derived(count=1, size=2.0, mode="text", label="x"), Result)
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.derived(mode=1)  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.derived(mode=1)  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | type-assertion-failure | assert_type(bpy.ops.opcall_inherit.base(size=1.0, mode=1), Result)
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | assert_type(bpy.ops.opcall_inherit.base(size=1.0, mode=1), Result)
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
-features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo(), Result)
-features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | assert_type(bpy.ops.opcall_macro.combo(), Result)
-features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": 2}, OPCALL_MACRO_OT_label={"text": "x"})
-features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": "2"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_macro/check_opcall_macro.py | unused-ignore-comment | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": "2"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_macro/check_opcall_macro.py | unused-ignore-comment | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[no-matching-overload]
-features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo.idname(), Literal["OPCALL_MACRO_OT_combo"])
-features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | assert_type(bpy.ops.opcall_macro.combo.idname(), Literal["OPCALL_MACRO_OT_combo"])
 features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor = 0.5
 features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator("object.select_all").action = "SELECT"
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator("opprops_idnames.step").factor, float)
@@ -446,8 +223,8 @@ features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-asserti
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #2
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.operator_menu_enum("opprops_sinks.step", "mode").amount, int)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(layout.operator_menu_enum("opprops_sinks.step", "mode").amount, int)
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | ignore-comment-unknown-rule | layout.operator_enum("opprops_sinks.step", "amount")  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks.py | ignore-comment-unknown-rule | layout.operator_menu_enum("opprops_sinks.step", "missing")  # ty: ignore[blender-invalid-operator-property]
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | layout.operator_enum("opprops_sinks.step", "amount")  # ty: ignore[blender-invalid-operator-property]
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | unused-ignore-comment | layout.operator_menu_enum("opprops_sinks.step", "missing")  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.amount, int) #3
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.amount, int) #3
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.mode, Literal["A", "B"]) #3
@@ -496,9 +273,9 @@ features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-asserti
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.label, str) #8
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(props.flags, set[Literal["A", "B"]]) #8
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | unresolved-attribute | assert_type(props.flags, set[Literal["A", "B"]]) #8
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("amount", "1")]}),  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
-features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
+features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | unused-ignore-comment | {"properties": [("amount", "1")]}),  # ty: ignore[blender-invalid-operator-property]
+features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | unused-ignore-comment | {"properties": [("mode", "C")]}),  # ty: ignore[blender-invalid-operator-property]
+features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | unused-ignore-comment | {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
 features/operator_properties/opprops_sinks/check_opprops_sinks_tool.py | ignore-comment-unknown-rule | ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
 features/properties/generated/props_pointer/check_props_pointer.py | not-subscriptable | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_items, bpy_prop_collection_idprop[PROPS_POINTER_Item])
@@ -510,10 +287,6 @@ features/properties/generated/props_pointer/check_props_pointer.py | not-subscri
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner, bpy_prop_collection_idprop[PROPS_POINTER_Inner])
 features/properties/generated/props_pointer/check_props_pointer.py | type-assertion-failure | assert_type(s.c_inner.add().value, int)
 features/properties/props_callbacks/__init__.py | invalid-assignment | self["ratio"] = value
-features/properties/props_data_blocks/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
-features/properties/props_data_blocks/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
-features/properties/props_data_blocks/__init__.py | blender-invalid-property | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property] #2
-features/properties/props_data_blocks/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property] #2
 features/properties/props_defaults/__init__.py | invalid-argument-type | matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
@@ -521,102 +294,10 @@ features/properties/props_hosts/check_props_hosts.py | type-assertion-failure | 
 features/properties/props_hosts/check_props_hosts.py | unresolved-attribute | assert_type(op.properties.value, int)
 features/properties/props_registered/check_props_registered.py | not-subscriptable | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
 features/properties/props_registered/check_props_registered.py | type-assertion-failure | assert_type(scene.reg_items, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
-features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.first(), Result)
-features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.first(), Result)
-features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.second(), Result)
-features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.second(), Result)
-features/registration/reg_autoload/check_reg_autoload.py | type-assertion-failure | assert_type(bpy.ops.reg_autoload.panel_helper(), Result)
-features/registration/reg_autoload/check_reg_autoload.py | unresolved-attribute | assert_type(bpy.ops.reg_autoload.panel_helper(), Result)
 features/registration/reg_autoload/panels.py | unresolved-attribute | self.layout.operator("reg_autoload.panel_helper")
 features/registration/reg_conditional/__init__.py | unresolved-attribute | if cls.is_registered:
-features/registration/reg_conditional/check_reg_conditional.py | type-assertion-failure | assert_type(bpy.ops.reg_conditional.version(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.version(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | type-assertion-failure | assert_type(bpy.ops.reg_conditional.module_version(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.module_version(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | type-assertion-failure | assert_type(bpy.ops.reg_conditional.try_block(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.try_block(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | type-assertion-failure | assert_type(bpy.ops.reg_conditional.hasattr(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.hasattr(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | type-assertion-failure | assert_type(bpy.ops.reg_conditional.environment(), Result)
-features/registration/reg_conditional/check_reg_conditional.py | unresolved-attribute | assert_type(bpy.ops.reg_conditional.environment(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.helper(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.helper(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.nested(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.nested(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.module_call(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.module_call(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.module_loop_a(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.module_loop_a(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.module_loop_b(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.module_loop_b(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.function_loop(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.function_loop(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | type-assertion-failure | assert_type(bpy.ops.reg_delegation.static_method(), Result)
-features/registration/reg_delegation/check_reg_delegation.py | unresolved-attribute | assert_type(bpy.ops.reg_delegation.static_method(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.dotted(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | assert_type(bpy.ops.reg_explicit.dotted(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.imported(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | assert_type(bpy.ops.reg_explicit.imported(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | type-assertion-failure | assert_type(bpy.ops.reg_explicit.alias(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | assert_type(bpy.ops.reg_explicit.alias(), Result)
-features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | bpy.ops.reg_explicit.dotted(count=2)
-features/registration/reg_explicit/check_reg_explicit.py | unresolved-attribute | bpy.ops.reg_explicit.dotted(count="2")  # ty: ignore[invalid-argument-type]
-features/registration/reg_explicit/check_reg_explicit.py | unused-ignore-comment | bpy.ops.reg_explicit.dotted(count="2")  # ty: ignore[invalid-argument-type]
-features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_factory.first(), Result)
-features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_factory.first(), Result)
-features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_factory.second(), Result)
-features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_factory.second(), Result)
-features/registration/reg_factory/check_reg_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_factory.tools(), Result)
-features/registration/reg_factory/check_reg_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_factory.tools(), Result)
 features/registration/reg_imports/__init__.py | unresolved-reference | importlib.reload(reloaded)
-features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.reloaded(), Result)
-features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.reloaded(), Result)
-features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.renamed(), Result)
-features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.renamed(), Result)
-features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.star(), Result)
-features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.star(), Result)
-features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.class_import(), Result)
-features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.class_import(), Result)
-features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.nested(), Result)
-features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.nested(), Result)
-features/registration/reg_imports/check_reg_imports.py | type-assertion-failure | assert_type(bpy.ops.reg_imports.lazy(), Result)
-features/registration/reg_imports/check_reg_imports.py | unresolved-attribute | assert_type(bpy.ops.reg_imports.lazy(), Result)
 features/registration/reg_loop/__init__.py | unsupported-operator | LIST_CLASSES += [REG_LOOP_OT_extended]
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.tuple(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.tuple(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.list(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.list(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.appended(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.appended(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.extended(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.extended(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.concat(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.concat(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.unpacked(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.unpacked(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.nested_a(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.nested_a(), Result)
-features/registration/reg_loop/check_reg_loop.py | type-assertion-failure | assert_type(bpy.ops.reg_loop.nested_b(), Result)
-features/registration/reg_loop/check_reg_loop.py | unresolved-attribute | assert_type(bpy.ops.reg_loop.nested_b(), Result)
-features/registration/reg_submodule_factory/check_reg_submodule_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_submodule_factory.module(), Result)
-features/registration/reg_submodule_factory/check_reg_submodule_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_submodule_factory.module(), Result)
-features/registration/reg_submodule_factory/check_reg_submodule_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_submodule_factory.package(), Result)
-features/registration/reg_submodule_factory/check_reg_submodule_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_submodule_factory.package(), Result)
-features/registration_checks/regchk_idname/check_regchk_idname.py | type-assertion-failure | assert_type(bpy.ops.regchk_idname.valid_name_2(), Result)
-features/registration_checks/regchk_idname/check_regchk_idname.py | unresolved-attribute | assert_type(bpy.ops.regchk_idname.valid_name_2(), Result)
-features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | type-assertion-failure | assert_type(bpy.ops.regchk_isolation_a.run(), Result)
-features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | unresolved-attribute | assert_type(bpy.ops.regchk_isolation_a.run(), Result)
-features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | type-assertion-failure | assert_type(bpy.ops.regchk_shared.tool(), Result)
-features/registration_checks/regchk_isolation_a/check_regchk_isolation_a.py | unresolved-attribute | assert_type(bpy.ops.regchk_shared.tool(), Result)
-features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | type-assertion-failure | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
-features/registration_checks/regchk_isolation_b/check_regchk_isolation_b.py | unresolved-attribute | assert_type(bpy.ops.regchk_isolation_b.run(), Result)
-features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.used(), Result)
-features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.used(), Result)
-features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
-features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.append(draw_menu)
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | unresolved-attribute | bpy.types.VIEW3D_MT_object.remove(draw_menu)
-features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | type-assertion-failure | assert_type(bpy.ops.regchk_unregistered.used(), Result)
-features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | assert_type(bpy.ops.regchk_unregistered.used(), Result)
-features/registration_checks/regchk_unregistered/check_regchk_unregistered.py | unresolved-attribute | bpy.ops.regchk_unregistered.used(steps=3)

@@ -19,7 +19,7 @@ def completion() -> None:
     #                      ^completion all
     bpy.ops.opcall_basic.all(int_v)
     #                             ^completion int_value=
-    bpy.ops.opcall_basic.dropped(a)
+    bpy.ops.opcall_basic.dropped(e)
     #                             ^completion before=
 
 

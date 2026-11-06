@@ -68,9 +68,25 @@ documentation:
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^signature @30 | bpy.ops.opcall_basic.all()
 
 ````text
-label: (...) -> Unknown
-active parameter: None
+label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: bool = ..., /, *, int_value: int = ..., float_value: float = ..., bool_value: bool = ..., string_value: str = ..., enum_value: Literal["A", "B"] = ..., flag_value: set[Literal["A", "B"]] = ..., dynamic_value: str = ..., vector_value: Sequence[float] | bpy_prop_array[float] | Vector = ..., int_vector_value: Sequence[int] | bpy_prop_array[int] = ..., bool_vector_value: Sequence[bool] | bpy_prop_array[bool] = ..., matrix_value: Sequence[Sequence[float]] | bpy_prop_array[bpy_prop_array[float]] | Matrix = ..., group_value: <TypedDict with items 'count', 'name'> = ..., items_value: Sequence[<TypedDict with items 'count', 'name'>] = ..., hidden_value: int = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+active parameter: 0
 parameters:
+- execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ...: (no documentation)
+- undo: bool = ...: (no documentation)
+- int_value: int = ...: (no documentation)
+- float_value: float = ...: (no documentation)
+- bool_value: bool = ...: (no documentation)
+- string_value: str = ...: (no documentation)
+- enum_value: Literal["A", "B"] = ...: (no documentation)
+- flag_value: set[Literal["A", "B"]] = ...: (no documentation)
+- dynamic_value: str = ...: (no documentation)
+- vector_value: Sequence[float] | bpy_prop_array[float] | Vector = ...: (no documentation)
+- int_vector_value: Sequence[int] | bpy_prop_array[int] = ...: (no documentation)
+- bool_vector_value: Sequence[bool] | bpy_prop_array[bool] = ...: (no documentation)
+- matrix_value: Sequence[Sequence[float]] | bpy_prop_array[bpy_prop_array[float]] | Matrix = ...: (no documentation)
+- group_value: <TypedDict with items 'count', 'name'> = ...: (no documentation)
+- items_value: Sequence[<TypedDict with items 'count', 'name'>] = ...: (no documentation)
+- hidden_value: int = ...: (no documentation)
 documentation:
 (none)
 ````
@@ -78,41 +94,48 @@ documentation:
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^completion all @28 | bpy.ops.opcall_basic.al
 
 ````text
-- all: FAIL: not offered
+- all: detail: <Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
+  documentation: (none)
 ````
 
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^completion int_value= @35 | bpy.ops.opcall_basic.all(int_v)
 
 ````text
-- int_value=: FAIL: not offered
+- int_value=: detail: int
+  documentation: (none)
 ````
 
-## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^completion before= @35 | bpy.ops.opcall_basic.dropped(a)
+## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^completion before= @35 | bpy.ops.opcall_basic.dropped(e)
 
 ````text
-- before=: FAIL: not offered
+- before=: detail: int
+  documentation: (none)
 ````
 
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^hover @26 | bpy.ops.opcall_basic.all
 
 ````text
-```python
-Unknown
+```xml
+<Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
 ```
 ````
 
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^hover-contains "OPCALL_BASIC_OT_all" @30 | bpy.ops.opcall_basic.all.idname()
 
 ````text
-FAIL: does not contain "OPCALL_BASIC_OT_all"
+PASS
 ````
 
 ## features/operator_calls/opcall_macro/ide_opcall_macro.py | ^signature @32 | bpy.ops.opcall_macro.combo()
 
 ````text
-label: (...) -> Unknown
-active parameter: None
+label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: bool = ..., /, *, OPCALL_MACRO_OT_step: <TypedDict with items 'amount'> = ..., OPCALL_MACRO_OT_label: <TypedDict with items 'text'> = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+active parameter: 0
 parameters:
+- execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ...: (no documentation)
+- undo: bool = ...: (no documentation)
+- OPCALL_MACRO_OT_step: <TypedDict with items 'amount'> = ...: (no documentation)
+- OPCALL_MACRO_OT_label: <TypedDict with items 'text'> = ...: (no documentation)
 documentation:
 (none)
 ````
@@ -287,22 +310,26 @@ PASS
 ## features/registration/reg_explicit/ide_reg_explicit.py | ^completion reg_explicit @20 | bpy.ops.reg_exp
 
 ````text
-- reg_explicit: FAIL: not offered
+- reg_explicit: detail: <Protocol with members 'alias', 'dotted', 'imported'>
+  documentation: (none)
 ````
 
 ## features/registration/reg_explicit/ide_reg_explicit.py | ^completion dotted imported alias @26 | bpy.ops.reg_explicit.
 
 ````text
-- dotted: FAIL: not offered
-- imported: FAIL: not offered
-- alias: FAIL: not offered
+- dotted: detail: <Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
+  documentation: (none)
+- imported: detail: <Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
+  documentation: (none)
+- alias: detail: <Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
+  documentation: (none)
 ````
 
 ## features/registration/reg_explicit/ide_reg_explicit.py | ^hover @26 | bpy.ops.reg_explicit.dotted
 
 ````text
-```python
-Unknown
+```xml
+<Protocol with members '__call__', 'get_rna_type', 'idname', 'idname_py', 'poll'>
 ```
 ````
 
