@@ -4,7 +4,7 @@ import bpy
 from bpy.types import Operator
 
 
-class REG_SUBMODULE_FACTORY_OT_unlisted_module(Operator):  # ty: ignore[blender-unregistered-class]
+class REG_SUBMODULE_FACTORY_OT_unlisted_module(Operator):
     bl_idname = "reg_submodule_factory.unlisted_module"
     bl_label = "Run"
 

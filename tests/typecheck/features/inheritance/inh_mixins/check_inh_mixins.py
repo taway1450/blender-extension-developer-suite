@@ -13,7 +13,7 @@ def operators() -> None:
     assert_type(bpy.ops.inh_mixins.first(count=1, label="x"), Result)
     assert_type(bpy.ops.inh_mixins.last(count=1, label="x"), Result)
     assert_type(bpy.ops.inh_mixins.based(count=1), Result)
-    bpy.ops.inh_mixins.based(label="x")  # ty: ignore[unknown-argument]
+    bpy.ops.inh_mixins.based(label="x")  # ty: ignore[no-matching-overload]
     assert_type(bpy.ops.inh_mixins.poll_last(), Result)
     assert_type(bpy.ops.inh_mixins.keywords_first(), Result)
     assert_type(bpy.ops.inh_mixins.keywords_last(), Result)

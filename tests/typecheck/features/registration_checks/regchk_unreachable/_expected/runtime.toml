@@ -1,0 +1,9 @@
+[[probe]]
+code = "bpy.app.timers.is_registered(addon.deferred.late_register)"
+expect = true
+reason = "register() hands late_register to a timer, which Blender runs after register() returns"
+
+[[probe]]
+code = "(bpy.app.timers.unregister(addon.deferred.late_register), addon.deferred.late_register(), bpy.ops.regchk_unreachable.late.get_rna_type().identifier)[2]"
+expect = "REGCHK_UNREACHABLE_OT_late"
+reason = "the timer function (run here, as Blender would) registers the operator; unregister() then removes the class"

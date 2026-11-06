@@ -10,7 +10,7 @@ from . import props
 from .fakes import IntProperty, PropertyGroup
 
 
-class LocalFunctions(bpy.types.PropertyGroup):
+class LocalFunctions(bpy.types.PropertyGroup):  # ty: ignore[blender-unregistered-class]
     count: IntProperty()  # ty: ignore[invalid-type-form]  # bare-ok: stock ty's error must stay on a class Blender does not register
     factor: props.FloatProperty()  # ty: ignore[invalid-type-form]  # bare-ok: stock ty's error must stay on a class Blender does not register
 

@@ -1,0 +1,19 @@
+[[probe]]
+code = "[p.identifier for p in bpy.ops.opcall_basic.dropped_group.get_rna_type().properties]"
+expect = "['rna_type', 'before']"
+reason = "a pointer to a PropertyGroup that contains a data-block pointer is refused like a data-block pointer: it and every property after it are missing"
+
+[[probe]]
+code = "bpy.ops.opcall_basic.empty(False) == {'FINISHED'}"
+expect = true
+reason = "the undo flag alone is a valid positional argument"
+
+[[probe]]
+code = "bpy.ops.opcall_basic.all(True, 'EXEC_DEFAULT')"
+expect = "raises"
+reason = "an execution context after the undo flag raises"
+
+[[probe]]
+code = "bpy.ops.opcall_basic.all(items_value=[{'count': 1}])"
+expect = "raises"
+reason = "collection items need every property, name included"

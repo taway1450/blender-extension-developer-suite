@@ -1,5 +1,5 @@
 """Feature test: preferences.addons[<this addon>].preferences is the addon's own AddonPreferences class,
-not AddonPreferences | None, when the key names this addon: __package__ (in __init__.py and in submodules), a
+not AddonPreferences | None, when the key names this addon: __package__ (in __init__.py and direct submodules), a
 constant holding it, __name__ in __init__.py, __name__.rpartition(".")[0] in a direct submodule and
 `from .. import __package__` in a nested one. Other keys keep the stub type."""
 
@@ -24,7 +24,7 @@ class PREFS_EXT_Preferences(AddonPreferences):
         self.layout.prop(self, "scale")
 
 
-def preferences(preferences: Preferences):
+def preferences(preferences: Preferences) -> PREFS_EXT_Preferences:
     return preferences.addons[__package__].preferences
 
 

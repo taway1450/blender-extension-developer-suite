@@ -15,10 +15,10 @@ def key_spellings(preferences: Preferences) -> None:
     assert_type(preferences.addons[ADDON_ID].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 
 
-def through_functions(preferences: Preferences) -> None:
-    assert_type(preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-    assert_type(helpers.preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-    assert_type(panel.preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
+def through_functions(prefs: Preferences) -> None:
+    assert_type(preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-return-type
+    assert_type(helpers.preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-return-type
+    assert_type(panel.preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-return-type
 
 
 def members(preferences: Preferences) -> None:

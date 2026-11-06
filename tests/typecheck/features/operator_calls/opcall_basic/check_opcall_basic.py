@@ -28,16 +28,19 @@ def call_forms() -> None:
     bpy.ops.opcall_basic.all("EXEC_SCREEN")
     bpy.ops.opcall_basic.all("EXEC_DEFAULT", True)
     bpy.ops.opcall_basic.all("EXEC_DEFAULT", False, int_value=1)
+    assert_type(bpy.ops.opcall_basic.all(False), Result)  # the undo flag alone
+    bpy.ops.opcall_basic.all(True, int_value=1)
     stored = bpy.ops.opcall_basic.all
     assert_type(stored(int_value=1), Result)
 
 
 def wrong_call_forms() -> None:
-    bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[invalid-argument-type]
-    bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[too-many-positional-arguments]
-    bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[positional-only-parameter-as-kwarg]
-    bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[unknown-argument]
-    bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[unknown-argument]
+    bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.all(True, "EXEC_DEFAULT")  # ty: ignore[invalid-argument-type]
+    bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[no-matching-overload]
 
 
 def valid_arguments(vector: Vector, matrix: Matrix) -> None:
@@ -73,8 +76,11 @@ def invalid_arguments() -> None:
 
 def dropped_properties() -> None:
     bpy.ops.opcall_basic.dropped(before=1)
-    bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[unknown-argument]
-    bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[unknown-argument]
+    bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.dropped_group(before=1)
+    bpy.ops.opcall_basic.dropped_group(group={})  # ty: ignore[no-matching-overload]
+    bpy.ops.opcall_basic.dropped_group(after=1)  # ty: ignore[no-matching-overload]
 
 
 def operator_functions() -> None:

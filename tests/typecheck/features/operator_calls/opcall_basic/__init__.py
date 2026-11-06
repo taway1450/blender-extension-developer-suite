@@ -1,7 +1,7 @@
 """Feature test: an addon operator called as bpy.ops.<category>.<name>(...): one keyword argument per property, of
 the type Blender converts from (checked in Blender 5.4), and the two positional arguments execution context and
 undo. A PointerProperty to an ID type is not allowed on operators: Blender reports it and drops that property and
-every property after it."""
+every property after it, and so does a pointer to a PropertyGroup that contains one."""
 
 import bpy
 from bpy.props import (BoolProperty, BoolVectorProperty, CollectionProperty, EnumProperty, FloatProperty,
@@ -17,6 +17,10 @@ def dynamic_items(self, context):
 
 class OPCALL_BASIC_Group(PropertyGroup):
     count: IntProperty()
+
+
+class OPCALL_BASIC_IdGroup(PropertyGroup):
+    target: PointerProperty(type=Object)  # allowed on a group, but the group now contains a data-block
 
 
 class OPCALL_BASIC_OT_all(Operator):
@@ -62,5 +66,24 @@ class OPCALL_BASIC_OT_dropped(Operator):
         return {"FINISHED"}
 
 
-classes = (OPCALL_BASIC_Group, OPCALL_BASIC_OT_all, OPCALL_BASIC_OT_empty, OPCALL_BASIC_OT_dropped)
+class OPCALL_BASIC_OT_dropped_group(Operator):
+    bl_idname = "opcall_basic.dropped_group"
+    bl_label = "Dropped group"
+
+    before: IntProperty()
+    group: PointerProperty(type=OPCALL_BASIC_IdGroup)  # ty: ignore[blender-invalid-operator-property]
+    after: IntProperty()
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+classes = (
+    OPCALL_BASIC_Group,
+    OPCALL_BASIC_IdGroup,
+    OPCALL_BASIC_OT_all,
+    OPCALL_BASIC_OT_empty,
+    OPCALL_BASIC_OT_dropped,
+    OPCALL_BASIC_OT_dropped_group,
+)
 register, unregister = bpy.utils.register_classes_factory(classes)

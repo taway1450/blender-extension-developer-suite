@@ -13,7 +13,7 @@ Result: TypeAlias = set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_
 def operators() -> None:
     assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
     assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
-    bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[unknown-argument]
+    bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[no-matching-overload]
     bpy.ops.inh_chains.base  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
     bpy.ops.inh_chains.middle  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 

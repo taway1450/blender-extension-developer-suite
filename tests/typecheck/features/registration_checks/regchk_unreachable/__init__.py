@@ -1,10 +1,11 @@
 """Feature test: blender-unreachable-registration, on functions that register classes but that register() never
-calls, directly or through other functions. What they register is not in bpy.ops."""
+calls, directly or through other functions. What they register is not in bpy.ops. A function register() hands to a
+timer is reachable (deferred.py)."""
 
 import bpy
 from bpy.types import Operator
 
-from . import forgotten, used
+from . import deferred, forgotten, used
 
 
 class REGCHK_UNREACHABLE_OT_extra(Operator):
@@ -21,7 +22,9 @@ def _register_extra():  # ty: ignore[blender-unreachable-registration]
 
 def register():
     used.register()
+    deferred.register()
 
 
 def unregister():
+    deferred.unregister()
     used.unregister()

@@ -11,7 +11,7 @@ from bpy.types import Context, Operator, UIList
 from . import INH_OVERRIDES_OT_variants
 
 
-class IDE_OT_hover(Operator):
+class IDE_OT_hover(Operator):  # ty: ignore[blender-unregistered-class]
     bl_idname = "inh_overrides.ide_hover"
     bl_label = "Hover"
 
@@ -23,7 +23,7 @@ class IDE_OT_hover(Operator):
         return {"FINISHED"}
 
 
-class IDE_UL_hover(UIList):
+class IDE_UL_hover(UIList):  # ty: ignore[blender-unregistered-class]
     def draw_item(self, context, layout, data, item, icon, active_data):
         layout
         # ^hover-contains "UILayout"

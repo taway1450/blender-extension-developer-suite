@@ -11,19 +11,18 @@ features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule |
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | class PREFS_BAD_Missing(AddonPreferences):  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/__init__.py | ignore-comment-unknown-rule | bl_idname = __package__  # ty: ignore[blender-preferences-idname]
 features/addon_preferences/prefs_bad/submodule.py | ignore-comment-unknown-rule | bl_idname = __name__  # ty: ignore[blender-preferences-idname]
+features/addon_preferences/prefs_ext/__init__.py | invalid-return-type | return preferences.addons[__package__].preferences
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[__package__].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences.addons[ADDON_ID].preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | call-non-callable | assert_type(preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(helpers.preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
-features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(panel.preferences(preferences), PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(prefs.scale, float)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(prefs.scale, float)  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | unresolved-attribute | assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | invalid-assignment | prefs.scale = 2.0  # oracle-skip: stock ty types __package__ as str | None
 features/addon_preferences/prefs_ext/check_prefs_ext.py | type-assertion-failure | assert_type(addon.preferences, PREFS_EXT_Preferences)  # oracle-skip: stock ty types __package__ as str | None
+features/addon_preferences/prefs_ext/helpers.py | invalid-return-type | return preferences.addons[__name__.rpartition(".")[0]].preferences
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
+features/addon_preferences/prefs_ext/ui/panel.py | invalid-return-type | return preferences.addons[base_package].preferences
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs, PREFS_LEGACY_Preferences)
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | type-assertion-failure | assert_type(prefs.scale, float)
 features/addon_preferences/prefs_legacy/check_prefs_legacy.py | unresolved-attribute | assert_type(prefs.scale, float)
@@ -142,6 +141,7 @@ features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failu
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.transform, Matrix)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(s.transform @ s.location, mathutils.Vector)
 features/bpy_symbols/sym_mathutils/check_sym_mathutils.py | type-assertion-failure | assert_type(scene.sym_mathutils.location.z, float)
+features/bpy_symbols/sym_negative/check_sym_negative.py | ignore-comment-unknown-rule | class LocalFunctions(bpy.types.PropertyGroup):  # ty: ignore[blender-unregistered-class]
 features/inheritance/generated/inh_invalid_description_instance/__init__.py | ignore-comment-unknown-rule | def description(self, context, properties):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | ignore-comment-unknown-rule | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
 features/inheritance/generated/inh_invalid_draw_header_extra/__init__.py | invalid-method-override | def draw_header(self, context, extra):  # ty: ignore[blender-invalid-override]
@@ -170,16 +170,17 @@ features/inheritance/generated/inh_invalid_poll_static/__init__.py | ignore-comm
 features/inheritance/generated/inh_invalid_socket_no_draw/__init__.py | ignore-comment-unknown-rule | class INH_INVALID_SOCKET_NO_DRAW_Socket(NodeSocket):  # ty: ignore[blender-missing-callback]
 features/inheritance/inh_bases/__init__.py | ignore-comment-unknown-rule | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
 features/inheritance/inh_bases/__init__.py | invalid-attribute-override | class INH_BASES_OT_two(Operator, Panel):  # ty: ignore[blender-invalid-base]
-features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass]  # oracle-skip: the stubs do not declare Blender's metaclass
-features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict]  # oracle-skip: the stubs do not declare the C struct layout
+features/inheritance/inh_bases/check_inh_bases.py | ignore-comment-unknown-rule | def register_unsupported() -> None:  # ty: ignore[blender-unreachable-registration]
+features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: the stubs do not declare Blender's metaclass
+features/inheritance/inh_bases/check_inh_bases.py | unused-ignore-comment | class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.leaf")
 features/inheritance/inh_chains/__init__.py | unresolved-attribute | self.layout.operator("inh_chains.sibling")
 features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(bpy.ops.inh_chains.leaf(count=1, label="x", factor=0.5), Result)
 features/inheritance/inh_chains/check_inh_chains.py | type-assertion-failure | assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
 features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | assert_type(bpy.ops.inh_chains.sibling(count=1), Result)
-features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[unknown-argument]
-features/inheritance/inh_chains/check_inh_chains.py | unused-ignore-comment | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[unknown-argument]
+features/inheritance/inh_chains/check_inh_chains.py | unresolved-attribute | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[no-matching-overload]
+features/inheritance/inh_chains/check_inh_chains.py | unused-ignore-comment | bpy.ops.inh_chains.sibling(label="x")  # ty: ignore[no-matching-overload]
 features/inheritance/inh_inherited_idname/__init__.py | ignore-comment-unknown-rule | class INH_INHERITED_IDNAME_OT_child(INH_INHERITED_IDNAME_OT_parent):  # ty: ignore[blender-duplicate-registration, blender-registered-base]
 features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | type-assertion-failure | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
 features/inheritance/inh_inherited_idname/check_inh_inherited_idname.py | unresolved-attribute | assert_type(bpy.ops.inh_inherited_idname.run(count=1, label="x"), Result)
@@ -196,8 +197,8 @@ features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | a
 features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.last(count=1, label="x"), Result)
 features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.based(count=1), Result)
 features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.based(count=1), Result)
-features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | bpy.ops.inh_mixins.based(label="x")  # ty: ignore[unknown-argument]
-features/inheritance/inh_mixins/check_inh_mixins.py | unused-ignore-comment | bpy.ops.inh_mixins.based(label="x")  # ty: ignore[unknown-argument]
+features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | bpy.ops.inh_mixins.based(label="x")  # ty: ignore[no-matching-overload]
+features/inheritance/inh_mixins/check_inh_mixins.py | unused-ignore-comment | bpy.ops.inh_mixins.based(label="x")  # ty: ignore[no-matching-overload]
 features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.poll_last(), Result)
 features/inheritance/inh_mixins/check_inh_mixins.py | unresolved-attribute | assert_type(bpy.ops.inh_mixins.poll_last(), Result)
 features/inheritance/inh_mixins/check_inh_mixins.py | type-assertion-failure | assert_type(bpy.ops.inh_mixins.keywords_first(), Result)
@@ -279,6 +280,7 @@ features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolv
 features/inheritance/inh_registered_base/check_inh_registered_base.py | type-assertion-failure | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
 features/inheritance/inh_registered_base/check_inh_registered_base.py | unresolved-attribute | assert_type(bpy.ops.inh_registered_base.early_child(), Result)
 features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | target: PointerProperty(type=Object)  # ty: ignore[blender-invalid-operator-property]
+features/operator_calls/opcall_basic/__init__.py | ignore-comment-unknown-rule | group: PointerProperty(type=OPCALL_BASIC_IdGroup)  # ty: ignore[blender-invalid-operator-property]
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(), Result)
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all(), Result)
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.empty(), Result)
@@ -297,18 +299,23 @@ features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribut
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_SCREEN")
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True)
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", False, int_value=1)
+features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all(False), Result)  # the undo flag alone
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all(False), Result)  # the undo flag alone
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(True, int_value=1)
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | stored = bpy.ops.opcall_basic.all
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(stored(int_value=1), Result)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[too-many-positional-arguments]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[too-many-positional-arguments]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[positional-only-parameter-as-kwarg]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[positional-only-parameter-as-kwarg]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[unknown-argument]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all("NOPE")  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all("EXEC_DEFAULT", True, 1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(True, "EXEC_DEFAULT")  # ty: ignore[invalid-argument-type]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(True, "EXEC_DEFAULT")  # ty: ignore[invalid-argument-type]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(execution_context="EXEC_DEFAULT")  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.empty(int_value=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(unknown=1)  # ty: ignore[no-matching-overload]
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(int_value=1, float_value=1.5, bool_value=True, string_value="text")
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(float_value=1)  # an int is a float
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(enum_value="B", flag_value={"A", "B"})
@@ -346,10 +353,15 @@ features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comme
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.all(items_value=[{"count": 1}])  # ty: ignore[invalid-argument-type, missing-typed-dict-key]
 features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.all(items_value=[{"count": 1}])  # ty: ignore[invalid-argument-type, missing-typed-dict-key]
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(before=1)
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[unknown-argument]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped(target=None)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped(after=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped_group(before=1)
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped_group(group={})  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped_group(group={})  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | bpy.ops.opcall_basic.dropped_group(after=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_basic/check_opcall_basic.py | unused-ignore-comment | bpy.ops.opcall_basic.dropped_group(after=1)  # ty: ignore[no-matching-overload]
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.poll(), bool)
 features/operator_calls/opcall_basic/check_opcall_basic.py | unresolved-attribute | assert_type(bpy.ops.opcall_basic.all.poll(), bool)
 features/operator_calls/opcall_basic/check_opcall_basic.py | type-assertion-failure | assert_type(bpy.ops.opcall_basic.all.poll("EXEC_DEFAULT"), bool)
@@ -388,8 +400,8 @@ features/operator_calls/opcall_inherit/check_opcall_inherit.py | type-assertion-
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | assert_type(bpy.ops.opcall_inherit.base(size=1.0, mode=1), Result)
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
 features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[unknown-argument]
+features/operator_calls/opcall_inherit/check_opcall_inherit.py | unresolved-attribute | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_inherit/check_opcall_inherit.py | unused-ignore-comment | bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo(), Result)
@@ -397,8 +409,8 @@ features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribut
 features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": 2}, OPCALL_MACRO_OT_label={"text": "x"})
 features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": "2"})  # ty: ignore[invalid-argument-type]
 features/operator_calls/opcall_macro/check_opcall_macro.py | unused-ignore-comment | bpy.ops.opcall_macro.combo(OPCALL_MACRO_OT_step={"amount": "2"})  # ty: ignore[invalid-argument-type]
-features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[unknown-argument]
-features/operator_calls/opcall_macro/check_opcall_macro.py | unused-ignore-comment | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[unknown-argument]
+features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[no-matching-overload]
+features/operator_calls/opcall_macro/check_opcall_macro.py | unused-ignore-comment | bpy.ops.opcall_macro.combo(amount=2)  # ty: ignore[no-matching-overload]
 features/operator_calls/opcall_macro/check_opcall_macro.py | type-assertion-failure | assert_type(bpy.ops.opcall_macro.combo.idname(), Literal["OPCALL_MACRO_OT_combo"])
 features/operator_calls/opcall_macro/check_opcall_macro.py | unresolved-attribute | assert_type(bpy.ops.opcall_macro.combo.idname(), Literal["OPCALL_MACRO_OT_combo"])
 features/operator_properties/opprops_idnames/__init__.py | unresolved-attribute | self.layout.operator(OPPROPS_IDNAMES_OT_step.bl_idname).factor = 0.5
@@ -869,7 +881,6 @@ features/registration/reg_submodule_factory/check_reg_submodule_factory.py | unr
 features/registration/reg_submodule_factory/check_reg_submodule_factory.py | type-assertion-failure | assert_type(bpy.ops.reg_submodule_factory.package(), Result)
 features/registration/reg_submodule_factory/check_reg_submodule_factory.py | unresolved-attribute | assert_type(bpy.ops.reg_submodule_factory.package(), Result)
 features/registration/reg_submodule_factory/ops_package/operators.py | ignore-comment-unknown-rule | class REG_SUBMODULE_FACTORY_OT_unlisted(Operator):  # ty: ignore[blender-unregistered-class]
-features/registration/reg_submodule_factory/unlisted.py | ignore-comment-unknown-rule | class REG_SUBMODULE_FACTORY_OT_unlisted_module(Operator):  # ty: ignore[blender-unregistered-class]
 features/registration/reg_submodule_factory/unlisted.py | ignore-comment-unknown-rule | def register():  # ty: ignore[blender-unreachable-registration]
 features/registration_checks/regchk_duplicate/__init__.py | ignore-comment-unknown-rule | bl_idname = "regchk_duplicate.same"  # ty: ignore[blender-duplicate-registration]
 features/registration_checks/regchk_duplicate/__init__.py | ignore-comment-unknown-rule | REGCHK_DUPLICATE_OT_sequence,  # ty: ignore[blender-duplicate-registration]
@@ -902,6 +913,8 @@ features/registration_checks/regchk_order/__init__.py | ignore-comment-unknown-r
 features/registration_checks/regchk_unreachable/__init__.py | ignore-comment-unknown-rule | def _register_extra():  # ty: ignore[blender-unreachable-registration]
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.used(), Result)
 features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.used(), Result)
+features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | type-assertion-failure | assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
+features/registration_checks/regchk_unreachable/check_regchk_unreachable.py | unresolved-attribute | assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
 features/registration_checks/regchk_unreachable/forgotten.py | ignore-comment-unknown-rule | def register():  # ty: ignore[blender-unreachable-registration]
 features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.utils.register_class(REGCHK_UNREGISTER_LEAK_OT_leaked)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | ignore-comment-unknown-rule | bpy.types.Scene.regchk_leaked = IntProperty()  # ty: ignore[blender-unregister-mismatch]

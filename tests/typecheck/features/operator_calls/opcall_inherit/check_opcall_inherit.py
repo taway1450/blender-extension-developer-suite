@@ -17,4 +17,4 @@ def derived() -> None:
 def base() -> None:
     assert_type(bpy.ops.opcall_inherit.base(size=1.0, mode=1), Result)
     bpy.ops.opcall_inherit.base(mode="text")  # ty: ignore[invalid-argument-type]
-    bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[unknown-argument]
+    bpy.ops.opcall_inherit.base(count=1)  # ty: ignore[no-matching-overload]

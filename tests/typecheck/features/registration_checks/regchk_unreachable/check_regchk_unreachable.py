@@ -11,6 +11,7 @@ Result: TypeAlias = set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_
 
 def registered() -> None:
     assert_type(bpy.ops.regchk_unreachable.used(), Result)
+    assert_type(bpy.ops.regchk_unreachable.late(), Result)  # registered by a timer register() starts
 
 
 def not_registered() -> None:

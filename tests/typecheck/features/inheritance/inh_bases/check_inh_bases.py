@@ -25,7 +25,7 @@ class LayoutSubclass(UILayout):
     pass
 
 
-def register_unsupported() -> None:
+def register_unsupported() -> None:  # ty: ignore[blender-unreachable-registration]
     # Blender: "... does not support registration". The stubs already type register_class with the
     # registrable bases, so this is ty's own invalid-argument-type.
     bpy.utils.register_class(ObjectSubclass)  # ty: ignore[invalid-argument-type]  # bare-ok: stock ty's error must stay: not a registrable base
@@ -38,7 +38,7 @@ class AbcMixin(ABC):
     pass
 
 
-class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass]  # oracle-skip: the stubs do not declare Blender's metaclass
+class WithAbc(AbcMixin, Operator):  # ty: ignore[conflicting-metaclass, blender-unregistered-class]  # oracle-skip: the stubs do not declare Blender's metaclass
     """TypeError: metaclass conflict (Operator's metaclass is bpy's _RNAMeta)."""
 
 
@@ -46,5 +46,5 @@ class SlotsMixin:
     __slots__ = ("value",)
 
 
-class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict]  # oracle-skip: the stubs do not declare the C struct layout
+class WithSlots(SlotsMixin, Operator):  # ty: ignore[instance-layout-conflict, blender-unregistered-class]  # oracle-skip: the stubs do not declare the C struct layout
     """TypeError: multiple bases have instance lay-out conflict."""

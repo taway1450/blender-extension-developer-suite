@@ -1,9 +1,16 @@
 """A nested submodule: it imports the addon's package name."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import bpy
 from bpy.types import Panel, Preferences
 
 from .. import __package__ as base_package
+
+if TYPE_CHECKING:
+    from .. import PREFS_EXT_Preferences
 
 
 class PREFS_EXT_PT_panel(Panel):
@@ -16,7 +23,7 @@ class PREFS_EXT_PT_panel(Panel):
             self.layout.prop(preferences(context.preferences), "scale")
 
 
-def preferences(preferences: Preferences):
+def preferences(preferences: Preferences) -> PREFS_EXT_Preferences:
     return preferences.addons[base_package].preferences
 
 

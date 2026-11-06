@@ -2,10 +2,11 @@
 
 **The checker must:** give `preferences.addons[<key>].preferences` the add-on's own `AddonPreferences` class,
 without `None`, when the key names the add-on that is being checked, and check the `bl_idname` of preferences
-classes. Spellings of the key: `__package__` (any module of the add-on), a constant holding it, `__name__` in a
-legacy add-on's `__init__.py`, `__name__.rpartition(".")[0]` in a direct submodule, `from .. import __package__`,
-the literal name of a legacy add-on. `.get(key)` gives the specialised `Addon | None`. Other keys keep the stub
-type `AddonPreferences | None`.
+classes. Spellings of the key: `__package__` in the add-on's `__init__.py` or a direct submodule (in a nested
+package it names that package), a constant holding it, `__name__` in a legacy add-on's `__init__.py`,
+`__name__.rpartition(".")[0]` in a direct submodule, `from .. import __package__`, the literal name of a legacy
+add-on. `.get(key)` keeps the stub type `Addon | None`; once narrowed, its `.preferences` is the add-on's class.
+Other keys keep the stub type `AddonPreferences | None`.
 
 | Addon | Variant |
 | --- | --- |
