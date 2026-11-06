@@ -54,7 +54,7 @@ class PROPS_CALLBACKS_Settings(PropertyGroup):
     mode: EnumProperty(items=mode_items)
     untyped: IntProperty(update=untyped_update)
     # Lambdas get their parameter types from the property they are passed to.
-    lambda_update: IntProperty(update=lambda self, context: assert_type(self, PROPS_CALLBACKS_Settings) and None)
+    lambda_update: IntProperty(update=lambda self, context: print(assert_type(self, PROPS_CALLBACKS_Settings).label))
     lambda_poll: PointerProperty(type=Object, poll=lambda self, obj: assert_type(obj, Object).type == "MESH")
     lambda_items: EnumProperty(items=lambda self, context: [(assert_type(self, PROPS_CALLBACKS_Settings).label, "", "")])
     lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)

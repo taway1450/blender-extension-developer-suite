@@ -718,11 +718,6 @@ features/properties/generated/props_vector/check_props_vector.py | type-assertio
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.f_no_subtype = "xyz"  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.f_no_subtype = 1.0  # ty: ignore[invalid-assignment]
 features/properties/generated/props_vector/check_props_vector.py | unused-ignore-comment | s.i_vec_2 = ("1", "1")  # ty: ignore[invalid-assignment]
-features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_update: IntProperty(update=lambda self, context: assert_type(self, PROPS_CALLBACKS_Settings) and None)
-features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_poll: PointerProperty(type=Object, poll=lambda self, obj: assert_type(obj, Object).type == "MESH")
-features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_items: EnumProperty(items=lambda self, context: [(assert_type(self, PROPS_CALLBACKS_Settings).label, "", "")])
-features/properties/props_callbacks/__init__.py | type-assertion-failure | lambda_get: IntProperty(get=lambda self: assert_type(self, PROPS_CALLBACKS_Settings).count)
-features/properties/props_callbacks/__init__.py | unused-ignore-comment | wrong_poll: PointerProperty(type=Object, poll=poll_wrong_type)  # ty: ignore[invalid-argument-type]
 features/properties/props_callbacks/check_props_callbacks.py | unused-ignore-comment | s.lambda_get = 1  # ty: ignore[invalid-assignment]  # get= without set= makes the property read-only
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
 features/properties/props_defaults/__init__.py | ignore-comment-unknown-rule | enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
