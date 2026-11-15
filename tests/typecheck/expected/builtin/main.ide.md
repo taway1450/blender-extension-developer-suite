@@ -104,11 +104,11 @@ documentation:
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^signature @30 | bpy.ops.opcall_basic.all()
 
 ````text
-label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: bool = ..., /, *, int_value: int = ..., float_value: float = ..., bool_value: bool = ..., string_value: str = ..., enum_value: Literal["A", "B"] = ..., flag_value: set[Literal["A", "B"]] = ..., dynamic_value: str = ..., vector_value: Sequence[float] = ..., int_vector_value: Sequence[int] = ..., bool_vector_value: Sequence[bool] = ..., matrix_value: Sequence[Sequence[float]] = ..., group_value: <TypedDict with items 'count', 'name'> = ..., items_value: Sequence[<TypedDict with items 'count', 'name'>] = ..., hidden_value: int = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: int = ..., /, *, int_value: int = ..., float_value: float = ..., bool_value: bool = ..., string_value: str = ..., enum_value: Literal["A", "B"] = ..., flag_value: set[Literal["A", "B"]] = ..., dynamic_value: str = ..., vector_value: Sequence[float] = ..., int_vector_value: Sequence[int] = ..., bool_vector_value: Sequence[bool] = ..., matrix_value: Sequence[Sequence[float]] = ..., group_value: <TypedDict with items 'count', 'name'> = ..., items_value: Sequence[<TypedDict with items 'count', 'name'>] = ..., hidden_value: int = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
 active parameter: 0
 parameters:
 - execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ...: (no documentation)
-- undo: bool = ...: (no documentation)
+- undo: int = ...: (no documentation)
 - int_value: int = ...: (no documentation)
 - float_value: float = ...: (no documentation)
 - bool_value: bool = ...: (no documentation)
@@ -164,14 +164,43 @@ bpy.ops.opcall_basic.all(execution_context, undo, *, int_value: int, float_value
 PASS
 ````
 
+## features/operator_calls/opcall_category/ide_opcall_category.py | ^hover @16 | bpy.ops.wm.call_menu("INVOKE_DEFAULT", name="VIEW3D_MT_add")
+
+````text
+Operator `wm.call_menu` (`WM_OT_call_menu`)<HB>
+<HB>
+```python
+bpy.ops.wm.call_menu(execution_context, undo, *, name: str)
+```
+````
+
+## features/operator_calls/opcall_category/ide_opcall_category.py | ^hover-contains "bpy.ops.wm.call_menu(execution_context, undo, *, name: str)" @16 | bpy.ops.wm.call_menu("INVOKE_DEFAULT", name="VIEW3D_MT_add")
+
+````text
+PASS
+````
+
+## features/operator_calls/opcall_category/ide_opcall_category.py | ^signature @53 | bpy.ops.object.select_all("EXEC_DEFAULT", True, action="SELECT")
+
+````text
+label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: int = ..., /, *, action: Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"] = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+active parameter: 2
+parameters:
+- execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ...: (no documentation)
+- undo: int = ...: (no documentation)
+- action: Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"] = ...: (no documentation)
+documentation:
+(none)
+````
+
 ## features/operator_calls/opcall_macro/ide_opcall_macro.py | ^signature @32 | bpy.ops.opcall_macro.combo()
 
 ````text
-label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: bool = ..., /, *, OPCALL_MACRO_OT_step: <TypedDict with items 'amount'> = ..., OPCALL_MACRO_OT_label: <TypedDict with items 'text'> = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: int = ..., /, *, OPCALL_MACRO_OT_step: <TypedDict with items 'amount'> = ..., OPCALL_MACRO_OT_label: <TypedDict with items 'text'> = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
 active parameter: 0
 parameters:
 - execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ...: (no documentation)
-- undo: bool = ...: (no documentation)
+- undo: int = ...: (no documentation)
 - OPCALL_MACRO_OT_step: <TypedDict with items 'amount'> = ...: (no documentation)
 - OPCALL_MACRO_OT_label: <TypedDict with items 'text'> = ...: (no documentation)
 documentation:

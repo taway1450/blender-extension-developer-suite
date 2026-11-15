@@ -1,0 +1,19 @@
+"""Reference stub delta: a built-in operator as the checker types it."""
+
+from typing import Literal, TypeAlias, overload
+
+from bpy.types import Struct
+
+_ExecutionContext: TypeAlias = Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", "INVOKE_SCREEN", "EXEC_DEFAULT", "EXEC_REGION_WIN", "EXEC_REGION_CHANNELS", "EXEC_REGION_PREVIEW", "EXEC_AREA", "EXEC_SCREEN"]
+
+class _call_menu_operator:
+    @overload
+    def __call__(self, execution_context: _ExecutionContext = ..., undo: bool | int = ..., /, *, name: str = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...
+    @overload
+    def __call__(self, undo: bool | int, /, *, name: str = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...
+    def poll(self, execution_context: _ExecutionContext = ..., /) -> bool: ...
+    def idname(self) -> Literal["WM_OT_call_menu"]: ...
+    def idname_py(self) -> Literal["wm.call_menu"]: ...
+    def get_rna_type(self) -> Struct: ...
+
+call_menu: _call_menu_operator

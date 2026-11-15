@@ -2,5 +2,5 @@
 
 from typing import Literal
 
-def run(execution_context: str = ..., undo: bool = ..., /, *, count: int = ...) -> set[
+def run(execution_context: str = ..., undo: bool | int = ..., /, *, count: int = ...) -> set[
     Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]: ...

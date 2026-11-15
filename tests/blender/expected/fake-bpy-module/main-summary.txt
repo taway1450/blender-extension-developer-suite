@@ -4,11 +4,11 @@ context-member        583      532      714     1829
 pointer-none         3881      152     1755     5788
 type-tag              833        6      519     1358
 stub-gap              745        0      345     1090
-operator-call          29        0      142      171
+operator-call          20        0      136      156
 check-setup           121       12      115      248
 dynamic               692        0      204      896
 rest                 1690        8     1204     2902
-total                8574      710     4998    14282
+total                8565      710     4992    14267
 
 rule                                 count
 blender-invalid-idname                   1
@@ -22,7 +22,7 @@ deprecated                              15
 empty-body                              32
 import-not-found                       209
 index-out-of-bounds                      2
-invalid-argument-type                 2737
+invalid-argument-type                 2732
 invalid-assignment                    1028
 invalid-attribute-override              71
 invalid-base                             4
@@ -37,14 +37,14 @@ invalid-return-type                     83
 invalid-super-argument                   1
 invalid-type-form                        9
 mismatched-type-name                     1
-missing-argument                        25
-no-matching-overload                    30
+missing-argument                        10
+no-matching-overload                    41
 not-iterable                           127
 not-subscriptable                      164
 possibly-missing-submodule               4
 redundant-condition                     67
-too-many-positional-arguments           47
-unknown-argument                       297
+too-many-positional-arguments           46
+unknown-argument                       292
 unresolved-attribute                  8717
 unresolved-global                       38
 unresolved-reference                    73

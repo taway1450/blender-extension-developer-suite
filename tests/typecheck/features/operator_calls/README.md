@@ -2,7 +2,8 @@
 
 **The checker must:** make `bpy.ops.<category>.<name>` callable with one keyword argument per property of the
 registered operator, typed as Blender converts it, after the positional execution context and undo flag; and give
-it `poll()`, `idname()`, `idname_py()` and `get_rna_type()`.
+it `poll()`, `idname()`, `idname_py()` and `get_rna_type()`. A built-in operator takes the same positional arguments
+and functions, with the keywords of its stub, in any file (also outside an add-on).
 
 | Property | Argument type |
 | --- | --- |
@@ -16,12 +17,13 @@ it `poll()`, `idname()`, `idname_py()` and `get_rna_type()`.
 | Addon | Variant |
 | --- | --- |
 | `opcall_basic` | every property kind, every execution context, the undo flag alone, wrong arguments, the dropped properties (also behind a group), the operator functions |
-| `opcall_category` | an operator in Blender's `object` category next to the built-in ones; two operators in one new category |
+| `opcall_category` | an operator in Blender's `object` category next to the built-in ones; two operators in one new category; built-in operators with a context, the undo flag (alone, as an `int`), a wrong context |
+| `opcall_script` | a built-in operator called from a script outside any add-on (`load = false`) |
 | `opcall_inherit` | properties from base operators and mixins, a redeclared property |
 | `opcall_idname_forms` | `bl_idname` from a constant, a concatenation, an f-string, another class, a mixin; a runtime value gives nothing |
 | `opcall_macro` | a Macro: one dict argument per step, named by the step's `_OT_` idname |
 
-**Runtime facts (Blender 5.4):** the undo flag can be passed alone; a context after it or more than two positional
+**Runtime facts (Blender 5.4):** the undo flag can be passed alone, and an `int` counts as one; a context after it or more than two positional
 arguments raise `ValueError`, an unknown keyword or execution context `TypeError`; `idname()` is the
 `CATEGORY_OT_name` form.
 

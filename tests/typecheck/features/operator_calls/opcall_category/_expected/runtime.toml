@@ -1,0 +1,19 @@
+[[probe]]
+code = "bpy.ops.object.select_all('EXEC_DEFAULT', True, action='SELECT') == {'FINISHED'}"
+expect = true
+reason = "a built-in operator takes the execution context and the undo flag positionally"
+
+[[probe]]
+code = "bpy.ops.object.select_all(1, action='DESELECT') == {'FINISHED'}"
+expect = true
+reason = "an int counts as the undo flag, alone too"
+
+[[probe]]
+code = "bpy.ops.wm.call_menu.idname()"
+expect = "WM_OT_call_menu"
+reason = "a built-in operator has idname()"
+
+[[probe]]
+code = "bpy.ops.wm.call_menu('INVOKE_WRONG', name='VIEW3D_MT_add')"
+expect = "raises"
+reason = "an unknown execution context raises TypeError"

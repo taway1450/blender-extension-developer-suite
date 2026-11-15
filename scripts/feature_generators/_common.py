@@ -71,7 +71,7 @@ def ops_operator_stub(name: str, idname_py: str, params: list[tuple[str, str]]) 
     return [
         f"class {cls}:",
         (
-            f"    def __call__(self, execution_context: _ExecutionContext = ..., undo: bool = ..., /{star}{kwargs}) "
+            f"    def __call__(self, execution_context: _ExecutionContext = ..., undo: bool | int = ..., /{star}{kwargs}) "
             f"-> {OPERATOR_RESULT}: ..."
         ),
         "    def poll(self, execution_context: _ExecutionContext = ..., /) -> bool: ...",

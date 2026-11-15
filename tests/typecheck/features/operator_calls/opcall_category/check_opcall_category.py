@@ -20,3 +20,13 @@ def builtin_category() -> None:
 def shared_category() -> None:
     assert_type(bpy.ops.opcall_category.first(), Result)
     assert_type(bpy.ops.opcall_category.second(), Result)
+
+
+def builtin_positional() -> None:
+    assert_type(bpy.ops.wm.call_menu("INVOKE_DEFAULT", name="VIEW3D_MT_add"), Result)
+    assert_type(bpy.ops.object.select_all("EXEC_DEFAULT", True, action="SELECT"), Result)
+    assert_type(bpy.ops.object.select_all(True, action="DESELECT"), Result)  # the undo flag alone
+    assert_type(bpy.ops.object.select_all(1, action="DESELECT"), Result)  # an int undo flag
+    assert_type(bpy.ops.wm.call_menu.idname(), Literal["WM_OT_call_menu"])
+    bpy.ops.wm.call_menu("INVOKE_WRONG", name="VIEW3D_MT_add")  # ty: ignore[no-matching-overload]
+    bpy.ops.object.select_all("EXEC_DEFAULT", action="NOPE")  # ty: ignore[no-matching-overload]
