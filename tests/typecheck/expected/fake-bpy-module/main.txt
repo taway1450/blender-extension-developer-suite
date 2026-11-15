@@ -1,6 +1,27 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender main.
 # `mise run check:features main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
+features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
+features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with ibuf.with_buffer() as buf:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(buf, memoryview)  # bare-ok: a stub fact: entering an ImBuf buffer gives a memoryview
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-subscriptable | assert_type(matrix.col[0], Vector)  # bare-ok: a stub fact: a matrix column is a Vector
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(matrix.col[0], Vector)  # bare-ok: a stub fact: a matrix column is a Vector
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for row in matrix.row:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(row, Vector)  # bare-ok: a stub fact: a matrix row is a Vector
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
 features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _FluidModifier_DOMAIN, _Object_EMPTY, _Object_FONT, _Object_MESH, _Object_SURFACE)
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.type, Literal['MESH'])  # bare-ok: a stub fact: the tag view of a MESH object
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.data, Mesh)  # bare-ok: a stub fact: a MESH object's data is a Mesh, never None

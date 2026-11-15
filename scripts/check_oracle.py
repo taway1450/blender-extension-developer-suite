@@ -164,6 +164,18 @@ def class_header(node: ast.ClassDef) -> list[str]:
     return params + [ast.unparse(b) for b in node.bases] + [ast.unparse(k) for k in node.keywords]
 
 
+def is_empty_one_line(node: ast.ClassDef) -> bool:
+    """``class X: ...``: the body is a lone ``...`` on the header's line."""
+    (first, *rest) = node.body
+    return (
+        not rest
+        and first.lineno == node.lineno
+        and isinstance(first, ast.Expr)
+        and isinstance(first.value, ast.Constant)
+        and first.value.value is Ellipsis
+    )
+
+
 def merge_delta(stub_text: str, delta_text: str, stub_tree: ast.Module | None = None) -> str:
     lines = stub_text.splitlines()
     tree = stub_tree or ast.parse(stub_text)
@@ -185,6 +197,13 @@ def merge_delta(stub_text: str, delta_text: str, stub_tree: ast.Module | None = 
         ):
             target = classes[node.name]
             edits.append(Edit(node_start(target), target.end_lineno, segment(delta_lines, node).splitlines()))
+        elif isinstance(node, ast.ClassDef) and node.name in classes and is_empty_one_line(classes[node.name]):
+            # `class X: ...` has no body to merge into: write its header with the delta's members.
+            target = classes[node.name]
+            header = lines[target.lineno - 1][: target.body[0].col_offset].rstrip()
+            members = [m for m in node.body if not (isinstance(m, ast.Expr) and isinstance(m.value, ast.Constant))]
+            body = [line for m in members for line in indent(segment(delta_lines, m), "    ")]
+            edits.append(Edit(node_start(target), target.end_lineno, [header, *body]))
         elif isinstance(node, ast.ClassDef) and node.name in classes:
             target = classes[node.name]
             prefix = " " * target.body[0].col_offset

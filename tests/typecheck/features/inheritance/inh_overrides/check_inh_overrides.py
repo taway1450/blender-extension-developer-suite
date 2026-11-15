@@ -17,7 +17,7 @@ def operator(op: INH_OVERRIDES_OT_all, context: Context, event: Event) -> None:
     assert_type(op.modal(context, event), Result)
     assert_type(op.check(context), bool)
     assert_type(INH_OVERRIDES_OT_all.poll(context), bool)
-    assert_type(INH_OVERRIDES_OT_all.description(context, op.properties), str)
+    assert_type(INH_OVERRIDES_OT_all.description(context, op.properties), str | None)
     op.execute(1)  # ty: ignore[invalid-argument-type]
     op.invoke(context, context)  # ty: ignore[invalid-argument-type]
 

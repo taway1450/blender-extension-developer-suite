@@ -25,6 +25,51 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]
+features/api_types/api_stub_gaps/__init__.py | invalid-return-type | return None
+features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | values = (bpy.utils.system_resource('SCRIPTS'), bpy.utils.is_path_builtin(""), bpy.path.extensions_image,
+features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | next(iter(bpy.path.extensions_image)), imbuf.file_types, next(iter(imbuf.file_types)),
+features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | next(iter(imbuf.file_types.values())))
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unknown-argument | assert_type(BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False), BakeOptions)  # bare-ok: a stub fact: a dataclass's __init__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for vert in bm.verts:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(vert, BMVert)  # bare-ok: a stub fact: a BMVertSeq iterates over its vertices
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for edge in bm.edges:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge, BMEdge)  # bare-ok: a stub fact: a BMEdgeSeq iterates over its edges
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for face in bm.faces:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face, BMFace)  # bare-ok: a stub fact: a BMFaceSeq iterates over its faces
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(buf, memoryview)  # bare-ok: a stub fact: entering an ImBuf buffer gives a memoryview
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(matrix.col[0], Vector)  # bare-ok: a stub fact: a matrix column is a Vector
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for row in matrix.row:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(row, Vector)  # bare-ok: a stub fact: a matrix row is a Vector
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(preferences.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(library.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unsupported-operator | assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.utils.is_path_builtin(""), bool)  # bare-ok: a stub fact: public, though not in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(bpy.utils.is_path_builtin(""), bool)  # bare-ok: a stub fact: public, though not in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(Operator.description(context, properties), str | None)  # bare-ok: a stub fact: None shows the docstring
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(API_STUB_GAPS_OT_describe.description(context, properties), str | None)
 features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _FluidModifier_DOMAIN, _Object_EMPTY, _Object_FONT, _Object_MESH, _Object_SURFACE)
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(md.type, Literal['SUBSURF'])  # bare-ok: a stub fact: a SUBSURF modifier is a SubsurfModifier
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(gp_md.type, Literal['GREASE_PENCIL_OPACITY'])  # bare-ok: a stub fact: Grease Pencil modifiers too
@@ -207,6 +252,7 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #16
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #17
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
+features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(INH_OVERRIDES_OT_all.description(context, op.properties), str | None)
 features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | layout.label(text=item.name)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)

@@ -1,0 +1,64 @@
+[[probe]]
+code = "addon.bases('freestyle.types', 'ViewEdge')"
+expect = "Interface1D"
+reason = "a Freestyle C class has a base (tp_base)"
+
+[[probe]]
+code = "addon.bases('freestyle.predicates', 'QuantitativeInvisibilityUP1D')"
+expect = "UnaryPredicate1D"
+reason = "a Freestyle C predicate is a UnaryPredicate1D"
+
+[[probe]]
+code = "addon.bases('freestyle.chainingiterators', 'pyChainSilhouetteGenericIterator')"
+expect = "ChainingIterator"
+reason = "a Freestyle Python chaining iterator is a ChainingIterator"
+
+[[probe]]
+code = "addon.bases('freestyle.functions', 'pyDensityAnisotropyF1D')"
+expect = "UnaryFunction1DDouble"
+reason = "a Freestyle Python function is a UnaryFunction1DDouble"
+
+[[probe]]
+code = "type(__import__('freestyle.functions').functions.pyDensityAnisotropyF1D(4)).__name__"
+expect = "pyDensityAnisotropyF1D"
+reason = "its Python __init__ takes the level"
+
+[[probe]]
+code = "(lambda o: f'{type(o).__name__} {o.do_pose}')(__import__('bpy_extras.anim_utils').anim_utils.BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False))"
+expect = "BakeOptions True"
+reason = "a dataclass's __init__ takes its fields, which are attributes"
+
+[[probe]]
+code = "addon.bmesh_items()"
+expect = "BMVert BMEdge BMFace"
+reason = "BMesh sequences iterate over their elements"
+
+[[probe]]
+code = "addon.imbuf_buffer()"
+expect = "memoryview"
+reason = "entering an ImBuf buffer gives a memoryview"
+
+[[probe]]
+code = "addon.matrix_rows()"
+expect = "Vector Vector"
+reason = "a matrix column or row is a Vector"
+
+[[probe]]
+code = "' '.join(type(v).__name__ for v in (bpy.data.version, bpy.context.preferences.version))"
+expect = "tuple tuple"
+reason = "the thick-wrapped version arrays are tuples"
+
+[[probe]]
+code = "bpy.context.preferences.version >= (4, 2, 0)"
+expect = true
+reason = "so they compare with a tuple"
+
+[[probe]]
+code = "type(bpy.types.Operator.bl_rna).__name__ + ' ' + bpy.data.objects.new('api_stub_gaps', None).bl_rna.identifier"
+expect = "Struct Object"
+reason = "every RNA class has bl_rna, readable from an instance too"
+
+[[probe]]
+code = "addon.module_members()"
+expect = "str bool frozenset str mappingproxy str ImBufFileType"
+reason = "the public module members the stubs left out"

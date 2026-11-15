@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "api_stub_gaps"
+version = "1.0.0"
+name = "Feature test: facts the bpy stubs used to leave out"
+tagline = "Facts the stubs used to leave out"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

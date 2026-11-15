@@ -1,8 +1,8 @@
 # api_types
 
-**The stubs must state:** which pointers and callback parameters Blender never sets to None, and the Type tag of each
-refined subclass. These are runtime facts
-of the Blender API, not something the checker adds: the fix belongs in the stubs (Blender's RNA definitions, which
+**The stubs must state:** which pointers and callback parameters Blender never sets to None, the Type tag of each
+refined subclass, and the facts introspection misses (class bases, protocols, module members, ...). These are runtime
+facts of the Blender API, not something the checker adds: the fix belongs in the stubs (Blender's RNA definitions, which
 the stub generator reads), and the markers guard that the stubs keep saying so.
 
 ## What Blender does
@@ -32,13 +32,28 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   `_FluidModifier_DOMAIN` etc.
 - **The only action strip is a keyframe strip:** `ActionStrip.type` has the one value `'KEYFRAME'`, so the items of
   `ActionLayer.strips` and `ActionStrips.new()` are `ActionKeyframeStrip`.
+- **Introspection misses some facts** (Blender's fork adds them in `sphinx_doc_gen.py`):
+  - module classes have bases: Freestyle's C classes (`ViewEdge` is an `Interface1D`, `QuantitativeInvisibilityUP1D`
+    a `UnaryPredicate1D`) and its Python classes (`pyDensityAnisotropyF1D(UnaryFunction1DDouble)`), and a pure
+    Python class has its Python `__init__` (a dataclass such as `bpy_extras.anim_utils.BakeOptions` included);
+  - BMesh sequences (`bm.verts`, `bm.select_history`, ...) iterate over their elements, entering an ImBuf buffer
+    (`ibuf.with_buffer()`) gives a `memoryview`, and an item of `Matrix.row` / `Matrix.col` is a `Vector`;
+  - `BlendData.version`, `Library.version` and `Preferences.version` are `PROP_THICK_WRAP` int arrays, which read as
+    a `tuple`, so they compare with tuples;
+  - every struct has `bl_rna` (set on each class, so it is not in `bpy_struct.__dict__`);
+  - `bpy.utils.system_resource` and `is_path_builtin` are public though not in `__all__`; `bpy.path.extensions_*`
+    are frozensets and `imbuf.file_types` is a read-only dictionary;
+  - `Operator.description` may return None (its `result` string is not never-None), and Blender then shows the
+    operator's own description. There is no probe: Blender calls it only for a tooltip.
 
 | Addon | Variant |
 | --- | --- |
 | `api_never_none` | embedded and DNA pointers; unannotated callback overrides of `Menu`, `Header`, `UIList` and `RenderEngine`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form), the tag views of `Object` and `FluidModifier` (sibling form), action strips |
+| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None |
 
 Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the
 declared tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views (named exceptions
-in spec #75). The pointer, caller and Type tag markers are guards (`bare-ok`): they hold without the checker.
-The callback overrides need the checker's inheritance typing.
+in spec #75). The pointer, caller, Type tag and `api_stub_gaps` markers are guards (`bare-ok`): they hold without
+the checker. The callback overrides (and `api_stub_gaps`' unannotated `description`) need the checker's inheritance
+typing.

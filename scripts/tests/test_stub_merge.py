@@ -47,6 +47,22 @@ def test_a_new_member_is_added_at_the_end_of_the_class():
     )
 
 
+def test_a_member_of_an_empty_one_line_class_gives_the_class_a_body():
+    stub = """\
+        class ImBufBuffer: ...
+
+        class ImBuf: ...
+        """
+    assert merge(stub, "class ImBufBuffer:\n    def __enter__(self) -> memoryview: ...\n") == dedent(
+        """\
+        class ImBufBuffer:
+            def __enter__(self) -> memoryview: ...
+
+        class ImBuf: ...
+        """
+    )
+
+
 def test_an_overload_goes_in_front_and_the_existing_definition_becomes_the_last_overload():
     stub = """\
         class UILayout:
