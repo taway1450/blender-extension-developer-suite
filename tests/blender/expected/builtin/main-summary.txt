@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender 7a77a9e494
+# check:blender main, builtin stubs, Blender cec5a55dde
 bucket            shipped  presets    other    total
 context-member        757      277     1066     2100
 pointer-none         2025       88     1198     3311
@@ -7,8 +7,8 @@ stub-gap              308        0      138      446
 operator-call          89        0      183      272
 check-setup           112       12      108      232
 dynamic               575        0      199      774
-rest                 1146       12     1114     2272
-total                5854      449     4444    10747
+rest                 1102        0      978     2080
+total                5810      437     4308    10555
 
 rule                                 count
 blender-invalid-idname                   1
@@ -22,8 +22,8 @@ deprecated                              15
 empty-body                              32
 import-not-found                       203
 index-out-of-bounds                      2
-invalid-argument-type                 1763
-invalid-assignment                    1024
+invalid-argument-type                 1756
+invalid-assignment                     839
 invalid-attribute-override              70
 invalid-base                             4
 invalid-context-manager                 21

@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "api_setters"
+version = "1.0.0"
+name = "Feature test: assigning sequences to math and array properties"
+tagline = "Sequences assigned to math and array properties"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

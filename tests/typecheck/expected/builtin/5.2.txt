@@ -25,6 +25,25 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]
+features/api_types/api_setters/__init__.py | invalid-assignment | ob.location = (1, 2, 3)
+features/api_types/api_setters/__init__.py | invalid-assignment | ob.rotation_euler = (0.0, 0.0, 1.0)
+features/api_types/api_setters/__init__.py | invalid-assignment | ob.rotation_quaternion = [1.0, 0.0, 0.0, 0.0]
+features/api_types/api_setters/__init__.py | invalid-assignment | ob.matrix_world = ROWS
+features/api_types/api_setters/__init__.py | invalid-assignment | light.color = (1.0, 0.5, 0.0)
+features/api_types/api_setters/__init__.py | invalid-assignment | ob.lock_location = (True, False, True)
+features/api_types/api_setters/__init__.py | invalid-assignment | ob.color[0:3] = (0.25, 0.5, 0.75)
+features/api_types/api_setters/__init__.py | invalid-assignment | image.pixels[:] = [0.5] * 16
+features/api_types/api_setters/__init__.py | invalid-assignment | material.diffuse_color = (1.0, 0.0, 0.0, 1.0)
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | ob.location = (1, 1, 1)
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | ob.rotation_euler = (0.0, 0.0, 1.0)
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | ob.rotation_quaternion = [1.0, 0.0, 0.0, 0.0]
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | ob.matrix_world = rows
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | light.color = (1.0, 0.5, 0.0)
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | ob.lock_location = (True, False, True)
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | material.diffuse_color = (1.0, 0.0, 0.0, 1.0)
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | image.pixels[:] = [0.5] * 16
+features/api_types/api_setters/check_api_setters.py | invalid-assignment | ob.color[0:3] = (0.25, 0.5, 0.75)
+features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
 features/api_types/api_stub_gaps/__init__.py | invalid-return-type | return None
 features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | values = (bpy.utils.system_resource('SCRIPTS'), bpy.utils.is_path_builtin(""), bpy.path.extensions_image,
 features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | next(iter(bpy.path.extensions_image)), imbuf.file_types, next(iter(imbuf.file_types)),

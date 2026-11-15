@@ -20,6 +20,7 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]
+features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
 features/api_types/api_stub_gaps/__init__.py | invalid-return-type | return None
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
 features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"

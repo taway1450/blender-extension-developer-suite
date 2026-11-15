@@ -29,6 +29,31 @@ def test_a_member_of_an_existing_class_replaces_the_stubs_member():
     )
 
 
+def test_a_property_and_its_setter_replace_the_stubs_member_together():
+    stub = """\
+        class Object:
+            location: Vector
+            name: str
+        """
+    delta = """\
+        class Object:
+            @property
+            def location(self) -> Vector: ...
+            @location.setter
+            def location(self, value: Sequence[float]) -> None: ...
+        """
+    assert merge(stub, delta) == dedent(
+        """\
+        class Object:
+            @property
+            def location(self) -> Vector: ...
+            @location.setter
+            def location(self, value: Sequence[float]) -> None: ...
+            name: str
+        """
+    )
+
+
 def test_a_new_member_is_added_at_the_end_of_the_class():
     stub = """\
         class Scene:

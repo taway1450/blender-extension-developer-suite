@@ -1,6 +1,7 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender main.
 # `mise run check:features main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
 features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"

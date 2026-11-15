@@ -26,9 +26,7 @@ BUCKETS = [
     "rest",
 ]
 
-DIAGNOSTIC_LINE = re.compile(
-    r"^(?P<path>.+?):(?P<line>\d+):\d+: \w+\[(?P<rule>[\w-]+)\] (?P<msg>.*)$", re.MULTILINE
-)
+DIAGNOSTIC_LINE = re.compile(r"^(?P<path>.+?):(?P<line>\d+):\d+: \w+\[(?P<rule>[\w-]+)\] (?P<msg>.*)$", re.MULTILINE)
 
 SETUP_RULES = {"import-not-found", "unresolved-import", "possibly-missing-submodule"}
 STUB_GAP_RULES = {
@@ -97,12 +95,7 @@ def bucket(rule: str, msg: str, text: str) -> str:
         return "pointer-none"
     if rule == "unresolved-attribute" and BASE_CLASS.search(msg):
         return "type-tag"
-    if (
-        rule in STUB_GAP_RULES
-        or "bl_rna" in msg
-        or "object.__init__" in msg
-        or MODULE_MEMBER.search(msg)
-    ):
+    if rule in STUB_GAP_RULES or "bl_rna" in msg or "object.__init__" in msg or MODULE_MEMBER.search(msg):
         return "stub-gap"
     return "rest"
 
@@ -146,7 +139,9 @@ def read_diagnostics(output: str, source: Path) -> list[Diagnostic]:
         path, line = match["path"], int(match["line"])
         if path not in files:
             try:
-                files[path] = (source / path.replace("\\", "/")).read_text(encoding="utf-8", errors="replace").splitlines()
+                files[path] = (
+                    (source / path.replace("\\", "/")).read_text(encoding="utf-8", errors="replace").splitlines()
+                )
             except OSError:
                 files[path] = []
         lines = files[path]

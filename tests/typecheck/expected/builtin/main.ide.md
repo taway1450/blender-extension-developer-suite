@@ -22,6 +22,40 @@ PASS
 PASS
 ````
 
+## features/api_types/api_setters/ide_api_setters.py | ^hover @8 | ob.location
+
+````text
+```python
+Vector
+```
+````
+
+## features/api_types/api_setters/ide_api_setters.py | ^hover-contains "Vector" @8 | ob.location
+
+````text
+PASS
+````
+
+## features/api_types/api_setters/ide_api_setters.py | ^hover-contains "Matrix" @8 | ob.matrix_world
+
+````text
+PASS
+````
+
+## features/api_types/api_setters/ide_api_setters.py | ^hover @11 | image.pixels
+
+````text
+```python
+bpy_prop_array[float]
+```
+````
+
+## features/api_types/api_setters/ide_api_setters.py | ^hover-contains "bpy_prop_array[float]" @11 | image.pixels
+
+````text
+PASS
+````
+
 ## features/bpy_symbols/sym_bpy_extras/ide_sym_bpy_extras.py | ^hover-contains "-Z" @9 | imp.axis_up
 
 ````text
@@ -70,7 +104,7 @@ documentation:
 ## features/operator_calls/opcall_basic/ide_opcall_basic.py | ^signature @30 | bpy.ops.opcall_basic.all()
 
 ````text
-label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: bool = ..., /, *, int_value: int = ..., float_value: float = ..., bool_value: bool = ..., string_value: str = ..., enum_value: Literal["A", "B"] = ..., flag_value: set[Literal["A", "B"]] = ..., dynamic_value: str = ..., vector_value: Sequence[float] | bpy_prop_array[float] = ..., int_vector_value: Sequence[int] | bpy_prop_array[int] = ..., bool_vector_value: Sequence[bool] | bpy_prop_array[bool] = ..., matrix_value: Sequence[Sequence[float]] | bpy_prop_array[bpy_prop_array[float]] = ..., group_value: <TypedDict with items 'count', 'name'> = ..., items_value: Sequence[<TypedDict with items 'count', 'name'>] = ..., hidden_value: int = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+label: (execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ..., undo: bool = ..., /, *, int_value: int = ..., float_value: float = ..., bool_value: bool = ..., string_value: str = ..., enum_value: Literal["A", "B"] = ..., flag_value: set[Literal["A", "B"]] = ..., dynamic_value: str = ..., vector_value: Sequence[float] = ..., int_vector_value: Sequence[int] = ..., bool_vector_value: Sequence[bool] = ..., matrix_value: Sequence[Sequence[float]] = ..., group_value: <TypedDict with items 'count', 'name'> = ..., items_value: Sequence[<TypedDict with items 'count', 'name'>] = ..., hidden_value: int = ...) -> set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
 active parameter: 0
 parameters:
 - execution_context: Literal["INVOKE_DEFAULT", "INVOKE_REGION_WIN", "INVOKE_REGION_CHANNELS", "INVOKE_REGION_PREVIEW", "INVOKE_AREA", ... omitted 7 literals] = ...: (no documentation)
@@ -82,10 +116,10 @@ parameters:
 - enum_value: Literal["A", "B"] = ...: (no documentation)
 - flag_value: set[Literal["A", "B"]] = ...: (no documentation)
 - dynamic_value: str = ...: (no documentation)
-- vector_value: Sequence[float] | bpy_prop_array[float] = ...: (no documentation)
-- int_vector_value: Sequence[int] | bpy_prop_array[int] = ...: (no documentation)
-- bool_vector_value: Sequence[bool] | bpy_prop_array[bool] = ...: (no documentation)
-- matrix_value: Sequence[Sequence[float]] | bpy_prop_array[bpy_prop_array[float]] = ...: (no documentation)
+- vector_value: Sequence[float] = ...: (no documentation)
+- int_vector_value: Sequence[int] = ...: (no documentation)
+- bool_vector_value: Sequence[bool] = ...: (no documentation)
+- matrix_value: Sequence[Sequence[float]] = ...: (no documentation)
 - group_value: <TypedDict with items 'count', 'name'> = ...: (no documentation)
 - items_value: Sequence[<TypedDict with items 'count', 'name'>] = ...: (no documentation)
 - hidden_value: int = ...: (no documentation)
@@ -120,7 +154,7 @@ documentation:
 Operator `opcall_basic.all` (`OPCALL_BASIC_OT_all`): All<HB>
 <HB>
 ```python
-bpy.ops.opcall_basic.all(execution_context, undo, *, int_value: int, float_value: float, bool_value: bool, string_value: str, enum_value: Literal["A", "B"], flag_value: set[Literal["A", "B"]], dynamic_value: str, vector_value: Sequence[float] | bpy_prop_array[float], int_vector_value: Sequence[int] | bpy_prop_array[int], bool_vector_value: Sequence[bool] | bpy_prop_array[bool], matrix_value: Sequence[Sequence[float]] | bpy_prop_array[bpy_prop_array[float]], group_value: <TypedDict with items 'count', 'name'>, items_value: Sequence[<TypedDict with items 'count', 'name'>], hidden_value: int)
+bpy.ops.opcall_basic.all(execution_context, undo, *, int_value: int, float_value: float, bool_value: bool, string_value: str, enum_value: Literal["A", "B"], flag_value: set[Literal["A", "B"]], dynamic_value: str, vector_value: Sequence[float], int_vector_value: Sequence[int], bool_vector_value: Sequence[bool], matrix_value: Sequence[Sequence[float]], group_value: <TypedDict with items 'count', 'name'>, items_value: Sequence[<TypedDict with items 'count', 'name'>], hidden_value: int)
 ```
 ````
 

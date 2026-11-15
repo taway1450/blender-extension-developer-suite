@@ -136,16 +136,20 @@ def merge_members(
             by_name.setdefault(name, []).append(node)
     appended: list[str] = []
     overloads: dict[str, list[str]] = {}  # name -> delta overloads, in delta order, to put before the existing ones
+    replaced: dict[str, Edit] = {}  # name -> the edit replacing it, which a property's setter joins
     for node in delta_body:
         name = member_name(node)
         existing = by_name.get(name or "", [])
         text = indent(segment(delta_lines, node), prefix)
         if existing and is_overload(node):
             overloads.setdefault(name, []).extend(text)
+        elif name in replaced:
+            replaced[name].lines.extend(text)
         elif existing:
             for old in existing[1:]:
                 edits.append(Edit(node_start(old), old.end_lineno, []))
-            edits.append(Edit(node_start(existing[0]), existing[0].end_lineno, text))
+            replaced[name] = Edit(node_start(existing[0]), existing[0].end_lineno, text)
+            edits.append(replaced[name])
         elif not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)):  # skip docstrings
             appended += text
     for name, insert in overloads.items():

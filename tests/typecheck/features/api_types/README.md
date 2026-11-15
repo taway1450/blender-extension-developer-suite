@@ -45,15 +45,22 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
     are frozensets and `imbuf.file_types` is a read-only dictionary;
   - `Operator.description` may return None (its `result` string is not never-None), and Blender then shows the
     operator's own description. There is no probe: Blender calls it only for a tooltip.
+- **A math or array property takes any sequence** of the right length (`pyrna_py_to_array`): `ob.location = (1, 1,
+  1)`, `ob.matrix_world = rows`, `ob.lock_location = (True, False, True)`, and an array's slice any iterable of its
+  elements (`image.pixels[:] = buffer`). Reading it still gives the `Vector` / `Color` / `Euler` / `Quaternion` /
+  `Matrix` or the `bpy_prop_array`, and an element of the wrong type raises `TypeError`. The stubs write a writable one
+  as a property whose setter takes `Sequence[float]` (`Sequence[Sequence[float]]` for a `Matrix`, `Sequence[T]` for a
+  `bpy_prop_array[T]`); a `bpy_prop_array` is itself a `Sequence`.
 
 | Addon | Variant |
 | --- | --- |
 | `api_never_none` | embedded and DNA pointers; unannotated callback overrides of `Menu`, `Header`, `UIList` and `RenderEngine`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form), the tag views of `Object` and `FluidModifier` (sibling form), action strips |
 | `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None |
+| `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
 
 Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the
 declared tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views (named exceptions
-in spec #75). The pointer, caller, Type tag and `api_stub_gaps` markers are guards (`bare-ok`): they hold without
-the checker. The callback overrides (and `api_stub_gaps`' unannotated `description`) need the checker's inheritance
-typing.
+in spec #75). The pointer, caller, Type tag, `api_stub_gaps` and `api_setters` markers are guards (`bare-ok`): they
+hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated `description`) need the checker's
+inheritance typing.

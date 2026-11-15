@@ -1,0 +1,14 @@
+[[probe]]
+code = "addon.math_setters()"
+expect = "Vector Euler Quaternion Matrix Color 8.0"
+reason = "a math property takes a tuple or a list (a Matrix one of rows) and still reads as the math object"
+
+[[probe]]
+code = "addon.array_setters()"
+expect = "bpy_prop_array bpy_prop_array bpy_prop_array (True, False, True) (0.25, 0.5, 0.75, 1.0) 0.5 (1.0, 0.0, 0.0, 1.0)"
+reason = "an array property takes a tuple, also through a slice, and still reads as a bpy_prop_array"
+
+[[probe]]
+code = "addon.wrong_element()"
+expect = "raises"
+reason = "an element of the wrong type is rejected"
