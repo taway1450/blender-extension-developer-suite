@@ -51,6 +51,12 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   `Matrix` or the `bpy_prop_array`, and an element of the wrong type raises `TypeError`. The stubs write a writable one
   as a property whose setter takes `Sequence[float]` (`Sequence[Sequence[float]]` for a `Matrix`, `Sequence[T]` for a
   `bpy_prop_array[T]`); a `bpy_prop_array` is itself a `Sequence`.
+- **Blender's private C modules import:** `_cycles` (the Cycles add-on), `_bpy` (behind `bpy` itself), `_bpy_hydra`
+  (behind `HydraRenderEngine`) and `_freestyle` (Freestyle's C classes and functions). They have no API docs, so
+  Blender's fork writes their stubs by hand (`doc/python_api/stubs_handwritten/`): the first three are partial, every
+  member is `Any`; `_freestyle` re-exports its members from the documented `freestyle.*` modules, which re-export the
+  very same objects, so a `_freestyle.ViewEdge` is a `freestyle.types.ViewEdge`. Its few undocumented members
+  (`blendRamp`, `evaluateColorRamp`, `evaluateCurveMappingF`, `Integrator`) are `Any`.
 
 | Addon | Variant |
 | --- | --- |
@@ -58,9 +64,10 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 | `api_type_tags` | the Type tag of refined subclasses (value form), the tag views of `Object` and `FluidModifier` (sibling form), action strips |
 | `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
+| `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |
 
-Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the
-declared tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views (named exceptions
-in spec #75). The pointer, caller, Type tag, `api_stub_gaps` and `api_setters` markers are guards (`bare-ok`): they
-hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated `description`) need the checker's
-inheritance typing.
+Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the declared
+tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views and the C modules (named
+exceptions in spec #75). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
+guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
+`description`) need the checker's inheritance typing.

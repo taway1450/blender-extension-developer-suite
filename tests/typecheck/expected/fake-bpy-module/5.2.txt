@@ -3,6 +3,17 @@
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | if context.preferences is not None:
 features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
+features/api_types/api_c_modules/__init__.py | import-not-found | import _freestyle
+features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _bpy
+features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _bpy_hydra
+features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _cycles
+features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _freestyle
+features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | from _bpy import context_members
+features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | from _freestyle import ChainSilhouetteIterator, QuantitativeInvisibilityUP1D, blendRamp
+features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(edge, ViewEdge)  # bare-ok: a stub fact: a _freestyle class is the freestyle.types one
+features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(iterator, chainingiterators.ChainSilhouetteIterator)  # bare-ok: a stub fact: from freestyle.chainingiterators
+features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(QuantitativeInvisibilityUP1D(0), predicates.QuantitativeInvisibilityUP1D)  # bare-ok: a stub fact: from freestyle.predicates
+features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(_freestyle.getCurrentScene(), Scene)  # bare-ok: a stub fact: its functions keep their types too
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #3

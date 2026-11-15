@@ -73,6 +73,10 @@ def module_file(stubs: Path, module: str) -> Path | None:
     return None
 
 
+def is_private_top_level(module: str) -> bool:
+    return "." not in module and module.startswith("_")
+
+
 def new_module_file(stubs: Path, module: str) -> Path:
     parent, _, name = module.rpartition(".")
     parent_file = module_file(stubs, parent) if parent else None
@@ -256,6 +260,12 @@ class StubOverlay:
         target.mkdir(parents=True)
         for delta in sorted(deltas.glob("*.pyi")):
             module = delta.stem
+            if is_private_top_level(module) and not any((s / module).is_dir() for s in self.sources):
+                # A private C module of Blender's (`_cycles`) is a top-level module of its own.
+                out = target / module / "__init__.pyi"
+                out.parent.mkdir(parents=True)
+                out.write_text(delta.read_text(encoding="utf-8"), encoding="utf-8")
+                continue
             stubs, source = self.locate(module)
             top = (source or new_module_file(stubs, module)).relative_to(stubs).parts[0]
             if not (target / top).exists():

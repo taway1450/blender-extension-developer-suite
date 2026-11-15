@@ -250,6 +250,14 @@ def test_overlay_cannot_create_a_module_without_its_parent_package(tmp_path, stu
         StubOverlay([stubs]).build(tmp_path / "deltas", tmp_path / "out")
 
 
+def test_overlay_creates_a_private_top_level_module_no_stubs_provide(tmp_path, stubs):
+    """Blender's private C modules (`_cycles`, `_bpy`, ...) are top-level modules of their own."""
+    write(tmp_path / "deltas" / "_cycles.pyi", "def __getattr__(name: str) -> int: ...\n")
+    StubOverlay([stubs]).build(tmp_path / "deltas", tmp_path / "out")
+    assert (tmp_path / "out" / "_cycles" / "__init__.pyi").read_text() == "def __getattr__(name: str) -> int: ...\n"
+    assert not (stubs / "_cycles").exists()
+
+
 def test_overlay_rejects_a_package_no_stubs_provide(tmp_path, stubs):
     write(tmp_path / "deltas" / "numpy.pyi", "x: int\n")
     with pytest.raises(StepError, match="No stubs provide the package of numpy"):

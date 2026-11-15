@@ -1,0 +1,19 @@
+[[probe]]
+code = "addon.c_modules()"
+expect = "module module module module"
+reason = "the private C modules _cycles, _bpy, _bpy_hydra and _freestyle import"
+
+[[probe]]
+code = "addon.freestyle_undocumented()"
+expect = "Integrator blendRamp evaluateColorRamp evaluateCurveMappingF"
+reason = "every other member of _freestyle (classes, getCurrentScene, integrate, ContextFunctions) is re-exported by a documented freestyle module; these fall to its __getattr__"
+
+[[probe]]
+code = "__import__('_freestyle').ViewEdge is __import__('freestyle.types').types.ViewEdge"
+expect = true
+reason = "a _freestyle class is the freestyle one"
+
+[[probe]]
+code = "type(__import__('_cycles').with_osl).__name__"
+expect = "bool"
+reason = "_cycles has undocumented members"
