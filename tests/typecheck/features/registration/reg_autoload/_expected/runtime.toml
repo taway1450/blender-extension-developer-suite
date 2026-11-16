@@ -1,0 +1,4 @@
+[[probe]]
+code = "'reg_autoload_settings' in bpy.types.Scene.bl_rna.properties"
+expect = true
+reason = "register_class, called by auto_load, runs the group's register() classmethod"

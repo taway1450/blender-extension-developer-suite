@@ -7,8 +7,8 @@ stub-gap              745        0      345     1090
 operator-call          12        0      136      148
 check-setup           121       12      115      248
 dynamic               692        0      204      896
-rest                 1684        8     1204     2896
-total                8551      710     4992    14253
+rest                 1685        8     1204     2897
+total                8552      710     4992    14254
 
 rule                                 count
 blender-invalid-idname                   1
@@ -22,7 +22,7 @@ deprecated                              15
 empty-body                              32
 import-not-found                       209
 index-out-of-bounds                      2
-invalid-argument-type                 2732
+invalid-argument-type                 2733
 invalid-assignment                    1014
 invalid-attribute-override              71
 invalid-base                             4

@@ -1,0 +1,9 @@
+[[probe]]
+code = "'reg_classmethod' in bpy.types.Scene.bl_rna.properties and 'reg_classmethod' in bpy.types.Object.bl_rna.properties"
+expect = true
+reason = "register_class calls the group's register() classmethod, which assigns both pointers"
+
+[[probe]]
+code = "'reg_classmethod_never' in bpy.types.Scene.bl_rna.properties"
+expect = false
+reason = "a group nobody registers never runs its register() classmethod"
