@@ -4,11 +4,11 @@ context-member        583      532      714     1829
 pointer-none         3881      152     1755     5788
 type-tag              833        6      519     1358
 stub-gap              745        0      345     1090
-operator-call          20        0      136      156
+operator-call          12        0      136      148
 check-setup           121       12      115      248
 dynamic               692        0      204      896
-rest                 1690        8     1204     2902
-total                8565      710     4992    14267
+rest                 1684        8     1204     2896
+total                8551      710     4992    14253
 
 rule                                 count
 blender-invalid-idname                   1
@@ -23,7 +23,7 @@ empty-body                              32
 import-not-found                       209
 index-out-of-bounds                      2
 invalid-argument-type                 2732
-invalid-assignment                    1028
+invalid-assignment                    1014
 invalid-attribute-override              71
 invalid-base                             4
 invalid-context-manager                 81

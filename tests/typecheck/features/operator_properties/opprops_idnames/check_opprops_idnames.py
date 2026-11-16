@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal, assert_type
 
-from bpy.types import OperatorProperties, UILayout
+from bpy.types import OperatorProperties, UILayout, bpy_prop_array
 
 from . import CATEGORY, STEP_IDNAME, OPPROPS_IDNAMES_OT_step
 
@@ -31,3 +31,22 @@ def not_known(layout: UILayout, name: str) -> None:
     assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
     layout.operator("opprops_idnames.missing")  # ty: ignore[blender-unknown-operator]
     layout.operator("opprops_sinks.step")  # ty: ignore[blender-unknown-operator]
+
+
+def conditional(layout: UILayout, enabled: bool) -> None:
+    props = layout.operator("wm.owner_disable" if enabled else "wm.owner_enable")
+    assert_type(props.owner_id, str)
+    props.owner_id = "my_addon"
+    props.owner_id = 1  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the assert above needs the checker
+    mixed = layout.operator("opprops_idnames.step" if enabled else "opprops_idnames_ot_odd.run")
+    mixed.factor  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: the odd operator has no factor
+    layout.operator("opprops_idnames.step" if enabled else "opprops_idnames.missing")  # ty: ignore[blender-unknown-operator]
+
+
+def builtin_arrays(layout: UILayout) -> None:
+    props = layout.operator("transform.mirror")
+    assert_type(props.constraint_axis, bpy_prop_array[bool])
+    props.constraint_axis[0] = True
+    props.constraint_axis = (True, False, False)
+    assert_type(layout.operator("image.resize").size, bpy_prop_array[int])
+    assert_type(layout.operator("image.new").color, bpy_prop_array[float])

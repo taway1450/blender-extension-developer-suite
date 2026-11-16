@@ -1,0 +1,9 @@
+[[probe]]
+code = "addon.OPPROPS_SINKS_OT_step.description(bpy.context, bpy.context.window_manager.operator_properties_last('opprops_sinks.step'))"
+expect = "Step by 0"
+reason = "description receives the operator's own properties"
+
+[[probe]]
+code = "type(bpy.context.window_manager.operator_properties_last('opprops_sinks.files').properties).__name__"
+expect = "bpy_prop_collection_idprop"
+reason = "an operator property may be named properties; Operator.__getattribute__ returns it before Operator.properties"

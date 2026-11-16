@@ -199,7 +199,6 @@ features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_ty
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #2
-features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(properties, OperatorProperties)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #3
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #4
@@ -235,6 +234,7 @@ features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.u
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
+features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.template_popup_confirm("", cancel_text="Close"), OperatorProperties | None)  # bare-ok: no operator, only a cancel button: the stub type is kept and no idname is reported
 features/properties/props_data_blocks/__init__.py | unresolved-attribute | layout.label(text=item.name)
 features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=str(self.value))
 features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=text)

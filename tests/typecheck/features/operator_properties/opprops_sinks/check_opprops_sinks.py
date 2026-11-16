@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Literal, assert_type
 
-from bpy.types import Gizmo, KeyMap, UILayout, WindowManager, WorkSpaceTool
+from bpy.types import (Gizmo, KeyMap, OperatorFileListElement, OperatorProperties, UILayout, WindowManager,
+                       WorkSpaceTool, bpy_prop_collection_idprop)
 
-from . import OPPROPS_SINKS_OT_bare, OPPROPS_SINKS_OT_combo, OPPROPS_SINKS_OT_step
+from . import OPPROPS_SINKS_OT_bare, OPPROPS_SINKS_OT_combo, OPPROPS_SINKS_OT_files, OPPROPS_SINKS_OT_step
 
 
 def layout_operator(layout: UILayout) -> None:
@@ -81,3 +82,17 @@ def own_properties(step: OPPROPS_SINKS_OT_step, bare: OPPROPS_SINKS_OT_bare) -> 
     assert_type(props.label, str)
     assert_type(props.flags, set[Literal["A", "B"]])
     bare.properties.amount  # ty: ignore[unresolved-attribute]
+
+
+def popup_confirm(layout: UILayout) -> None:
+    props = layout.template_popup_confirm("opprops_sinks.step", text="Step")
+    assert_type(props.amount, int)
+    assert_type(props.mode, Literal["A", "B"])
+    props.amount = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
+    assert_type(layout.template_popup_confirm("", cancel_text="Close"), OperatorProperties | None)  # bare-ok: no operator, only a cancel button: the stub type is kept and no idname is reported
+
+
+def own_property_named_properties(files: OPPROPS_SINKS_OT_files) -> None:
+    assert_type(files.properties, bpy_prop_collection_idprop[OperatorFileListElement])
+    for element in files.properties:
+        assert_type(element.name, str)

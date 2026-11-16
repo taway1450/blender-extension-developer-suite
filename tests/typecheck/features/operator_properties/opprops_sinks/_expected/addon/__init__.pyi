@@ -2,7 +2,8 @@
 
 from typing import Literal
 
-from bpy.types import Macro, Operator, Panel, _opprops_sinks_bare_properties, _opprops_sinks_step_properties
+from bpy.types import (Macro, Operator, OperatorFileListElement, Panel, _opprops_sinks_bare_properties,
+                       _opprops_sinks_step_properties, bpy_prop_collection_idprop)
 
 class OPPROPS_SINKS_OT_step(Operator):
     amount: int
@@ -15,6 +16,9 @@ class OPPROPS_SINKS_OT_step(Operator):
 class OPPROPS_SINKS_OT_bare(Operator):
     @property
     def properties(self) -> _opprops_sinks_bare_properties: ...
+
+class OPPROPS_SINKS_OT_files(Operator):
+    properties: bpy_prop_collection_idprop[OperatorFileListElement]
 
 class OPPROPS_SINKS_OT_combo(Macro): ...
 class OPPROPS_SINKS_PT_panel(Panel): ...

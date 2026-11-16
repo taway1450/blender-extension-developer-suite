@@ -1,14 +1,18 @@
 """Feature test: the Blender functions that take an operator idname as a string and return (or hold) that
 operator's properties: UILayout.operator, operator_menu_hold, operator_menu_enum, KeyMapItems.new(...).properties,
-WindowManager.operator_properties_last, Gizmo.target_set_operator, WorkSpaceTool.operator_properties, the
-OperatorMacro of Macro.define and an operator's own self.properties. With a known idname (either form,
-category.name or CATEGORY_OT_name) the result has the operator's properties and is not None (checked in Blender
-5.4; kmi.properties is never None). operator_enum and operator_menu_enum also name an enum property of the
-operator."""
+WindowManager.operator_properties_last, Gizmo.target_set_operator, WorkSpaceTool.operator_properties,
+UILayout.template_popup_confirm, the OperatorMacro of Macro.define, an operator's own self.properties and the
+properties argument of its description classmethod. With a known idname (either form, category.name or
+CATEGORY_OT_name) the result has the operator's properties and is not None (checked in Blender 5.4;
+kmi.properties is never None). operator_enum and operator_menu_enum also name an enum property of the operator.
+An operator's own property named `properties` replaces Operator.properties: Operator.__getattribute__ looks the
+operator's properties up first. The assert_type call in description is a no-op at runtime."""
+
+from typing import assert_type
 
 import bpy
-from bpy.props import EnumProperty, IntProperty, StringProperty
-from bpy.types import Macro, Operator, Panel
+from bpy.props import CollectionProperty, EnumProperty, IntProperty, StringProperty
+from bpy.types import Macro, Operator, OperatorFileListElement, Panel
 
 AB = [("A", "A", ""), ("B", "B", "")]
 
@@ -23,6 +27,11 @@ class OPPROPS_SINKS_OT_step(Operator):
     label: StringProperty()
     flags: EnumProperty(items=AB, options={"ENUM_FLAG"})
 
+    @classmethod
+    def description(cls, context, properties):
+        assert_type(properties.amount, int)
+        return f"Step by {properties.amount}"
+
     def execute(self, context):
         self.properties.amount += 1
         return {"FINISHED"}
@@ -33,6 +42,18 @@ class OPPROPS_SINKS_OT_bare(Operator):
     bl_label = "Bare"
 
     def execute(self, context):
+        return {"FINISHED"}
+
+
+class OPPROPS_SINKS_OT_files(Operator):
+    bl_idname = "opprops_sinks.files"
+    bl_label = "Files"
+
+    properties: CollectionProperty(type=OperatorFileListElement)
+
+    def execute(self, context):
+        for element in self.properties:
+            print(element.name)
         return {"FINISHED"}
 
 
@@ -62,6 +83,7 @@ addon_keymaps = []
 def register():
     bpy.utils.register_class(OPPROPS_SINKS_OT_step)
     bpy.utils.register_class(OPPROPS_SINKS_OT_bare)
+    bpy.utils.register_class(OPPROPS_SINKS_OT_files)
     bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
     bpy.utils.register_class(OPPROPS_SINKS_PT_panel)
     OPPROPS_SINKS_OT_combo.define("OPPROPS_SINKS_OT_step").properties.amount = 2
@@ -82,5 +104,6 @@ def unregister():
     addon_keymaps.clear()
     bpy.utils.unregister_class(OPPROPS_SINKS_PT_panel)
     bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
+    bpy.utils.unregister_class(OPPROPS_SINKS_OT_files)
     bpy.utils.unregister_class(OPPROPS_SINKS_OT_bare)
     bpy.utils.unregister_class(OPPROPS_SINKS_OT_step)

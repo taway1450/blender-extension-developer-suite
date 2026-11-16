@@ -10,17 +10,20 @@ function that takes one, accepting both forms (`category.name` and `CATEGORY_OT_
 | `KeyMapItems.new(...).properties` | the properties (never `None` at runtime) | |
 | `WindowManager.operator_properties_last` | the properties (`None` only for unknown operators) | |
 | `Gizmo.target_set_operator`, `WorkSpaceTool.operator_properties` | the properties | |
+| `UILayout.template_popup_confirm` | the properties, not `None` | `""` (no operator, only a cancel button: not an unknown operator) |
 | `Macro.define(...).properties` | the properties | |
-| `Operator.properties` (`self.properties`) | the operator's own properties | |
+| `Operator.properties` (`self.properties`) | the operator's own properties | an own property named `properties`, which wins |
+| the `properties` parameter of an overriding `description(cls, context, properties)` | the operator's own properties | |
 | `WorkSpaceTool.bl_keymap` tuples | property names and values are checked | |
 
-The idname is evaluated (constants, `Cls.bl_idname`, f-strings of constants). Blender's own operators have their
+The idname is evaluated (constants, `Cls.bl_idname`, f-strings of constants); a conditional idname (`"a" if c else "b"`)
+gives the union of each operator's properties. Blender's own operators have their
 properties too (`layout.operator("object.select_all").action`). The properties object has the operator's
 properties only: unknown attributes are errors even though fake-bpy-module's `OperatorProperties` accepts any.
 
 | Addon | Variant |
 | --- | --- |
-| `opprops_sinks` | every sink, both idname forms, an operator without properties, `bl_keymap` |
-| `opprops_idnames` | idname forms, built-in operators, a dynamic idname, unknown idnames (also another add-on's) |
+| `opprops_sinks` | every sink, both idname forms, an operator without properties, `bl_keymap`, `description`'s parameter, a property named `properties` |
+| `opprops_idnames` | idname forms, built-in operators and their array properties, a dynamic idname, a conditional idname, unknown idnames (also another add-on's) |
 
 **Rules:** `blender-unknown-operator`, `blender-invalid-operator-property`.

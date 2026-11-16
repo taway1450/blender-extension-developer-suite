@@ -13,10 +13,10 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | context_members | 43/43 | - | 12/12 | - | 0 |
 | inheritance | 64/64 | 45/45 | 13/13 | 3/3 | 0 |
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
-| operator_properties | 45/45 | 9/9 | 7/7 | 5/5 | 0 |
+| operator_properties | 54/54 | 10/10 | 11/11 | 5/5 | 0 |
 | properties | 421/421 | 101/101 | 5/5 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 40/40 | 4/4 | 3/3 | 3/3 | 0 |
 | registration_checks | 9/9 | 37/37 | 10/10 | - | 0 |
 | type_narrowing | 18/18 | - | 2/2 | - | 0 |
-| **total** | 875/875 | 291/291 | 169/169 | 39/39 | 0 |
+| **total** | 884/884 | 292/292 | 173/173 | 39/39 | 0 |

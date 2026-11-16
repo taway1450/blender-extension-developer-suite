@@ -9,7 +9,7 @@ from typing import Any, TypeVar, assert_type, cast
 
 import bpy
 from bpy.props import IntProperty
-from bpy.types import (Context, Event, Header, Menu, Node, NodeSocket, NodeTree, Operator, OperatorProperties,
+from bpy.types import (Context, Event, Header, Menu, Node, NodeSocket, NodeTree, Operator,
                        Panel, UILayout, UIList)
 
 
@@ -27,7 +27,7 @@ class INH_OVERRIDES_OT_all(Operator):
     @classmethod
     def description(cls, context, properties):
         assert_type(context, Context)
-        assert_type(properties, OperatorProperties)
+        assert_type(properties.count, int)
         return "Every Operator callback"
 
     def invoke(self, context, event):

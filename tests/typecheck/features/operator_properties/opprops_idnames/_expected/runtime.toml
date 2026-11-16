@@ -2,3 +2,18 @@
 code = "('ODD_OT_run' in dir(bpy.ops.opprops_idnames), bpy.ops.opprops_idnames_ot_odd.run.poll())"
 expect = "(True, True)"
 reason = "Blender splits the idname after its first _OT_ (WM_operator_py_idname), and still finds the operator by the idname it registered with"
+
+[[probe]]
+code = "type(bpy.context.window_manager.operator_properties_last('transform.mirror').constraint_axis).__name__"
+expect = "bpy_prop_array"
+reason = "a built-in bool array property reads as a bpy_prop_array, not the Sequence[bool] the stub's keyword takes"
+
+[[probe]]
+code = "type(bpy.context.window_manager.operator_properties_last('image.resize').size).__name__"
+expect = "bpy_prop_array"
+reason = "a built-in int array property reads as a bpy_prop_array"
+
+[[probe]]
+code = "type(bpy.context.window_manager.operator_properties_last('image.new').color).__name__"
+expect = "bpy_prop_array"
+reason = "a built-in float array property without a mathutils subtype reads as a bpy_prop_array"
