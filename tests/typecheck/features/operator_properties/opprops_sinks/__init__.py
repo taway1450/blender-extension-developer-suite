@@ -6,9 +6,7 @@ properties argument of its description classmethod. With a known idname (either 
 CATEGORY_OT_name) the result has the operator's properties and is not None (checked in Blender 5.4;
 kmi.properties is never None). operator_enum and operator_menu_enum also name an enum property of the operator.
 An operator's own property named `properties` replaces Operator.properties: Operator.__getattribute__ looks the
-operator's properties up first. The assert_type call in description is a no-op at runtime."""
-
-from typing import assert_type
+operator's properties up first."""
 
 import bpy
 from bpy.props import CollectionProperty, EnumProperty, IntProperty, StringProperty
@@ -29,7 +27,6 @@ class OPPROPS_SINKS_OT_step(Operator):
 
     @classmethod
     def description(cls, context, properties):
-        assert_type(properties.amount, int)
         return f"Step by {properties.amount}"
 
     def execute(self, context):

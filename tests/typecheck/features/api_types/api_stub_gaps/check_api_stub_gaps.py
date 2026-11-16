@@ -19,7 +19,7 @@ from freestyle.types import UnaryFunction1DDouble, UnaryPredicate1D, ViewEdge
 from imbuf.types import ImBuf, ImBufFileType
 from mathutils import Matrix, Vector
 
-from . import API_STUB_GAPS_OT_describe
+from . import API_STUB_GAPS_OT_describe, bake_options
 
 
 def as_predicate(predicate: UnaryPredicate1D) -> UnaryPredicate1D:
@@ -35,7 +35,7 @@ def classes(edge: ViewEdge, iterator: pyChainSilhouetteGenericIterator, options:
     assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
     assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
     assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
-    assert_type(BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False), BakeOptions)  # bare-ok: a stub fact: a dataclass's __init__
+    assert_type(bake_options(), BakeOptions)  # bare-ok: a stub fact: a dataclass's __init__, which bake_options() calls with every field
     assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 
 

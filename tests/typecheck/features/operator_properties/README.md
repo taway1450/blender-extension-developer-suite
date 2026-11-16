@@ -17,13 +17,13 @@ function that takes one, accepting both forms (`category.name` and `CATEGORY_OT_
 | `WorkSpaceTool.bl_keymap` tuples | property names and values are checked | |
 
 The idname is evaluated (constants, `Cls.bl_idname`, f-strings of constants); a conditional idname (`"a" if c else "b"`)
-gives the union of each operator's properties. Blender's own operators have their
-properties too (`layout.operator("object.select_all").action`). The properties object has the operator's
+gives the union of each operator's properties, and in a `bl_keymap` tuple is checked against each operator. Blender's
+own operators have their properties too (`layout.operator("object.select_all").action`). The properties object has the operator's
 properties only: unknown attributes are errors even though fake-bpy-module's `OperatorProperties` accepts any.
 
 | Addon | Variant |
 | --- | --- |
-| `opprops_sinks` | every sink, both idname forms, an operator without properties, `bl_keymap`, `description`'s parameter, a property named `properties` |
+| `opprops_sinks` | every sink, both idname forms, an operator without properties, `bl_keymap` (also with a conditional idname), `description`'s parameter (in a subclass), a property named `properties` |
 | `opprops_idnames` | idname forms, built-in operators and their array properties, a dynamic idname, a conditional idname, unknown idnames (also another add-on's) |
 
 **Rules:** `blender-unknown-operator`, `blender-invalid-operator-property`.

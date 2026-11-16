@@ -1,4 +1,4 @@
-"""Addon operators in Blender's categories and in a shared new category."""
+"""Add-on operators in Blender's categories and in a shared new category."""
 
 from __future__ import annotations
 

@@ -33,6 +33,7 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]
 features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
 features/api_types/api_stub_gaps/__init__.py | invalid-return-type | return None
+features/api_types/api_stub_gaps/__init__.py | unknown-argument | return BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False)
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
 features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
@@ -46,7 +47,6 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute |
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unknown-argument | assert_type(BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False), BakeOptions)  # bare-ok: a stub fact: a dataclass's __init__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:

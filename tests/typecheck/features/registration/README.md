@@ -15,6 +15,7 @@ registered property an attribute of its class. Classes that are never registered
 | `reg_autoload` | an `auto_load` module that finds classes at runtime: every Blender class of the add-on counts as registered, and the properties a `PropertyGroup.register()` classmethod assigns exist |
 | `reg_conditional` | version checks, `try`, `hasattr`, environment variables: conditionally registered classes count |
 | `reg_classmethod` | a `PropertyGroup` whose `register()` / `unregister()` classmethods assign properties and register a class, as Cycles does |
+| `reg_classmethod_plain` | a `PropertyGroup` whose `register()` is a plain method: `register_class` calls it without arguments, which fails before its body runs, so its property does not exist |
 
 Code reached by `register()` counts toward that add-on, also when it lives in a package shared with other add-ons
 (see `registration_checks/regchk_isolation_*`).

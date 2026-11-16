@@ -9,6 +9,7 @@ import importlib
 
 import bpy
 from bpy.types import Operator
+from bpy_extras.anim_utils import BakeOptions
 
 
 class API_STUB_GAPS_OT_describe(Operator):
@@ -29,6 +30,11 @@ def bases(module_name, class_name):
     """The names of the bases of ``module_name.class_name``."""
     cls = getattr(importlib.import_module(module_name), class_name)
     return " ".join(base.__name__ for base in cls.__bases__)
+
+
+def bake_options() -> BakeOptions:
+    """The options anim_utils.bake_action takes, built as an add-on builds them: a dataclass with 12 fields."""
+    return BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False)
 
 
 def bmesh_items():

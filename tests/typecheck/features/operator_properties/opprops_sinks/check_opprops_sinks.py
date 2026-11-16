@@ -96,3 +96,12 @@ def own_property_named_properties(files: OPPROPS_SINKS_OT_files) -> None:
     assert_type(files.properties, bpy_prop_collection_idprop[OperatorFileListElement])
     for element in files.properties:
         assert_type(element.name, str)
+
+
+class CheckDescription(OPPROPS_SINKS_OT_step):  # ty: ignore[blender-unregistered-class]
+    """Blender passes `description` the operator's own properties, which an override in a subclass gets too."""
+
+    @classmethod
+    def description(cls, context, properties):
+        assert_type(properties.amount, int)  # oracle-skip: a class defined in the check file
+        return ""

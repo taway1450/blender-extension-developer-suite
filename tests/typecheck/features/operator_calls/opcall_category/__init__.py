@@ -1,4 +1,4 @@
-"""Feature test: addon operators in a category Blender already has (object) sit next to the built-in operators, which
+"""Feature test: add-on operators in a category Blender already has (object) sit next to the built-in operators, which
 take the positional execution context and undo flag too, and several operators can share a new category."""
 
 import bpy

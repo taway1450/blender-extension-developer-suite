@@ -1,4 +1,4 @@
-"""Reference stub delta: the operator the addon adds to bpy.ops.object, and a built-in one as the checker types it."""
+"""Reference stub delta: the operator the add-on adds to bpy.ops.object, and a built-in one as the checker types it."""
 
 from collections.abc import Sequence
 from typing import Literal, TypeAlias, TypedDict, overload

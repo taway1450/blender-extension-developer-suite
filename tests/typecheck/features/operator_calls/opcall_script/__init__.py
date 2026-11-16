@@ -1,5 +1,5 @@
-"""Not an addon (no manifest, no bl_info): a script like those in Blender's ``scripts/startup``, which calls built-in
-operators with the positional execution context and undo flag as any addon does."""
+"""Not an add-on (no manifest, no bl_info): a script like those in Blender's ``scripts/startup``, which calls built-in
+operators with the positional execution context and undo flag as any add-on does."""
 
 import bpy
 

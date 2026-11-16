@@ -1,7 +1,12 @@
 """WorkSpaceTool.bl_keymap names operators and their property values in tuples; the checker checks them against
-the operator (only the checker can: they are plain tuples to the type system)."""
+the operator (only the checker can: they are plain tuples to the type system). A conditional idname is checked
+against each operator it can name."""
+
+import os
 
 from bpy.types import WorkSpaceTool
+
+ALTERNATE = "OPPROPS_SINKS_ALTERNATE" in os.environ
 
 
 class OPPROPS_SINKS_Tool(WorkSpaceTool):
@@ -19,4 +24,10 @@ class OPPROPS_SINKS_Tool(WorkSpaceTool):
         ("opprops_sinks.step", {"type": "C", "value": "PRESS"},
          {"properties": [("missing", 1)]}),  # ty: ignore[blender-invalid-operator-property]
         ("opprops_sinks.missing", {"type": "D", "value": "PRESS"}, None),  # ty: ignore[blender-unknown-operator]
+        ("opprops_sinks.step" if ALTERNATE else "OPPROPS_SINKS_OT_step", {"type": "E", "value": "PRESS"},
+         {"properties": [("amount", 1)]}),
+        ("opprops_sinks.step" if ALTERNATE else "opprops_sinks.bare", {"type": "F", "value": "PRESS"},
+         {"properties": [("amount", 1)]}),  # ty: ignore[blender-invalid-operator-property]
+        ("opprops_sinks.step" if ALTERNATE else "opprops_sinks.missing",  # ty: ignore[blender-unknown-operator]
+         {"type": "G", "value": "PRESS"}, None),
     )

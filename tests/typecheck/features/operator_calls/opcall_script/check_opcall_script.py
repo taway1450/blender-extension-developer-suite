@@ -1,4 +1,4 @@
-"""Built-in operators called from a script outside any addon."""
+"""Built-in operators called from a script outside any add-on."""
 
 from __future__ import annotations
 

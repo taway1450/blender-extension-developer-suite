@@ -154,7 +154,7 @@ def merge_members(
                 edits.append(Edit(node_start(old), old.end_lineno, []))
             replaced[name] = Edit(node_start(existing[0]), existing[0].end_lineno, text)
             edits.append(replaced[name])
-        elif not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)):  # skip docstrings
+        elif not is_docstring(node):
             appended += text
     for name, insert in overloads.items():
         existing = by_name[name]
@@ -165,6 +165,11 @@ def merge_members(
     if appended:
         edits.append(Edit(append_at, append_at, appended))
     return needs_overload
+
+
+def is_docstring(node: ast.stmt) -> bool:
+    """A docstring, or another bare constant such as ``...``: a statement that no merge copies."""
+    return isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
 
 
 def class_header(node: ast.ClassDef) -> list[str]:
@@ -209,7 +214,7 @@ def merge_delta(stub_text: str, delta_text: str, stub_tree: ast.Module | None = 
             # `class X: ...` has no body to merge into: write its header with the delta's members.
             target = classes[node.name]
             header = lines[target.lineno - 1][: target.body[0].col_offset].rstrip()
-            members = [m for m in node.body if not (isinstance(m, ast.Expr) and isinstance(m.value, ast.Constant))]
+            members = [m for m in node.body if not is_docstring(m)]
             body = [line for m in members for line in indent(segment(delta_lines, m), "    ")]
             edits.append(Edit(node_start(target), target.end_lineno, [header, *body]))
         elif isinstance(node, ast.ClassDef) and node.name in classes:
