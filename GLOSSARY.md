@@ -86,8 +86,15 @@ _Avoid_: discriminator, kind
 ## Diagnostics
 
 **Assumption**:
-A Blender fact the typechecker takes as given without proof, such as a pointer that `poll()` checked not being None, or `space_data` in a `CLIP_MT_` menu being a `SpaceClipEditor`. It reports each one under its own rule, at warning or info level, so the user can see, raise or silence it.
+A Blender fact the typechecker takes as given with no evidence in the code, such as `context.scene` not being None outside a Blender callback. It reports each one under its own rule, so the user can see, raise or silence it.
 _Avoid_: heuristic, soft error
+
+**Implied narrowing**:
+Narrowing from a Blender fact visible in the code that Python itself does not treat as a check, such as a `poll()` that checks a pointer, or a menu's idname prefix naming the space it is drawn in. Like an Assumption, it is reported under its own rule.
+
+**Imprecise annotation**:
+An annotation that is less precise than the stubs but works and is common in add-ons, such as `-> set[str]` on `execute`. The typechecker accepts it, types the code as the precise form, and reports it under its own rule.
+_Avoid_: loose annotation, style issue
 
 ## Add-on code
 
