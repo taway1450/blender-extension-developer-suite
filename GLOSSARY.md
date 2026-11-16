@@ -83,6 +83,12 @@ A member of `bpy.types.Context` that Blender always fills when it calls a given 
 A property of a Blender instance whose value names the subclass that instance, or one of its pointers, really is: `Modifier.type` (`'SUBSURF'` is a `SubsurfModifier`), `Object.type` (`'MESH'` makes `Object.data` a `Mesh`), `Node.bl_idname`.
 _Avoid_: discriminator, kind
 
+## Diagnostics
+
+**Assumption**:
+A Blender fact the typechecker takes as given without proof, such as a pointer that `poll()` checked not being None, or `space_data` in a `CLIP_MT_` menu being a `SpaceClipEditor`. It reports each one under its own rule, at warning or info level, so the user can see, raise or silence it.
+_Avoid_: heuristic, soft error
+
 ## Add-on code
 
 **Add-on index**:
