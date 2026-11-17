@@ -79,7 +79,7 @@ class INH_OVERRIDE_TYPES_OT_enum_set_returns(Operator):
 
 class INH_OVERRIDE_TYPES_UL_filter(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property):
-        layout.label(text="item")
+        pass
 
     def filter_items(self, context, data, property):
         flags = [self.bitflag_filter_item] * len(getattr(data, property))
@@ -88,7 +88,7 @@ class INH_OVERRIDE_TYPES_UL_filter(UIList):
 
 class INH_OVERRIDE_TYPES_UL_filter_annotated(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property):
-        layout.label(text="item")
+        pass
 
     def filter_items(self, context, data, property) -> tuple[list[int], list[int]]:  # lists for the arrays: fine
         return [], []

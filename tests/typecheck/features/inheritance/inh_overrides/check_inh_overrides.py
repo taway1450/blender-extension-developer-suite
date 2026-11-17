@@ -71,9 +71,9 @@ class INH_OVERRIDES_HT_check_layout(Header):  # ty: ignore[blender-unregistered-
     bl_space_type = "VIEW_3D"
 
     def draw(self, context):
-        self._draw_mode(context)
+        self._draw_mode()
 
-    def _draw_mode(self, context: Context) -> None:
+    def _draw_mode(self) -> None:
         assert_type(self.layout, UILayout)  # oracle-skip: a class defined in the check file
 
 

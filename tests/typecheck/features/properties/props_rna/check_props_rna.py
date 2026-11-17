@@ -23,8 +23,8 @@ def builtin(keyframe: Keyframe, obj: Object, key: str) -> None:
     assert_type(obj.bl_rna.properties["name"], StringProperty)  # oracle-skip: typed by the key
     assert_type(obj.bl_rna.properties["material_slots"], CollectionProperty)  # oracle-skip: typed by the key
     assert_type(obj.bl_rna.properties["parent"], PointerProperty)  # oracle-skip: typed by the key
-    assert_type(obj.bl_rna.properties["no_such_property"], Property)  # bare-ok: a name Object lacks keeps Property
-    assert_type(obj.bl_rna.properties[key], Property)  # bare-ok: a key that is not a literal keeps Property
+    assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a name Object lacks keeps Property
+    assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
 
 
 def own(settings: PROPS_RNA_Settings) -> None:

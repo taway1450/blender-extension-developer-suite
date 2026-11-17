@@ -20,7 +20,7 @@ narrowed-by-menu-prefix         implied-narrowing     S5          238        0  
 narrowed-by-popover             implied-narrowing     S5            1        0        0        1
 narrowed-by-poll                implied-narrowing     S5         2069        0       13     2082
 imprecise-operator-return       imprecise-annotation  S4           23        0        5       28
-imprecise-enum-value            imprecise-annotation  S4           15        0       12       27
+imprecise-enum-value            imprecise-annotation  S4           15        0       18       33
 imprecise-callback-parameter    imprecise-annotation  S4            1        0        1        2
 context-never-none              typechecker-fix       S1            0        0        0        0
 callback-never-none             typechecker-fix       S1           10        0        0       10
@@ -32,15 +32,15 @@ render-engine-positional        typechecker-fix       S2            0        0  
 dynamic-enum                    typechecker-fix       S2            0        0        0        0
 stub-context-manager            typechecker-fix       S2            5        0       14       19
 stub-docstring                  typechecker-fix       S2            2        0        0        2
-layout-in-helper                typechecker-fix       S3          152        0        0      152
-file-registered-property        typechecker-fix       S3           21        0      202      223
-bl-rna-property                 typechecker-fix       S3           36        0       15       51
-type-call-bases                 typechecker-fix       S3            1        0        0        1
-filter-items-tuple              typechecker-fix       S3           11        0        2       13
+layout-in-helper                typechecker-fix       S3            0        0        0        0
+file-registered-property        typechecker-fix       S3           13        0       19       32
+bl-rna-property                 typechecker-fix       S3           10        0        5       15
+type-call-bases                 typechecker-fix       S3            0        0        0        0
+filter-items-tuple              typechecker-fix       S3            8        0        1        9
 reload-idiom                    typing-debt           -            21        0        0       21
 modifiers-new                   typing-debt           -            10        0       10       20
 layout-in-operator-helper       typing-debt           -            19        0        0       19
-cross-file-registered-property  typing-debt           -            31       12       14       57
+cross-file-registered-property  typing-debt           -            30       12       12       54
 mixin-self                      typing-debt           -           495        0      203      698
 type-enum-sub-pointer           typing-debt           -           890       63      126     1079
 python-optional                 typing-debt           -           329        0      114      443
@@ -53,24 +53,23 @@ untyped-python                  typing-debt           -           986        0  
 private-member                  typing-debt           -            23        0       13       36
 build-option-gap                typing-debt           -             5       65        0       70
 context-member-outside-callback unsorted              -            96      264       76      436
-unchecked-pointer               unsorted              -           646       86     1181     1913
+unchecked-pointer               unsorted              -           645       86     1182     1913
 stub-gap                        unsorted              -           409        0      356      765
 blender-rule                    unsorted              -             0        0        5        5
-unsorted                        unsorted              -           493        8      673     1174
+unsorted                        unsorted              -           487        8      674     1169
 
 group                                                         shipped  presets    other    total
 blender-fix                                                       710        0       46      756
 assumption                                                        172      263      681     1116
 implied-narrowing                                                2308        0       13     2321
-imprecise-annotation                                               39        0       18       57
-typechecker-fix                                                   275        0      233      508
-typing-debt                                                      3226      140     1290     4656
-unsorted                                                         1644      358     2291     4293
-errors                                                           8282      761     4504    13547
+imprecise-annotation                                               39        0       24       63
+typechecker-fix                                                    85        0       39      124
+typing-debt                                                      3225      140     1288     4653
+unsorted                                                         1637      358     2293     4288
+errors                                                           8084      761     4316    13161
 warnings                                                           92        0       68      160
 
 rule                                       error warning
-blender-invalid-idname                         1       0
 blender-invalid-operator-property              1       0
 blender-invalid-property                       3       0
 blender-unsupported-property-host              0       3
@@ -80,8 +79,8 @@ deprecated                                     0      15
 empty-body                                    32       0
 import-not-found                             212       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       2704       0
-invalid-assignment                           986       0
+invalid-argument-type                       2708       0
+invalid-assignment                           971       0
 invalid-attribute-override                    71       0
 invalid-base                                   4       0
 invalid-context-manager                       82       0
@@ -91,7 +90,7 @@ invalid-method-override                      228       0
 invalid-mutable-override                       4       0
 invalid-parameter-default                      5       0
 invalid-property-type-override                 6       0
-invalid-return-type                           82       0
+invalid-return-type                           78       0
 invalid-super-argument                         1       0
 invalid-type-form                              9       0
 mismatched-type-name                           0       1
@@ -103,7 +102,7 @@ possibly-missing-submodule                     0       4
 redundant-condition                            0      65
 too-many-positional-arguments                 42       0
 unknown-argument                             348       0
-unresolved-attribute                        8195       0
+unresolved-attribute                        7825       0
 unresolved-global                              0      37
 unresolved-reference                          72       0
 unsupported-operator                          97       0
