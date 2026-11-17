@@ -411,7 +411,9 @@ CAUSES = [
     Cause("context-never-none", "typechecker-fix", "S1", lambda d: NEVER_NONE_CONTEXT_TYPE.search(d.msg) is not None),
     Cause("callback-never-none", "typechecker-fix", "S1", callback_never_none),
     Cause("assumed-list-item", "assumption", "S6", list_item, "blender-assumed-list-item"),
-    Cause("modifiers-new", "typechecker-fix", "S1", lambda d: nullable(d) and ".modifiers.new(" in d.text),
+    # ObjectModifiers.new() really returns None when the modifier cannot be added (only a warning report), so an
+    # unchecked result is typing debt, not a typechecker fix.
+    Cause("modifiers-new", "typing-debt", "", lambda d: nullable(d) and ".modifiers.new(" in d.text),
     Cause("bmesh-elem-seq", "typechecker-fix", "S2", lambda d: "`BMEdge`" in d.msg and "loop" in d.text),
     Cause("blend-data-lib-key", "typechecker-fix", "S2", lambda d: "`tuple[str, " in d.msg and "[" in d.text),
     Cause("context-store-member", "typechecker-fix", "S2", lambda d: d.msg.startswith("Object of type `Context`")

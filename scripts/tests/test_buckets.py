@@ -204,6 +204,16 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
         pytest.param(
             diagnostic(
                 "unresolved-attribute",
+                "Attribute `show_viewport` is not defined on `None` in union `Modifier | None`",
+                "ob.modifiers.new(name, 'SUBSURF').show_viewport = False",
+                path="scripts/startup/bl_operators/object.py",
+            ),
+            "modifiers-new",
+            id="debt-modifiers-new",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
                 "Object of type `BMEdge` has no attribute `vert`",
                 "for l in v.link_loops: l.vert",
                 path="tests/python/bl_pyapi_bmesh.py",
@@ -887,6 +897,7 @@ def test_every_cause_has_a_known_group_and_a_unique_name():
         ("narrowed-by-poll", "implied-narrowing", "S5"),
         ("assumed-context-member", "assumption", "S6"),
         ("mixin-self", "typing-debt", ""),
+        ("modifiers-new", "typing-debt", ""),
         ("unsorted", "unsorted", ""),
     ],
 )
