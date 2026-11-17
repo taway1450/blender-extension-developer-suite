@@ -83,6 +83,9 @@ A member of `bpy.types.Context` that Blender always fills when it calls a given 
 A property of a Blender instance whose value names the subclass that instance, or one of its pointers, really is: `Modifier.type` (`'SUBSURF'` is a `SubsurfModifier`), `Object.type` (`'MESH'` makes `Object.data` a `Mesh`), `Node.bl_idname`.
 _Avoid_: discriminator, kind
 
+**Refined base**:
+A `bpy.types` class whose instances Blender always hands out as one of its subclasses, picked from the instance's own data (`Modifier`, `Light`, `Node`, `Curve`). Most refined bases have a Type tag that names the subclass. `Curve` has none: only the constructor argument names it (`curves.new(type='FONT')` gives a `TextCurve`).
+
 ## Diagnostics
 
 **Assumption**:
