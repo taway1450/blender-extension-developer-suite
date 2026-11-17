@@ -48,6 +48,11 @@ LIBS_DIR = CACHE_DIR / "blender-libs"
 BUILD_INFO = ".build-info"
 CONFIGURE_ARGS = "configure-args.txt"
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
+# Options turned back on after a preset (``-D`` after ``-C`` overrides its forced cache entries).
+# The headless preset turns off FFmpeg, Audaspace and NDOF, and with them the Python API they add
+# (``FFmpegSettings`` and the FFMPEG file format, ``sound.mixdown``'s parameters, the NDOF
+# preferences), so the stubs generated from a headless build would miss it.
+PRESET_OPTIONS = {"headless": ["-DWITH_CODEC_FFMPEG=ON", "-DWITH_AUDASPACE=ON", "-DWITH_INPUT_NDOF=ON"]}
 
 
 def is_arm64() -> bool:
@@ -158,6 +163,39 @@ def build_env() -> tuple[dict[str, str], Path, Path]:
     return env, cmake, ninja
 
 
+def preset_file(source: Path, config: str) -> Path:
+    return source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
+
+
+def configure_command(
+    cmake: Path,
+    ninja: Path,
+    *,
+    source: Path,
+    build_dir: Path,
+    config: str,
+    build_type: str,
+    libs: Path,
+    install_dir: Path,
+) -> list[str | Path]:
+    """The CMake command that configures the build of ``source`` with the preset ``config``."""
+    return [
+        cmake,
+        "-G",
+        "Ninja",
+        "-S",
+        source,
+        "-B",
+        build_dir,
+        f"-C{preset_file(source, config)}",
+        *PRESET_OPTIONS.get(config, []),
+        f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
+        f"-DCMAKE_BUILD_TYPE={build_type}",
+        f"-DLIBDIR={libs.as_posix()}",
+        f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
+    ]
+
+
 def build_blender(
     name: str,
     *,
@@ -182,7 +220,7 @@ def build_blender(
         log(f"Reusing Blender build {blender} ({commit[:10]})")
         return blender
 
-    config_file = source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
+    config_file = preset_file(source, config)
     if not config_file.is_file():
         available = sorted(p.stem.removeprefix("blender_") for p in config_file.parent.glob("blender_*.cmake"))
         raise StepError(f"Unknown build configuration {config!r} (available: {', '.join(available)})")
@@ -197,20 +235,16 @@ def build_blender(
         log(f"Removing build directory {build_dir}")
         shutil.rmtree(build_dir, ignore_errors=True)
     build_dir.mkdir(parents=True, exist_ok=True)
-    configure_cmd: list[str | Path] = [
+    configure_cmd = configure_command(
         cmake,
-        "-G",
-        "Ninja",
-        "-S",
-        source,
-        "-B",
-        build_dir,
-        f"-C{config_file}",
-        f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
-        f"-DCMAKE_BUILD_TYPE={build_type}",
-        f"-DLIBDIR={libs.as_posix()}",
-        f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
-    ]
+        ninja,
+        source=source,
+        build_dir=build_dir,
+        config=config,
+        build_type=build_type,
+        libs=libs,
+        install_dir=install_dir,
+    )
     configure_args = build_dir / CONFIGURE_ARGS
     configure_key = "\n".join(str(c) for c in configure_cmd)
     if (
