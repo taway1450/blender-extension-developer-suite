@@ -26,7 +26,10 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
-from _features import EXPECTED_STUBS, Addon, Diagnostic
+from _baseline import type_entry
+from _common import TYPECHECK_TESTS_DIR, log
+from _features import EXPECTED_STUBS, Addon, AddonResult, Diagnostic, import_roots, parse_diagnostics, run_ty
+from generate_features import TY_TOML, updated_ty_toml
 
 STRICTNESS_FILE = "strictness.toml"
 SUPPRESSION = re.compile(r"#\s*ty:\s*ignore\[(?P<codes>[^\]]*)\]")
@@ -112,3 +115,36 @@ def compare(
         if rule in tested:
             mismatches.append(Mismatch(path, line, preset, f"{rule}: expected ignore, got {got}"))
     return mismatches
+
+
+def check(ty_cmd: list, results: list[AddonResult], results_dir: Path) -> dict[str, str]:
+    """The check of the addons among ``results`` with ``_expected/strictness.toml``, running ``ty_cmd`` (ty's
+    ``check`` command with its stubs and output options): a ``strictness-<preset>`` entry per line whose reported
+    level differs, with the difference as its message."""
+    checked = [(r, expected) for r in results if (expected := expectations(r.addon)) is not None]
+    if not checked:
+        return {}
+    copy_dir = results_dir / "strictness"
+    shutil.rmtree(copy_dir, ignore_errors=True)
+    copy_dir.mkdir(parents=True)
+    addons: list[Addon] = [r.addon for r, _ in checked]
+    (copy_dir / "ty.toml").write_text(
+        updated_ty_toml(TY_TOML.read_text(encoding="utf-8"), import_roots(addons)), encoding="utf-8"
+    )
+    markers = {a.rel: copy_addon(a, TYPECHECK_TESTS_DIR, copy_dir) for a in addons}
+    presets = sorted({preset for _, expected in checked for preset in expected})
+    entries: dict[str, str] = {}
+    for preset in presets:
+        log(f'Strictness check: {len(addons)} addons with `blender.strictness = "{preset}"`')
+        cmd = [*ty_cmd, "--project", copy_dir, "--config", f'blender.strictness="{preset}"', *(a.rel for a in addons)]
+        diagnostics = parse_diagnostics(run_ty(cmd, copy_dir), base=copy_dir)
+        for result, expected in checked:
+            if preset not in expected:
+                continue
+            addon = result.addon
+            tested = {rule for table in expected.values() for rule in table}
+            found = [d for d in diagnostics if addon.contains(d.path)]
+            for mismatch in compare(preset, expected[preset], markers[addon.rel], found, tested):
+                key = type_entry(mismatch.path, f"strictness-{preset}", result.line_key(mismatch.path, mismatch.line))
+                entries[key] = mismatch.message
+    return entries

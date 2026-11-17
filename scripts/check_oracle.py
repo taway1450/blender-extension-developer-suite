@@ -43,13 +43,21 @@ import argparse
 import ast
 import os
 import shutil
-import subprocess
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 
 from _common import CACHE_DIR, TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import FEATURES_DIR, Addon, AddonResult, MarkerResult, evaluate, parse_diagnostics, select
+from _features import (
+    FEATURES_DIR,
+    Addon,
+    AddonResult,
+    MarkerResult,
+    evaluate,
+    parse_diagnostics,
+    run_ty,
+    select,
+)
 from _markers import UNKNOWN_RULE, is_check_file
 from _target import Target, add_target_arguments
 from build_ty import stock_command
@@ -316,14 +324,6 @@ def build_project(addon: Addon, target: Path) -> None:
             out = addon_copy / stub.relative_to(own)
             out.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(stub, out)
-
-
-def run_ty(cmd: list, cwd: Path) -> str:
-    """ty's concise output; ty exits with 1 when it reports errors."""
-    result = subprocess.run([str(c) for c in cmd], cwd=cwd, capture_output=True, text=True, encoding="utf-8")
-    if result.returncode not in (0, 1):
-        raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
-    return result.stdout
 
 
 @dataclass
