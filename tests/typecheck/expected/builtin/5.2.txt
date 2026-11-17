@@ -333,7 +333,28 @@ features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name", text="", emboss=False)  # ty: ignore[blender-assumed-list-item]
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=str(index)) #2
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, ASM_LIST_ITEM_Entry)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-attribute | layout.label(text=item.label)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.label)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.lable)  # ty: ignore[blender-assumed-list-item, missing-attribute]
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, MaterialSlot)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-attribute | if slot.material:
+features/assumptions/asm_list_item/__init__.py | missing-attribute | layout.prop(slot.material, "name", text="", emboss=False)
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(slot.material, "name", text="", emboss=False)
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, ASM_LIST_ITEM_Entry | VertexGroup)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-attribute | layout.label(text=item.name)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.name)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item] #2
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
+features/assumptions/asm_list_item/panels.py | missing-union-attribute | scene = context.scene
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | layout.template_list("ASM_LIST_ITEM_UL_sourced", "", scene, "asm_list_item_entries",
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | scene, "asm_list_item_index")
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | layout.template_list("ASM_LIST_ITEM_UL_two_sources", "entries", scene, "asm_list_item_entries",
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | scene, "asm_list_item_index") #2
+features/assumptions/asm_list_item/panels.py | missing-union-attribute | ob = context.object
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | layout.template_list("ASM_LIST_ITEM_UL_slots", "", ob, "material_slots", ob, "active_material_index")
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | layout.template_list("ASM_LIST_ITEM_UL_two_sources", "groups", ob, "vertex_groups",
+features/assumptions/asm_list_item/panels.py | invalid-argument-type | scene, "asm_list_item_index") #3
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences  # a callback: not reported
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__)
 features/assumptions/asm_preferences/__init__.py | missing-attribute | print(entry.preferences.use_keymap)  # registered by then: not reported

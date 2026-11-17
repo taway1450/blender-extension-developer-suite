@@ -1066,10 +1066,11 @@ CAUSES = [
           and "`Gizmo.draw_select`" in d.msg),
     Cause("registered-class-in-bpy-types", "typechecker-fix", "S2", lambda d: "bpy.types." in d.text
           and REGISTERED_CLASS.search(d.msg) is not None),
-    # `item_type == 'PANEL'` does not narrow a NodeTreeInterfaceItem: the stubs declare no type tag for it.
+    # `item_type == 'PANEL'` does not narrow a NodeTreeInterfaceItem, nor `match item.type` a ProjectVariable: the
+    # stubs declare no type tag for their subclasses.
     Cause("item-type-tag-narrowing", "typechecker-fix", "S2", lambda d: re.search(
         r"`NodeTreeInterfaceItem(?: & ~AlwaysFalsy)?` has no attribute `(?:interface_items|name)`"
-        r"|Expected `NodeTreeInterfacePanel", d.msg) is not None),
+        r"|Expected `NodeTreeInterfacePanel|`ProjectVariable` has no attribute `value`", d.msg) is not None),
     Cause("layout-in-helper", "typechecker-fix", "S3", layout_in({"panel", "menu", "header"})),
     Cause("layout-in-operator-helper", "typing-debt", "", layout_in({"operator"})),
     Cause("cross-file-registered-property", "typing-debt", "", lambda d: re.search(

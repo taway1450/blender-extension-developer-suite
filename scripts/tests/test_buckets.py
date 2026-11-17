@@ -1142,6 +1142,16 @@ CASES = [
     ),
     pytest.param(
         diagnostic(
+            "missing-attribute",
+            "Object of type `ProjectVariable` has no attribute `value`",
+            "col.label(text=str(item.value))",
+            path="scripts/startup/bl_ui/space_project.py",
+        ),
+        "item-type-tag-narrowing",
+        id="item-type-tag-narrowing-project-variable",
+    ),
+    pytest.param(
+        diagnostic(
             "missing-union-attribute",
             "Attribute `name` is not defined on `None` in union `Object | None`",
             'print(f"Object {obj.name} at {object_instance.matrix_world}")',

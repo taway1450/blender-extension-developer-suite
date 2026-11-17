@@ -96,6 +96,14 @@ bpy_struct[Unknown]
 ```
 ````
 
+## features/assumptions/asm_list_item/ide_asm_list_item.py | ^hover @13 | item #2
+
+````text
+```python
+MaterialSlot
+```
+````
+
 ## features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | ^hover @23 | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 
 ````text

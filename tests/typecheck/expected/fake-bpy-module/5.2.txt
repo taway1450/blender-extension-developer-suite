@@ -280,8 +280,15 @@ features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name", text="", emboss=False)  # ty: ignore[blender-assumed-list-item]
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=str(index)) #2
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.label)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.lable)  # ty: ignore[blender-assumed-list-item, missing-attribute]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(slot.material, "name", text="", emboss=False)
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.name)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item] #2
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
 features/assumptions/asm_list_item/__init__.py | unused-ignore-comment | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
+features/assumptions/asm_list_item/panels.py | missing-union-attribute | scene = context.scene
+features/assumptions/asm_list_item/panels.py | missing-union-attribute | ob = context.object
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences  # a callback: not reported
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__)
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__) #2

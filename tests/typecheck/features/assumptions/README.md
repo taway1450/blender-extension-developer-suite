@@ -13,7 +13,8 @@ as if the fact held, and report it under a `blender-assumed-*` rule (category `b
   with no scene; `view_layer` then crashes rather than giving `None`). While an add-on is imported or registered,
   `bpy.context` has no `scene` at all (`_RestrictContext` raises), which no type expresses.
 - **List items:** `UIList.draw_item` gets `item` `None` only for an empty slot of an array of ID pointers; the
-  collection of an add-on's list has none.
+  collection of an add-on's list has none. The items are those of the collection `dataptr.propname` that
+  `layout.template_list("<list>", list_id, dataptr, propname, ...)` shows the list with (`uiTemplateList`).
 - **Registration on a branch:** a class or property `register()` registers only under a condition (a version check,
   an except handler, a list extended under a condition, a timer) is there only when the condition held.
 - **An incomplete walk:** when `register()` registers a class found at runtime (`getattr`, `importlib`, an
@@ -46,7 +47,7 @@ as if the fact held, and report it under a `blender-assumed-*` rule (category `b
 | Rule | Reports | Typed as |
 | --- | --- | --- |
 | `blender-assumed-context-member` | a read of `scene` / `view_layer` / `tool_settings` / `collection` on a `Context` outside a Blender callback (module level, a helper, a method of another class, a nested `def`, a handler or timer), and of `scene` / `tool_settings` / `collection` in a callback of an Operator a FileHandler names as its `bl_import_operator` | not `None` |
-| `blender-assumed-list-item` | each read of an unannotated `item` parameter of `UIList.draw_item` (an override of an unannotated override too) | not `None` |
+| `blender-assumed-list-item` | each read of an unannotated `item` parameter of `UIList.draw_item` (an override of an unannotated override too) | not `None`; where the add-on's `template_list` calls name the list (in any of its modules, or its folder for a file in no add-on), the element type of the collections they show, a union for several (a call whose `dataptr` is untyped says nothing); the parent's type when a typed call gives none or no typed call names the list |
 | `blender-assumed-registration` | a use of a class or Registered property that `register()` registers only on a branch: `bpy.ops.x.y`, a Registered property read, `addons[...].preferences` | registered |
 | `blender-assumed-complete-registration` | once per add-on, at the value the `register()` walk could not follow | every class and property counted as registered |
 | `blender-assumed-preferences` | `addons[...].preferences` read while `register()` runs before `register_class(<preferences>)`, or while `unregister()` runs after `unregister_class(<preferences>)` | the add-on's preferences class |
@@ -68,7 +69,7 @@ The category's name sets all ten rules (`blender-assumptions = "ignore"`), a rul
 | Addon | Variant |
 | --- | --- |
 | `asm_context_member` | `scene` / `view_layer` / `tool_settings` / `collection` through an annotated parameter, `bpy.context`, an alias, in a plain class's method, an app handler, a timer and a nested `def` in `draw`; a FileHandler's import operator (`scene`, `tool_settings`, `collection`; `view_layer` silent); `collection` silent in a callback; not reported: tested reads, a callback, an operator no FileHandler names, an unannotated parameter; guards: `blend_data`, `window` |
-| `asm_list_item` | `item` read in `draw_item`, in an override of an unannotated override; not reported: a tested read; guard: an annotation with `None` |
+| `asm_list_item` | `item` read in `draw_item`, in an override of an unannotated override; typed by `template_list` calls in another module: a Registered collection property, `material_slots`, two sources of different types (a union), a misspelt member of the source (an error); a second call with an unannotated `dataptr` left out; `bpy_struct` with only such a call or none; not reported: a tested read; guard: an annotation with `None` |
 | `asm_registration` | operators registered under a version check, in an except handler, from a list extended under a condition and from a timer; a Registered property and preferences registered under a version check; not reported: what `register()` always registers |
 | `asm_complete_registration` | `register_class(getattr(module, name))`: one report at the `getattr` call; no `blender-unregistered-class` for a class never registered |
 | `asm_preferences` | a read in `register()` before `register_class`, in a function `register()` calls before it, in `unregister()` after `unregister_class`; not reported: after `register_class`, in a callback; `strictness` presets (`_expected/strictness.toml`) |
