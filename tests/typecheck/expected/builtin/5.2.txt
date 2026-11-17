@@ -205,7 +205,40 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips.new(), ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips[0], ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(strip, ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
+features/assumptions/asm_added_object/__init__.py | unused-ignore-comment | cube = context.object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | unused-ignore-comment | assert_type(context.active_object, Object)  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: no `*_add` operator called in this function
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(context.active_object, Object | None)  # bare-ok: not an `*_add` operator
+features/assumptions/asm_added_object/__init__.py | missing-union-attribute | light = context.active_object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | unused-ignore-comment | light = context.active_object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-default | cube = context.object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-default | assert_type(context.active_object, Object)  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-default | light = context.active_object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-lenient | cube = context.object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-lenient | assert_type(context.active_object, Object)  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-lenient | light = context.active_object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-strict | cube = context.object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-strict | assert_type(context.active_object, Object)  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | strictness-strict | light = context.active_object  # ty: ignore[blender-assumed-added-object]
 features/assumptions/asm_config/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_config/__init__.py | missing-union-attribute | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_config/__init__.py | unused-ignore-comment | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_config/__init__.py | missing-union-attribute | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_config/__init__.py | unused-ignore-comment | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_config/__init__.py | unused-ignore-comment | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | strictness-default | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_config/__init__.py | strictness-default | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_config/__init__.py | strictness-default | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | strictness-lenient | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_config/__init__.py | strictness-lenient | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_config/__init__.py | strictness-lenient | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | strictness-strict | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_config/__init__.py | strictness-strict | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_config/__init__.py | strictness-strict | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/presets/asm_config/camera.py | unused-ignore-comment | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_config/presets/asm_config/camera.py | strictness-default | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_config/presets/asm_config/camera.py | strictness-lenient | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_config/presets/asm_config/camera.py | strictness-strict | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
 features/assumptions/asm_context_member/__init__.py | missing-union-attribute | self.layout.label(text=context.scene.name)  # a callback: Guaranteed, not reported
 features/assumptions/asm_context_member/__init__.py | missing-union-attribute | return context.scene.name  # ty: ignore[blender-assumed-context-member]
 features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | return context.scene.name  # ty: ignore[blender-assumed-context-member]
@@ -215,10 +248,81 @@ features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | as
 features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.collection, Collection)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.collection, Collection)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | assert_type(context.collection, Collection)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
 features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | context.collection.objects.link(context.object)  # ty: ignore[invalid-argument-type]
+features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | context.collection.objects.link(context.object)  # ty: ignore[invalid-argument-type]
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | return context.region.type != 'TOOL_HEADER'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | unused-ignore-comment | return context.region.type != 'TOOL_HEADER'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | type-assertion-failure | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | unused-ignore-comment | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | type-assertion-failure | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | unused-ignore-comment | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | if context.region is None:  # tested for None only: not reported
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | region = context.region  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | unused-ignore-comment | region = context.region  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | type-assertion-failure | assert_type(region, Region)
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | print(region.width, region.height)
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from any editor, or none
+features/assumptions/asm_editor_member/__init__.py | strictness-default | return context.region.type != 'TOOL_HEADER'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-default | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-default | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-default | region = context.region  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-lenient | return context.region.type != 'TOOL_HEADER'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-lenient | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-lenient | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-lenient | region = context.region  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-strict | return context.region.type != 'TOOL_HEADER'  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-strict | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-strict | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_editor_member/__init__.py | strictness-strict | region = context.region  # ty: ignore[blender-assumed-editor-member]
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | type-assertion-failure | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | areas = context.screen.areas  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | areas = context.screen.areas  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | if context.window is None:  # tested for None only: not reported
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | assert_type(context.window, Window)
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | screen = context.screen  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | screen = context.screen  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | type-assertion-failure | assert_type(screen, Screen)
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: the poll is where the operator checks
+features/assumptions/asm_internal_operator/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: the poll is where the operator checks
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | return context.object is not None
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | print(context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | print(context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/assumptions/asm_internal_operator/__init__.py | unused-ignore-comment | print(context.object.name)  # ty: ignore[missing-union-attribute]  # bare-ok: a helper is no callback
+features/assumptions/asm_internal_operator/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: not an Internal operator
+features/assumptions/asm_internal_operator/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: not an Internal operator
+features/assumptions/asm_internal_operator/__init__.py | invalid-argument-type | helper(context)
+features/assumptions/asm_internal_operator/__init__.py | strictness-default | assert_type(context.object, Object)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-default | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-default | areas = context.screen.areas  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-default | screen = context.screen  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-default | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-default | print(context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/assumptions/asm_internal_operator/__init__.py | strictness-lenient | assert_type(context.object, Object)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-lenient | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-lenient | areas = context.screen.areas  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-lenient | screen = context.screen  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-lenient | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-strict | assert_type(context.object, Object)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-strict | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-strict | areas = context.screen.areas  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-strict | screen = context.screen  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-strict | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+features/assumptions/asm_internal_operator/__init__.py | strictness-strict | print(context.object.name)  # ty: ignore[blender-narrowed-by-poll]
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=str(index))
 features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name", text="", emboss=False)  # ty: ignore[blender-assumed-list-item]
@@ -247,6 +351,16 @@ features/assumptions/asm_preferences/__init__.py | strictness-lenient | print(en
 features/assumptions/asm_preferences/__init__.py | strictness-strict | print(entry.preferences)  # ty: ignore[blender-assumed-preferences]
 features/assumptions/asm_preferences/__init__.py | strictness-strict | early = entry.preferences  # ty: ignore[blender-assumed-preferences]
 features/assumptions/asm_preferences/__init__.py | strictness-strict | print(entry.preferences is None)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preset_context/__init__.py | incompatible-method-override | draw = Menu.draw_preset
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | unused-ignore-comment | camera = bpy.context.camera  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | unused-ignore-comment | bpy.context.object.name = "Camera"  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | type-assertion-failure | assert_type(bpy.context.object, Object | None)  # bare-ok: a function of the preset may run elsewhere
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | strictness-default | camera = bpy.context.camera  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | strictness-default | bpy.context.object.name = "Camera"  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | strictness-lenient | camera = bpy.context.camera  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | strictness-lenient | bpy.context.object.name = "Camera"  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | strictness-strict | camera = bpy.context.camera  # ty: ignore[blender-assumed-preset-context]
+features/assumptions/asm_preset_context/presets/asm_preset_context/small_sensor.py | strictness-strict | bpy.context.object.name = "Camera"  # ty: ignore[blender-assumed-preset-context]
 features/assumptions/asm_registration/__init__.py | missing-attribute | layout.label(text=str(context.scene.asm_registration_always))
 features/assumptions/asm_registration/__init__.py | missing-union-attribute | layout.label(text=str(context.scene.asm_registration_always))
 features/assumptions/asm_registration/__init__.py | missing-attribute | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]

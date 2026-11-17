@@ -64,3 +64,7 @@ include = ["features/assumptions/asm_config/**"]
 [overrides.rules]
 blender-assumptions = "error"
 blender-assumed-context-member = "ignore"
+blender-assumed-internal-operator = "warn"
+blender-assumed-editor-member = "warn"
+blender-assumed-preset-context = "warn"
+blender-assumed-added-object = "warn"

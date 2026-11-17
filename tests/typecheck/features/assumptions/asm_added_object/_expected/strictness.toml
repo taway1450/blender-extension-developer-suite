@@ -1,0 +1,9 @@
+# `[blender] strictness` sets the Assumptions category: lenient and default warn, strict makes it an error (spec #108).
+[lenient]
+blender-assumed-added-object = "warn"
+
+[default]
+blender-assumed-added-object = "warn"
+
+[strict]
+blender-assumed-added-object = "error"

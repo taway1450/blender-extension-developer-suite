@@ -94,7 +94,7 @@ The `blender-*` rules ty-blender is to add:
 | `blender-invalid-override`, `blender-missing-callback`, `blender-mixin-order`, `blender-invalid-base`, `blender-registered-base` | inheritance |
 | `blender-imprecise-operator-return`, `blender-imprecise-enum-value`, `blender-imprecise-callback-parameter` | imprecise_annotations |
 | `blender-narrowed-by-poll`, `blender-narrowed-by-menu-prefix`, `blender-narrowed-by-popover` | implied_narrowings |
-| `blender-assumed-context-member`, `blender-assumed-list-item`, `blender-assumed-registration`, `blender-assumed-complete-registration`, `blender-assumed-preferences` | assumptions |
+| `blender-assumed-context-member`, `blender-assumed-list-item`, `blender-assumed-registration`, `blender-assumed-complete-registration`, `blender-assumed-preferences`, `blender-assumed-internal-operator`, `blender-assumed-editor-member`, `blender-assumed-preset-context`, `blender-assumed-added-object` | assumptions |
 
 ### Strictness (`_expected/strictness.toml`)
 

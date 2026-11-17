@@ -1380,6 +1380,43 @@ CASES = [
     pytest.param(
         diagnostic(
             "missing-union-attribute",
+            "Attribute `data` is not defined on `None` in union `Object | None`",
+            "mesh = obj.data",
+            path="scripts/templates_py/operator_mesh_add.py",
+            function="add_box",
+            source="    bpy.ops.mesh.primitive_cube_add()\n    obj = bpy.context.active_object\n    mesh = obj.data",
+        ),
+        "added-object",
+        id="c5-added-object-error-falls-through",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-union-attribute",
+            "Attribute `source` is not defined on `None` in union `Image | None`",
+            "is_tiled = context.edit_image.source == 'TILED'",
+            path="scripts/startup/bl_operators/image.py",
+            function="execute",
+            source="            bpy.ops.mesh.primitive_plane_add()\n            is_tiled = context.edit_image.source == 'TILED'",
+        ),
+        "set-by-preceding-call",
+        id="c5-added-object-only-for-the-object",
+    ),
+    *(
+        pytest.param(
+            diagnostic(rule, "`context.object` is taken as `Object`", "print(context.object.name)"),
+            rule.removeprefix("blender-"),
+            id=f"c5-{rule.removeprefix('blender-')}",
+        )
+        for rule in (
+            "blender-assumed-internal-operator",
+            "blender-assumed-editor-member",
+            "blender-assumed-preset-context",
+            "blender-assumed-added-object",
+        )
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-union-attribute",
             "Attribute `action` is not defined on `None` in union `AnimData | None`",
             "if not scene.animation_data.action:",
             path="scripts/startup/bl_operators/sequencer.py",
@@ -1819,6 +1856,13 @@ def test_every_cause_has_a_known_group_and_a_unique_name():
         ("imprecise-operator-return", "imprecise-annotation", "S4"),
         ("narrowed-by-poll", "implied-narrowing", "S5"),
         ("assumed-context-member", "assumption", "S6"),
+        ("assumed-internal-operator", "assumption", "C5"),
+        ("assumed-added-object", "assumption", "C5"),
+        ("preset-context-member", "assumption", ""),
+        ("added-object", "assumption", ""),
+        ("internal-operator", "assumption", ""),
+        ("ui-callback-editor-member", "assumption", ""),
+        ("collection-context-member", "assumption", ""),
         ("mixin-self", "typing-debt", ""),
         ("modifiers-new", "typing-debt", ""),
         ("stub-none-mismatch", "typechecker-fix", ""),

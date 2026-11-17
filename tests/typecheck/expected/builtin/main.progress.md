@@ -9,7 +9,7 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | addon_discovery | 17/17 | 8/8 | 3/3 | - | 0 |
 | addon_preferences | 11/11 | 6/6 | 10/10 | 3/3 | 0 |
 | api_types | 25/25 | 6/6 | 121/121 | 3/3 | 0 |
-| assumptions | 5/5 | 25/25 | 3/3 | - | 0 |
+| assumptions | 10/10 | 50/50 | 11/11 | - | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
 | context_members | 43/43 | - | 10/10 | - | 0 |
 | implied_narrowings | 8/8 | 52/52 | 16/16 | 3/3 | 0 |
@@ -23,4 +23,4 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
 | registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 18/18 | - | 2/2 | - | 0 |
-| **total** | 956/956 | 416/416 | 249/250 | 47/47 | 0 |
+| **total** | 961/961 | 441/441 | 257/258 | 47/47 | 0 |

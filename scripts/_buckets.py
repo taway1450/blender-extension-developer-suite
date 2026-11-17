@@ -328,6 +328,7 @@ NONE_ON_FAILURE = re.compile(
     r"|\bbegin_result\(|\.to_mesh\(|\bid_properties_ui\("
 )
 # Calls that make a context member or a pointer exist for the lines after them.
+ADDING_CALL = re.compile(r"\b(?:bpy\.)?ops\.\w+\.(?:\w+_)?add\(")
 CREATING_CALL = re.compile(r"\bbpy\.ops\.\w+\.(?:open|new|\w+_add)\(")
 SETTING_CALL = re.compile(r"\bbpy\.ops\.\w+\.\w+\(|animation_data_create\(\)|\bgenerate_rig\(|nodes\.active = ")
 SET_BY_UI_BUTTON_TYPE = re.compile(r"`(?:KeyMap|KeyMapItem|FreestyleModuleSettings) \| None`")
@@ -919,6 +920,16 @@ def set_by_preceding_call(d: Diagnostic) -> bool:
     return False
 
 
+def added_object(d: Diagnostic) -> bool:
+    """``context.object`` / ``active_object`` (or a name set from it) read after a ``bpy.ops.<category>.add()`` or
+    ``*_add()`` call earlier in the function, which makes the object it adds active."""
+    return (
+        "`Object | None`" in d.msg
+        and reads_from(d, CONTEXT + r"(?:object|active_object)\b")
+        and ADDING_CALL.search("\n".join(d.scope.source.splitlines()[:-1])) is not None
+    )
+
+
 def call_end(lines: list[str], start: int) -> int:
     """The index of the line that closes the call opened on ``lines[start]`` (the call can span several lines)."""
     depth = 0
@@ -966,6 +977,8 @@ CAUSES = [
         ("implied-narrowing", "S5", ("narrowed-by-menu-prefix", "narrowed-by-popover", "narrowed-by-poll")),
         ("assumption", "S6", ("assumed-registration", "assumed-complete-registration", "assumed-preferences",
                               "assumed-list-item", "assumed-context-member")),
+        ("assumption", "C5", ("assumed-internal-operator", "assumed-editor-member", "assumed-preset-context",
+                              "assumed-added-object")),
     ) for name in names if name != "assumed-preferences"),
     # An add-on's `register()` reads its own preferences, which exist once the add-on is enabled.
     Cause("assumed-preferences", "assumption", "S6", any_of(rule("blender-assumed-preferences"), lambda d: (
@@ -1065,9 +1078,9 @@ CAUSES = [
         python_optional(d) or PYTHON_OPTIONAL_TYPE.search(d.msg) is not None
         or (initialised_to_none(d) and not untyped_python(d)))),
     # A preset's module-level reads of the context members of the panel that runs it (`bpy.context.cloth`,
-    # `edit_movieclip`, `active_strip`, a keymap preset's `preferences`): not covered by the context-member
-    # Assumption, which takes only `scene`, `view_layer` and `tool_settings`.
-    Cause("preset-context-member", "typing-debt", "", lambda d: nullable(d) and in_presets(d)),
+    # `edit_movieclip`, `active_strip`, a keymap preset's `preferences`): the preset-context Assumption, where its
+    # rule did not accept the read.
+    Cause("preset-context-member", "assumption", "", lambda d: nullable(d) and in_presets(d)),
     Cause("ui-draw-pointer", "typing-debt", "", outside_tests(ui_draw_pointer)),
     Cause("object-data-untagged", "typing-debt", "", lambda d: re.search(r"`ID( \| None)?`", d.msg) is not None
           and ("data" in d.text or reads_from(d, r"\.data\b"))),
@@ -1094,6 +1107,9 @@ CAUSES = [
     Cause("window-context-in-execute", "typing-debt", "", lambda d: window_context(d)
           and not ("'INTERNAL'" in d.scope.attributes and root(d.scope) == "operator")
           and not ("`Collection | None`" in d.msg and root(d.scope) == "operator")),
+    # The object a `bpy.ops.*.*_add()` call earlier in the function made active: the added-object Assumption,
+    # where its rule did not accept the read.
+    Cause("added-object", "assumption", "", added_object),
     Cause("set-by-preceding-call", "typing-debt", "", set_by_preceding_call),
     Cause("narrowed-by-poll-helper", "implied-narrowing", "", poll_checks_elsewhere),
     Cause("narrowed-by-parent-panel", "implied-narrowing", "", parent_panel),

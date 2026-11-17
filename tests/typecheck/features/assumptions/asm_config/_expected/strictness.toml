@@ -3,11 +3,23 @@
 [lenient]
 blender-assumed-list-item = "error"
 blender-assumed-context-member = "ignore"
+blender-assumed-internal-operator = "warn"
+blender-assumed-editor-member = "warn"
+blender-assumed-preset-context = "warn"
+blender-assumed-added-object = "warn"
 
 [default]
 blender-assumed-list-item = "error"
 blender-assumed-context-member = "ignore"
+blender-assumed-internal-operator = "warn"
+blender-assumed-editor-member = "warn"
+blender-assumed-preset-context = "warn"
+blender-assumed-added-object = "warn"
 
 [strict]
 blender-assumed-list-item = "error"
 blender-assumed-context-member = "ignore"
+blender-assumed-internal-operator = "warn"
+blender-assumed-editor-member = "warn"
+blender-assumed-preset-context = "warn"
+blender-assumed-added-object = "warn"

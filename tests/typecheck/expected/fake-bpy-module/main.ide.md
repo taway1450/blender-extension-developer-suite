@@ -60,11 +60,29 @@ Image buffer pixels in floating-point values (dynamic array, in [-inf, inf], def
 PASS
 ````
 
+## features/assumptions/asm_added_object/ide_asm_added_object.py | ^hover @16 | if context.object:
+
+````text
+```python
+Object
+```
+````
+
 ## features/assumptions/asm_context_member/ide_asm_context_member.py | ^hover @17 | bpy.context.scene
 
 ````text
 ```python
 Scene
+```
+---
+(readonly)
+````
+
+## features/assumptions/asm_internal_operator/ide_asm_internal_operator.py | ^hover @20 | if context.screen is None:
+
+````text
+```python
+Screen
 ```
 ---
 (readonly)
