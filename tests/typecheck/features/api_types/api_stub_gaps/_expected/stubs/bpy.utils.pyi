@@ -1,4 +1,8 @@
-"""Reference stub delta: public functions of bpy.utils that are not in its __all__."""
+"""Reference stub delta: public functions of bpy.utils that are not in its __all__, and keyconfig_set returns whether
+it loaded the key configuration."""
+
+from collections.abc import Callable
 
 def system_resource(type: str, *, path: str | bytes = "") -> str: ...
 def is_path_builtin(path: str) -> bool: ...
+def keyconfig_set(filepath: str, *, report: Callable[[set[str], str], None] | None = None) -> bool: ...

@@ -2,14 +2,20 @@
 bases and a Python __init__, BMesh sequences iterate over their elements, an ImBuf buffer is a memoryview, a matrix
 row is a Vector, the version arrays are tuples, every struct has bl_rna, a few public module members are not in
 __all__ or are not plain constants, and Operator.description may return None (Blender then shows the docstring).
+BMesh element links are sequences of one element type, bpy.data collections take a (name, library) key, and
+libraries.load and temp_data are context managers. Freestyle calls its overridable methods and Blender a render
+engine's update callbacks with positional arguments, so overrides may rename the parameters or drop their defaults.
 The stubs must state it (check_api_stub_gaps.py); the helpers below compute the facts for the runtime probes
-(_expected/runtime.toml)."""
+(_expected/runtime.toml). The assert_type calls in the bodies are no-ops at runtime."""
 
 import importlib
+from typing import assert_type
 
 import bpy
-from bpy.types import Operator
+from bpy.types import Camera, Node, Operator, RenderEngine, Scene, ViewLayer
 from bpy_extras.anim_utils import BakeOptions
+from freestyle.types import (AdjacencyIterator, BinaryPredicate1D, ChainingIterator, Interface1D, Stroke,
+                             StrokeShader, UnaryPredicate1D, ViewEdge)
 
 
 class API_STUB_GAPS_OT_describe(Operator):
@@ -24,6 +30,45 @@ class API_STUB_GAPS_OT_describe(Operator):
 
     def execute(self, context):
         return {'FINISHED'}
+
+
+class API_STUB_GAPS_Engine(RenderEngine):
+    """Blender passes every argument of the update callbacks, positionally."""
+
+    bl_idname = "API_STUB_GAPS"
+    bl_label = "Stub Gaps"
+
+    def update_script_node(self, node):
+        assert_type(node, Node | None)
+
+    def update_render_passes(self, scene, renderlayer):
+        assert_type(scene, Scene | None)
+        assert_type(renderlayer, ViewLayer | None)
+
+    def update_custom_camera(self, cam):
+        assert_type(cam, Camera | None)
+
+
+class LongEdgeUP1D(UnaryPredicate1D):
+    """Freestyle calls __call__ with a positional argument, so the override names it as it likes."""
+
+    def __call__(self, edge: Interface1D) -> bool:
+        return edge.length_2d > 1.0
+
+
+class LongerBP1D(BinaryPredicate1D):
+    def __call__(self, first: Interface1D, second: Interface1D) -> bool:
+        return first.length_2d > second.length_2d
+
+
+class FirstEdgeIterator(ChainingIterator):
+    def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
+        return None if iter.is_end else iter.object
+
+
+class ThinShader(StrokeShader):
+    def shade(self, s: Stroke) -> None:
+        s.update_length()
 
 
 def bases(module_name, class_name):
@@ -46,6 +91,32 @@ def bmesh_items():
     names = " ".join(type(next(iter(seq))).__name__ for seq in (bm.verts, bm.edges, bm.faces))
     bm.free()
     return names
+
+
+def bmesh_links():
+    """The class names of the first item of a cube face's verts, edges and loops, and of a loop's link_loops."""
+    import bmesh
+
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bm.faces.ensure_lookup_table()
+    face = bm.faces[0]
+    loop = face.loops[0]
+    names = " ".join(type(item).__name__ for item in (face.verts[0], face.edges[0], loop, loop.link_loops[0]))
+    bm.free()
+    return names
+
+
+def data_lookup():
+    """Whether bpy.data looks a local object up by its (name, None) key."""
+    ob = bpy.data.objects.new("api_stub_gaps_lookup", None)
+    return bpy.data.objects["api_stub_gaps_lookup", None] == ob
+
+
+def temp_data():
+    """The class name of what entering bpy.data.temp_data() gives."""
+    with bpy.data.temp_data() as data:
+        return type(data).__name__
 
 
 def imbuf_buffer():
@@ -74,5 +145,5 @@ def module_members():
     return " ".join(type(value).__name__ for value in values)
 
 
-classes = (API_STUB_GAPS_OT_describe,)
+classes = (API_STUB_GAPS_OT_describe, API_STUB_GAPS_Engine)
 register, unregister = bpy.utils.register_classes_factory(classes)
