@@ -127,6 +127,16 @@ PASS
   documentation: (none)
 ````
 
+## features/context_members/ctx_temp_override/ide_ctx_temp_override.py | ^hover @21 | bpy.context.area
+
+````text
+```python
+Area
+```
+---
+(readonly)
+````
+
 ## features/implied_narrowings/nar_bl_context/ide_nar_bl_context.py | ^hover @17 | context.object  # ty: ignore[blender-narrowed-by-bl-context]
 
 ````text
@@ -413,16 +423,6 @@ PASS
 PASS
 ````
 
-## features/pointer_aliases/ptr_area_type/ide_ptr_area_type.py | ^hover @25 | area.spaces.active
-
-````text
-```python
-SpaceView3D
-```
----
-Space currently being displayed in this area (readonly)
-````
-
 ## features/pointer_aliases/ptr_brush/ide_ptr_brush.py | ^hover @51 | context.tool_settings.gpencil_paint.brush.gpencil_settings
 
 ````text
@@ -447,16 +447,6 @@ Node
 ```
 ---
 Active node in this tree
-````
-
-## features/pointer_aliases/ptr_temp_override/ide_ptr_temp_override.py | ^hover @21 | bpy.context.area
-
-````text
-```python
-Area
-```
----
-(readonly)
 ````
 
 ## features/properties/props_callbacks/ide_props_callbacks.py | ^hover @7 | s.count
@@ -626,6 +616,16 @@ bpy.ops.reg_explicit.dotted(execution_context, undo, *, count: int)
 
 ````text
 PASS
+````
+
+## features/type_narrowing/narrow_area_type/ide_narrow_area_type.py | ^hover @25 | area.spaces.active
+
+````text
+```python
+SpaceView3D
+```
+---
+Space currently being displayed in this area (readonly)
 ````
 
 ## features/type_narrowing/narrow_constructors/ide_narrow_constructors.py | ^hover @6 | con = ob.constraints.new('COPY_LOCATION')

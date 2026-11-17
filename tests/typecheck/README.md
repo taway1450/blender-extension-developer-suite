@@ -26,13 +26,13 @@ mise run check:features main --update # record the current results after a revie
 | [operator_properties](features/operator_properties/README.md) | an idname string gives that operator's properties (`layout.operator(...)`, keymaps, ...) |
 | [addon_preferences](features/addon_preferences/README.md) | `addons[__package__].preferences` is the add-on's own class |
 | [inheritance](features/inheritance/README.md) | unannotated overrides get the parent's types; `self` in a mixin is typed by its users; subclass, mixin and override rules |
-| [context_members](features/context_members/README.md) | Guaranteed context members are non-None in Blender callbacks; `space_data` follows `bl_space_type` |
+| [context_members](features/context_members/README.md) | Guaranteed context members are non-None in Blender callbacks; `space_data` follows `bl_space_type`; a member passed to `temp_override` is the value passed in its block |
 | [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None, the Type tags of refined subclasses, the facts introspection misses (class bases, protocols, module members) |
-| [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`); a constructor's tag argument types its result (`constraints.new('COPY_LOCATION')`) |
+| [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`, `area.spaces.active` after `area.type == 'VIEW_3D'`); a constructor's tag argument types its result (`constraints.new('COPY_LOCATION')`) |
 | [imprecise_annotations](features/imprecise_annotations/README.md) | code less precise than the stubs but right in Blender (`-> set[str]` on `execute`, a `str` enum value, `draw_item(..., data: Armature)`) is accepted, typed as the precise form and reported under a `blender-imprecise-*` rule, configurable by category and `[blender] strictness` |
 | [implied_narrowings](features/implied_narrowings/README.md) | a read Blender's call order or conventions make safe (a pointer `poll()` checked, `space_data` in a `CLIP_MT_` menu, a popover panel's `bl_space_type`, a panel's `bl_context`) is narrowed and reported under a `blender-narrowed-by-*` rule |
 | [assumptions](features/assumptions/README.md) | code that relies on what Blender keeps in ordinary use (`bpy.context.scene` outside a callback, a list item typed by its `template_list` source, a class registered on a branch, preferences read while registering, a subclass member of `constraints[0]`) is accepted, typed as if it held and reported under a `blender-assumed-*` rule |
-| [pointer_aliases](features/pointer_aliases/README.md) | what Blender keeps between two pointers (`node_tree` → `edit_tree`, `active_node` ≡ `edit_tree.nodes.active`, a Grease Pencil brush's settings), an area's type and `temp_override` narrow silently |
+| [pointer_aliases](features/pointer_aliases/README.md) | what Blender keeps between two pointers (`node_tree` → `edit_tree`, `active_node` ≡ `edit_tree.nodes.active`, a Grease Pencil brush's settings) narrows silently |
 
 ## Layout
 
@@ -44,8 +44,8 @@ tests/typecheck/
 │   ├── README.md                    # what the checker must do, the variants, rules and runtime facts
 │   ├── <addon>/                     # an add-on, usually a package with several modules
 │   │   ├── blender_manifest.toml    # or bl_info in __init__.py
-│   │   ├── __init__.py ...          # idiomatic add-on code; markers only for errors in it
-│   │   ├── check_<addon>.py         # type markers (check:features, check:oracle)
+│   │   ├── __init__.py ...          # idiomatic add-on code, with markers on it (check:features)
+│   │   ├── check_<addon>.py         # type markers (check:features, check:oracle), optional
 │   │   ├── ide_<addon>.py           # editor markers (check:ide), optional
 │   │   └── _expected/
 │   │       ├── stubs/<module>.pyi   # reference stub deltas: bpy.types.pyi, bpy.ops.<category>.pyi, ...
@@ -64,7 +64,19 @@ features. `check_*.py` and `ide_*.py` are modules of the add-on (they can use re
 but are never imported, and the manifests exclude them from builds. Generated add-ons must not be edited: change
 the generator and run `mise run features:generate`; `--check` fails when they are out of date.
 
-## Type markers (`check_*.py`)
+## Type markers
+
+Type markers go in two places, checked differently:
+
+- **`check_<addon>.py`:** code written to state types, reading the add-on's classes and functions from outside. These
+  markers are checked by `check:features` and by the oracle (`check:oracle`, below) against the reference stubs.
+- **The add-on's own modules** (`__init__.py`, ...): markers on its idiomatic code, where what is checked only exists
+  inside a function or class of the add-on: a narrowing in a callback (`nar_poll`, `pointer_aliases`,
+  `type_narrowing`), the `self` of a mixin, an expected error in the add-on code. `check:features` checks them, and
+  `check:load` runs the code in Blender, but the oracle does not judge them: an add-on module is checked from its
+  source, so its narrowing markers are `oracle-skip` and its other markers need a `check_*.py` twin to be checked
+  against the reference stubs. The bare run (below) judges them too.
+
 
 - `assert_type(expr, T)` states the type `expr` has **at runtime in Blender**. It fails when ty reports
   `type-assertion-failure` on that line.
@@ -118,7 +130,7 @@ Markers are written by hand from Blender's behaviour, and the reference stubs sa
 checker should synthesise for this add-on. `check:oracle` copies the bpy stubs, merges the baseline in `oracle/`
 and the add-on's `_expected/stubs/` deltas into them, puts `_expected/addon/` next to the add-on's modules, and
 runs **stock ty** on the add-on. Every marker in its `check_*.py` files must then hold (`blender-*` markers and
-`oracle-skip` lines aside). A disagreement means the markers or the reference stubs are wrong, before ty-blender
+`oracle-skip` lines aside); markers in the add-on's own modules are not judged here. A disagreement means the markers or the reference stubs are wrong, before ty-blender
 is involved at all. Deltas are merged per member:
 
 - a member of an existing class or module replaces the stub's member;

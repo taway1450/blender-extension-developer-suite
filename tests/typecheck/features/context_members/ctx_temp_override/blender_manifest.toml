@@ -1,8 +1,8 @@
 schema_version = "1.0.0"
 
-id = "ptr_temp_override"
+id = "ctx_temp_override"
 version = "1.0.0"
-name = "Feature test: pointer aliases (ptr_temp_override)"
+name = "Feature test: context members (ctx_temp_override)"
 tagline = "temp_override gives the context the members passed"
 maintainer = "Blender Extension Developer Suite"
 type = "add-on"

@@ -24,7 +24,7 @@ class PanelMixin:
         layout.label(text=self.bl_label)
 
     def notify(self):
-        self.report({"INFO"}, "drawn")  # ty: ignore[missing-attribute]  # a Panel has no report: still an error
+        self.report({"INFO"}, "drawn")  # ty: ignore[missing-attribute]  # bare-ok: a Panel has no report, still an error
 
 
 class OperatorMixin:
@@ -51,4 +51,4 @@ class SharedMixin:
 
 class UnusedMixin:
     def draw_common(self, context):
-        self.layout.label(text="unused")  # ty: ignore[missing-attribute]  # no user: self stays the bare mixin
+        self.layout.label(text="unused")  # ty: ignore[missing-attribute]  # bare-ok: no user, self stays the bare mixin

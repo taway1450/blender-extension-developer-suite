@@ -1,10 +1,12 @@
 """Sort check:blender's diagnostics into causes, each with a group, and into areas of the Blender source.
 
-A **cause** is why a diagnostic is reported; its **group** says where the fix belongs (spec #95):
+A **cause** is why a diagnostic is reported; its **group** says where the fix belongs (spec #95), and its **slice**
+the spec slice that addresses it. ``S*`` and ``BF*`` are the slices of spec #95, ``C*`` those of spec #123 (the
+Blender typechecker spec), so ``S6`` and ``C5`` are both Assumption slices, of the two specs:
 
 - ``blender-fix``: Blender's own Python code is wrong (slices BF1, BF2);
 - ``assumption`` / ``implied-narrowing`` / ``imprecise-annotation``: right code the typechecker accepts and reports
-  under a dedicated ``blender-*`` rule (S6, S5, S4);
+  under a dedicated ``blender-*`` rule (S6 and C5, C7; S5 and C6; S4);
 - ``typechecker-fix``: RNA flags, the stub generator or ``ty_blender`` (S1, S2, S3);
 - ``typing-debt``: out of scope (general typing debt, or a cause the spec leaves as it is);
 - ``unsorted``: recognised kinds with no slice, and everything else.
@@ -977,8 +979,9 @@ def window_context(d: Diagnostic) -> bool:
 # --- the table, first match wins -------------------------------------------------------------------------------
 
 CAUSES = [
-    # The Imprecise annotations (S4), Implied narrowings (S5) and Assumptions (S6): the code their dedicated rule
-    # accepts and reports. An error of the same shape is code the rule did not accept, and has another cause.
+    # The Imprecise annotations (S4), Implied narrowings (S5, and C6 of spec #123) and Assumptions (S6, and C5 / C7 of
+    # spec #123): the code their dedicated rule accepts and reports, tagged with the slice that added the rule. An
+    # error of the same shape is code the rule did not accept, and has another cause.
     *(Cause(name, group, slice_, rule(f"blender-{name}"), f"blender-{name}") for group, slice_, names in (
         ("imprecise-annotation", "S4",
          ("imprecise-operator-return", "imprecise-enum-value", "imprecise-callback-parameter")),

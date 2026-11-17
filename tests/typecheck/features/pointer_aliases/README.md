@@ -1,8 +1,9 @@
 # pointer_aliases
 
-**The checker must:** apply, without reporting, what Blender's C code keeps between two pointers (a Pointer alias), what
-an area's type says about its active space, and what `context.temp_override(...)` passes, while a pointer none of them
-covers keeps its stub type.
+**The checker must:** apply, without reporting, what Blender's C code keeps between two pointers (a Pointer alias),
+while a pointer no alias covers keeps its stub type. An area's type, which names its active space, is a Type tag
+([type_narrowing](../type_narrowing/README.md)); what `context.temp_override(...)` passes is in
+[context_members](../context_members/README.md).
 
 ## What Blender does
 
@@ -19,10 +20,6 @@ covers keeps its stub type.
   The one gap: `Brush.use_paint_grease_pencil` / `use_vertex_grease_pencil` (`rna_brush.cc`) set a Grease Pencil bit
   on `ob_mode` without allocating the settings, so a brush loaded without them (not one made in Python) can be given a
   Grease Pencil mode by a script.
-- **Area type:** an area's first space is the space of its type (`ED_area_newspace` puts the new space first, and
-  `Area.type` is that space's `spacetype`), so `area.type == 'VIEW_3D'` makes `area.spaces.active` a `SpaceView3D`.
-- **`temp_override`:** `Context.temp_override(**members)` puts the members passed in front of the context's own until
-  the `with` block ends (`bpy_rna_context.cc`).
 
 ## What the checker does
 
@@ -32,19 +29,12 @@ covers keeps its stub type.
   `blender-narrowed-by-poll`; what the alias adds is not.
 - A read of `<gp paint>.brush.gpencil_settings`, a path from the context through any of the four Grease Pencil paint
   settings, is not `None`. A brush of another paint (`tool_settings.sculpt.brush`) keeps `BrushGpencilSettings | None`.
-- After `area.type == 'X'` (also `in {...}`, `elif`, an early `continue` / `return` after `!=`, and before `and` or in a
-  comprehension's condition) `area.spaces.active` is X's `Space` subclass, for any receiver of `.type` and
-  `.spaces.active` written the same way.
-- Inside `with <context>.temp_override(k=v, ...)`, `<context>.k` has `v`'s type (`<context>` being the callback's
-  context or `bpy.context`). `**members` is not read.
 
 | Addon | Variant |
 | --- | --- |
 | `ptr_node_editor` | Node Wrangler's `nw_check` (`node_tree`) and `nw_check_active` (`active_node`) in a helper, read as `edit_tree` and `edit_tree.nodes.active` in `execute`; the reverse direction in a Panel; errors: `edit_tree` does not imply `node_tree`, `node_tree` no active node |
 | `ptr_brush` | `gpencil_paint.brush` after a poll, `gpencil_weight_paint` / `gpencil_vertex_paint` after the draw's own test; guard: a sculpt brush |
-| `ptr_area_type` | `==` in a loop, `in {...}` in an `elif`, `!=` with `continue`, `and` in a generator, a list comprehension; guard: the `else` branch |
-| `ptr_temp_override` | `bpy.context` in a function, `context` in `execute`; guards: a member not passed, a read after the block |
 
 The narrowing markers are `oracle-skip`: the reference stubs cannot express a narrowing. **Named exceptions:** on 5.2
-the callbacks' `context` parameter is `Context | None` and the stubs have no `Space` Type tags, so the markers fail
-there with both generators. On main they pass with both.
+the callbacks' `context` parameter is `Context | None`, so the markers fail there with both generators. On main they
+pass with both.

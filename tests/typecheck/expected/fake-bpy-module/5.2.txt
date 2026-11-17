@@ -435,6 +435,12 @@ features/context_members/ctx_spaces/__init__.py | missing-union-attribute | asse
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
+features/context_members/ctx_temp_override/__init__.py | missing-union-attribute | with context.temp_override(active_object=target, object=target):
+features/context_members/ctx_temp_override/__init__.py | missing-union-attribute | assert_type(context.active_object, Object)  # oracle-skip: the member temp_override passed
+features/context_members/ctx_temp_override/__init__.py | type-assertion-failure | assert_type(context.active_object, Object)  # oracle-skip: the member temp_override passed
+features/context_members/ctx_temp_override/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # oracle-skip: the member temp_override passed
+features/context_members/ctx_temp_override/__init__.py | type-assertion-failure | assert_type(context.object, Object)  # oracle-skip: the member temp_override passed
+features/context_members/ctx_temp_override/__init__.py | missing-union-attribute | assert_type(context.material, bpy.types.Material | None)  # bare-ok: not passed
 features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | ob = context.object  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
@@ -608,18 +614,9 @@ features/inheritance/inh_registered_base/__init__.py | missing-union-attribute |
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | missing-attribute | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
-features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.template_popup_confirm("", cancel_text="Close"), OperatorProperties | None)  # bare-ok: no operator, only a cancel button: the stub type is kept and no idname is reported
-features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(space, SpaceView3D)  # oracle-skip: narrowed by the area's Type tag
-features/pointer_aliases/ptr_area_type/__init__.py | missing-attribute | space.shading.type = "MATERIAL"
-features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceImageEditor | SpaceClipEditor)  # oracle-skip: a Type tag
-features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceNodeEditor)  # oracle-skip: narrowed after the early continue
-features/pointer_aliases/ptr_area_type/__init__.py | missing-attribute | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
-features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
-features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(views, list[SpaceView3D])  # oracle-skip: a Type tag in the comprehension's condition
 features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | paint = context.tool_settings.gpencil_paint
 features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | brush = context.tool_settings.gpencil_paint.brush  # ty: ignore[blender-narrowed-by-poll]
 features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | paint = context.tool_settings.gpencil_weight_paint
@@ -649,17 +646,18 @@ features/pointer_aliases/ptr_node_editor/__init__.py | blender-narrowed-by-poll 
 features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
 features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
 features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
-features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | with context.temp_override(active_object=target, object=target):
-features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | assert_type(context.active_object, Object)  # oracle-skip: the member temp_override passed
-features/pointer_aliases/ptr_temp_override/__init__.py | type-assertion-failure | assert_type(context.active_object, Object)  # oracle-skip: the member temp_override passed
-features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # oracle-skip: the member temp_override passed
-features/pointer_aliases/ptr_temp_override/__init__.py | type-assertion-failure | assert_type(context.object, Object)  # oracle-skip: the member temp_override passed
-features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | assert_type(context.material, bpy.types.Material | None)  # bare-ok: not passed
 features/properties/props_data_blocks/__init__.py | missing-union-attribute | layout.label(text=item.name)
 features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=str(self.value))
 features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=text)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(space, SpaceView3D)  # oracle-skip: narrowed by the area's Type tag
+features/type_narrowing/narrow_area_type/__init__.py | missing-attribute | space.shading.type = "MATERIAL"
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceImageEditor | SpaceClipEditor)  # oracle-skip: a Type tag
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceNodeEditor)  # oracle-skip: narrowed after the early continue
+features/type_narrowing/narrow_area_type/__init__.py | missing-attribute | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(views, list[SpaceView3D])  # oracle-skip: a Type tag in the comprehension's condition
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | con.target = target
 features/type_narrowing/narrow_constructors/__init__.py | unknown-argument | track = ob.constraints.new(type='TRACK_TO', name="Aim")

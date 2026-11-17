@@ -2,14 +2,15 @@
 
 Context.temp_override puts the keyword arguments in front of the context's own members until the block ends
 (bpy_rna_context.cc), so a member passed is read back as the value passed, also through bpy.context. Outside the block
-the member is what it was. This is the code's own control flow, so it is not reported.
+the member is what it was, and so it is in the block once the context variable is rebound. This is the code's own
+control flow, so it is not reported.
 
 The assert_type calls in the bodies are no-ops at runtime."""
 
 from typing import assert_type
 
 import bpy
-from bpy.types import Area, Object, Operator, Region, Window
+from bpy.types import Area, Context, Object, Operator, Region, Window
 
 
 def redraw(window: Window, area: Area) -> None:
@@ -23,8 +24,15 @@ def redraw(window: Window, area: Area) -> None:
     assert_type(bpy.context.region, Region | None)  # bare-ok: outside the block
 
 
-class PTR_OVERRIDE_OT_object(Operator):
-    bl_idname = "ptr_override.object"
+def rebound(context: Context, area: Area, other: Context) -> None:
+    with context.temp_override(area=area):
+        assert_type(context.area, Area)  # oracle-skip: the member temp_override passed
+        context = other
+        assert_type(context.area, Area | None)  # bare-ok: `context` was rebound in the block
+
+
+class CTX_OVERRIDE_OT_object(Operator):
+    bl_idname = "ctx_override.object"
     bl_label = "Override"
 
     def execute(self, context):
@@ -37,5 +45,5 @@ class PTR_OVERRIDE_OT_object(Operator):
         return {"FINISHED"}
 
 
-classes = (PTR_OVERRIDE_OT_object,)
+classes = (CTX_OVERRIDE_OT_object,)
 register, unregister = bpy.utils.register_classes_factory(classes)
