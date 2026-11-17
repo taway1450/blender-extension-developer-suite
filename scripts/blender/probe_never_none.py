@@ -154,6 +154,7 @@ def probe_node_tree_new() -> None:
     class ProbeCustomTree(bpy.types.NodeTree):
         bl_idname = "ProbeCustomTree"
         bl_label = "Probe"
+        bl_icon = "NODETREE"
 
     bpy.utils.register_class(ProbeCustomTree)
     call("BlendDataNodeTrees.new", "custom registered type", lambda: bpy.data.node_groups.new("probe", "ProbeCustomTree"))
@@ -306,30 +307,56 @@ def probe_tracking(work: str) -> None:
     tracking.objects.active = extra
     count("MovieTrackingObjects.active", "second object active", [tracking.objects.active])
     tracking.objects.remove(extra)
-    count("MovieTrackingObjects.active", "after removing the active object", [tracking.objects.active])
+    count(
+        "MovieTrackingObjects.active",
+        "after removing the active object (set through .active)",
+        [tracking.objects.active],
+        f"index reads {tracking.active_object_index}",
+    )
     try:
         tracking.active_object_index = 99
     except Exception as e:
         record("MovieTracking.active_object_index", "set to 99", 0, 0, f"raises {type(e).__name__}")
-    count("MovieTrackingObjects.active", "after active_object_index = 99", [tracking.objects.active])
+    count(
+        "MovieTrackingObjects.active",
+        "after active_object_index = 99",
+        [tracking.objects.active],
+        f"index reads {tracking.active_object_index}, {len(tracking.objects)} objects",
+    )
+    tracking.active_object_index = 0
+    extra = tracking.objects.new("probe_obj2")
+    tracking.active_object_index = 1
+    tracking.objects.remove(extra)
+    count(
+        "MovieTrackingObjects.active",
+        "index 1 active, then that object removed",
+        [tracking.objects.active],
+        f"index reads {tracking.active_object_index}, {len(tracking.objects)} objects",
+    )
     call("MovieTrackingObjects.remove", "the camera object", lambda: tracking.objects.remove(tracking.objects[0]))
     count("MovieTracking.reconstruction", "after trying to remove the camera object", [tracking.reconstruction])
     count("MovieTrackingObject.reconstruction", "new clip", [o.reconstruction for o in tracking.objects])
 
 
 def probe_region_3d() -> None:
-    values_active, values_inactive = [], []
+    """A View3D space made in background: switch a non-3D area to VIEW_3D (it becomes the active space), then
+    back (it stays as an inactive space of the area)."""
+    values_active, values_inactive, notes = [], [], []
     for screen in bpy.data.screens:
         for area in screen.areas:
             old = area.type
             if old == "VIEW_3D":
                 continue
-            area.type = "VIEW_3D"
-            values_active.append(area.spaces[0].region_3d)
-            area.type = old
-            values_inactive.extend(s.region_3d for s in area.spaces if s.type == "VIEW_3D")
-            break
-    count("SpaceView3D.region_3d", "area switched to VIEW_3D in background", values_active)
+            with bpy.context.temp_override(screen=screen, area=area):
+                area.type = "VIEW_3D"
+            space = area.spaces.active
+            notes.append(f"{old}->{space.type}")
+            if space.type == "VIEW_3D":
+                values_active.append(space.region_3d)
+            with bpy.context.temp_override(screen=screen, area=area):
+                area.type = old
+            values_inactive.extend(s.region_3d for s in area.spaces if s.type == "VIEW_3D" and s != area.spaces.active)
+    count("SpaceView3D.region_3d", "area switched to VIEW_3D in background", values_active, ", ".join(notes[:3]))
     count("SpaceView3D.region_3d", "inactive View3D after switching back", values_inactive)
 
 
