@@ -23,7 +23,8 @@
 The checker keys on the receiver's type, `bpy.types.Context`, so `context.scene`, a renamed parameter
 (`ctx.scene`), `bpy.context.scene` and an alias (`scene = context.scene`) are all narrowed, but only lexically inside
 the callback (a lambda or comprehension in it too): a helper function, a nested `def` (it may run later) and module
-level keep the stub type.
+level keep the stub type, except for `scene`, `view_layer` and `tool_settings`, which are narrowed there as an
+Assumption and reported ([assumptions](../assumptions/README.md)).
 
 Known unsoundness, not special-cased: a Panel opened as a popover (`layout.popover`, `wm.call_panel`) gets the
 opening editor's area, so its `space_data` may be another subclass; and `context.temp_override(scene=None)` around a
@@ -32,7 +33,7 @@ editor, but that was not confirmed.
 
 | Addon | Variant |
 | --- | --- |
-| `ctx_members` | the six members in `Panel.poll` / `draw`, `Operator.execute`, `Menu.draw`, `UIList.draw_item`; `bpy.context`, a renamed parameter, an alias, a comprehension; still `\| None` in a nested `def`, a helper and at module level |
+| `ctx_members` | the six members in `Panel.poll` / `draw`, `Operator.execute`, `Menu.draw`, `UIList.draw_item`; `bpy.context`, a renamed parameter, an alias, a comprehension; `blend_data` still `\| None` in a nested `def`, a helper and at module level |
 | `ctx_spaces` | `space_data` / `area` / `region` in a `VIEW_3D` Panel, a Panel whose base sets `bl_space_type`, `PROPERTIES` and `TOPBAR` Headers, a GizmoGroup; still `\| None` in a Menu, a UIList and an Operator |
 
 The markers in the callbacks need the checker; the `| None` ones are guards (`bare-ok`). Only Blender main's stubs

@@ -11,14 +11,14 @@ wrong-annotation                blender-fix           BF2          90        0  
 operator-return-misuse          blender-fix           BF1           0        0        0        0
 return-annotation               blender-fix           BF2          48        0        4       52
 unchecked-pointer-bug           blender-fix           BF1          27        0        0       27
-assumed-registration            assumption            S6            0        0        0        0
-assumed-complete-registration   assumption            S6            0        0        0        0
-assumed-preferences             assumption            S6            0        0        0        0
-assumed-list-item               assumption            S6            0        0        0        0
-assumed-context-member          assumption            S6          149      263      681     1093
+assumed-registration            assumption            S6           75        0        0       75
+assumed-complete-registration   assumption            S6            8        0        0        8
+assumed-preferences             assumption            S6            1        0        0        1
+assumed-list-item               assumption            S6           90        0        7       97
+assumed-context-member          assumption            S6          112      275      507      894
 narrowed-by-menu-prefix         implied-narrowing     S5           92        0        0       92
 narrowed-by-popover             implied-narrowing     S5           31        0        0       31
-narrowed-by-poll                implied-narrowing     S5         1449        0       12     1461
+narrowed-by-poll                implied-narrowing     S5         1448        0       12     1460
 imprecise-operator-return       imprecise-annotation  S4           24        0        5       29
 imprecise-enum-value            imprecise-annotation  S4           15        0       18       33
 imprecise-callback-parameter    imprecise-annotation  S4            5        0        1        6
@@ -33,7 +33,7 @@ dynamic-enum                    typechecker-fix       S2            0        0  
 stub-context-manager            typechecker-fix       S2            5        0       14       19
 stub-docstring                  typechecker-fix       S2            2        0        0        2
 layout-in-helper                typechecker-fix       S3            0        0        0        0
-file-registered-property        typechecker-fix       S3            5        0       19       24
+file-registered-property        typechecker-fix       S3            5        0        5       10
 bl-rna-property                 typechecker-fix       S3           10        0        5       15
 type-call-bases                 typechecker-fix       S3            0        0        0        0
 filter-items-tuple              typechecker-fix       S3            8        0        1        9
@@ -43,40 +43,45 @@ layout-in-operator-helper       typing-debt           -            19        0  
 cross-file-registered-property  typing-debt           -             7       12       12       31
 mixin-self                      typing-debt           -           495        0      203      698
 type-enum-sub-pointer           typing-debt           -           437       63      126      626
-python-optional                 typing-debt           -           318        0      114      432
+python-optional                 typing-debt           -           196        0      104      300
 object-data-untagged            typing-debt           -            22        0       11       33
-base-class-subtype              typing-debt           -           258        0      514      772
+base-class-subtype              typing-debt           -           324        0      519      843
 operator-call                   typing-debt           -             6        0       62       68
 unresolved-import               typing-debt           -           114        0      102      216
 general-typing                  typing-debt           -            76        0      120      196
-untyped-python                  typing-debt           -           983        0        1      984
+untyped-python                  typing-debt           -           980        0        1      981
 private-member                  typing-debt           -            23        0       13       36
 build-option-gap                typing-debt           -             5       65        0       70
-context-member-outside-callback unsorted              -            96      264       76      436
-unchecked-pointer               unsorted              -           655       86     1182     1923
-stub-gap                        unsorted              -           412        0      356      768
+context-member-outside-callback unsorted              -            97      264       79      440
+unchecked-pointer               unsorted              -           655       86     1183     1924
+stub-gap                        unsorted              -           412        0      355      767
 blender-rule                    unsorted              -             0        0        5        5
-unsorted                        unsorted              -           522        8      674     1204
+unsorted                        unsorted              -           516        8      668     1192
 
 group                                                         shipped  presets    other    total
 blender-fix                                                       710        0       46      756
-assumption                                                        149      263      681     1093
-implied-narrowing                                                1572        0       12     1584
+assumption                                                        286      275      514     1075
+implied-narrowing                                                1571        0       12     1583
 imprecise-annotation                                               44        0       24       68
-typechecker-fix                                                    77        0       39      116
-typing-debt                                                      2793      140     1288     4221
-unsorted                                                         1685      358     2293     4336
-errors                                                           5988      761     4290    11039
-warnings                                                         1042        0       93     1135
+typechecker-fix                                                    77        0       25      102
+typing-debt                                                      2734      140     1283     4157
+unsorted                                                         1680      358     2290     4328
+errors                                                           5783      498     3593     9874
+warnings                                                         1319      275      601     2195
 
 rule                                       error warning
+blender-assumed-complete-registration          0       8
+blender-assumed-context-member                 0     880
+blender-assumed-list-item                      0      97
+blender-assumed-preferences                    0       1
+blender-assumed-registration                   0      75
 blender-imprecise-callback-parameter           0       5
 blender-imprecise-enum-value                   0      31
 blender-imprecise-operator-return              0      14
 blender-invalid-operator-property              1       0
 blender-invalid-property                       3       0
 blender-narrowed-by-menu-prefix                0      90
-blender-narrowed-by-poll                       0     805
+blender-narrowed-by-poll                       0     804
 blender-narrowed-by-popover                    0      30
 blender-unsupported-property-host              0       3
 blender-unsupported-property-target            0       1
@@ -85,8 +90,8 @@ deprecated                                     0      15
 empty-body                                    32       0
 import-not-found                             212       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1617       0
-invalid-assignment                           954       0
+invalid-argument-type                       1552       0
+invalid-assignment                           906       0
 invalid-attribute-override                    71       0
 invalid-base                                   4       0
 invalid-context-manager                       82       0
@@ -103,12 +108,12 @@ mismatched-type-name                           0       1
 missing-argument                              10       0
 no-matching-overload                          38       0
 not-iterable                                 128       0
-not-subscriptable                            167       0
+not-subscriptable                            166       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      65
 too-many-positional-arguments                 42       0
 unknown-argument                             348       0
-unresolved-attribute                        6821       0
+unresolved-attribute                        5770       0
 unresolved-global                              0      37
 unresolved-reference                          72       0
 unsupported-operator                          96       0

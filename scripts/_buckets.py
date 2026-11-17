@@ -172,7 +172,7 @@ UNCHECKED_POINTER_BUGS = [
 ]  # fmt: skip
 BASE_CLASS = re.compile(
     r"`(?:NodeSocket|Node|Constraint|Modifier|Strip|ActionStrip|Light|LightProbe|Curve|Texture|TextureSlot|IKParam"
-    r"|Gizmo|Space|ID)(?: & ~\w+)*`"
+    r"|Gizmo|Space|ID|bpy_struct|AnyType)(?:\[\w+\])?(?: & ~\w+)*`"
 )
 ASSUMED_CONTEXT_TYPE = re.compile(r"`(?:Scene|ViewLayer|ToolSettings) \| None`")
 OTHER_CONTEXT_TYPE = re.compile(r"`(?:Space|Region|Area|Screen|Window|WorkSpace|Context) \| None`")

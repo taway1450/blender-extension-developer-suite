@@ -1,0 +1,13 @@
+# The `[[overrides]]` entry of this add-on in tests/typecheck/ty.toml sets explicit levels, which win over every
+# `[blender] strictness` preset (spec #95). A rule not listed must report nothing.
+[lenient]
+blender-assumed-list-item = "error"
+blender-assumed-context-member = "ignore"
+
+[default]
+blender-assumed-list-item = "error"
+blender-assumed-context-member = "ignore"
+
+[strict]
+blender-assumed-list-item = "error"
+blender-assumed-context-member = "ignore"

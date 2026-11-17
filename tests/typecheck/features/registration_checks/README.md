@@ -6,7 +6,7 @@ visible in another.
 | Addon | Rule | Variant |
 | --- | --- | --- |
 | `regchk_unregistered` | `blender-unregistered-class` | operators, panels, menus, UI lists, PropertyGroups and preferences never registered, also in imported and in orphan modules; base classes and mixins are not reported |
-| `regchk_unreachable` | `blender-unreachable-registration` | functions that register classes but that `register()` never calls; a function `register()` hands to a timer is reachable. A class registered only by such a function gets no `blender-unregistered-class`: one diagnostic per mistake |
+| `regchk_unreachable` | `blender-unreachable-registration` | functions that register classes but that `register()` never calls; a function `register()` hands to a timer is reachable (its operator's use is reported, `blender-assumed-registration`). A class registered only by such a function gets no `blender-unregistered-class`: one diagnostic per mistake |
 | `regchk_order` | `blender-register-order` | pointers and collections to a PropertyGroup registered later, the same on a Blender class, a subpanel before its parent (fails to load) |
 | `regchk_duplicate` | `blender-duplicate-registration` | a class registered twice (explicit, loop, twice in a sequence); two classes with one `bl_idname` (fails to load) |
 | `regchk_paths` | | registration that is valid on every path: a branch that returns, a list rebound in a branch, a tuple concatenated onto itself, a helper calling itself with other keywords; nothing is reported |

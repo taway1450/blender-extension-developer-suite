@@ -819,6 +819,26 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
         pytest.param(
             diagnostic(
                 "unresolved-attribute",
+                "Object of type `bpy_struct` has no attribute `frame`",
+                "row.label(text=str(item.frame))",
+                path="doc/python_api/examples/bpy.types.UIList.3.py",
+            ),
+            "base-class-subtype",
+            id="debt-base-class-list-item-narrowed",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `bpy_struct[Unknown]` has no attribute `frame`",
+                "row.label(text=str(item.frame))",
+                path="doc/python_api/examples/bpy.types.UIList.3.py",
+            ),
+            "base-class-subtype",
+            id="debt-base-class-list-item-generic",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
                 "Unresolved attribute `use_fill` on type `dict[str, Any]`",
                 "props.MESH_OT_rip.use_fill = False",
                 cls="VIEW3D_MT_edit_mesh_vertices",

@@ -24,7 +24,7 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #3
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #4
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(data, bpy_struct)
-features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(item, bpy_struct | None)  # an empty slot of an ID-pointer array
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]  # None only for an empty slot of an ID-pointer array
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(active_data, bpy_struct | None)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #5
 features/api_types/api_never_none/__init__.py | invalid-method-override | def update(self, data, depsgraph):
@@ -205,9 +205,58 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips.new(), ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips[0], ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(strip, ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
+features/assumptions/asm_config/__init__.py | unresolved-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_context_member/__init__.py | unresolved-attribute | self.layout.label(text=context.scene.name)  # a callback: Guaranteed, not reported
+features/assumptions/asm_context_member/__init__.py | unresolved-attribute | return context.scene.name  # ty: ignore[blender-assumed-context-member]
+features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | return context.scene.name  # ty: ignore[blender-assumed-context-member]
+features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
+features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
+features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
+features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
+features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.label(text=str(index))
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.prop(item, "name", text="", emboss=False)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.label(text=str(index)) #2
+features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | prefs = context.preferences.addons[__package__].preferences  # a callback: not reported
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__)
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | print(entry.preferences.use_keymap)  # registered by then: not reported
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__) #2
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | print(entry.preferences)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | unused-ignore-comment | print(entry.preferences)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__)  # the entry exists while Blender enables the add-on
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | early = entry.preferences  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | unused-ignore-comment | early = entry.preferences  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | type-assertion-failure | assert_type(early, ASM_PREFERENCES_Preferences)
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__) #3
+features/assumptions/asm_preferences/__init__.py | unresolved-attribute | print(entry.preferences is None)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | unused-ignore-comment | print(entry.preferences is None)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-default | print(entry.preferences)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-default | early = entry.preferences  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-default | print(entry.preferences is None)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-lenient | print(entry.preferences)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-lenient | early = entry.preferences  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-lenient | print(entry.preferences is None)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-strict | print(entry.preferences)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-strict | early = entry.preferences  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_preferences/__init__.py | strictness-strict | print(entry.preferences is None)  # ty: ignore[blender-assumed-preferences]
+features/assumptions/asm_registration/__init__.py | unresolved-attribute | layout.label(text=str(context.scene.asm_registration_always))
+features/assumptions/asm_registration/__init__.py | unresolved-attribute | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
+features/assumptions/asm_registration/__init__.py | unused-ignore-comment | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
+features/assumptions/asm_registration/__init__.py | unresolved-attribute | prefs = context.preferences.addons[__package__].preferences  # ty: ignore[blender-assumed-registration]
+features/assumptions/asm_registration/__init__.py | invalid-argument-type | layout.prop(prefs, "flag")
+features/assumptions/asm_registration/__init__.py | unresolved-attribute | if cls.is_registered:
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):
+features/bpy_symbols/sym_bpy_extras/__init__.py | blender-assumed-complete-registration | bpy.utils.register_class(cls)
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/bpy_symbols/sym_bpy_extras/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/bpy_symbols/sym_bpy_extras/check_sym_bpy_extras.py | invalid-type-form | def mixin_properties(imp: SYM_BPY_EXTRAS_OT_import, exp: SYM_BPY_EXTRAS_OT_export,

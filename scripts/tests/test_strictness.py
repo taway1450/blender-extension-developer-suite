@@ -39,4 +39,6 @@ def test_compare_levels_per_marker():
 def test_compare_flags_a_tested_rule_without_a_marker():
     found = [diagnostic(5, "error", "blender-a"), diagnostic(6, "error", "blender-other")]
     mismatches = compare("strict", {}, {}, found, {"blender-a"})
-    assert [(m.line, m.preset, m.message) for m in mismatches] == [(5, "strict", "blender-a: expected ignore, got error")]
+    assert [(m.line, m.preset, m.message) for m in mismatches] == [
+        (5, "strict", "blender-a: expected ignore, got error")
+    ]

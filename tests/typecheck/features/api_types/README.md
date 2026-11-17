@@ -26,7 +26,8 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   a keying set), `AssetShelf.asset_poll` / `draw_context_menu`'s `asset` and `draw_context_menu`'s `layout`, and
   the `depsgraph` of `RenderEngine.update` / `render` / `bake` / `view_update` / `view_draw`. Blender's fork flags
   them `PROP_NEVER_NULL`; `RenderEngine.update` also takes its `data` and `depsgraph` positionally, as Blender calls
-  it. `UIList.draw_item`'s `item` (an empty slot of an ID-pointer array is None) and `active_data` stay `| None`, and
+  it. `UIList.draw_item`'s `item` (an empty slot of an ID-pointer array is None) and `active_data` stay `| None` in
+  the stubs (the checker takes an unannotated `item` as not None, an Assumption: features/assumptions), and
   so does `ObjectModifiers.new()`'s result: a modifier that cannot be added (a second one of a unique type, an object
   type without modifiers) is only a warning report, so it returns None instead of raising.
 - **A struct is refined to the subclass its Type tag names** (`rna_Modifier_refine`, `rna_Space_refine`, ... in C,

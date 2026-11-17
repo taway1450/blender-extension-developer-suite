@@ -26,7 +26,7 @@ CLASSES = {"first": REG_FOREIGN_OT_first, "second": REG_FOREIGN_OT_second}
 
 def register():
     for cls in CLASSES.values():
-        bpy.utils.register_class(cls)
+        bpy.utils.register_class(cls)  # ty: ignore[blender-assumed-complete-registration]
 
 
 def unregister():

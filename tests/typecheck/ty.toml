@@ -9,6 +9,7 @@ root = [
     "features/addon_discovery",
     "features/addon_preferences",
     "features/api_types",
+    "features/assumptions",
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
     "features/context_members",
@@ -54,3 +55,11 @@ include = ["features/implied_narrowings/nar_config/**"]
 [overrides.rules]
 blender-implied-narrowings = "error"
 blender-narrowed-by-menu-prefix = "ignore"
+
+# The Assumption rules configured for one add-on (features/assumptions/asm_config).
+[[overrides]]
+include = ["features/assumptions/asm_config/**"]
+
+[overrides.rules]
+blender-assumptions = "error"
+blender-assumed-context-member = "ignore"

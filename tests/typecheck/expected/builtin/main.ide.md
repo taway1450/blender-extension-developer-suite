@@ -56,6 +56,22 @@ bpy_prop_array[float]
 PASS
 ````
 
+## features/assumptions/asm_context_member/ide_asm_context_member.py | ^hover @17 | bpy.context.scene
+
+````text
+```python
+Scene
+```
+````
+
+## features/assumptions/asm_list_item/ide_asm_list_item.py | ^hover @13 | item
+
+````text
+```python
+bpy_struct
+```
+````
+
 ## features/bpy_symbols/sym_bpy_extras/ide_sym_bpy_extras.py | ^hover-contains "-Z" @9 | imp.axis_up
 
 ````text

@@ -7,10 +7,11 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | Feature | assert_type | expected errors | guards | IDE | other diagnostics |
 | --- | --- | --- | --- | --- | --- |
 | addon_discovery | 17/17 | 8/8 | 3/3 | - | 0 |
-| addon_preferences | 11/11 | 5/5 | 10/10 | 3/3 | 0 |
-| api_types | 26/26 | 5/5 | 85/121 | 3/3 | 23 |
+| addon_preferences | 11/11 | 6/6 | 10/10 | 3/3 | 0 |
+| api_types | 25/25 | 6/6 | 85/121 | 3/3 | 23 |
+| assumptions | 5/5 | 25/25 | 3/3 | - | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
-| context_members | 43/43 | - | 12/12 | - | 0 |
+| context_members | 43/43 | - | 10/10 | - | 0 |
 | implied_narrowings | 4/4 | 28/30 | 8/8 | 3/3 | 0 |
 | imprecise_annotations | 3/3 | 20/20 | 5/5 | 2/2 | 0 |
 | inheritance | 67/67 | 48/48 | 15/15 | 3/3 | 0 |
@@ -18,7 +19,7 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | operator_properties | 54/54 | 13/13 | 11/11 | 5/5 | 0 |
 | properties | 423/433 | 102/102 | 8/10 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
-| registration | 47/47 | 5/5 | 9/9 | 3/3 | 0 |
-| registration_checks | 9/9 | 37/37 | 10/10 | - | 0 |
+| registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
+| registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 11/18 | - | 2/2 | - | 5 |
-| **total** | 913/930 | 351/353 | 194/232 | 44/44 | 28 |
+| **total** | 912/929 | 385/387 | 195/233 | 44/44 | 28 |

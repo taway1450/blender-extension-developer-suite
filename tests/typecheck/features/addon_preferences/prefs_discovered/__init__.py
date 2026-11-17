@@ -23,7 +23,7 @@ class PREFS_DISCOVERED_Full(AddonPreferences):
 
 def _chosen():
     name = "PREFS_DISCOVERED_Full" if os.environ.get("PREFS_DISCOVERED_FULL") else "PREFS_DISCOVERED_Simple"
-    return globals()[name]
+    return globals()[name]  # ty: ignore[blender-assumed-complete-registration]
 
 
 def register():

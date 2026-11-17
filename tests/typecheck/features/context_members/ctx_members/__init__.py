@@ -79,7 +79,7 @@ class CTX_MEMBERS_UL_list(UIList):
         assert_type(context.tool_settings, ToolSettings)
 
         def later(other: Context) -> None:
-            assert_type(other.scene, Scene | None)  # bare-ok: a nested function may run after the callback returns
+            assert_type(other.blend_data, BlendData | None)  # bare-ok: a nested function may run after the callback returns
 
 
 classes = (CTX_MEMBERS_PT_panel, CTX_MEMBERS_OT_run, CTX_MEMBERS_MT_menu, CTX_MEMBERS_UL_list)

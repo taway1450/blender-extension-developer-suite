@@ -34,7 +34,7 @@ class API_NEVER_NONE_UL_list(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_property, index, flt_flag):
         assert_type(context, Context)
         assert_type(data, bpy_struct)
-        assert_type(item, bpy_struct | None)  # an empty slot of an ID-pointer array
+        assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]  # None only for an empty slot of an ID-pointer array
         assert_type(active_data, bpy_struct | None)
 
     def draw_filter(self, context, layout):
