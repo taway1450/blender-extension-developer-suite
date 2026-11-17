@@ -113,6 +113,22 @@ Object
 PASS
 ````
 
+## features/implied_narrowings/nar_poll_reach/ide_nar_poll_reach.py | ^hover @17 | context.object
+
+````text
+```python
+Object
+```
+````
+
+## features/implied_narrowings/nar_poll_reach/ide_nar_poll_reach.py | ^hover @17 | context.active_object
+
+````text
+```python
+Object
+```
+````
+
 ## features/implied_narrowings/nar_popover/ide_nar_popover.py | ^hover-contains "SpaceView3D" @17 | context.space_data
 
 ````text

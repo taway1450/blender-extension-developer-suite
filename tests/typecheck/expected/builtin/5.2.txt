@@ -469,6 +469,38 @@ features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | ass
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: no poll checked it
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceProperties)
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceProperties)
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return context.object is not None
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | ob = context.object  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | unused-ignore-comment | ob = context.object  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.material, Material | None)  # bare-ok: no poll up the chain checked it
+features/implied_narrowings/nar_poll_reach/__init__.py | type-assertion-failure | assert_type(context.material, Material | None)  # bare-ok: no poll up the chain checked it
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # oracle-skip: narrowed by the poll's own guard, silently
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.material, Material | None)  # bare-ok: the guard did not check it
+features/implied_narrowings/nar_poll_reach/__init__.py | type-assertion-failure | assert_type(context.material, Material | None)  # bare-ok: the guard did not check it
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return context.object.mode == "OBJECT"
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll_reach/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return helpers.has_object(context) and assert_type(context.object, Object).mode == "EDIT"  # oracle-skip: silent
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
+features/implied_narrowings/nar_poll_reach/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | unused-ignore-comment | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | if (material := context.material) is None:
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return material.users > 0 and (ob := context.active_object) is not None and ob.active_material is not None
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll_reach/__init__.py | unused-ignore-comment | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.active_object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.window_manager.xr_session_state, XrSessionState)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | context.window_manager.xr_session_state.navigation_scale  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return bool(context.object and context.object.active_material)
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll] #3
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll_reach/sub_panels.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/sub_panels.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]

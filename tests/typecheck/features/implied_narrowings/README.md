@@ -13,6 +13,10 @@ default), while a pointer nothing checked stays an error.
   raises counts as False (`rna_ui.cc` reads the result parameter, which stays false), so a pointer read through while
   the result is computed (`ob.data.is_editmode`) was not None either. Not gated: Operator `modal` / `cancel` (later
   events), `check`, `description`, `draw` (a props dialog draws without a new poll) and UIList callbacks.
+- **Sub-panels:** Blender polls a sub-panel (`bl_parent_id`) only while it draws the parent panel, and draws the parent
+  only after the parent's poll returned True (`ed_panel_draw` in `area.cc`). So every poll up the chain holds in a
+  sub-panel's own `poll` and in the callbacks it gates. A sub-panel opened as a popover or through `wm.call_panel` is
+  drawn without its parent.
 - **Menu idname prefixes:** a Menu has no `bl_space_type` and can be drawn from any editor, but by convention its
   idname starts with the header prefix of the editor it belongs to (`CLIP_MT_view`, as the header is
   `CLIP_HT_header`); menu search relies on it (`<PREFIX>_MT_editor_menus`). The 19 header prefixes, `TIME` (dope sheet)
@@ -30,12 +34,20 @@ default), while a pointer nothing checked stays an error.
 
 What a poll checks is read from its code: the conjuncts of a `return` (`X`, `X is not None`, `isinstance(X, T)`,
 `bool(X)`, `X.type == 'LIT'` / `in {...}`), attribute reads always evaluated while the result is computed, early
-`return False` guards, local aliases, `super().poll(context)` / `Base.poll(context)`, an inherited or mixin poll, and
-helper functions taking the context, followed up to three calls deep. A fact is about a path from the context
+`return False` guards, local aliases (`ob = context.object`, `ob = getattr(context, "object", None)`, `(ob :=
+context.object)`), `super().poll(context)` / `Base.poll(context)`, an inherited or mixin poll, `bool(a and b)`, a `try`
+whose handlers never return true, `XrSessionState.is_running(context)` (which checks
+`window_manager.xr_session_state`), and helper functions taking the context, followed up to three calls deep. A fact is about a path from the context
 (`context.object.active_material`, also through a local alias), never about the class as a whole: a pointer the poll
 did not check stays an error. A read that the callback only tests (`if context.object:`, `x = context.object` with
 `if x is None:` after it) or that sits where the callback's own test already narrows it is not reported. A Panel's,
 Header's or GizmoGroup's `bl_space_type` stays a silent guarantee unless the panel is a popover.
+
+A sub-panel gets the facts of the polls up its `bl_parent_id` chain, the parent being the panel of that idname in the
+same file or else the same add-on (a parent that is Blender's own panel gives nothing), and the message names the parent
+whose poll checked the read. A sub-panel the add-on also opens as a popover gets none. A read inside a poll knows what
+the poll's earlier guards checked (`if not helper(context): return False`, `helper(context) and context.object.mode`):
+that is the poll's own control flow, so it is not reported.
 
 ## Configuration
 
@@ -46,6 +58,7 @@ An ignored rule still narrows.
 | Addon | Variant |
 | --- | --- |
 | `nar_poll` | Panel conjuncts (`is not None`, truth, `isinstance`, `bool`, `bpy.context`, a sub-pointer, an alias), `draw_header`; early guards with a Type tag giving `ob.data`; a mixin poll, `super().poll`, `Base.poll` and helpers two calls deep giving `space_data` a subclass; a Menu poll reading `area.type`; a GizmoGroup; not reported: a tested read; errors: a pointer the poll did not check; guards: `modal`, `Operator.draw`, a class with no poll |
+| `nar_poll_reach` | a sub-panel's `poll` and `draw`, a grandchild and a sub-panel in another module reading their parents' facts; the poll's own flow after a helper guard and through `and` (silent); `getattr` and walrus aliases; `XrSessionState.is_running`; `bool(a and b)`; a helper's `try` body; errors: a sub-panel also opened as a popover, a pointer no poll up the chain checked |
 | `nar_menu_prefix` | `VIEW3D_`, `CLIP_` (`bl_idname`), `TIME_`, `TOPBAR_` menus in `draw` and `poll`; guards: a helper method, an add-on's own prefix |
 | `nar_popover` | a panel opened by `layout.popover` and one by `wm.call_panel`; silent: a panel drawn only in its region; `strictness` presets (`_expected/strictness.toml`) |
 | `nar_config` | an `[[overrides]]` entry in `tests/typecheck/ty.toml`: the category at `error`, `blender-narrowed-by-menu-prefix` at `ignore` |
@@ -54,5 +67,5 @@ The `blender-*` markers need the checker; the upstream ones and the `| None` mar
 
 **Named exceptions:** only Blender main's builtin stubs type the dynamic context members (`context.object`,
 `active_node`, ...) `X | None`; 5.2's stubs type them non-None and its callbacks' `context` parameter `Context |
-None`, so the poll markers fail on 5.2. fake-bpy-module has no Type tag views, so `nar_poll`'s two markers that a
+None`, so the poll markers (`nar_poll`, `nar_poll_reach`) fail on 5.2. fake-bpy-module has no Type tag views, so `nar_poll`'s two markers that a
 Type tag narrows (`active_object.data` as `Mesh`, `object.data` as `Light`) fail with it.
