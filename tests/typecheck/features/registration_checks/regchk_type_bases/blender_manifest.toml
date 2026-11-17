@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "regchk_type_bases"
+version = "1.0.0"
+name = "Feature test: a base of classes made with type()"
+tagline = "a base of classes made with type()"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

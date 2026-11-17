@@ -12,6 +12,7 @@ visible in another.
 | `regchk_paths` | | registration that is valid on every path: a branch that returns, a list rebound in a branch, a tuple concatenated onto itself, a helper calling itself with other keywords; nothing is reported |
 | `regchk_main_guard` | | Blender's bundled add-ons' shape: a reload guard, a registration loop and `if __name__ == "__main__": register()`, which never runs in an add-on; nothing is reported |
 | `regchk_idname` | `blender-invalid-idname` | operator idnames Blender refuses, a missing `bl_idname`; panel / menu idnames without `_PT_` / `_MT_` (fails to load) |
+| `regchk_type_bases` | | a Menu without `bl_idname` that is only the base of menus made with `type(name, (Base,), namespace)`: a base, neither checked nor unregistered |
 | `regchk_unregister_leak` | `blender-unregister-mismatch` | classes, properties, handlers and menu functions that `unregister()` leaves behind |
 | `regchk_unregister_unknown` | `blender-unregister-mismatch` | `unregister_class` for a class that was not registered (fails in unregister) |
 | `regchk_isolation_a`, `_b` | `unresolved-attribute` | each sees only its own operators and properties; only A calls the shared library's `register_tool()` |
