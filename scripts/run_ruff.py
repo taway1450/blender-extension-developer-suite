@@ -42,7 +42,7 @@ from _common import CACHE_DIR, EXAMPLE_ADDONS_DIR, REPO_ROOT, StepError, log, ma
 from _features import EXPECTED_STUBS, FEATURES_DIR, select
 from _target import Target, add_target_arguments
 from build_ty import stock_command
-from check_blender import EXCLUDED_DIRS
+from check_blender import EXCLUDED
 from generate_stubs import results_name
 
 TOOLS = ("lint", "format")
@@ -167,7 +167,7 @@ def jobs_for(tool: str, args: argparse.Namespace, target: Target) -> list[Job]:
                 [source],
                 source,
                 f"{stem}-{args.version}",
-                [f"{(source / d).as_posix()}/" for d in EXCLUDED_DIRS],
+                [(source / path).as_posix() + ("/" if path.endswith("/") else "") for path in EXCLUDED],
             )
         ]
     if args.target == "stubs":

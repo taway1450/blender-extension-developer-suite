@@ -1,159 +1,675 @@
-"""The bucket report of check:blender. Each case is a real diagnostic from `check:blender main` with Blender's own
-stubs (`.cache/ty-results/main-builtin.txt`) and the source line it points at; refresh them when a rebase of the
-fork changes ty's wording."""
+"""The cause report of check:blender. Each case is a diagnostic as `check:blender main` prints it with Blender's own
+stubs (`.cache/ty-results/main-builtin.txt`), with the source line it points at and, where the cause depends on it,
+the enclosing class and function; refresh them when a rebase of the fork changes ty's wording."""
+
+import textwrap
 
 import pytest
 
-from _buckets import area, bucket, summary
+from _buckets import CAUSES, GROUPS, Diagnostic, Scope, area, read_diagnostics, summary
+
+SHIPPED = "scripts/startup/bl_ui/space_view3d.py"
+TESTS = "tests/python/bl_pyapi_idprop.py"
+
+
+def diagnostic(rule, msg, text="", path=SHIPPED, **scope):
+    return Diagnostic(path, 1, rule, msg, text, scope=Scope(**scope))
+
+
+PANEL = {"cls": "DATA_PT_camera_dof", "bases": "Panel"}
+POLLED_PANEL = {**PANEL, "has_poll": True}
 
 
 @pytest.mark.parametrize(
-    ("rule", "msg", "text", "expected"),
+    ("d", "expected"),
     [
+        # Blender fixes (BF1: runtime failures, BF2: annotations)
         pytest.param(
-            "import-not-found",
-            "Cannot resolve imported module `numpy`",
-            "import numpy as np",
-            "check-setup",
-            id="1-unresolved-import",
+            diagnostic(
+                "unresolved-reference",
+                "Name `QuantitativeInvisibilityF1D` used when not defined",
+                "self.__func = QuantitativeInvisibilityF1D()",
+                path="scripts/freestyle/modules/freestyle/predicates.py",
+            ),
+            "undefined-name",
+            id="bf1-undefined-name",
         ),
         pytest.param(
-            "unresolved-attribute",
-            "Object of type `Scene | None` has no attribute `cycles`",
-            "cycles = bpy.context.scene.cycles",
-            "check-setup",
-            id="1-cycles-property",
+            diagnostic(
+                "unresolved-reference",
+                "Name `panel0` used when not defined",
+                "tree.interface.move(panel0, 0)",
+                path="tests/python/bl_node_group_interface.py",
+            ),
+            "unsorted",
+            id="bf1-undefined-name-not-in-tests",
         ),
         pytest.param(
-            "unresolved-attribute",
-            "Object of type `Self@__call__` has no attribute `_get_dup_num_id`",
-            "cls._get_dup_num_id(bdata)))",
-            "dynamic",
-            id="2-self-in-mixin",
+            diagnostic(
+                "unresolved-reference",
+                "Name `export_anim` used when not defined",
+                "importlib.reload(export_anim)",
+                path="scripts/addons_core/io_scene_gltf2/__init__.py",
+            ),
+            "reload-idiom",
+            id="debt-reload-idiom",
         ),
         pytest.param(
-            "unresolved-attribute",
-            "Class `ToolDef` has no attribute `from_dict`",
-            "tool_def = ToolDef.from_dict({",
-            "dynamic",
-            id="2-tooldef",
+            diagnostic(
+                "missing-argument",
+                "No argument provided for required parameter `use_ktx_loader` of function `create`",
+                "BlenderImage.create(gltf, img_idx)",
+                path="scripts/addons_core/io_scene_gltf2/blender/imp/blender_gltf.py",
+            ),
+            "missing-argument",
+            id="bf1-missing-argument",
         ),
         pytest.param(
-            "unresolved-attribute",
-            "Module `bpy.ops.wm` has no member `exit_blender`",
-            "bpy.ops.wm.exit_blender()",
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Material` has no attribute `texture_slots`",
+                "for slot in mat.texture_slots:",
+                path="scripts/modules/_bpy_types.py",
+            ),
+            "dead-api",
+            id="bf1-dead-api",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-return-type",
+                "Return type does not match returned value: expected `set[Literal['RUNNING_MODAL', 'CANCELLED', "
+                "'FINISHED', 'PASS_THROUGH', 'INTERFACE']]`, found `set[Literal['OPERATOR_CANCELLED']]`",
+                "return {'OPERATOR_CANCELLED'}",
+                path="scripts/startup/bl_operators/anim.py",
+                cls="ARMATURE_OT_copy_bone_color_to_selected",
+                function="execute",
+            ),
+            "operator-return-misuse",
+            id="bf1-operator-return",
+        ),
+        pytest.param(
+            diagnostic(
+                "blender-unsupported-property-host",
+                "Blender ignores property annotations on a `Panel`: `prepend` does not become a property",
+                "prepend: StringProperty(",
+                path="scripts/addons_core/node_wrangler/interface.py",
+            ),
+            "property-on-panel",
+            id="bf1-property-on-panel",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `head` is not defined on `None` in union `EditBone | PoseBone | None`",
+                "self.get_bone(self.bones.ctrl.master).head = head",
+                path="scripts/addons_core/rigify/rigs/limbs/limb_rigs.py",
+            ),
+            "rigify-get-bone",
+            id="bf2-rigify-get-bone",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Class `ToolDef` has no attribute `from_dict`",
+                "tool_def = ToolDef.from_dict({",
+            ),
+            "tooldef",
+            id="bf2-tooldef",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to function `gather_animation_fcurves_channels` is incorrect: Expected `str`, found `None`",
+                "None,",
+                path="scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py",
+            ),
+            "none-for-non-optional",
+            id="bf2-none-argument",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-parameter-default",
+                "Default value of type `None` is not assignable to annotated parameter type `Context`",
+                "def get_instance(context: Context = None):",
+                path="scripts/addons_core/rigify/__init__.py",
+            ),
+            "none-for-non-optional",
+            id="bf2-none-default",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-type-form",
+                "Variable of type `Context` is not allowed in a type expression",
+                "def get_actions(context: bpy.context):",
+                path="scripts/addons_core/viewport_vr_preview/action_map.py",
+            ),
+            "wrong-annotation",
+            id="bf2-wrong-annotation",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-return-type",
+                "Return type does not match returned value: expected `str`, found `None`",
+                "return None",
+                path="scripts/addons_core/io_scene_gltf2/blender/com/data_path.py",
+                function="get_target_property_name",
+            ),
+            "return-annotation",
+            id="bf2-return-annotation",
+        ),
+        # Typechecker fixes (S1: RNA never-None, S2: stub generator, S3: ty_blender)
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `addons` is not defined on `None` in union `Preferences | None`",
+                "prefs = bpy.context.preferences.addons[__package__].preferences",
+                path="intern/cycles/blender/addon/properties.py",
+            ),
+            "context-never-none",
+            id="s1-preferences",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `bones` is not defined on `None` in union `bpy_struct | None`",
+                "for bone in data.bones:",
+                function="draw_item",
+                params=("self", "_context", "layout", "data", "item", "icon", "_active_data", "_active_propname"),
+            ),
+            "callback-never-none",
+            id="s1-draw-item-data",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `bl_idname` is not defined on `None` in union `KeyingSet | None`",
+                "ks.bl_idname",
+                path="scripts/startup/keyingsets_builtins.py",
+                function="generate",
+                params=("self", "context", "ks", "data"),
+            ),
+            "callback-never-none",
+            id="s1-keying-set",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-method-override",
+                "Invalid override of method `asset_poll`: Definition is incompatible with `AssetShelf.asset_poll`",
+                "def asset_poll(cls, asset: AssetRepresentation):",
+                path="scripts/addons_core/pose_library/gui.py",
+            ),
+            "callback-never-none",
+            id="s1-asset-poll-override",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `BMEdge` has no attribute `vert`",
+                "for l in v.link_loops: l.vert",
+                path="tests/python/bl_pyapi_bmesh.py",
+            ),
+            "bmesh-elem-seq",
+            id="s2-bmesh-elem-seq",
+        ),
+        pytest.param(
+            diagnostic(
+                "no-matching-overload",
+                "No overload of bound method `__getitem__` matches arguments: argument of type `tuple[str, None]`",
+                "ob = bpy.data.objects[name, None]",
+                path="scripts/modules/_bl_previews_utils/bl_previews_render.py",
+            ),
+            "blend-data-lib-key",
+            id="s2-blend-data-lib-key",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Context` has no attribute `constraint`",
+                "constraint = context.constraint",
+                path="scripts/startup/bl_operators/constraint.py",
+            ),
+            "context-store-member",
+            id="s2-context-store-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-method-override",
+                "Invalid override of method `traverse`: Definition is incompatible with `ChainingIterator.traverse`",
+                "def traverse(self, iter):",
+                path="scripts/freestyle/modules/freestyle/chainingiterators.py",
+            ),
+            "freestyle-positional",
+            id="s2-freestyle",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-method-override",
+                "Invalid override of method `update`: Definition is incompatible with `RenderEngine.update`",
+                "def update(self, data, depsgraph):",
+                path="intern/cycles/blender/addon/__init__.py",
+            ),
+            "render-engine-positional",
+            id="s2-render-engine",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to bound method `menu_contents` is incorrect: Expected `Literal['DEFAULT']`, found `str`",
+                "props.slot = str(i + 1)",
+            ),
+            "dynamic-enum",
+            id="s2-dynamic-enum",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-context-manager",
+                "Object of type `tuple[BlendDataLibraries, BlendDataLibraries]` cannot be used with `with`",
+                "with bpy.data.libraries.load(filepath) as (data_from, data_to):",
+            ),
+            "stub-context-manager",
+            id="s2-libraries-load",
+        ),
+        pytest.param(
+            diagnostic(
+                "redundant-condition",
+                "Condition is always falsy",
+                "if not keyconfig_set(filepath, report=self.report):",
+                path="scripts/startup/bl_operators/userpref.py",
+            ),
+            "stub-docstring",
+            id="s2-keyconfig-set",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `operator` is not defined on `None` in union `UILayout | None`",
+                "self.layout.operator('sequencer.split')",
+                cls="SEQUENCER_MT_context_menu",
+                bases="Menu",
+                function="draw_generic",
+            ),
+            "layout-in-helper",
+            id="s3-layout-in-helper",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `label` is not defined on `None` in union `UILayout | None`",
+                "self.layout.label(text='Drop')",
+                path="scripts/addons_core/bl_pkg/bl_extension_ops.py",
+                cls="EXTENSIONS_OT_package_install",
+                bases="Operator",
+                function="_draw_for_drop",
+            ),
+            "layout-in-operator-helper",
+            id="debt-operator-layout-helper",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Unresolved attribute `test_prop` on type `<class 'Scene'>`.",
+                "bpy.types.Scene.test_prop = bpy.props.IntProperty()",
+                path=TESTS,
+            ),
+            "file-registered-property",
+            id="s3-registered-property-assignment",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Scene` has no attribute `test_prop`",
+                "self.assertEqual(scene.test_prop, 1)",
+                path=TESTS,
+                registers=frozenset({"test_prop"}),
+            ),
+            "file-registered-property",
+            id="s3-registered-property-read",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Property` has no attribute `enum_items`",
+                'items = bpy.types.Keyframe.bl_rna.properties["interpolation"].enum_items',
+            ),
+            "bl-rna-property",
+            id="s3-bl-rna-property",
+        ),
+        pytest.param(
+            diagnostic(
+                "blender-invalid-idname",
+                "Menu class `ArmatureSubMenu` has no `bl_idname`",
+                "class ArmatureSubMenu(bpy.types.Menu):",
+                path="scripts/addons_core/rigify/metarig_menu.py",
+            ),
+            "type-call-bases",
+            id="s3-type-call-bases",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-return-type",
+                "Return type does not match returned value: expected `tuple[bpy_prop_array[int], "
+                "bpy_prop_array[int]]`, found `tuple[list[int], list[int]]`",
+                "return flt_flags, flt_neworder",
+                function="filter_items",
+            ),
+            "filter-items-tuple",
+            id="s3-filter-items",
+        ),
+        # Imprecise annotations (S4)
+        pytest.param(
+            diagnostic(
+                "invalid-method-override",
+                "Invalid override of method `execute`: Definition is incompatible with `Operator.execute`",
+                "def execute(self, context: Context) -> set[str]:",
+                path="scripts/startup/bl_operators/copy_global_transform.py",
+            ),
+            "imprecise-operator-return",
+            id="s4-operator-return",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-return-type",
+                "Return type does not match returned value: expected `set[Literal['RUNNING_MODAL', 'CANCELLED', "
+                "'FINISHED', 'PASS_THROUGH', 'INTERFACE']]`, found `set[str]`",
+                "return ret",
+                function="execute",
+            ),
+            "imprecise-operator-return",
+            id="s4-operator-return-variable",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Object of type `str` is not assignable to attribute `mode` of type `Literal['OBJECT', 'EDIT']`",
+                "ob.mode = mode",
+            ),
+            "imprecise-enum-value",
+            id="s4-enum-value",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-method-override",
+                "Invalid override of method `draw_item`: Definition is incompatible with `UIList.draw_item`",
+                "def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_propname):",
+            ),
+            "imprecise-callback-parameter",
+            id="s4-callback-parameter",
+        ),
+        pytest.param(
+            diagnostic("blender-imprecise-enum-value", "A `str` value where the stubs have an enum literal"),
+            "imprecise-enum-value",
+            id="s4-rule",
+        ),
+        # Implied narrowings (S5)
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to bound method `prop` is incorrect: Expected `AnyType`, found `Material | None`",
+                'layout.prop(context.object.active_material, "diffuse_color")',
+                function="draw",
+                **POLLED_PANEL,
+            ),
+            "narrowed-by-poll",
+            id="s5-poll",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `use_dof` is not defined on `None` in union `CameraDOFSettings | None`",
+                "layout.active = dof.use_dof",
+                function="draw",
+                **PANEL,
+            ),
+            "unchecked-pointer",
+            id="unsorted-no-poll",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `use_dof` is not defined on `None` in union `CameraDOFSettings | None`",
+                "layout.active = dof.use_dof",
+                function="modal",
+                cls="VIEW3D_OT_walk",
+                bases="Operator",
+                has_poll=True,
+            ),
+            "unchecked-pointer",
+            id="unsorted-modal-not-gated",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Space` has no attribute `clip`",
+                "clip = context.space_data.clip",
+                path="scripts/startup/bl_ui/space_clip.py",
+                cls="CLIP_MT_track",
+                bases="Menu",
+                function="draw",
+            ),
+            "narrowed-by-menu-prefix",
+            id="s5-menu-prefix",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Space` has no attribute `overlay`",
+                "overlay = context.space_data.overlay",
+                cls="VIEW3D_PT_overlay",
+                bases="Panel",
+                function="draw",
+            ),
+            "narrowed-by-popover",
+            id="s5-popover",
+        ),
+        # Assumptions (S6)
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `render` is not defined on `None` in union `Scene | None`",
+                "bpy.context.scene.render.engine = 'CYCLES'",
+                path="scripts/presets/cycles/integrator/Default.py",
+            ),
+            "assumed-context-member",
+            id="s6-context-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `name` is not defined on `None` in union `bpy_struct | None`",
+                "layout.prop(vgroup, 'name', text='')",
+                function="draw_item",
+                params=("self", "_context", "layout", "_data", "item", "icon", "_active_data", "_active_propname"),
+            ),
+            "assumed-list-item",
+            id="s6-list-item",
+        ),
+        pytest.param(
+            diagnostic("blender-assumed-registration", "`OBJECT_OT_x` is registered only on a branch"),
+            "assumed-registration",
+            id="s6-rule",
+        ),
+        # Typing debt (out of scope)
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Self@__call__` has no attribute `_get_dup_num_id`",
+                "cls._get_dup_num_id(bdata)))",
+            ),
+            "mixin-self",
+            id="debt-mixin-self",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Scene | None` has no attribute `cycles`",
+                "cycles = bpy.context.scene.cycles",
+                path="scripts/presets/cycles/sampling/Final.py",
+            ),
+            "cross-file-registered-property",
+            id="debt-cycles-property",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `is_cache_baking_any` is not defined on `None` in union `FluidDomainSettings | None`",
+                "is_baking_any = domain.is_cache_baking_any",
+                function="draw",
+                **POLLED_PANEL,
+            ),
+            "type-enum-sub-pointer",
+            id="debt-settings-pointer",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `ID | None` has no attribute `uv_layers`",
+                "return obj is not None and obj.type == 'MESH' and obj.data.uv_layers",
+            ),
+            "object-data-untagged",
+            id="debt-object-data",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `NodeSocket` has no attribute `socket`",
+                "blender_shader_sockets[0].socket.id_data.library,",
+            ),
+            "base-class-subtype",
+            id="debt-base-class",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Module `bpy.ops.wm` has no member `exit_blender`",
+                "bpy.ops.wm.exit_blender()",
+            ),
             "operator-call",
-            id="3-bpy-ops-line",
+            id="debt-operator-call",
         ),
         pytest.param(
-            "unresolved-attribute",
-            "Object of type `OperatorProperties` has no attribute `use_active_only`",
-            "if props.use_active_only:",
-            "operator-call",
-            id="3-operator-properties",
+            diagnostic("import-not-found", "Cannot resolve imported module `_cycles`", "import _cycles"),
+            "unresolved-import",
+            id="debt-unresolved-import",
         ),
         pytest.param(
-            "too-many-positional-arguments",
-            "Too many positional arguments to function `extrude_region_move`: expected 0, got 1",
-            "'INVOKE_REGION_WIN',",
-            "operator-call",
-            id="3-positional-execution-context",
+            diagnostic(
+                "unused-type-ignore-comment", "Unused blanket `type: ignore` directive", "x = 1  # type: ignore"
+            ),
+            "general-typing",
+            id="debt-general",
         ),
+        # Unsorted
         pytest.param(
-            "unresolved-attribute",
-            "Object of type `ID | None` has no attribute `uv_layers`",
-            "return obj is not None and obj.type == 'MESH' and obj.data.uv_layers",
-            "type-tag",
-            id="4-object-data",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Attribute `objects` is not defined on `None` in union `Collection | None`",
-            "bpy.context.collection.objects.link(obj)",
-            "context-member",
-            id="5-attribute-of-context-member",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Attribute `keying_sets` is not defined on `None` in union `Scene | None`",
-            "ks = scene.keying_sets.active",
-            "context-member",
-            id="5-context-type",
-        ),
-        pytest.param(
-            "invalid-argument-type",
-            "Argument to function `verify_armature_obj` is incorrect: Expected `Object`, found `Object | None`",
-            "temp_obj = verify_armature_obj(context.view_layer.objects.active)",
-            "context-member",
-            id="5-object-from-context",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Attribute `is_cache_baking_any` is not defined on `None` in union `FluidDomainSettings | None`",
-            "is_baking_any = domain.is_cache_baking_any",
-            "type-tag",
-            id="6-settings-pointer",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Attribute `use_dof` is not defined on `None` in union `CameraDOFSettings | None`",
-            "layout.active = dof.use_dof",
-            "pointer-none",
-            id="7-pointer",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Object of type `NodeSocket` has no attribute `socket`",
-            "blender_shader_sockets[0].socket.id_data.library,",
-            "type-tag",
-            id="8-base-class",
-        ),
-        pytest.param(
-            "not-iterable",
-            "Object of type `BMVertSeq` is not iterable",
-            "for v in bm.verts:",
+            diagnostic("not-iterable", "Object of type `ImBufBuffer` is not iterable", "for p in buf:"),
             "stub-gap",
-            id="9-protocol",
+            id="unsorted-stub-gap",
         ),
         pytest.param(
-            "invalid-method-override",
-            "Invalid override of method `update`: Definition is incompatible with `RenderEngine.update`",
-            "def update(self, data, depsgraph):",
-            "stub-gap",
-            id="9-override",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Class `ShapeKey` has no attribute `bl_rna`",
-            'SHAPE_KEY_SLIDER_HARD_MIN = bpy.types.ShapeKey.bl_rna.properties["slider_min"].hard_min',
-            "stub-gap",
-            id="9-bl-rna",
-        ),
-        pytest.param(
-            "unresolved-attribute",
-            "Module `os` has no member `getuid`",
-            "if os.getuid() == 0:",
-            "stub-gap",
-            id="9-module-member",
-        ),
-        pytest.param(
-            "blender-unsupported-property-host",
-            "Blender ignores property annotations on a `Panel`: `prepend` does not become a property",
-            "prepend: StringProperty(",
-            "rest",
-            id="10-blender-rule",
-        ),
-        pytest.param(
-            "invalid-argument-type",
-            "Argument to function `bake_animation` is incorrect: Expected `str`, found `int`",
-            "animation = bake_animation(obj_uuid, obj_uuid, export_settings)",
-            "rest",
-            id="10-everything-else",
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to function `bake_animation` is incorrect: Expected `str`, found `int`",
+                "animation = bake_animation(obj_uuid, obj_uuid, export_settings)",
+            ),
+            "unsorted",
+            id="unsorted-everything-else",
         ),
     ],
 )
-def test_bucket(rule, msg, text, expected):
-    assert bucket(rule, msg, text) == expected
+def test_cause(d, expected):
+    assert d.cause.name == expected
+
+
+def test_every_cause_has_a_known_group_and_a_unique_name():
+    assert {c.group for c in CAUSES} <= set(GROUPS)
+    assert len({c.name for c in CAUSES}) == len(CAUSES)
+    assert CAUSES[-1].name == "unsorted"
+
+
+@pytest.mark.parametrize(
+    ("name", "group", "slice_"),
+    [
+        ("undefined-name", "blender-fix", "BF1"),
+        ("tooldef", "blender-fix", "BF2"),
+        ("context-never-none", "typechecker-fix", "S1"),
+        ("bmesh-elem-seq", "typechecker-fix", "S2"),
+        ("layout-in-helper", "typechecker-fix", "S3"),
+        ("imprecise-operator-return", "imprecise-annotation", "S4"),
+        ("narrowed-by-poll", "implied-narrowing", "S5"),
+        ("assumed-context-member", "assumption", "S6"),
+        ("mixin-self", "typing-debt", ""),
+        ("unsorted", "unsorted", ""),
+    ],
+)
+def test_cause_group_and_slice(name, group, slice_):
+    cause = next(c for c in CAUSES if c.name == name)
+    assert (cause.group, cause.slice) == (group, slice_)
+
+
+def test_read_diagnostics_gives_severity_and_enclosing_scope(tmp_path):
+    source = tmp_path / "scripts" / "startup" / "bl_ui"
+    source.mkdir(parents=True)
+    (source / "space_x.py").write_text(
+        textwrap.dedent(
+            """\
+            import bpy
+            from bpy.types import Panel, UIList
+
+
+            class X_PT_panel(XButtonsPanel, Panel):
+                bl_label = "X"
+
+                @classmethod
+                def poll(cls, context):
+                    return context.object
+
+                def draw(self, context):
+                    layout = self.layout
+                    if True:
+                        layout.prop(context.object.active_material, "diffuse_color")
+
+
+            class X_UL_list(UIList):
+                def draw_item(self, _context, layout, data,
+                              item, icon, _active_data, _active_propname):
+                    layout.prop(item, "name")
+
+
+            bpy.types.Scene.x_prop = bpy.props.IntProperty()
+            """
+        ),
+        encoding="utf-8",
+    )
+    output = (
+        "scripts/startup/bl_ui/space_x.py:15:9: error[invalid-argument-type] Argument is incorrect\n"
+        "scripts\\startup\\bl_ui\\space_x.py:21:9: warning[blender-assumed-list-item] `item` taken as not None\n"
+        "scripts/startup/bl_ui/space_x.py:24:1: error[unresolved-attribute] Unresolved attribute\n"
+    )
+    first, second, third = read_diagnostics(output, tmp_path)
+
+    assert first.severity == "error"
+    assert first.scope == Scope(
+        cls="X_PT_panel",
+        bases="XButtonsPanel, Panel",
+        function="draw",
+        params=("self", "context"),
+        has_poll=True,
+        registers=frozenset({"x_prop"}),
+    )
+    assert second.severity == "warning"
+    assert second.scope.cls == "X_UL_list"
+    assert second.scope.function == "draw_item"
+    assert second.scope.params == (
+        "self",
+        "_context",
+        "layout",
+        "data",
+        "item",
+        "icon",
+        "_active_data",
+        "_active_propname",
+    )
+    assert second.scope.has_poll is False
+    assert (third.scope.cls, third.scope.function) == ("", "")
 
 
 @pytest.mark.parametrize(
@@ -171,28 +687,40 @@ def test_area(path, expected):
     assert area(path) == expected
 
 
-def test_summary_has_every_bucket_and_rules_sorted_by_name():
+def test_summary_has_every_cause_by_group_group_totals_and_warnings_apart():
     diagnostics = [
-        ("pointer-none", "shipped", "unresolved-attribute"),
-        ("pointer-none", "presets", "unresolved-attribute"),
-        ("check-setup", "other", "import-not-found"),
-        ("rest", "shipped", "blender-unsupported-property-host"),
+        ("narrowed-by-poll", "shipped", "invalid-argument-type", "error"),
+        ("narrowed-by-poll", "presets", "blender-narrowed-by-poll", "warning"),
+        ("tooldef", "shipped", "unresolved-attribute", "error"),
+        ("unsorted", "other", "invalid-argument-type", "error"),
     ]
-    assert summary("# check:blender main, builtin stubs, Blender abc1234567", diagnostics) == (
-        "# check:blender main, builtin stubs, Blender abc1234567\n"
-        "bucket            shipped  presets    other    total\n"
-        "context-member          0        0        0        0\n"
-        "pointer-none            1        1        0        2\n"
-        "type-tag                0        0        0        0\n"
-        "stub-gap                0        0        0        0\n"
-        "operator-call           0        0        0        0\n"
-        "check-setup             0        0        1        1\n"
-        "dynamic                 0        0        0        0\n"
-        "rest                    1        0        0        1\n"
-        "total                   2        1        1        4\n"
-        "\n"
-        "rule                                 count\n"
-        "blender-unsupported-property-host        1\n"
-        "import-not-found                         1\n"
-        "unresolved-attribute                     2\n"
-    )
+    text = summary("# check:blender main, builtin stubs, Blender abc1234567", diagnostics)
+    lines = text.splitlines()
+
+    assert lines[0] == "# check:blender main, builtin stubs, Blender abc1234567"
+    assert lines[1].split() == ["cause", "group", "slice", "shipped", "presets", "other", "total"]
+    rows = {line.split()[0]: line.split()[1:] for line in lines[2:] if line.strip()}
+    # every cause has a row, also when zero, listed by group
+    assert [line.split()[0] for line in lines[2 : 2 + len(CAUSES)]] == [
+        c.name for g in GROUPS for c in CAUSES if c.group == g
+    ]
+    assert rows["narrowed-by-poll"] == ["implied-narrowing", "S5", "1", "1", "0", "2"]
+    assert rows["tooldef"] == ["blender-fix", "BF2", "1", "0", "0", "1"]
+    assert rows["mixin-self"] == ["typing-debt", "-", "0", "0", "0", "0"]
+    # a total per group, every group listed
+    group_header = lines.index(next(line for line in lines if line.split()[:1] == ["group"]))
+    assert [line.split()[0] for line in lines[group_header + 1 : group_header + 1 + len(GROUPS)]] == GROUPS
+    assert rows["implied-narrowing"] == ["1", "1", "0", "2"]
+    assert rows["blender-fix"] == ["1", "0", "0", "1"]
+    assert rows["assumption"] == ["0", "0", "0", "0"]
+    # errors and warnings on separate total lines
+    assert rows["errors"] == ["2", "0", "1", "3"]
+    assert rows["warnings"] == ["0", "1", "0", "1"]
+    # rules sorted by name, with a column per severity
+    rule_header = lines.index(next(line for line in lines if line.split()[:1] == ["rule"]))
+    assert lines[rule_header].split() == ["rule", "error", "warning"]
+    assert lines[rule_header + 1 :] == [
+        f"{'blender-narrowed-by-poll':<40}{0:>8}{1:>8}",
+        f"{'invalid-argument-type':<40}{2:>8}{0:>8}",
+        f"{'unresolved-attribute':<40}{1:>8}{0:>8}",
+    ]
