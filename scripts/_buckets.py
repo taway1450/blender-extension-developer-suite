@@ -14,7 +14,8 @@ worktree ty just checked, so message and line always belong together), its path 
 function (``Scope``). Each cause names the slice that addresses it. The patterns come from the spec's slices and
 the research on the ``research/*`` branches (``blender-true-problems``, ``false-positive-fixes``,
 ``candidate-assumptions``, ``imprecise-patterns``, ``silent-assumptions``, ``stub-gaps``, ``check-blender-setup``).
-Once the slices land, the dedicated rules (``blender-narrowed-by-poll``, ...) name their cause directly.
+The causes of the Imprecise annotations, Implied narrowings and Assumptions (S4-S6) are their dedicated rules
+(``blender-narrowed-by-poll``, ...): an error of the same shape is code the rule did not accept.
 ``area(path)`` names the part of the source tree a path is in.
 """
 
@@ -52,6 +53,8 @@ AREAS = [
         ),
     ),
     ("presets", ("scripts/presets/",)),
+    ("examples", ("doc/python_api/examples/",)),
+    ("templates", ("scripts/templates_py/",)),
 ]
 AREA_NAMES = [name for name, _ in AREAS] + ["other"]
 
@@ -102,17 +105,12 @@ class Cause:
 
 NULLABLE = re.compile(r"\| None`|`None \||in union `[^`]*None|found `[^`]*\| None`")
 STRING_LITERAL = re.compile(r"""['"]""")
-SET_LITERAL = re.compile(r"""\{\s*['"]""")
 CONTEXT = r"\b(?:context|ctx|C|_context)\."
 
 OPERATOR_RETURNS = {"execute", "invoke", "modal"}
-# Callbacks Blender calls only after the class's poll() returned True, by root (spec, S5).
-GATED_CALLBACKS = {
-    "panel": {"draw", "draw_header", "draw_header_preset"},
-    "menu": {"draw"},
-    "operator": {"invoke", "execute"},
-    "gizmogroup": {"setup", "refresh", "draw_prepare", "invoke_prepare"},
-}
+INTERACTIVE_CALLBACKS = {"invoke", "modal", "exit"}
+UI_ROOTS = {"panel", "menu", "header", "uilist"}
+UI_DRAW_CALLBACKS = {"draw", "draw_header", "draw_header_preset", "draw_item", "draw_filter"}
 # Callback parameters Blender always fills, by position counting ``self``/``cls`` (S1); ``draw_item``'s ``item``
 # (position 4) is the list-item Assumption (S6) instead.
 NEVER_NONE_PARAMETERS = {
@@ -157,6 +155,7 @@ UNTYPED_PACKAGES = (
     "scripts/modules/_bl_i18n_utils/",
     "scripts/modules/bl_app_override/",
 )
+RIGIFY = "scripts/addons_core/rigify/"
 NUMPY = re.compile(r"\bndarray\b|\bnumpy\.")
 # Optional settings Blender's stubs lack because the Blender that generated them was built without the feature.
 BUILD_OPTION_TYPE = re.compile(r"`FFmpegSettings`")
@@ -174,9 +173,7 @@ BASE_CLASS = re.compile(
     r"`(?:NodeSocket|Node|Constraint|Modifier|Strip|ActionStrip|Light|LightProbe|Curve|Texture|TextureSlot|IKParam"
     r"|Gizmo|Space|ID|bpy_struct|AnyType)(?:\[\w+\])?(?: & ~\w+)*`"
 )
-ASSUMED_CONTEXT_TYPE = re.compile(r"`(?:Scene|ViewLayer|ToolSettings) \| None`")
 OTHER_CONTEXT_TYPE = re.compile(r"`(?:Space|Region|Area|Screen|Window|WorkSpace|Context) \| None`")
-SPACE_TYPE = re.compile(r"`(?:Space|Area)(?: \| None| & ~AlwaysFalsy)?`")
 NEVER_NONE_CONTEXT_TYPE = re.compile(r"`(?:Preferences|WindowManager) \| None`")
 CALLBACK_PARAMETER_TYPE = re.compile(r"`(?:bpy_struct|AnyType|KeyingSet|AssetRepresentation|Depsgraph) \| None`")
 STUB_GAP_RULES = {
@@ -213,6 +210,22 @@ def missing_attribute(msg: str) -> str | None:
 PYTHON_TYPE = re.compile(r"(?:[a-z_][\w.]*(?:\[.*\])?|Unknown|Any|Divergent|LiteralString|Literal\[.*\]|\(.*\))$")
 
 
+# A Blender type as ty prints it: a capitalised class name, without type arguments.
+BLENDER_TYPE = re.compile(r"[A-Z][A-Za-z0-9]*$")
+
+
+# The types a message names, not its attribute, method, function or parameter names.
+TYPE_IN_MESSAGE = re.compile(r"(?:type|found|Expected|union|and) `([^`]*)`")
+PYTHON_CLASSES = {"None", "EllipsisType", "ModuleType", "~None"}
+PYTHON_USE_RULES = {
+    "not-subscriptable",
+    "not-iterable",
+    "call-non-callable",
+    "unsupported-operator",
+    "unresolved-attribute",
+}
+
+
 def union_members(type_: str) -> list[str]:
     """The members of a union type as ty prints it, split at the top level."""
     depth, current, members = 0, "", []
@@ -230,7 +243,7 @@ def python_optional(d: Diagnostic) -> bool:
     """Whether the nullable types in the message hold no Blender type: a plain Python ``Optional``."""
     unions = [t for t in re.findall(r"`([^`]*)`", d.msg) if "None" in union_members(t)]
     members = [m for t in unions for m in union_members(t) if m != "None"]
-    return bool(members) and all(PYTHON_TYPE.match(m) for m in members)
+    return bool(members) and all(PYTHON_TYPE.match(m) and not m.startswith("bpy_") for m in members)
 
 
 def unchecked_pointer_bug(d: Diagnostic) -> bool:
@@ -241,8 +254,44 @@ def unchecked_pointer_bug(d: Diagnostic) -> bool:
     )
 
 
+def python_types_only(d: Diagnostic) -> bool:
+    """Whether a value is used in a way its type does not allow (subscript, iteration, call, operator, attribute)
+    and every type the message names is a Python one (``None``, ``EllipsisType``, a builtin): plain Python typing
+    debt, such as an instance attribute initialised to ``None`` or a ``...`` default. A mismatch of an argument or
+    return type is left out: it can be a wrong annotation (BF2)."""
+    if d.rule not in PYTHON_USE_RULES or NUMPY.search(d.msg):
+        return False
+    members = [m.removesuffix(" & ~AlwaysFalsy") for t in TYPE_IN_MESSAGE.findall(d.msg) for m in union_members(t)]
+    return bool(members) and all(
+        m in PYTHON_CLASSES or (PYTHON_TYPE.match(m) and not m.startswith(("bpy_", "Literal["))) for m in members
+    )
+
+
+def correlated_union(d: Diagnostic) -> bool:
+    """Whether the message names a union of Blender types, without ``None``, that the code tells apart by a mode, a
+    flag or a type field ty does not follow (``PoseBone | EditBone | Object`` picked by ``is_ebone``)."""
+    if d.rule not in {"unresolved-attribute", "invalid-assignment"}:
+        return False
+    for type_ in re.findall(r"(?:on type|in union|Object of type) `([^`]*)`", d.msg):
+        members = union_members(type_)
+        if len(members) > 1 and all(
+            BLENDER_TYPE.match(m) and m != "None" and not PYTHON_TYPE.match(m) for m in members
+        ):
+            return True
+    return False
+
+
 def untyped_python(d: Diagnostic) -> bool:
     return d.path.replace("\\", "/").startswith(UNTYPED_PACKAGES) or NUMPY.search(d.msg) is not None
+
+
+def in_scripts(d: Diagnostic) -> bool:
+    """Whether the diagnostic is in a doc example or a text-editor template."""
+    return d.area in {"examples", "templates"}
+
+
+def in_presets(d: Diagnostic) -> bool:
+    return d.path.replace("\\", "/").startswith("scripts/presets/")
 
 
 def in_tests(d: Diagnostic) -> bool:
@@ -272,18 +321,6 @@ def root(scope: Scope) -> str:
     return ""
 
 
-def has_mixin(scope: Scope) -> bool:
-    """Whether the class has a base besides the Blender one, which may define ``poll``."""
-    names = [b for b in re.findall(r"[\w.]+", scope.bases) if b.split(".")[-1] not in {"bpy", "types"}]
-    return any(n.split(".")[-1].lower() not in {"panel", "menu", "header", "operator", "gizmogroup"} for n in names)
-
-
-def gated(d: Diagnostic) -> bool:
-    """Whether the diagnostic is in a callback its class's poll() gates, in a class with a poll."""
-    callbacks = GATED_CALLBACKS.get(root(d.scope), set())
-    return d.scope.function in callbacks and (d.scope.has_poll or has_mixin(d.scope))
-
-
 def names_parameter(d: Diagnostic, positions: Iterable[int]) -> bool:
     params = d.scope.params
     return any(i < len(params) and re.search(rf"\b{re.escape(params[i])}\b", d.text) for i in positions)
@@ -298,29 +335,6 @@ def callback_never_none(d: Diagnostic) -> bool:
     if d.scope.function == "draw_item":
         return names_parameter(d, positions) and not names_parameter(d, [4])
     return True
-
-
-def list_item(d: Diagnostic) -> bool:
-    return d.scope.function == "draw_item" and nullable(d) and CALLBACK_PARAMETER_TYPE.search(d.msg) is not None
-
-
-def operator_override(d: Diagnostic) -> bool:
-    methods = "|".join(OPERATOR_RETURNS)
-    return (d.rule == "invalid-method-override" and re.search(rf"method `({methods})`", d.msg) is not None) or (
-        re.search(rf"define method `({methods})` incompatibly", d.msg) is not None
-    )
-
-
-def imprecise_operator_return(d: Diagnostic) -> bool:
-    return operator_override(d) or (
-        d.rule == "invalid-return-type" and d.scope.function in OPERATOR_RETURNS and "found `set[str]`" in d.msg
-    )
-
-
-def imprecise_enum_value(d: Diagnostic) -> bool:
-    if d.rule not in {"invalid-argument-type", "invalid-assignment"} or "Literal[" not in d.msg:
-        return False
-    return re.search(r"found `(?:set\[)?str\]?`|Object of type `(?:set\[)?str\]?` is not assignable", d.msg) is not None
 
 
 def registered_property(d: Diagnostic) -> bool:
@@ -340,23 +354,15 @@ def in_addon(d: Diagnostic) -> bool:
     return path.startswith(("scripts/addons_core/", "intern/cycles/blender/addon/"))
 
 
-def menu_space(d: Diagnostic) -> bool:
-    """``space_data`` / ``area`` in a menu's ``draw`` / ``poll``, also through an alias (``sc = context.space_data``)."""
-    if root(d.scope) != "menu" or SPACE_TYPE.search(d.msg) is None:
-        return False
-    return d.scope.function in {"draw", "poll"} or "space_data" in d.text + d.msg
-
-
-def popover_space(d: Diagnostic) -> bool:
-    return root(d.scope) == "panel" and SPACE_TYPE.search(d.msg) is not None and "space_data" in d.text
+def ui_draw_pointer(d: Diagnostic) -> bool:
+    """A nullable read in the draw callback of a Panel, Menu, Header or UIList: Blender draws it only where its
+    pointers exist (its poll, its editor or mode, or the panel's own logic), which ty does not follow (research
+    ``blender-true-problems``, "Ruled out": the UI's draw code is guarded by construction)."""
+    return nullable(d) and root(d.scope) in UI_ROOTS and d.scope.function in UI_DRAW_CALLBACKS
 
 
 def layout_in(roots: set[str]) -> Callable[[Diagnostic], bool]:
     return lambda d: "UILayout | None" in d.msg and root(d.scope) in roots
-
-
-def never(d: Diagnostic) -> bool:
-    return False
 
 
 def rule(*names: str) -> Callable[[Diagnostic], bool]:
@@ -374,30 +380,24 @@ def outside_tests(predicate: Callable[[Diagnostic], bool]) -> Callable[[Diagnost
 # --- the table, first match wins -------------------------------------------------------------------------------
 
 CAUSES = [
-    # Imprecise annotations (S4).
-    Cause("imprecise-operator-return", "imprecise-annotation", "S4", imprecise_operator_return,
-          "blender-imprecise-operator-return"),
-    Cause("imprecise-enum-value", "imprecise-annotation", "S4",
-          lambda d: imprecise_enum_value(d) and "Literal['DEFAULT']" not in d.msg, "blender-imprecise-enum-value"),
-    Cause("imprecise-callback-parameter", "imprecise-annotation", "S4",
-          lambda d: d.rule == "invalid-method-override"
-          and re.search(r"`UIList\.(draw_item|filter_items)`", d.msg) is not None,
-          "blender-imprecise-callback-parameter"),
-    # Implied narrowings by a menu's idname prefix or a popover (S5).
-    Cause("narrowed-by-menu-prefix", "implied-narrowing", "S5", menu_space, "blender-narrowed-by-menu-prefix"),
-    Cause("narrowed-by-popover", "implied-narrowing", "S5", popover_space, "blender-narrowed-by-popover"),
-    # Assumptions the fork makes silently today (S6): only their rules report them.
-    Cause("assumed-registration", "assumption", "S6", never, "blender-assumed-registration"),
-    Cause("assumed-complete-registration", "assumption", "S6", never, "blender-assumed-complete-registration"),
-    Cause("assumed-preferences", "assumption", "S6", never, "blender-assumed-preferences"),
+    # The Imprecise annotations (S4), Implied narrowings (S5) and Assumptions (S6): the code their dedicated rule
+    # accepts and reports. An error of the same shape is code the rule did not accept, and has another cause.
+    *(Cause(name, group, slice_, rule(f"blender-{name}"), f"blender-{name}") for group, slice_, names in (
+        ("imprecise-annotation", "S4",
+         ("imprecise-operator-return", "imprecise-enum-value", "imprecise-callback-parameter")),
+        ("implied-narrowing", "S5", ("narrowed-by-menu-prefix", "narrowed-by-popover", "narrowed-by-poll")),
+        ("assumption", "S6", ("assumed-registration", "assumed-complete-registration", "assumed-preferences",
+                              "assumed-list-item", "assumed-context-member")),
+    ) for name in names),
     # Blender's own code is wrong (BF1 runtime, BF2 annotations).
     Cause("property-on-panel", "blender-fix", "BF1", rule("blender-unsupported-property-host")),
     Cause("dead-api", "blender-fix", "BF1", outside_tests(lambda d: DEAD_API.search(d.msg) is not None)),
     Cause("reload-idiom", "typing-debt", "", lambda d: d.rule == "unresolved-reference" and "reload(" in d.text),
     Cause("undefined-name", "blender-fix", "BF1", outside_tests(rule("unresolved-reference"))),
     Cause("missing-argument", "blender-fix", "BF1", outside_tests(rule("missing-argument"))),
-    Cause("rigify-get-bone", "blender-fix", "BF2", lambda d: re.search(
-        r"EditBone \| PoseBone|PoseBone \| EditBone", d.msg) is not None),
+    Cause("rigify-get-bone", "blender-fix", "BF2", lambda d: d.path.replace("\\", "/").startswith(RIGIFY)
+          and re.search(r"EditBone \| PoseBone|PoseBone \| EditBone", d.msg) is not None),
+    Cause("correlated-union", "typing-debt", "", correlated_union),
     Cause("tooldef", "blender-fix", "BF2", lambda d: "ToolDef" in d.msg),
     Cause("none-for-non-optional", "blender-fix", "BF2", outside_tests(any_of(
         rule("invalid-parameter-default"),
@@ -410,7 +410,6 @@ CAUSES = [
     # Typechecker fixes (S1 RNA never-None, S2 stub generator, S3 ty_blender).
     Cause("context-never-none", "typechecker-fix", "S1", lambda d: NEVER_NONE_CONTEXT_TYPE.search(d.msg) is not None),
     Cause("callback-never-none", "typechecker-fix", "S1", callback_never_none),
-    Cause("assumed-list-item", "assumption", "S6", list_item, "blender-assumed-list-item"),
     # ObjectModifiers.new() really returns None when the modifier cannot be added (only a warning report), so an
     # unchecked result is typing debt, not a typechecker fix.
     Cause("modifiers-new", "typing-debt", "", lambda d: nullable(d) and ".modifiers.new(" in d.text),
@@ -448,12 +447,22 @@ CAUSES = [
         SETTINGS_POINTER.search(d.msg) is not None or SUB_POINTER.search(d.msg) is not None
         or ("NodeTree | None" in d.msg and ".node_tree" in d.text))),
     Cause("python-optional", "typing-debt", "", lambda d: nullable(d) and python_optional(d)),
-    Cause("assumed-context-member", "assumption", "S6", lambda d: ASSUMED_CONTEXT_TYPE.search(d.msg) is not None,
-          "blender-assumed-context-member"),
-    Cause("narrowed-by-poll", "implied-narrowing", "S5", lambda d: nullable(d) and gated(d),
-          "blender-narrowed-by-poll"),
+    # A preset's module-level reads of the context members of the panel that runs it (`bpy.context.cloth`,
+    # `edit_movieclip`, `active_strip`, a keymap preset's `preferences`): not covered by the context-member
+    # Assumption, which takes only `scene`, `view_layer` and `tool_settings`.
+    Cause("preset-context-member", "typing-debt", "", lambda d: nullable(d) and in_presets(d)),
+    Cause("ui-draw-pointer", "typing-debt", "", outside_tests(ui_draw_pointer)),
     Cause("object-data-untagged", "typing-debt", "", lambda d: re.search(r"`ID( \| None)?`", d.msg) is not None
           and "data" in d.text),
+    # The window, screen, area, region, space and workspace of the editor an operator's `invoke` / `modal` (or a
+    # gizmo's `exit`) runs in: those run interactively only, so the members exist (research
+    # `blender-true-problems`, "Ruled out": None only in exotic states). Not covered by an Assumption.
+    Cause("editor-context-member", "typing-debt", "", lambda d: OTHER_CONTEXT_TYPE.search(d.msg) is not None
+          and d.scope.function in INTERACTIVE_CALLBACKS),
+    # A doc example or template reading the context it documents (`bpy.context.object` with an active object),
+    # directly or, at module level, through what it read (`obj = bpy.context.object`, then `obj.data`).
+    Cause("script-context-member", "typing-debt", "", lambda d: nullable(d) and in_scripts(d)
+          and (not d.scope.function or re.search(CONTEXT + r"\w+", d.text) is not None)),
     Cause("context-member-outside-callback", "unsorted", "", lambda d: OTHER_CONTEXT_TYPE.search(d.msg) is not None
           or (nullable(d) and re.search(CONTEXT + r"\w+", d.text) is not None and not d.scope.function)),
     Cause("unchecked-pointer", "unsorted", "", nullable),
@@ -466,7 +475,7 @@ CAUSES = [
     Cause("unresolved-import", "typing-debt", "", lambda d: d.rule in {
         "import-not-found", "unresolved-import", "possibly-missing-submodule"} or "Cannot resolve imported" in d.msg),
     Cause("general-typing", "typing-debt", "", lambda d: d.rule in GENERAL_TYPING_RULES
-          or PYTHON_OBJECT_ATTRIBUTE.search(d.msg) is not None),
+          or PYTHON_OBJECT_ATTRIBUTE.search(d.msg) is not None or python_types_only(d)),
     Cause("untyped-python", "typing-debt", "", untyped_python),
     Cause("private-member", "typing-debt", "", lambda d: re.search(r"has no member `_\w+`", d.msg) is not None),
     Cause("build-option-gap", "typing-debt", "", lambda d: BUILD_OPTION_TYPE.search(d.msg) is not None),
@@ -628,9 +637,9 @@ def summary(title: str, diagnostics: Iterable[tuple[str, str, str, str]]) -> str
 
     def counts(row: str, cell: collections.Counter) -> str:
         values = [cell[row, a] for a in AREA_NAMES]
-        return "".join(f"{n:>9}" for n in [*values, sum(values)]) + "\n"
+        return "".join(f"{n:>10}" for n in [*values, sum(values)]) + "\n"
 
-    areas = "".join(f"{a:>9}" for a in [*AREA_NAMES, "total"]) + "\n"
+    areas = "".join(f"{a:>10}" for a in [*AREA_NAMES, "total"]) + "\n"
     lines = [title + "\n", f"{'cause':<32}{'group':<22}{'slice':<6}" + areas]
     lines.extend(f"{c.name:<32}{c.group:<22}{c.slice or '-':<6}" + counts(c.name, cells) for c in REPORTED)
     lines.append("\n")

@@ -110,6 +110,48 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
         pytest.param(
             diagnostic(
                 "unresolved-attribute",
+                "Attribute `use_connect` is not defined on `PoseBone`, `Object` in union `PoseBone | EditBone | Object`",
+                "if item.use_connect:",
+                path="scripts/startup/bl_operators/object.py",
+                cls="SelectPattern",
+                bases="Operator",
+                function="execute",
+            ),
+            "correlated-union",
+            id="debt-correlated-union-not-rigify",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Object of type `Literal[True]` is not assignable to attribute `select` on type "
+                "`PoseBone | EditBone | Object`",
+                "item.select = True",
+                path="scripts/startup/bl_operators/object.py",
+                cls="SelectPattern",
+                bases="Operator",
+                function="execute",
+            ),
+            "correlated-union",
+            id="debt-correlated-union-assignment",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to bound method `UILayout.prop` is incorrect: Expected `bpy_struct`, found "
+                "`PoseBone | EditBone | None | Bone`",
+                'col.prop(bbone, "bbone_curveinx", text="Curve In X")',
+                path="scripts/startup/bl_ui/properties_data_bone.py",
+                cls="BONE_PT_curved",
+                bases="BoneButtonsPanel, Panel",
+                function="draw",
+                has_poll=False,
+            ),
+            "ui-draw-pointer",
+            id="debt-ui-draw-pointer-poll-disjunction",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
                 "Class `ToolDef` has no attribute `from_dict`",
                 "tool_def = ToolDef.from_dict({",
             ),
@@ -373,8 +415,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "def execute(self, context: Context) -> set[str]:",
                 path="scripts/startup/bl_operators/copy_global_transform.py",
             ),
-            "imprecise-operator-return",
-            id="s4-operator-return",
+            "stub-gap",
+            id="s4-operator-override-error-falls-through",
         ),
         pytest.param(
             diagnostic(
@@ -384,8 +426,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "return ret",
                 function="execute",
             ),
-            "imprecise-operator-return",
-            id="s4-operator-return-variable",
+            "operator-return-misuse",
+            id="s4-operator-return-error-falls-through",
         ),
         pytest.param(
             diagnostic(
@@ -393,8 +435,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "Object of type `str` is not assignable to attribute `mode` of type `Literal['OBJECT', 'EDIT']`",
                 "ob.mode = mode",
             ),
-            "imprecise-enum-value",
-            id="s4-enum-value",
+            "unsorted",
+            id="s4-enum-value-error-falls-through",
         ),
         pytest.param(
             diagnostic(
@@ -402,8 +444,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "Invalid override of method `draw_item`: Definition is incompatible with `UIList.draw_item`",
                 "def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_propname):",
             ),
-            "imprecise-callback-parameter",
-            id="s4-callback-parameter",
+            "stub-gap",
+            id="s4-callback-parameter-error-falls-through",
         ),
         pytest.param(
             diagnostic("blender-imprecise-enum-value", "A `str` value where the stubs have an enum literal"),
@@ -419,8 +461,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 function="draw",
                 **POLLED_PANEL,
             ),
-            "narrowed-by-poll",
-            id="s5-poll",
+            "ui-draw-pointer",
+            id="s5-pointer-the-poll-did-not-narrow",
         ),
         pytest.param(
             diagnostic(
@@ -430,8 +472,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 function="draw",
                 **PANEL,
             ),
-            "unchecked-pointer",
-            id="unsorted-no-poll",
+            "ui-draw-pointer",
+            id="debt-ui-draw-pointer-no-poll",
         ),
         pytest.param(
             diagnostic(
@@ -456,8 +498,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 bases="Menu",
                 function="draw",
             ),
-            "narrowed-by-menu-prefix",
-            id="s5-menu-prefix",
+            "base-class-subtype",
+            id="s5-menu-space-error-falls-through",
         ),
         pytest.param(
             diagnostic(
@@ -468,8 +510,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 bases="Panel",
                 function="draw",
             ),
-            "narrowed-by-popover",
-            id="s5-popover",
+            "base-class-subtype",
+            id="s5-popover-space-error-falls-through",
         ),
         # Assumptions (S6)
         pytest.param(
@@ -479,8 +521,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "bpy.context.scene.render.engine = 'CYCLES'",
                 path="scripts/presets/cycles/integrator/Default.py",
             ),
-            "assumed-context-member",
-            id="s6-context-member",
+            "preset-context-member",
+            id="s6-context-member-error-in-preset",
         ),
         pytest.param(
             diagnostic(
@@ -490,13 +532,123 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 function="draw_item",
                 params=("self", "_context", "layout", "_data", "item", "icon", "_active_data", "_active_propname"),
             ),
-            "assumed-list-item",
-            id="s6-list-item",
+            "unchecked-pointer",
+            id="s6-list-item-error-falls-through",
         ),
         pytest.param(
             diagnostic("blender-assumed-registration", "`OBJECT_OT_x` is registered only on a branch"),
             "assumed-registration",
             id="s6-rule",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `header_text_set` is not defined on `None` in union `Area | None`",
+                "context.area.header_text_set(None)",
+                path="scripts/templates_py/Operator/modal_view3d.py",
+                cls="ViewOperator",
+                bases="bpy.types.Operator",
+                function="modal",
+            ),
+            "editor-context-member",
+            id="debt-editor-context-member-modal",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `tag_redraw` is not defined on `None` in union `Area | None`",
+                "context.area.tag_redraw()",
+                path="scripts/startup/bl_operators/userpref.py",
+                cls="PREFERENCES_OT_addon_remove",
+                bases="Operator",
+                function="execute",
+            ),
+            "context-member-outside-callback",
+            id="unsorted-editor-context-member-in-execute",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `data` is not defined on `None` in union `Object | None`",
+                "me = bpy.context.object.data",
+                path="scripts/templates_py/bmesh_simple.py",
+            ),
+            "script-context-member",
+            id="debt-script-context-member-template",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `objects` is not defined on `None` in union `Collection | None`",
+                "bpy.context.collection.objects.link(obj)",
+                path="doc/python_api/examples/bmesh.ops.1.py",
+            ),
+            "script-context-member",
+            id="debt-script-context-member-example",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `rotation_mode` is not defined on `None` in union `Object | None`",
+                "if obj.rotation_mode == 'QUATERNION':",
+                path="doc/python_api/examples/mathutils.Matrix.LocRotScale.0.py",
+            ),
+            "script-context-member",
+            id="debt-script-context-member-alias-at-module-level",
+        ),
+        pytest.param(
+            diagnostic(
+                "not-subscriptable",
+                "Cannot subscript object of type `None` with no `__getitem__` method",
+                "x = self._point[0]",
+                path="scripts/addons_core/io_curve_svg/import_svg.py",
+                cls="SVGPathParser",
+                function="_pathLineTo",
+            ),
+            "general-typing",
+            id="debt-python-types-only",
+        ),
+        pytest.param(
+            diagnostic(
+                "call-non-callable",
+                "Object of type `EllipsisType` is not callable",
+                "end_offset = read_fbx_elem_uint(read)",
+                path="scripts/addons_core/io_scene_fbx/fbx2json.py",
+                function="read_elem",
+            ),
+            "general-typing",
+            id="debt-python-types-only-ellipsis",
+        ),
+        pytest.param(
+            diagnostic(
+                "not-iterable",
+                "Object of type `BlendData` is not iterable",
+                "for datablock in datablocks:",
+                path="scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py",
+                function="_find_assets",
+            ),
+            "stub-gap",
+            id="unsorted-blender-type-is-no-python-type",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `data` is not defined on `None` in union `Object | None`",
+                "mesh = bpy.context.object.data",
+                path="scripts/startup/bl_operators/object.py",
+            ),
+            "context-member-outside-callback",
+            id="unsorted-script-context-member-only-in-examples",
+        ),
+        pytest.param(
+            diagnostic("blender-narrowed-by-poll", "`context.object` is not None: the class's `poll()` checked it"),
+            "narrowed-by-poll",
+            id="s5-rule",
+        ),
+        pytest.param(
+            diagnostic("blender-assumed-context-member", "`context.scene` taken as not None outside a callback"),
+            "assumed-context-member",
+            id="s6-context-member-rule",
         ),
         # Typing debt (out of scope)
         pytest.param(
@@ -606,8 +758,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 bases="Menu",
                 function="draw",
             ),
-            "narrowed-by-menu-prefix",
-            id="s5-menu-prefix-alias",
+            "ui-draw-pointer",
+            id="s5-menu-prefix-alias-error-falls-through",
         ),
         pytest.param(
             diagnostic(
@@ -782,8 +934,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 bases="Menu",
                 function="draw",
             ),
-            "narrowed-by-menu-prefix",
-            id="s5-menu-prefix-truthy",
+            "base-class-subtype",
+            id="s5-menu-prefix-truthy-error-falls-through",
         ),
         pytest.param(
             diagnostic(
@@ -875,8 +1027,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "bpy.context.scene.render.engine = 'CYCLES'",
                 path="scripts/presets/cycles/integrator/Default.py",
             ),
-            "assumed-context-member",
-            id="s6-context-member-none-first",
+            "preset-context-member",
+            id="s6-context-member-none-first-in-preset",
         ),
         # Unsorted
         pytest.param(
@@ -1001,7 +1153,9 @@ def test_read_diagnostics_gives_severity_and_enclosing_scope(tmp_path):
         ("intern\\cycles\\blender\\addon\\ui.py", "shipped"),
         ("scripts\\presets\\cycles\\integrator\\Default.py", "presets"),
         ("intern\\cycles\\app\\io_export_cycles_xml.py", "other"),
-        ("doc\\python_api\\examples\\gpu.4.py", "other"),
+        ("doc\\python_api\\examples\\gpu.4.py", "examples"),
+        ("scripts/templates_py/Operator/modal_view3d.py", "templates"),
+        ("doc/python_api/sphinx_doc_gen.py", "other"),
     ],
 )
 def test_area(path, expected):
@@ -1019,24 +1173,34 @@ def test_summary_has_every_cause_by_group_group_totals_and_warnings_apart():
     lines = text.splitlines()
 
     assert lines[0] == "# check:blender main, builtin stubs, Blender abc1234567"
-    assert lines[1].split() == ["cause", "group", "slice", "shipped", "presets", "other", "total"]
+    assert lines[1].split() == [
+        "cause",
+        "group",
+        "slice",
+        "shipped",
+        "presets",
+        "examples",
+        "templates",
+        "other",
+        "total",
+    ]
     rows = {line.split()[0]: line.split()[1:] for line in lines[2:] if line.strip()}
     # every cause has a row, also when zero, listed by group
     assert [line.split()[0] for line in lines[2 : 2 + len(CAUSES)]] == [
         c.name for g in GROUPS for c in CAUSES if c.group == g
     ]
-    assert rows["narrowed-by-poll"] == ["implied-narrowing", "S5", "1", "1", "0", "2"]
-    assert rows["tooldef"] == ["blender-fix", "BF2", "1", "0", "0", "1"]
-    assert rows["mixin-self"] == ["typing-debt", "-", "0", "0", "0", "0"]
+    assert rows["narrowed-by-poll"] == ["implied-narrowing", "S5", "1", "1", "0", "0", "0", "2"]
+    assert rows["tooldef"] == ["blender-fix", "BF2", "1", "0", "0", "0", "0", "1"]
+    assert rows["mixin-self"] == ["typing-debt", "-", "0", "0", "0", "0", "0", "0"]
     # a total per group, every group listed
     group_header = lines.index(next(line for line in lines if line.split()[:1] == ["group"]))
     assert [line.split()[0] for line in lines[group_header + 1 : group_header + 1 + len(GROUPS)]] == GROUPS
-    assert rows["implied-narrowing"] == ["1", "1", "0", "2"]
-    assert rows["blender-fix"] == ["1", "0", "0", "1"]
-    assert rows["assumption"] == ["0", "0", "0", "0"]
+    assert rows["implied-narrowing"] == ["1", "1", "0", "0", "0", "2"]
+    assert rows["blender-fix"] == ["1", "0", "0", "0", "0", "1"]
+    assert rows["assumption"] == ["0", "0", "0", "0", "0", "0"]
     # errors and warnings on separate total lines
-    assert rows["errors"] == ["2", "0", "1", "3"]
-    assert rows["warnings"] == ["0", "1", "0", "1"]
+    assert rows["errors"] == ["2", "0", "0", "0", "1", "3"]
+    assert rows["warnings"] == ["0", "1", "0", "0", "0", "1"]
     # rules sorted by name, with a column per severity
     rule_header = lines.index(next(line for line in lines if line.split()[:1] == ["rule"]))
     assert lines[rule_header].split() == ["rule", "error", "warning"]
