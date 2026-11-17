@@ -157,6 +157,27 @@ PASS
 PASS
 ````
 
+## features/inheritance/inh_mixin_self/ide_inh_mixin_self.py | ^hover @14 | self.layout
+
+````text
+```python
+UILayout
+```
+````
+
+## features/inheritance/inh_mixin_self/ide_inh_mixin_self.py | ^hover-contains "str" @14 | self.bl_label
+
+````text
+PASS
+````
+
+## features/inheritance/inh_mixin_self/ide_inh_mixin_self.py | ^completion layout @17 | self.lay
+
+````text
+- layout: detail: UILayout | None
+  documentation: (none)
+````
+
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "Context" @11 | ctx
 
 ````text

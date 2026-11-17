@@ -664,10 +664,41 @@ def ui_draw_pointer(d: Diagnostic) -> bool:
 
 
 def layout_in(roots: set[str]) -> Callable[[Diagnostic], bool]:
+    """``self.layout`` read as ``UILayout | None`` in a helper of a class with a root of ``roots``. An operator helper
+    may also be a function taking the operator as ``self``, or a method of a mixin (a class with no bases): ty types
+    a mixin's ``self.layout`` only when the mixin has users, and as ``UILayout | None`` only when one of them is not
+    drawn, such as an Operator."""
     return lambda d: (
         "UILayout | None" in d.msg
-        and (root(d.scope) in roots or ("operator" in roots and not d.scope.cls and d.scope.params[:1] == ("self",)))
+        and (
+            root(d.scope) in roots
+            or ("operator" in roots and not d.scope.cls and d.scope.params[:1] == ("self",))
+            or ("operator" in roots and is_mixin(d.scope))
+        )
     )
+
+
+def is_mixin(scope: Scope) -> bool:
+    """Whether the enclosing class is a mixin: a class with no bases, whose idname-style name names no Blender
+    base."""
+    return bool(scope.cls) and not scope.bases and not root(scope)
+
+
+# A mixin's `super()` (`super().report(...)` in a mixin that redeclares an Operator method for its users), and a set
+# literal checked against a mixin method intersected with its users' Blender method: ty types `self` there as the
+# mixin and its users' Blender classes, but cannot follow `super()` through that, nor infer the literal's items.
+MIXIN_INTERSECTION = re.compile(
+    r"Object of type `<super: <class '(\w+)'>, (?:<class ')?\1'?>?>`|a name in the set is not an enum item"
+)
+
+
+def mixin_self(d: Diagnostic) -> bool:
+    return "Self@" in d.msg or (is_mixin(d.scope) and MIXIN_INTERSECTION.search(d.msg) is not None)
+
+
+# An operator idname built at runtime (`"{:s}.hide".format(self._operator_name)`): ty cannot tell the operator, so
+# `layout.operator()` keeps the stubs' `OperatorProperties | None`.
+RUNTIME_OPERATOR_IDNAME = re.compile(r"""\.operator\((?:f["']|(?:"[^"]*"|'[^']*')\.format\()""")
 
 
 def rule(*names: str) -> Callable[[Diagnostic], bool]:
@@ -1025,7 +1056,7 @@ CAUSES = [
           and not untyped_python(d) and TYPESHED_PRIVATE.search(d.msg) is None)),
     # Nullable reads, from the most specific source.
     Cause("unchecked-pointer-bug", "blender-fix", "BF1", unchecked_pointer_bug),
-    Cause("mixin-self", "typing-debt", "", lambda d: "Self@" in d.msg),
+    Cause("mixin-self", "typing-debt", "", mixin_self),
     Cause("type-enum-sub-pointer", "typing-debt", "", lambda d: nullable(d) and (
         SETTINGS_POINTER.search(d.msg) is not None or SUB_POINTER.search(d.msg) is not None
         or "`Driver | None`" in d.msg or ("NodeTree | None" in d.msg and reads_from(d, r"\.node_tree\b")))),
@@ -1089,6 +1120,8 @@ CAUSES = [
         or (nullable(d) and re.search(CONTEXT + r"\w+", d.text) is not None and not d.scope.function))),
     # Untyped packages (rigify, glTF) keep their internal Optionals: they go to `untyped-python` below.
     # A heterogeneous list read as a record (`[index, socket]`) names None among its items: general typing below.
+    Cause("runtime-operator-idname", "typing-debt", "", lambda d: re.search(r"`(?:None \| OperatorProperties|"
+          r"OperatorProperties \| None)`", d.msg) is not None and RUNTIME_OPERATOR_IDNAME.search(d.text) is not None),
     Cause("unchecked-pointer", "unsorted", "", lambda d: nullable(d) and not untyped_python(d)
           and GENERAL_TYPING.search(d.msg) is None),
     # The rest, by rule.

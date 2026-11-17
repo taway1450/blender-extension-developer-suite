@@ -14,7 +14,7 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | context_members | 43/43 | - | 10/10 | - | 0 |
 | implied_narrowings | 8/8 | 52/52 | 16/16 | 3/3 | 0 |
 | imprecise_annotations | 3/3 | 20/20 | 5/5 | 2/2 | 0 |
-| inheritance | 67/67 | 48/48 | 15/15 | 3/3 | 0 |
+| inheritance | 73/73 | 50/50 | 15/15 | 5/5 | 0 |
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
 | operator_properties | 54/54 | 13/13 | 10/11 | 5/5 | 0 |
 | pointer_aliases | 17/17 | 5/5 | 9/9 | 1/1 | 0 |
@@ -23,4 +23,4 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
 | registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 18/18 | - | 2/2 | - | 0 |
-| **total** | 950/950 | 414/414 | 249/250 | 45/45 | 0 |
+| **total** | 956/956 | 416/416 | 249/250 | 47/47 | 0 |

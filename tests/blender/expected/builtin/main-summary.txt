@@ -65,9 +65,9 @@ runtime-name                    typing-debt           -              0         0
 correlated-union                typing-debt           -             39         0         0         0         4        43
 modifiers-new                   typing-debt           -             55         0         0         0        44        99
 helper-checks-none              typing-debt           -              8         0         0         0         0         8
-layout-in-operator-helper       typing-debt           -             36         0         0         0         0        36
+layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
 cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
-mixin-self                      typing-debt           -            378         0         3         0       195       576
+mixin-self                      typing-debt           -            236         0         3         0       195       434
 type-enum-sub-pointer           typing-debt           -            259        63         2         0       138       462
 python-optional                 typing-debt           -            205         0         3         1        97       306
 preset-context-member           typing-debt           -              0       350         0         0         0       350
@@ -83,6 +83,7 @@ rarely-none-member              typing-debt           -             13         0
 correlated-condition            typing-debt           -             18         0         0         0         0        18
 none-excluded-by-arguments      typing-debt           -             93         0         2         0        89       184
 operator-without-poll           typing-debt           -              7         0         0         0         0         7
+runtime-operator-idname         typing-debt           -              2         0         0         0         0         2
 operator-call                   typing-debt           -              7         0        11         7        42        67
 unresolved-import               typing-debt           -             31         0         0         0        10        41
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
@@ -90,7 +91,7 @@ unexported-function             typing-debt           -              3         0
 untyped-python                  typing-debt           -            641         0         0         2         0       643
 private-member                  typing-debt           -             12         0         0         0         0        12
 build-option-gap                typing-debt           -              6        65         0         0         0        71
-general-typing                  typing-debt           -            232         0        10         4       263       509
+general-typing                  typing-debt           -            234         0        10         4       263       511
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
 unchecked-pointer               unsorted              -              1         0         0         0       675       676
 stub-gap                        unsorted              -              0         0         0         0        40        40
@@ -103,10 +104,10 @@ assumption                                                         330       275
 implied-narrowing                                                 1107         0         2         6        13      1128
 imprecise-annotation                                                 0         0         0         0         5         5
 typechecker-fix                                                    154         0        37         7        52       250
-typing-debt                                                       3079       490       115        54      1744      5482
+typing-debt                                                       2943       490       115        54      1744      5346
 unsorted                                                             1         0         0         0       965       966
-errors                                                            3306       490       155        61      2711      6723
-warnings                                                          1365       275        24        10       556      2230
+errors                                                            3168       490       155        61      2711      6585
+warnings                                                          1367       275        24        10       556      2232
 
 rule                                       error warning
 blender-assumed-complete-registration          0       7
@@ -128,8 +129,8 @@ incompatible-method-override                  23       0
 incompatible-mutable-override                  5       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1017       0
-invalid-assignment                           750       0
+invalid-argument-type                       1018       0
+invalid-assignment                           752       0
 invalid-base                                   2       0
 invalid-context-manager                        2       0
 invalid-explicit-return                       25       0
@@ -142,8 +143,8 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            52       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           2071       0
-missing-union-attribute                     2325       0
+missing-attribute                           1928       0
+missing-union-attribute                     2327       0
 no-matching-overload                          31       0
 not-callable                                  19       0
 not-iterable                                  45       0
@@ -155,4 +156,4 @@ unknown-argument                               5       0
 unresolved-global                              0      37
 unresolved-reference                          65       0
 unsupported-operator                          57       0
-unused-type-ignore-comment                     0      38
+unused-type-ignore-comment                     0      40

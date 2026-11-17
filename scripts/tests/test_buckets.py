@@ -674,6 +674,56 @@ CASES = [
     pytest.param(
         diagnostic(
             "missing-attribute",
+            "Object of type `<super: <class 'FixToCameraCommon'>, FixToCameraCommon>` has no attribute `report`",
+            "super().report(type, message)",
+            path="scripts/startup/bl_operators/copy_global_transform.py",
+            cls="FixToCameraCommon",
+            function="report",
+        ),
+        "mixin-self",
+        id="debt-mixin-self-super",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            'Argument is incorrect: Expected `set[Literal["DEBUG", "INFO", "OPERATOR", "PROPERTY", "WARNING", ... '
+            "omitted 4 literals]]`, found `set[str]`: a name in the set is not an enum item",
+            "self.report({'ERROR'}, \"Unsupported mode: {!r}\".format(mode))",
+            path="scripts/startup/bl_operators/copy_global_transform.py",
+            cls="FixToCameraCommon",
+            function="execute",
+        ),
+        "mixin-self",
+        id="debt-mixin-self-set-literal",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-union-attribute",
+            "Attribute `panel` is not defined on `None` in union `UILayout | None`",
+            'header, body = layout.panel("import_image_plane_material", default_closed=False)',
+            path="scripts/startup/bl_operators/image_as_planes.py",
+            cls="MaterialProperties_MixIn",
+            function="draw_material_config",
+            params=("self", "context"),
+        ),
+        "layout-in-operator-helper",
+        id="debt-mixin-layout-operator-user",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-assignment",
+            "Object of type `Literal[True]` is not assignable to attribute `unselected` on type "
+            "`OperatorProperties | None`",
+            'layout.operator("{:s}.hide".format(self._operator_name), text="Hide Unselected").unselected = True',
+            cls="ShowHideMenu",
+            function="draw",
+        ),
+        "runtime-operator-idname",
+        id="debt-runtime-operator-idname",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
             "Object of type `Scene | None` has no attribute `cycles`",
             "cycles = bpy.context.scene.cycles",
             path="scripts/presets/cycles/sampling/Final.py",
