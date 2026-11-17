@@ -347,6 +347,70 @@ GENERAL_TYPING = re.compile(
 MONKEYPATCH = re.compile(r"^\s*(?:_bpy|pydoc(?:\.Helper)?)\.\w+ = ")
 
 
+# --- fake-bpy-module's stub shapes (docs/reports/fake-bpy-module-leftovers.md) ----------------------------------
+
+# fake-bpy-module types `Object.data` as the union of every object data type and None. ty prints it cut short;
+# it is the `ID | None` of Blender's own stubs (`ID` once a check removed None or some types), so the same causes
+# apply.
+OBJECT_DATA_UNION = re.compile(
+    r"`Armature \| (Camera \| Curve \| \.\.\. omitted 11|[^`]*\.\.\. omitted \d+) union elements`"
+)
+# fake-bpy-module writes stubs for Blender's own Python modules by inspecting them at runtime, and those come before the
+# source on the search path. They lose module constants, dataclass and instance attributes, `__init__`, base
+# classes (an exception class, a protocol), return annotations (`-> None`) and the context managers of functions
+# and classes.
+FAKE_BPY_PYTHON_MODULE = re.compile(
+    r"`object\.__init__`"
+    r"|^Module `(?:_bpy_internal|addon_utils|bl_ui|rna_prop_ui)\b[\w.]*`"
+    r" has no member"
+    r"|^Object of type `(?:I18n|AssetV1|FileV1|CatalogV1|AssetLibraryMeta|AssetLibraryIndexPageV1|FileHashInfo"
+    r"|BlendFileHeader|URLWithHash)\b[^`]*` has no attribute"
+    r"|^Object of type `(?:None|RestrictBlend|ProgressReport)` cannot be used with `with`"
+    r"|`<class 'BlendHeaderError'>`|found `ExtraFileMetadataProvider`|found `def asset_listing_main\("
+    r"|^Object of type `None` is not assignable to (?:`str \| URLWithHash`|attribute `enabled`)"
+    r"|between objects of type `Path` and `None`"
+)
+# The values those lossy stubs return feed a builtin call or a nullable read: (path, enclosing class or "",
+# enclosing function or "", text on the line).
+FAKE_BPY_PYTHON_MODULE_SITES = [
+    ("scripts/addons_core/ui_translate/update_addon.py", "", "", "dict(utils_i18n.get_po_files_from_dir("),
+    ("scripts/addons_core/ui_translate/update_repo.py", "", "", "subprocess.run(cmmd"),
+    ("scripts/addons_core/ui_translate/update_repo.py", "", "", "languages_menu_lines"),
+    ("scripts/modules/_bpy_internal/assets/remote_library/listing_downloader.py", "", "", "path_to_load."),
+    ("scripts/modules/_bpy_internal/assets/remote_library/listing_downloader.py", "", "", "urljoin"),
+    ("scripts/modules/bl_app_template_utils.py", "", "", "app_template_paths("),
+    ("scripts/startup/bl_operators/wm.py", "", "", "path_split"),
+]
+# fake-bpy-module's `_bpy_types` stub declares its own `Context`, `Menu`, ... beside `bpy.types`, and `bpy.types`
+# declares the registered Python classes as instances (`X_OT_y: module.X_OT_y`), not as the classes.
+FAKE_BPY_TYPE_ALIAS = re.compile(
+    r"\b_bpy_types\.Context\b|Expected `type\[Panel \| UIList \| Menu \| \.\.\. omitted \d+ types\]`"
+    r"|^Object of type `<class 'UI_UL_list'>[^`]*` has no attribute `is_registered`"
+    r"|^Too many positional arguments to bound method `\w+_OT_\w+\.\w+`"
+)
+# fake-bpy-module types as Optional what RNA never leaves None: `bl_rna`, `RenderViews.active`, and an int property
+# (`active_*_index`, read as a collection key or updated in place). Its collections take a key `int | str |
+# tuple[str, ...]` (Blender's own stubs: `int`).
+FAKE_BPY_NULLABLE = re.compile(r"in union `Struct \| None`|`SceneRenderView \| None`")
+FAKE_BPY_NONE_INDEX = re.compile(
+    r"\(key: int \| str(?: \| tuple\[str, \.\.\.\])?\) -> \w+, .* cannot be called with key of type `None`"
+    r"|between objects of type `None` and `Literal\[1\]`"
+)
+# The library key `(name, None)` of a local data-block, which fake-bpy-module's `tuple[str, ...]` rejects.
+FAKE_BPY_LIB_KEY = re.compile(r"tuple\[str, \.\.\.\]\) -> .* cannot be called with key of type `tuple\[[^`]*, None\]`")
+# fake-bpy-module's C types lack their Python protocols: a `Vector` or `bpy_prop_array` is no `Sequence[float]`,
+# `MatrixAccess` has no `__getitem__`, `Vector` no ordering, `Quaternion` no `__neg__`, and the context managers
+# of `gpu`, `blf` and `imbuf` (`gpu.matrix.push_pop()`, `GPUOffScreen.bind()`) no `__enter__` / `__exit__`.
+FAKE_BPY_PROTOCOL = re.compile(
+    r"Expected `Sequence\[float\](?: \| None)?`, found `(?:(?:Any|Unknown) \| Vector|Vector \| Unknown"
+    r"|bpy_prop_array\[float\])`"
+    r"|found `(?:dict\[str, [^`]*|list\[)list\[Vector\]|`MatrixAccess`|between two objects of type `Vector`"
+    r"|^Unary operator `-` is not supported for object of type `Quaternion"
+    r"|^Object of type `(?:BLFImBufContext|ImBufBuffer|OffScreenStackContext|MatrixStackContext)` cannot be used"
+    r" with `with`"
+)
+
+
 def missing_attribute(msg: str) -> str | None:
     match = MISSING_ATTRIBUTE.search(msg)
     return next((g for g in match.groups() if g), None) if match else None
@@ -640,7 +704,21 @@ def poll_checks_alias(d: Diagnostic) -> bool:
     names = {m for groups in members for m in groups if m}
     if names & {"object", "active_object"}:
         names |= {"object", "active_object"}
-    return any(reads_from(d, rf"\bcontext\.{m}\b") for m in names)
+    return any(reads_from(d, rf"\bcontext\.{m}\b") for m in names) or poll_tests_same_path(d)
+
+
+def poll_tests_same_path(d: Diagnostic) -> bool:
+    """``layer = obj.data.layers.active`` read in a callback whose poll tests ``obj.data.layers.active is not
+    None``, where ``obj`` is the same context member in both (``(obj := context.active_object)`` in the poll)."""
+    for name in read_names(d):
+        rhs = next(iter(assignments(d, name)), "").strip()
+        if not re.fullmatch(r"\w+(?:\.\w+)+", rhs) or f"{rhs} is not None" not in d.scope.poll:
+            continue
+        root = rhs.partition(".")[0]
+        for member in re.findall(rf"\b{root} = context\.(\w+)\s*$", d.scope.source, re.MULTILINE):
+            if re.search(rf"\b{root} :?= context\.{member}\b", d.scope.poll):
+                return True
+    return False
 
 
 def parent_panel(d: Diagnostic) -> bool:
@@ -800,6 +878,15 @@ CAUSES = [
     # An add-on's `register()` reads its own preferences, which exist once the add-on is enabled.
     Cause("assumed-preferences", "assumption", "S6", any_of(rule("blender-assumed-preferences"), lambda d: (
         "`AddonPreferences | None`" in d.msg and d.scope.function == "register")), "blender-assumed-preferences"),
+    # Stub shapes of fake-bpy-module that Blender's own stubs do not have: a fix in fake-bpy-module.
+    Cause("fake-bpy-python-module", "typechecker-fix", "", lambda d: not untyped_python(d) and not in_tests(d)
+          and re.search(r"libraries\.load|temp_data", d.text) is None
+          and (FAKE_BPY_PYTHON_MODULE.search(d.msg) is not None or in_sites(FAKE_BPY_PYTHON_MODULE_SITES)(d))),
+    Cause("fake-bpy-type-alias", "typechecker-fix", "", lambda d: FAKE_BPY_TYPE_ALIAS.search(d.msg) is not None),
+    Cause("fake-bpy-nullable", "typechecker-fix", "", lambda d: FAKE_BPY_NULLABLE.search(d.msg) is not None
+          or (FAKE_BPY_NONE_INDEX.search(d.msg) is not None and reads_from(d, r"\.active_\w+"))),
+    Cause("fake-bpy-lib-key", "typechecker-fix", "", lambda d: FAKE_BPY_LIB_KEY.search(d.msg) is not None),
+    Cause("fake-bpy-protocol", "typechecker-fix", "", lambda d: FAKE_BPY_PROTOCOL.search(d.msg) is not None),
     # Blender's own code is wrong (BF1 runtime, BF2 annotations).
     Cause("property-on-panel", "blender-fix", "BF1", rule("blender-unsupported-property-host")),
     Cause("dead-api", "blender-fix", "BF1", outside_tests(lambda d: DEAD_API.search(d.msg) is not None)),
@@ -899,7 +986,8 @@ CAUSES = [
     Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule == "unresolved-attribute"
           and BASE_CLASS.search(d.msg) is not None) or (d.rule == "invalid-assignment"
           and base_class_target(d.msg.partition(" on type ")[2]))
-          or "Object of type `Node | None` has no attribute" in d.msg or "found `list[tuple[ID," in d.msg),
+          or "Object of type `Node | None` has no attribute" in d.msg
+          or re.search(r"found `list\[tuple\[ID(?: \| None)?,", d.msg) is not None),
     Cause("bl-context-implies-member", "assumption", "", bl_context_member),
     Cause("set-by-ui-button", "typing-debt", "", lambda d: "`KeyMapItem | None`" in d.msg
           or (SET_BY_UI_BUTTON_TYPE.search(d.msg) is not None and not poll_checks_alias(d))),
@@ -983,8 +1071,14 @@ def cause(d: Diagnostic) -> Cause:
     matches it (with ``None`` last in each union)."""
     if d.rule in CAUSE_BY_RULE:
         return CAUSE_BY_RULE[d.rule]
-    d = replace(d, msg=none_last(d.msg))
+    d = replace(d, msg=object_data_as_id(none_last(d.msg)))
     return next(c for c in CAUSES if c.matches(d))
+
+
+def object_data_as_id(msg: str) -> str:
+    """``msg`` with fake-bpy-module's ``Object.data`` union, as ty cuts it short, spelled ``ID | None`` (``ID``
+    when a check removed None or some of the types), like Blender's own stubs."""
+    return OBJECT_DATA_UNION.sub(lambda m: "`ID | None`" if m[1].startswith("Camera") else "`ID`", msg)
 
 
 # The causes in report order: by group, then in table order.
