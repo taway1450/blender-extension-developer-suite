@@ -415,8 +415,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "def execute(self, context: Context) -> set[str]:",
                 path="scripts/startup/bl_operators/copy_global_transform.py",
             ),
-            "stub-gap",
-            id="s4-operator-override-error-falls-through",
+            "general-typing",
+            id="debt-operator-override-is-general-typing",
         ),
         pytest.param(
             diagnostic(
@@ -444,8 +444,8 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
                 "Invalid override of method `draw_item`: Definition is incompatible with `UIList.draw_item`",
                 "def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_propname):",
             ),
-            "stub-gap",
-            id="s4-callback-parameter-error-falls-through",
+            "general-typing",
+            id="debt-callback-parameter-override-is-general-typing",
         ),
         pytest.param(
             diagnostic("blender-imprecise-enum-value", "A `str` value where the stubs have an enum literal"),
@@ -1030,6 +1030,295 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
             "preset-context-member",
             id="s6-context-member-none-first-in-preset",
         ),
+        # Spec #95's site-by-site sorting: one site from Blender's own scripts per cause it added
+        pytest.param(
+            diagnostic(
+                "blender-assumed-preferences",
+                "The add-on's preferences are taken as its preferences class, but this read runs while the class is not registered (in `register()` before `register_class`, or in `unregister()` after `unregister_class`), where `preferences` is `None`",
+                "prefs = (context or bpy.context).preferences.addons[__package__].preferences",
+                path="scripts/addons_core/rigify/__init__.py",
+            ),
+            "assumed-preferences",
+            id="assumed-preferences",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to function `spin` is incorrect: Expected `list[BMVert | BMEdge | BMFace]`, found `list[BMEdge | BMVert]`",
+                "geom=geom_start_a,",
+                path="doc/python_api/examples/bmesh.ops.1.py",
+            ),
+            "stub-signature-gap",
+            id="stub-signature-gap",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to bound method `GPUShader.uniform_float` is incorrect: Expected `float | Sequence[float]`, found `Matrix`",
+                'shader.uniform_float("u_ViewProjectionMatrix", matrix)',
+                path="doc/python_api/examples/gpu.10.py",
+            ),
+            "mathutils-protocol-stub",
+            id="mathutils-protocol-stub",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Module `bpy.types` has no member `POSELIB_OT_restore_previous_action`",
+                "if bpy.types.POSELIB_OT_restore_previous_action.poll(context):",
+                path="scripts/addons_core/pose_library/gui.py",
+            ),
+            "registered-class-in-bpy-types",
+            id="registered-class-in-bpy-types",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to bound method `NodeTreeInterface.move_to_parent` is incorrect: Expected `NodeTreeInterfacePanel | None`, found `NodeTreeInterfaceItem & ~AlwaysFalsy`",
+                "interface.move_to_parent(item, active_item, len(active_item.interface_items))",
+                path="scripts/startup/bl_operators/node.py",
+            ),
+            "item-type-tag-narrowing",
+            id="item-type-tag-narrowing",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `name` is not defined on `None` in union `Object | None`",
+                'print(f"Object {obj.name} at {object_instance.matrix_world}")',
+                path="doc/python_api/examples/bpy.types.Depsgraph.3.py",
+                function="execute",
+                source='            obj = object_instance.object\n            # `is_instance` denotes whether the object is coming from instances (as an opposite of\n            # being an emitting object. )\n            if not object_instance.is_instance:\n                print(f"Object {obj.name} at {object_instance.matrix_world}")',
+            ),
+            "rna-never-none",
+            id="rna-never-none",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `type` is not defined on `None` in union `Object | None`",
+                "return (ob.type in {'MESH', 'EMPTY', 'FONT'})",
+                path="scripts/startup/bl_ui/properties_object.py",
+                function="poll",
+                attributes='bl_context = "object"',
+            ),
+            "bl-context-implies-member",
+            id="bl-context-implies-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Object of type `Text` is not assignable to attribute `script` on type `FreestyleModuleSettings | None`",
+                "self.freestyle_module.script = text",
+                path="scripts/startup/bl_operators/freestyle.py",
+            ),
+            "set-by-ui-button",
+            id="set-by-ui-button",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `objects` is not defined on `None` in union `Collection | None`",
+                "bpy.context.collection.objects.unlink(bpy.context.object)",
+                path="scripts/addons_core/io_scene_gltf2/blender/imp/node.py",
+            ),
+            "window-context-in-execute",
+            id="window-context-in-execute",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `location` is not defined on `None` in union `Object | None`",
+                "context.object.location.x = self.init_loc_x",
+                path="doc/python_api/examples/bpy.types.Operator.6.py",
+                function="modal",
+            ),
+            "set-by-preceding-call",
+            id="set-by-preceding-call",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `type` is not defined on `None` in union `Object | None`",
+                "return CyclesButtonsPanel.poll(context) and context.object.type != 'LIGHT'",
+                path="intern/cycles/blender/addon/ui.py",
+                function="poll",
+                poll="        return CyclesButtonsPanel.poll(context) and context.object.type != 'LIGHT'",
+            ),
+            "narrowed-by-poll-helper",
+            id="narrowed-by-poll-helper",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `bl_idname` is not defined on `None` in union `Operator | None`",
+                'return operator.bl_idname == "IMPORT_ANIM_OT_bvh"',
+                path="scripts/addons_core/io_anim_bvh/__init__.py",
+                function="poll",
+                attributes="bl_parent_id = \"FILE_PT_operator\"\nbl_options = {'HIDE_HEADER'}\n@classmethod\ndef poll(cls, context):\ndef draw(self, context):",
+            ),
+            "narrowed-by-parent-panel",
+            id="narrowed-by-parent-panel",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `data` is not defined on `None` in union `Object | None`",
+                "context.object.data.gltf2_variant_default_materials) > 0",
+                path="scripts/addons_core/io_scene_gltf2/blender/com/gltf2_blender_ui.py",
+                function="poll",
+                poll='        return bpy.context.object and bpy.context.object.type == "MESH" and len(\n            context.object.data.gltf2_variant_default_materials) > 0',
+            ),
+            "narrowed-by-poll-alias",
+            id="narrowed-by-poll-alias",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `data` is not defined on `None` in union `Object | None`",
+                'col.prop(context.object.data, "active_feature_set")',
+                path="scripts/addons_core/rigify/ui.py",
+                poll="        return context.mode == 'EDIT_ARMATURE'",
+            ),
+            "narrowed-by-mode",
+            id="narrowed-by-mode",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to bound method `ID.evaluated_get` is incorrect: Expected `Depsgraph`, found `Depsgraph | None`",
+                "ob_eval = ob.evaluated_get(depsgraph)",
+                path="release/datafiles/blender_icons_geom.py",
+            ),
+            "rarely-none-member",
+            id="rarely-none-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `action` is not defined on `None` in union `AnimData | None`",
+                "self.selected_action = context.object.animation_data.action.name",
+                path="scripts/addons_core/rigify/rot_mode.py",
+                cls="POSE_OT_convert_rotation",
+                function="invoke",
+            ),
+            "correlated-condition",
+            id="correlated-condition",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `full_library_path` is not defined on `None` in union `AssetRepresentation | None`",
+                "asset_lib_path = asset.full_library_path",
+                path="scripts/addons_core/pose_library/operators.py",
+                cls="PoseAssetUser",
+                function="_load_and_use_pose",
+            ),
+            "narrowed-by-poll-in-caller",
+            id="narrowed-by-poll-in-caller",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `objects` is not defined on `None` in union `Collection | None`",
+                "context.collection.objects.link(ob)",
+                path="scripts/startup/bl_operators/clip.py",
+                cls="CLIP_OT_bundles_to_mesh",
+                function="execute",
+            ),
+            "collection-context-member",
+            id="collection-context-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `areas` is not defined on `None` in union `Screen | None`",
+                "if 'PREFERENCES' not in (area.type for area in context.screen.areas):",
+                path="scripts/addons_core/bl_pkg/bl_extension_ops.py",
+                cls="EXTENSIONS_OT_package_asset_library_show",
+                function="execute",
+                attributes="bl_options = {'INTERNAL'}\npkg_id: rna_prop_pkg_id\nrepo_index: rna_prop_repo_index\ndef execute(self, context):",
+            ),
+            "internal-operator",
+            id="internal-operator",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `width` is not defined on `None` in union `Region | None`",
+                "dimensions = region.width, region.height",
+                path="doc/python_api/examples/bpy.types.RenderEngine.1.py",
+                function="view_update",
+            ),
+            "ui-callback-editor-member",
+            id="ui-callback-editor-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                'Object of type `Literal["TOOL"]` is not assignable to attribute `context` on type `Space | None`',
+                "space.context = 'TOOL'",
+                path="scripts/startup/bl_app_templates_system/2D_Animation/__init__.py",
+                source="            space = area.spaces.active\n            space.context = 'TOOL'",
+            ),
+            "area-type-active-space",
+            id="area-type-active-space",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `tag_redraw` is not defined on `None` in union `Region | None`",
+                "bpy.context.region.tag_redraw()",
+                path="scripts/addons_core/viewport_vr_preview/operators.py",
+                source="        with bpy.context.temp_override(\n                window=window,\n                area=area,\n                region=view3d_region,\n                screen=window.screen\n        ):\n            bpy.context.region.tag_redraw()",
+            ),
+            "temp-override-member",
+            id="temp-override-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `vertices` is not defined on `None` in union `Mesh | None`",
+                "self.report({'INFO'}, f\"{len(mesh_from_orig.vertices)} in new mesh without modifiers.\")",
+                path="doc/python_api/examples/bpy.types.Depsgraph.4.py",
+                function="execute",
+                source="        mesh_from_orig = obj.to_mesh()\n        self.report({'INFO'}, f\"{len(mesh_from_orig.vertices)} in new mesh without modifiers.\")",
+            ),
+            "none-excluded-by-arguments",
+            id="none-excluded-by-arguments",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `animation_data` is not defined on `None` in union `Object | None`",
+                "assigned_action = obj.animation_data and obj.animation_data.action",
+                path="scripts/addons_core/rigify/rot_mode.py",
+                cls="POSE_OT_convert_rotation",
+                function="execute",
+            ),
+            "operator-without-poll",
+            id="operator-without-poll",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                'Argument to function `batch_for_shader` is incorrect: Expected `Literal["POINTS", "LINES", "TRIS", "LINE_STRIP", "TRI_STRIP", ... omitted 3 literals]`, found `Literal["TRI_FAN"]`',
+                "batch = batch_for_shader(shader, 'TRI_FAN', {\"pos\": vertices})",
+                path="scripts/addons_core/node_wrangler/utils/draw.py",
+            ),
+            "deprecated-enum-value",
+            id="deprecated-enum-value",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Module `bpy.utils` has no member `script_paths_pref`",
+                "*bpy.utils.script_paths_pref(),",
+                path="scripts/startup/bl_ui/space_userpref.py",
+            ),
+            "unexported-function",
+            id="unexported-function",
+        ),
         # Unsorted
         pytest.param(
             diagnostic("not-iterable", "Object of type `ImBufBuffer` is not iterable", "for p in buf:"),
@@ -1127,7 +1416,13 @@ def test_read_diagnostics_gives_severity_and_enclosing_scope(tmp_path):
         params=("self", "context"),
         has_poll=True,
         registers=frozenset({"x_prop"}),
+        attributes=first.scope.attributes,
+        poll=first.scope.poll,
+        source=first.scope.source,
     )
+    assert 'bl_label = "X"' in first.scope.attributes
+    assert first.scope.poll.strip().endswith("return context.object")
+    assert first.scope.source.startswith("    def draw(self, context):")
     assert second.severity == "warning"
     assert second.scope.cls == "X_UL_list"
     assert second.scope.function == "draw_item"
