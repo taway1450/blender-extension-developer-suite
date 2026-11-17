@@ -1,51 +1,104 @@
 # check:blender main, builtin stubs, Blender 7031144c2c
-bucket            shipped  presets    other    total
-context-member        757      277     1069     2103
-pointer-none         2026       88     1198     3312
-type-tag              842       60      438     1340
-stub-gap              308        0      138      446
-operator-call          11        0      134      145
-check-setup            52       12      104      168
-dynamic               575        0      199      774
-rest                 1096        0      981     2077
-total                5667      437     4261    10365
+cause                           group                 slice   shipped  presets    other    total
+property-on-panel               blender-fix           BF1           3        0        0        3
+dead-api                        blender-fix           BF1           2        0        0        2
+undefined-name                  blender-fix           BF1          10        0       39       49
+missing-argument                blender-fix           BF1           3        0        2        5
+rigify-get-bone                 blender-fix           BF2         268        0        0      268
+tooldef                         blender-fix           BF2         195        0        0      195
+none-for-non-optional           blender-fix           BF2          34        0        4       38
+wrong-annotation                blender-fix           BF2          24        0        0       24
+operator-return-misuse          blender-fix           BF1           0        0        0        0
+return-annotation               blender-fix           BF2          46        0        3       49
+assumed-registration            assumption            S6            0        0        0        0
+assumed-complete-registration   assumption            S6            0        0        0        0
+assumed-preferences             assumption            S6            0        0        0        0
+assumed-list-item               assumption            S6          123        0       10      133
+assumed-context-member          assumption            S6          141      263      678     1082
+narrowed-by-menu-prefix         implied-narrowing     S5           40        0        0       40
+narrowed-by-popover             implied-narrowing     S5            1        0        0        1
+narrowed-by-poll                implied-narrowing     S5          832        0        6      838
+imprecise-operator-return       imprecise-annotation  S4           15        0        3       18
+imprecise-enum-value            imprecise-annotation  S4           16        0       14       30
+imprecise-callback-parameter    imprecise-annotation  S4            1        0        1        2
+context-never-none              typechecker-fix       S1          165       14      114      293
+callback-never-none             typechecker-fix       S1           20        0       11       31
+modifiers-new                   typechecker-fix       S1            2        0        1        3
+bmesh-elem-seq                  typechecker-fix       S2            0        0       15       15
+blend-data-lib-key              typechecker-fix       S2            2        0        8       10
+context-store-member            typechecker-fix       S2           14        0        0       14
+freestyle-positional            typechecker-fix       S2           35        0        0       35
+render-engine-positional        typechecker-fix       S2            5        0        3        8
+dynamic-enum                    typechecker-fix       S2           18        0        4       22
+stub-context-manager            typechecker-fix       S2            5        0       14       19
+stub-docstring                  typechecker-fix       S2            4        0        2        6
+layout-in-helper                typechecker-fix       S3          161        0        0      161
+file-registered-property        typechecker-fix       S3            5        0      197      202
+bl-rna-property                 typechecker-fix       S3           36        0       11       47
+type-call-bases                 typechecker-fix       S3            1        0        0        1
+filter-items-tuple              typechecker-fix       S3           11        0        2       13
+reload-idiom                    typing-debt           -            21        0        0       21
+layout-in-operator-helper       typing-debt           -            19        0        0       19
+cross-file-registered-property  typing-debt           -            21       12       14       47
+mixin-self                      typing-debt           -           378        0      198      576
+type-enum-sub-pointer           typing-debt           -           617        6        0      623
+object-data-untagged            typing-debt           -            45        0      223      268
+base-class-subtype              typing-debt           -           176       54      213      443
+operator-call                   typing-debt           -             0        0       62       62
+unresolved-import               typing-debt           -            52        0       90      142
+general-typing                  typing-debt           -            31        0       87      118
+context-member-outside-callback unsorted              -           292        0       68      360
+unchecked-pointer               unsorted              -           729       88     1245     2062
+stub-gap                        unsorted              -           269        0      107      376
+blender-rule                    unsorted              -             0        0        5        5
+unsorted                        unsorted              -           783       65      466     1314
 
-rule                                 count
-blender-invalid-idname                   1
-blender-invalid-operator-property        1
-blender-invalid-property                 3
-blender-legacy-property                  3
-blender-unsupported-property-host        3
-blender-unsupported-property-target      1
-call-non-callable                       20
-deprecated                              15
-empty-body                              32
-import-not-found                       139
-index-out-of-bounds                      2
-invalid-argument-type                 1758
-invalid-assignment                     825
-invalid-attribute-override              70
-invalid-base                             4
-invalid-context-manager                 21
-invalid-generic-class                    1
-invalid-method-override                133
-invalid-mutable-override                 5
-invalid-parameter-default                5
-invalid-property-type-override           6
-invalid-return-type                     82
-invalid-super-argument                   1
-invalid-type-form                        9
-mismatched-type-name                     1
-missing-argument                        10
-no-matching-overload                    34
-not-iterable                            48
-not-subscriptable                       90
-possibly-missing-submodule               4
-redundant-condition                     12
-too-many-positional-arguments           10
-unknown-argument                         5
-unresolved-attribute                  6806
-unresolved-global                       37
-unresolved-reference                    73
-unsupported-operator                    61
-unused-type-ignore-comment              34
+group                                                         shipped  presets    other    total
+blender-fix                                                       585        0       48      633
+assumption                                                        264      263      688     1215
+implied-narrowing                                                 873        0        6      879
+imprecise-annotation                                               32        0       18       50
+typechecker-fix                                                   484       14      382      880
+typing-debt                                                      1360       72      887     2319
+unsorted                                                         2073      153     1891     4117
+errors                                                           5629      502     3855     9986
+warnings                                                           42        0       65      107
+
+rule                                       error warning
+blender-invalid-idname                         1       0
+blender-invalid-operator-property              1       0
+blender-invalid-property                       3       0
+blender-unsupported-property-host              0       3
+blender-unsupported-property-target            0       1
+call-non-callable                             19       0
+deprecated                                     0      15
+empty-body                                    32       0
+import-not-found                             138       0
+index-out-of-bounds                            2       0
+invalid-argument-type                       1752       0
+invalid-assignment                           807       0
+invalid-attribute-override                    70       0
+invalid-base                                   4       0
+invalid-context-manager                       21       0
+invalid-generic-class                          1       0
+invalid-method-override                      133       0
+invalid-mutable-override                       5       0
+invalid-parameter-default                      5       0
+invalid-property-type-override                 6       0
+invalid-return-type                           81       0
+invalid-super-argument                         1       0
+invalid-type-form                              9       0
+mismatched-type-name                           0       1
+missing-argument                              10       0
+no-matching-overload                          31       0
+not-iterable                                  47       0
+not-subscriptable                             90       0
+possibly-missing-submodule                     0       4
+redundant-condition                            0      12
+too-many-positional-arguments                 10       0
+unknown-argument                               5       0
+unresolved-attribute                        6569       0
+unresolved-global                              0      37
+unresolved-reference                          72       0
+unsupported-operator                          61       0
+unused-type-ignore-comment                     0      34
