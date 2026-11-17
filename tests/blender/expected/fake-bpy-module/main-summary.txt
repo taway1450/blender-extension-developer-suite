@@ -7,21 +7,22 @@ missing-argument                blender-fix           BF1           3        0  
 rigify-get-bone                 blender-fix           BF2         278        0        0      278
 tooldef                         blender-fix           BF2         195        0        0      195
 none-for-non-optional           blender-fix           BF2          54        0        1       55
-wrong-annotation                blender-fix           BF2          16        0        0       16
+wrong-annotation                blender-fix           BF2          90        0        0       90
 operator-return-misuse          blender-fix           BF1           0        0        0        0
 return-annotation               blender-fix           BF2          48        0        4       52
+unchecked-pointer-bug           blender-fix           BF1          27        0        0       27
 assumed-registration            assumption            S6            0        0        0        0
 assumed-complete-registration   assumption            S6            0        0        0        0
 assumed-preferences             assumption            S6            0        0        0        0
 assumed-list-item               assumption            S6            0        0        0        0
-assumed-context-member          assumption            S6           29        0        0       29
-narrowed-by-menu-prefix         implied-narrowing     S5            0        0        0        0
-narrowed-by-popover             implied-narrowing     S5            0        0        0        0
-narrowed-by-poll                implied-narrowing     S5         2196        0       13     2209
+assumed-context-member          assumption            S6          170      263      678     1111
+narrowed-by-menu-prefix         implied-narrowing     S5          238        0        0      238
+narrowed-by-popover             implied-narrowing     S5            1        0        0        1
+narrowed-by-poll                implied-narrowing     S5         2050        0       13     2063
 imprecise-operator-return       imprecise-annotation  S4           23        0        5       28
 imprecise-enum-value            imprecise-annotation  S4           16        0       14       30
 imprecise-callback-parameter    imprecise-annotation  S4            1        0        1        2
-context-never-none              typechecker-fix       S1            0        0        0        0
+context-never-none              typechecker-fix       S1          165       14      114      293
 callback-never-none             typechecker-fix       S1           22        0       11       33
 modifiers-new                   typechecker-fix       S1           10        0       10       20
 bmesh-elem-seq                  typechecker-fix       S2            0        0        0        0
@@ -32,35 +33,39 @@ render-engine-positional        typechecker-fix       S2            5        0  
 dynamic-enum                    typechecker-fix       S2            6        0        0        6
 stub-context-manager            typechecker-fix       S2            4        0       14       18
 stub-docstring                  typechecker-fix       S2            4        0        2        6
-layout-in-helper                typechecker-fix       S3            0        0        0        0
-file-registered-property        typechecker-fix       S3           14        0      198      212
+layout-in-helper                typechecker-fix       S3          152        0        0      152
+file-registered-property        typechecker-fix       S3           21        0      202      223
 bl-rna-property                 typechecker-fix       S3           36        0       15       51
 type-call-bases                 typechecker-fix       S3            1        0        0        1
 filter-items-tuple              typechecker-fix       S3           11        0        2       13
 reload-idiom                    typing-debt           -            21        0        0       21
-layout-in-operator-helper       typing-debt           -             0        0        0        0
+layout-in-operator-helper       typing-debt           -            19        0        0       19
 cross-file-registered-property  typing-debt           -            31       12       14       57
 mixin-self                      typing-debt           -           495        0      203      698
-type-enum-sub-pointer           typing-debt           -           667        6        0      673
+type-enum-sub-pointer           typing-debt           -           890       63      126     1079
+python-optional                 typing-debt           -           350        0      118      468
 object-data-untagged            typing-debt           -            22        0       11       33
-base-class-subtype              typing-debt           -           180        0      508      688
-operator-call                   typing-debt           -             0        0       63       63
+base-class-subtype              typing-debt           -           199        0      514      713
+operator-call                   typing-debt           -             6        0       62       68
 unresolved-import               typing-debt           -           114        0      102      216
-general-typing                  typing-debt           -            31        0       87      118
-context-member-outside-callback unsorted              -            14      529       35      578
-unchecked-pointer               unsorted              -          1871      155     2257     4283
-stub-gap                        unsorted              -           692        0      369     1061
+general-typing                  typing-debt           -            76        0      120      196
+untyped-python                  typing-debt           -           982        0        1      983
+private-member                  typing-debt           -            23        0       13       36
+build-option-gap                typing-debt           -             5       65        0       70
+context-member-outside-callback unsorted              -            96      264       76      436
+unchecked-pointer               unsorted              -           640       86     1182     1908
+stub-gap                        unsorted              -           409        0      356      765
 blender-rule                    unsorted              -             0        0        5        5
-unsorted                        unsorted              -          1387       73      719     2179
+unsorted                        unsorted              -           488        8      674     1170
 
 group                                                         shipped  presets    other    total
-blender-fix                                                       609        0       46      655
-assumption                                                         29        0        0       29
-implied-narrowing                                                2196        0       13     2209
+blender-fix                                                       710        0       46      756
+assumption                                                        170      263      678     1111
+implied-narrowing                                                2289        0       13     2302
 imprecise-annotation                                               40        0       20       60
-typechecker-fix                                                   164        0      255      419
-typing-debt                                                      1561       18      988     2567
-unsorted                                                         3964      757     3385     8106
+typechecker-fix                                                   488       14      373      875
+typing-debt                                                      3233      140     1284     4657
+unsorted                                                         1633      358     2293     4284
 errors                                                           8469      775     4639    13883
 warnings                                                           94        0       68      162
 

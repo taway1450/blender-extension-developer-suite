@@ -558,6 +558,296 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
             "general-typing",
             id="debt-general",
         ),
+        # Unchecked pointers: Blender bugs, sub-pointers and plain Python Optionals
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `bl_idname` is not defined on `None` in union `KeyingSet | None`",
+                'f.write("# Keying Set: {:s}\\n".format(ks.bl_idname))',
+                path="scripts/startup/bl_operators/anim.py",
+                cls="ANIM_OT_keying_set_export",
+                bases="Operator",
+                function="execute",
+            ),
+            "unchecked-pointer-bug",
+            id="bf1-unchecked-pointer",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `location` is not defined on `None` in union `Object | None`",
+                "cam.location = location",
+                path="scripts/addons_core/viewport_vr_preview/operators.py",
+                cls="VIEW3D_OT_vr_location_scouting_active_camera_to_capture",
+                bases="Operator",
+                function="execute",
+                has_poll=True,
+            ),
+            "unchecked-pointer-bug",
+            id="bf1-unchecked-pointer-poll-checks-something-else",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Space | None` has no attribute `clip`",
+                "clip = sc.clip",
+                path="scripts/startup/bl_ui/space_clip.py",
+                cls="CLIP_MT_tracking_editor_menus",
+                bases="Menu",
+                function="draw",
+            ),
+            "narrowed-by-menu-prefix",
+            id="s5-menu-prefix-alias",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `bones` is not defined on `None` in union `Pose | None`",
+                "pose_bones = rig.pose.bones",
+                path="scripts/addons_core/rigify/ui.py",
+                function="fk_to_ik",
+            ),
+            "type-enum-sub-pointer",
+            id="debt-pose-pointer",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `name` is not defined on `None` in union `PoseBone | None`",
+                "print(pb.name)",
+            ),
+            "unchecked-pointer",
+            id="unsorted-pose-bone-is-no-sub-pointer",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `brush` is not defined on `None` in union `VertexPaint | None`",
+                "brush = context.tool_settings.vertex_paint.brush",
+                cls="VIEW3D_PT_paint_vertex_context_menu",
+                bases="Panel",
+                function="draw",
+            ),
+            "type-enum-sub-pointer",
+            id="debt-paint-mode-settings",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                'Object of type `Literal["LINE"]` is not assignable to attribute `mode` on type '
+                "`MaterialGPencilStyle | None`",
+                "gpcolor.mode = 'LINE'",
+                path="scripts/presets/gpencil_material/Fill_Only.py",
+            ),
+            "type-enum-sub-pointer",
+            id="debt-grease-pencil-material",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `nodes` is not defined on `None` in union `NodeTree | None`",
+                "material.node_tree.nodes.clear()",
+                path="scripts/startup/bl_operators/image_as_planes.py",
+                function="create_cycles_material",
+            ),
+            "type-enum-sub-pointer",
+            id="debt-node-tree-pointer",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `reshape` is not defined on `None` in union `None | ndarray[Unknown, Unknown]`",
+                "data = data.reshape(-1, length)",
+                path="scripts/addons_core/io_scene_gltf2/blender/exp/attribute_utils.py",
+            ),
+            "python-optional",
+            id="debt-python-optional",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to function `pgettext_tip` is incorrect: Expected `str`, found `str | None`",
+                "return tip_(EXTENSIONS_OT_package_uninstall.__doc__)",
+                function="description",
+                cls="EXTENSIONS_OT_package_uninstall_system",
+                bases="Operator",
+            ),
+            "python-optional",
+            id="debt-python-optional-builtin",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `name` is not defined on `None` in union `None | Unknown`",
+                "context.scene.NWLazySource = node1.name",
+                cls="NODE_OT_lazy_connect",
+                bases="Operator, NWBase",
+                function="execute",
+                has_poll=True,
+            ),
+            "python-optional",
+            id="debt-python-optional-before-poll",
+        ),
+        # Typing debt the research leaves out of scope
+        pytest.param(
+            diagnostic(
+                "invalid-attribute-override",
+                "Invalid override of attribute `MchBones`: Type `<class 'MchBones'>` is not assignable to inherited "
+                "type `<class 'MchBones'>`",
+                "class MchBones(BaseRig.MchBones):",
+                path="scripts/addons_core/rigify/rigs/basic/pivot.py",
+            ),
+            "untyped-python",
+            id="debt-untyped-python-rigify",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `VExportNode` has no attribute `uuid`",
+                "self.add_children(parent_uuid, node.uuid)",
+                path="scripts/addons_core/io_scene_gltf2/blender/exp/tree.py",
+            ),
+            "untyped-python",
+            id="debt-untyped-python-gltf",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Invalid subscript assignment with key of type `str` and value of type `Unknown` on object of type "
+                "`ndarray[tuple[int], dtype[float64]]`",
+                "dots['joint%dx' % i] = joints[:, 0]",
+                path="scripts/addons_core/io_scene_fbx/import_fbx.py",
+            ),
+            "untyped-python",
+            id="debt-untyped-python-numpy",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Module `bpy.app.handlers` has no member `_extension_repos_update_pre`",
+                "handlers = bpy.app.handlers._extension_repos_update_pre",
+                path="scripts/addons_core/bl_pkg/__init__.py",
+            ),
+            "private-member",
+            id="debt-private-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Unresolved attribute `gopsize` on type `FFmpegSettings`",
+                "bpy.context.scene.render.ffmpeg.gopsize = 18",
+                path="scripts/presets/ffmpeg/H264_in_MP4.py",
+            ),
+            "build-option-gap",
+            id="debt-build-without-ffmpeg",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Unresolved attribute `custom_float` on type `Material`",
+                "bpy.data.materials[0].custom_float = 5.0",
+                path="doc/python_api/examples/bpy.props.0.py",
+                registers=frozenset({"custom_float"}),
+            ),
+            "file-registered-property",
+            id="s3-registered-property-instance-assignment",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                'Argument is incorrect: Expected `dict[Unknown, Unknown]`, found `tuple[tuple[Literal["option"], '
+                "float*]]`",
+                "Hotkey(\"node.nw_factor\", n_(\"Increase Mix Factor by 0.1\"), key='RIGHT_ARROW', props=(('option', 0.1),)),",
+                path="scripts/addons_core/node_wrangler/preferences.py",
+            ),
+            "wrong-annotation",
+            id="bf2-wrong-annotation-dict-for-tuple",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Space & ~AlwaysFalsy` has no attribute `local_view`",
+                "if view and view.local_view:",
+                cls="VIEW3D_MT_object_context_menu",
+                bases="Menu",
+                function="draw",
+            ),
+            "narrowed-by-menu-prefix",
+            id="s5-menu-prefix-truthy",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Object of type `_PropertyDeferred` is not assignable to attribute `addon_search` of type `str`",
+                "WindowManager.addon_search = StringProperty(",
+                path="scripts/startup/bl_ui/__init__.py",
+                function="register",
+            ),
+            "file-registered-property",
+            id="s3-registered-property-imported-class",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `Strip & ~EffectStrip` has no attribute `content_trim_start`",
+                "str(round(strip.content_trim_start, 0)),",
+                path="scripts/startup/bl_ui/properties_strip.py",
+            ),
+            "base-class-subtype",
+            id="debt-base-class-narrowed",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Object of type `LightProbe` has no attribute `parallax_type`",
+                "if probe.parallax_type == 'ELIPSOID':",
+                path="scripts/startup/bl_ui/properties_data_lightprobe.py",
+            ),
+            "base-class-subtype",
+            id="debt-base-class-light-probe",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Unresolved attribute `use_fill` on type `dict[str, Any]`",
+                "props.MESH_OT_rip.use_fill = False",
+                cls="VIEW3D_MT_edit_mesh_vertices",
+                bases="Menu",
+                function="draw",
+            ),
+            "operator-call",
+            id="debt-operator-call-macro-properties",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Function `keymap_fn` has no attribute `keymap_data`",
+                "if keymap_fn.keymap_data:",
+                path="scripts/startup/bl_ui/space_toolsystem_common.py",
+            ),
+            "general-typing",
+            id="debt-function-attribute",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Unresolved attribute `__addon_enabled__` on type `ModuleType`",
+                "mod.__addon_enabled__ = False",
+                path="scripts/modules/addon_utils.py",
+            ),
+            "general-typing",
+            id="debt-module-attribute",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `render` is not defined on `None` in union `None | Scene`",
+                "bpy.context.scene.render.engine = 'CYCLES'",
+                path="scripts/presets/cycles/integrator/Default.py",
+            ),
+            "assumed-context-member",
+            id="s6-context-member-none-first",
+        ),
         # Unsorted
         pytest.param(
             diagnostic("not-iterable", "Object of type `ImBufBuffer` is not iterable", "for p in buf:"),

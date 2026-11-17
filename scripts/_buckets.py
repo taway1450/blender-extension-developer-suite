@@ -23,7 +23,7 @@ from __future__ import annotations
 import collections
 import re
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 GROUPS = [
@@ -140,10 +140,43 @@ SETTINGS_POINTER = re.compile(
     r"(?:Domain|Flow|Effector)Settings|RigidBody\w*|FieldSettings|ParticleSettings|Brush\w*Settings|SceneEEVEE"
     r"|DynamicPaint\w*Settings|CollisionSettings|SoftBodySettings"
 )
-BASE_CLASS = re.compile(r"`(?:NodeSocket|Node|Constraint|Modifier|Strip|ActionStrip|Light|Curve|Texture|Space|ID)`")
+# Sub-pointers that exist for one value of a type or mode enum, or a flag, read without a check: an armature's
+# `Object.pose`, a Grease Pencil material's `grease_pencil`, a paint mode's `tool_settings.<mode>`, the `node_tree`
+# of a material using nodes or of a group node (research `candidate-assumptions`, "not covered").
+SUB_POINTER = re.compile(
+    r"\b(?:Pose|MaterialGPencilStyle|VertexPaint|Sculpt|ImagePaint|UvSculpt|CurvesSculpt|ParticleEdit|Gp\w*Paint)"
+    r" \| None`"
+)
+# Functions and classes of Python code that is untyped as a whole (glTF's dicts and numpy, rigify's
+# `IdPropSequence` / `TypedObject`, Freestyle's functors, `_bl_i18n_utils`, `bl_app_override`): typing debt, out of
+# scope (research `blender-true-problems`, "Ruled out").
+UNTYPED_PACKAGES = (
+    "scripts/addons_core/io_scene_gltf2/",
+    "scripts/addons_core/rigify/",
+    "scripts/freestyle/",
+    "scripts/modules/_bl_i18n_utils/",
+    "scripts/modules/bl_app_override/",
+)
+NUMPY = re.compile(r"\bndarray\b|\bnumpy\.")
+# Optional settings Blender's stubs lack because the Blender that generated them was built without the feature.
+BUILD_OPTION_TYPE = re.compile(r"`FFmpegSettings`")
+# Blender's code that reads a pointer its poll() does not check, or that has no poll() (research
+# `blender-true-problems`, cause 4): (path, enclosing class or "", enclosing function or "", text on the line).
+UNCHECKED_POINTER_BUGS = [
+    ("scripts/addons_core/viewport_vr_preview/operators.py",
+     "VIEW3D_OT_vr_location_scouting_active_camera_to_capture", "", ""),
+    ("scripts/addons_core/viewport_vr_preview/operators.py",
+     "VIEW3D_OT_vr_location_scouting_viewfinder_capture", "poll", ""),
+    ("scripts/startup/bl_operators/anim.py", "ANIM_OT_keying_set_export", "", ""),
+    ("scripts/modules/addon_utils.py", "", "", "ex.name"),
+]  # fmt: skip
+BASE_CLASS = re.compile(
+    r"`(?:NodeSocket|Node|Constraint|Modifier|Strip|ActionStrip|Light|LightProbe|Curve|Texture|TextureSlot|IKParam"
+    r"|Gizmo|Space|ID)(?: & ~\w+)*`"
+)
 ASSUMED_CONTEXT_TYPE = re.compile(r"`(?:Scene|ViewLayer|ToolSettings) \| None`")
 OTHER_CONTEXT_TYPE = re.compile(r"`(?:Space|Region|Area|Screen|Window|WorkSpace|Context) \| None`")
-SPACE_TYPE = re.compile(r"`(?:Space|Area)(?: \| None)?`")
+SPACE_TYPE = re.compile(r"`(?:Space|Area)(?: \| None| & ~AlwaysFalsy)?`")
 NEVER_NONE_CONTEXT_TYPE = re.compile(r"`(?:Preferences|WindowManager) \| None`")
 CALLBACK_PARAMETER_TYPE = re.compile(r"`(?:bpy_struct|AnyType|KeyingSet|AssetRepresentation|Depsgraph) \| None`")
 STUB_GAP_RULES = {
@@ -163,12 +196,53 @@ GENERAL_TYPING_RULES = {
     "unused-ignore-comment",
     "unresolved-global",
 }
-MISSING_ATTRIBUTE = re.compile(r"has no attribute `(\w+)`|Attribute `(\w+)` is not defined on")
+# Attributes Python code sets on its own functions and modules (`fn._is_first = False`, `mod.__addon_enabled__`).
+PYTHON_OBJECT_ATTRIBUTE = re.compile(r"^Function `\w+` has no attribute|on type `(?:def |ModuleType`)")
+MISSING_ATTRIBUTE = re.compile(
+    r"has no attribute `(\w+)`|Attribute `(\w+)` is not defined on|Unresolved attribute `(\w+)` on type"
+)
 
 
 def missing_attribute(msg: str) -> str | None:
     match = MISSING_ATTRIBUTE.search(msg)
     return next((g for g in match.groups() if g), None) if match else None
+
+
+# A type in a union that is no Blender type: a builtin or other lowercase type, a literal, an intersection, or one
+# ty could not infer.
+PYTHON_TYPE = re.compile(r"(?:[a-z_][\w.]*(?:\[.*\])?|Unknown|Any|Divergent|LiteralString|Literal\[.*\]|\(.*\))$")
+
+
+def union_members(type_: str) -> list[str]:
+    """The members of a union type as ty prints it, split at the top level."""
+    depth, current, members = 0, "", []
+    for char in type_:
+        depth += char in "(["
+        depth -= char in ")]"
+        current += char
+        if depth == 0 and current.endswith(" | "):
+            members.append(current[:-3])
+            current = ""
+    return [*members, current]
+
+
+def python_optional(d: Diagnostic) -> bool:
+    """Whether the nullable types in the message hold no Blender type: a plain Python ``Optional``."""
+    unions = [t for t in re.findall(r"`([^`]*)`", d.msg) if "None" in union_members(t)]
+    members = [m for t in unions for m in union_members(t) if m != "None"]
+    return bool(members) and all(PYTHON_TYPE.match(m) for m in members)
+
+
+def unchecked_pointer_bug(d: Diagnostic) -> bool:
+    path = d.path.replace("\\", "/")
+    return nullable(d) and any(
+        path == p and (not c or d.scope.cls == c) and (not f or d.scope.function == f) and t in d.text
+        for p, c, f, t in UNCHECKED_POINTER_BUGS
+    )
+
+
+def untyped_python(d: Diagnostic) -> bool:
+    return d.path.replace("\\", "/").startswith(UNTYPED_PACKAGES) or NUMPY.search(d.msg) is not None
 
 
 def in_tests(d: Diagnostic) -> bool:
@@ -256,6 +330,8 @@ def registered_property(d: Diagnostic) -> bool:
         return True
     if re.match(r"\s*del\b", d.text) and d.msg.startswith("Class"):
         return True
+    if d.rule == "invalid-assignment" and d.msg.startswith("Object of type `_PropertyDeferred` is not assignable"):
+        return True
     return missing_attribute(d.msg) in d.scope.registers
 
 
@@ -265,7 +341,10 @@ def in_addon(d: Diagnostic) -> bool:
 
 
 def menu_space(d: Diagnostic) -> bool:
-    return root(d.scope) == "menu" and SPACE_TYPE.search(d.msg) is not None and "space_data" in d.text + d.msg
+    """``space_data`` / ``area`` in a menu's ``draw`` / ``poll``, also through an alias (``sc = context.space_data``)."""
+    if root(d.scope) != "menu" or SPACE_TYPE.search(d.msg) is None:
+        return False
+    return d.scope.function in {"draw", "poll"} or "space_data" in d.text + d.msg
 
 
 def popover_space(d: Diagnostic) -> bool:
@@ -326,7 +405,8 @@ CAUSES = [
     Cause("wrong-annotation", "blender-fix", "BF2", outside_tests(any_of(
         lambda d: d.rule == "invalid-type-form" and "bpy.context" in d.text,
         lambda d: d.rule == "invalid-base" and "`Menu`" in d.msg,
-        lambda d: "Expected `Menu`, found `<class" in d.msg))),
+        lambda d: "Expected `Menu`, found `<class" in d.msg,
+        lambda d: re.search(r"Expected `dict\[[^`]*`, found `tuple\[", d.msg) is not None))),
     # Typechecker fixes (S1 RNA never-None, S2 stub generator, S3 ty_blender).
     Cause("context-never-none", "typechecker-fix", "S1", lambda d: NEVER_NONE_CONTEXT_TYPE.search(d.msg) is not None),
     Cause("callback-never-none", "typechecker-fix", "S1", callback_never_none),
@@ -360,9 +440,12 @@ CAUSES = [
         lambda d: d.rule == "invalid-return-type" and d.scope.function in OPERATOR_RETURNS)),
     Cause("return-annotation", "blender-fix", "BF2", outside_tests(rule("invalid-return-type"))),
     # Nullable reads, from the most specific source.
+    Cause("unchecked-pointer-bug", "blender-fix", "BF1", unchecked_pointer_bug),
     Cause("mixin-self", "typing-debt", "", lambda d: "Self@" in d.msg),
-    Cause("type-enum-sub-pointer", "typing-debt", "", lambda d: nullable(d)
-          and SETTINGS_POINTER.search(d.msg) is not None),
+    Cause("type-enum-sub-pointer", "typing-debt", "", lambda d: nullable(d) and (
+        SETTINGS_POINTER.search(d.msg) is not None or SUB_POINTER.search(d.msg) is not None
+        or ("NodeTree | None" in d.msg and ".node_tree" in d.text))),
+    Cause("python-optional", "typing-debt", "", lambda d: nullable(d) and python_optional(d)),
     Cause("assumed-context-member", "assumption", "S6", lambda d: ASSUMED_CONTEXT_TYPE.search(d.msg) is not None,
           "blender-assumed-context-member"),
     Cause("narrowed-by-poll", "implied-narrowing", "S5", lambda d: nullable(d) and gated(d),
@@ -376,10 +459,15 @@ CAUSES = [
     Cause("base-class-subtype", "typing-debt", "", lambda d: d.rule == "unresolved-attribute"
           and BASE_CLASS.search(d.msg) is not None),
     Cause("operator-call", "typing-debt", "", lambda d: "bpy.ops." in d.text or "OperatorProperties" in d.msg
+          or ("`dict[str, Any]`" in d.msg and re.match(r"\s*props\.\w+_OT_", d.text) is not None)
           or (d.rule == "too-many-positional-arguments" and STRING_LITERAL.search(d.text) is not None)),
     Cause("unresolved-import", "typing-debt", "", lambda d: d.rule in {
         "import-not-found", "unresolved-import", "possibly-missing-submodule"} or "Cannot resolve imported" in d.msg),
-    Cause("general-typing", "typing-debt", "", lambda d: d.rule in GENERAL_TYPING_RULES),
+    Cause("general-typing", "typing-debt", "", lambda d: d.rule in GENERAL_TYPING_RULES
+          or PYTHON_OBJECT_ATTRIBUTE.search(d.msg) is not None),
+    Cause("untyped-python", "typing-debt", "", untyped_python),
+    Cause("private-member", "typing-debt", "", lambda d: re.search(r"has no member `_\w+`", d.msg) is not None),
+    Cause("build-option-gap", "typing-debt", "", lambda d: BUILD_OPTION_TYPE.search(d.msg) is not None),
     Cause("stub-gap", "unsorted", "", lambda d: d.rule in STUB_GAP_RULES or "object.__init__" in d.msg
           or re.search(r"Module `[\w.]+` has no member", d.msg) is not None),
     Cause("blender-rule", "unsorted", "", lambda d: d.rule.startswith("blender-")),
@@ -390,10 +478,26 @@ CAUSE_BY_NAME = {c.name: c for c in CAUSES}
 CAUSE_BY_RULE = {c.rule: c for c in CAUSES if c.rule}
 
 
+def none_last(msg: str) -> str:
+    """``msg`` with ``None`` moved to the end of every union it names (fake-bpy-module's stubs spell
+    ``None | Scene``), so the facts need to know one spelling."""
+
+    def reorder(match: re.Match[str]) -> str:
+        members = union_members(match[1])
+        if "None" not in members[:-1]:
+            return match[0]
+        return "`" + " | ".join([m for m in members if m != "None"] + ["None"]) + "`"
+
+    return re.sub(r"`([^`]*)`", reorder, msg)
+
+
 def cause(d: Diagnostic) -> Cause:
     """The cause of a diagnostic: the one its dedicated rule reports, else the first entry of CAUSES that
-    matches it."""
-    return CAUSE_BY_RULE.get(d.rule) or next(c for c in CAUSES if c.matches(d))
+    matches it (with ``None`` last in each union)."""
+    if d.rule in CAUSE_BY_RULE:
+        return CAUSE_BY_RULE[d.rule]
+    d = replace(d, msg=none_last(d.msg))
+    return next(c for c in CAUSES if c.matches(d))
 
 
 # The causes in report order: by group, then in table order.
