@@ -13,6 +13,13 @@ features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(QuantitativeInvisibilityUP1D(0), predicates.QuantitativeInvisibilityUP1D)  # bare-ok: a stub fact: from freestyle.predicates
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(_freestyle.getCurrentScene(), Scene)  # bare-ok: a stub fact: its functions keep their types too
 features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
+features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def __call__(self, edge: Interface1D) -> bool:
+features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
+features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
+features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | return None if iter.is_end else iter.object
+features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def shade(self, s: Stroke) -> None:
+features/api_types/api_stub_gaps/__init__.py | invalid-argument-type | return bpy.data.objects["api_stub_gaps_lookup", None] == ob
+features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with bpy.data.temp_data() as data:
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
 features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
@@ -34,6 +41,21 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face.loops, BMElemSeq[BMLoop])  # bare-ok: a stub fact: an element link names its element type
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face.loops[0].vert, BMVert)  # bare-ok: a stub fact: an item of a face's loops is a BMLoop
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face.verts[0], BMVert)  # bare-ok: a stub fact: an item of a face's verts is a BMVert
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face.edges[:], list[BMEdge])  # bare-ok: a stub fact: a slice of a face's edges
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(vert.link_faces[0], BMFace)  # bare-ok: a stub fact: an item of a vertex's link_faces is a BMFace
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.verts[1], BMVert)  # bare-ok: a stub fact: an item of an edge's verts is a BMVert
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(linked, BMLoop)  # bare-ok: a stub fact: a loop's link_loops iterates over loops
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(data.objects[name, None], Object)  # bare-ok: a stub fact: a local object by its (name, None) key
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.objects[name, None], Object)  # bare-ok: a stub fact: a local object by its (name, None) key
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(data.materials[name, library], Material)  # bare-ok: a stub fact: a linked material by its library path
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.materials[name, library], Material)  # bare-ok: a stub fact: a linked material by its library path
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.libraries.load(path), AbstractContextManager[tuple[Any, Any]])  # bare-ok: a stub fact: entering it gives the input and output libraries
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.libraries.load(path, link=True) as (data_from, data_to):
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.temp_data() as temp:
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(temp, BlendData)  # bare-ok: a stub fact: entering temp_data gives a temporary BlendData
 features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _FluidModifier_DOMAIN, _Object_EMPTY, _Object_FONT, _Object_MESH, _Object_SURFACE)
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.type, Literal['MESH'])  # bare-ok: a stub fact: the tag view of a MESH object
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.data, Mesh)  # bare-ok: a stub fact: a MESH object's data is a Mesh, never None
@@ -43,6 +65,20 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(Keyframe.bl_rna.properties["interpolation"], EnumProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(keyframe.bl_rna.properties["select_control_point"], BoolProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["mode"], EnumProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["pass_index"], IntProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["location"], FloatProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["name"], StringProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["material_slots"], CollectionProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["parent"], PointerProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a name Object lacks keeps Property
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(settings.bl_rna.properties["count"], IntProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(PROPS_RNA_Settings.bl_rna.properties["flags"], EnumProperty)  # oracle-skip: typed by the key
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
 features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return len(ob.data.vertices)

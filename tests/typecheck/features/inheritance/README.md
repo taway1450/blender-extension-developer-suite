@@ -76,8 +76,8 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
 | `inh_inherited_idname` | `blender-duplicate-registration` and `blender-registered-base`: a child without its own `bl_idname` replaces the parent (unregister fails) |
 | `inh_mixins` | mixins before and after the base, a mixin of a mixin, untyped plain mixins, a Blender-based intermediate base; `blender-mixin-order` for `Operator.as_keywords`, `Menu.append` and `Node.poll`. Its probes confirm which method wins |
 | `inh_bases` | `blender-invalid-base` for two Blender bases; in `check_inh_bases.py` unregistrable bases (the stubs already reject them: `invalid-argument-type`), an `ABC` mixin (`conflicting-metaclass`) and a `__slots__` mixin (`instance-layout-conflict`), reported on that class only, not on its subclasses |
-| `inh_overrides` | every Operator callback, Panel, Menu, Header, UIList, NodeTree, NodeSocket and Node callbacks without annotations; renamed, partly annotated, `*args`, keyword-only and `**kwargs` variants; `draw_item` with 7 and 10 parameters; a callback behind a decorator other than `classmethod` / `staticmethod` (not checked); in `check_inh_overrides.py`, `self.layout` in a `draw` with a renamed `self` and through `layout = self.layout`, and another panel's `layout` (may be `None`) |
-| `inh_override_types` | incompatible annotations (`invalid-method-override`), compatible ones (no error), unannotated returns Blender cannot convert (`invalid-return-type`), `poll` returning any value |
+| `inh_overrides` | every Operator callback, Panel, Menu, Header, UIList, NodeTree, NodeSocket and Node callbacks without annotations; renamed, partly annotated, `*args`, keyword-only and `**kwargs` variants; `draw_item` with 7 and 10 parameters; a callback behind a decorator other than `classmethod` / `staticmethod` (not checked); in `check_inh_overrides.py`, `self.layout` in a `draw` with a renamed `self` and through `layout = self.layout`, in helper methods of a Panel, Menu and Header, and in an Operator helper and another panel's `layout` (may be `None`) |
+| `inh_override_types` | incompatible annotations (`invalid-method-override`), compatible ones (no error), unannotated returns Blender cannot convert (`invalid-return-type`), `poll` returning any value; a set of fewer result names or a `frozenset` for `execute` / `invoke` / `modal`, a result name that does not exist (`invalid-method-override`); `UIList.filter_items` returning two lists |
 | `generated/inh_invalid_*` | `blender-invalid-override` and `blender-missing-callback`: one add-on per class Blender rejects (18 cases: wrong parameter counts, `poll`/`description` not a classmethod, a classmethod `execute`, `draw_item` with 6 or 11 parameters, `draw`/`draw_header` with an extra parameter, `Panel`/`Menu`/`Header`/`NodeSocket` without `draw`), from `scripts/feature_generators/inheritance.py`. Each fails at register with the error its `runtime.toml` names |
 
 ## Rules
@@ -86,7 +86,10 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
   explicit annotation wins. Extra parameters Blender accepts keep their own types (`*args: tuple[Any, ...]`, a
   keyword-only default's type).
 - An unannotated return is inferred as usual and must be assignable to the parent's return type
-  (`invalid-return-type` otherwise); callers see the parent's return type. Callbacks Blender converts with `bool()`
+  (`invalid-return-type` otherwise); callers see the parent's return type. Returns and return annotations are
+  compared with the parent's type as Blender converts it: an array accepts any sequence (also each array of a
+  returned tuple, `UIList.filter_items`), and a set of enum names (`execute`'s `set[Literal[...]]`) any set of some
+  of them, a `frozenset` included. Callbacks Blender converts with `bool()`
   (`poll`, `check`, `poll_instance`, ...) accept any value.
 - A plain mixin has no Blender parent, so its parameters stay `Unknown`; a mixin that derives from the Blender class
   gets the parent's types.
@@ -94,9 +97,10 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
   (fewer or more positional parameters, a missing classmethod or a wrong one). The renamed parameters and the short
   `draw_item` that ty reports as `invalid-method-override` are no error. A `def` with any other decorator than
   `classmethod` / `staticmethod` is neither checked nor typed: Blender gets what the decorator returns.
-- `self.layout` (the draw callback's first parameter, whatever its name) is `UILayout` in `Panel.draw` /
-  `draw_header` / `draw_header_preset`, `Menu.draw`, `Header.draw` and `Operator.draw`; another instance's
-  `layout` keeps the stubs' `UILayout | None`.
+- `self.layout` (the method's first parameter, whatever its name) is `UILayout` in every instance method of a
+  Panel, Menu or Header, the draw callbacks and the helpers they call on `self` alike: Python only ever sees an
+  instance of these classes while Blender draws it (`poll` is a classmethod). In an Operator only `draw` gets it;
+  an Operator helper and another instance's `layout` keep the stubs' `UILayout | None`.
 - `blender-missing-callback` on the class line of a registered `Panel`, `Menu`, `Header` or `NodeSocket` without
   `draw`.
 - `blender-mixin-order` on the class line when a base listed after the Blender base defines a name that the Blender

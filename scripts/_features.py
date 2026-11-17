@@ -8,6 +8,7 @@ layout and the marker syntax.
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -295,3 +296,11 @@ def print_table(results: list[AddonResult]) -> None:
             f"    {name.ljust(width)}  {f'{a_pass}/{a_total}':>11}  {f'{e_pass}/{e_total}':>15}  {len(r.unexpected):>5}",
             flush=True,
         )
+
+
+def run_ty(cmd: list, cwd: Path) -> str:
+    """ty's concise output; ty exits with 1 when it reports errors."""
+    result = subprocess.run([str(c) for c in cmd], cwd=cwd, capture_output=True, text=True, encoding="utf-8")
+    if result.returncode not in (0, 1):
+        raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
+    return result.stdout

@@ -18,7 +18,7 @@ def init():
         module = importlib.import_module(f"{__package__}.{info.name}")
         for _, cls in inspect.getmembers(module, inspect.isclass):
             if issubclass(cls, bpy.types.bpy_struct) and cls.__module__ == module.__name__:
-                classes.append(cls)
+                classes.append(cls)  # ty: ignore[blender-assumed-complete-registration]
 
 
 def register():

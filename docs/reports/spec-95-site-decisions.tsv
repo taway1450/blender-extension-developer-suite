@@ -1,0 +1,1069 @@
+site	decision	cause_as_sorted	cause	group	pattern	commit
+doc/python_api/examples/blf.0.py:31	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+doc/python_api/examples/bmesh.ops.1.py:24	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.app.translations.0.py:76	cause	harmless-redundant-condition	general-typing	typing-debt	always-true/false condition, no behaviour change	
+doc/python_api/examples/bpy.context.property.0.py:15	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.msgbus.1.py:49	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.types.BlendDataLibraries.write.0.py:7	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.types.BlendDataLibraries.write.0.py:13	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.types.BlendDataLibraries.write.0.py:18	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.types.Depsgraph.3.py:25	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+doc/python_api/examples/bpy.types.Depsgraph.3.py:29	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+doc/python_api/examples/bpy.types.Depsgraph.4.py:48	cause	rarely-none-api-result	none-excluded-by-arguments	typing-debt	API result None only on failure (begin_result, to_mesh of a convertible type)	
+doc/python_api/examples/bpy.types.FileHandler.2.py:66	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	material node_tree	
+doc/python_api/examples/bpy.types.HydraRenderEngine.0.py:47	cause	callback-never-none	callback-never-none	typechecker-fix	callback parameter Blender always fills (update_render_passes)	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:38	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:39	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:40	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:55	cause	rarely-none-api-result	none-excluded-by-arguments	typing-debt	API result None only on failure (begin_result, to_mesh of a convertible type)	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:56	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:69	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:69	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:84	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:109	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:109	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+doc/python_api/examples/bpy.types.RenderEngine.1.py:162	cause	hasattr-narrowing	general-typing	typing-debt	hasattr() narrows to object	
+doc/python_api/examples/bpy.types.UIList.2.py:52	cause	class-body-helper-call	general-typing	typing-debt	plain function called in its class body	
+doc/python_api/examples/bpy.types.UIList.2.py:59	cause	class-body-helper-call	general-typing	typing-debt	plain function called in its class body	
+doc/python_api/examples/bpy.types.UIList.2.py:118	cause	bmesh-layer-subscript	stub-signature-gap	typechecker-fix	BMVert/BMLoop[layer] subscript missing from stub	
+doc/python_api/examples/bpy.types.UIList.2.py:181	cause	wrong-annotation	wrong-annotation	blender-fix	sort_items_helper docstring `list[tuple[int, Any, ...]]` is not a valid type; left for the BF2 pass (needs a variadic tuple form the stub generator accepts)	9a7af0b8477
+doc/python_api/examples/gpu.10.py:62	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.11.py:79	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.11.py:80	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.2.py:45	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.7.py:79	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.7.py:80	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.8.py:47	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.8.py:48	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/gpu.9.py:23	cause	script-context-member	script-context-member	typing-debt	doc example's documented precondition (scene has a camera)	
+doc/python_api/examples/gpu.9.py:25	cause	script-context-member	script-context-member	typing-debt	doc example's documented precondition (scene has a camera)	
+doc/python_api/examples/mathutils.Color.0.py:17	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Color.0.py:33	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Euler.0.py:16	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Euler.0.py:35	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Matrix.0.py:29	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Matrix.0.py:35	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Quaternion.0.py:34	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Vector.0.py:45	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Vector.0.py:46	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Vector.0.py:47	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+doc/python_api/examples/mathutils.Vector.0.py:58	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+intern/cycles/blender/addon/ui.py:1415	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+intern/cycles/blender/addon/ui.py:1439	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+intern/cycles/blender/addon/ui.py:1737	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+intern/cycles/blender/addon/ui.py:2581	cause	hasattr-narrowing	general-typing	typing-debt	hasattr() narrows to object	
+scripts/addons_core/bl_pkg/__init__.py:563	cause	base-class-subtype	base-class-subtype	typing-debt	collection/accessor typed with the base class	
+scripts/addons_core/bl_pkg/__init__.py:592	cause	base-class-subtype	base-class-subtype	typing-debt	collection/accessor typed with the base class	
+scripts/addons_core/bl_pkg/__init__.py:938	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/__init__.py:1004	cause	property-callback-context	rarely-none-member	typing-debt	PointerProperty poll / EnumProperty items callback reads bpy.context or its context argume	
+scripts/addons_core/bl_pkg/bl_extension_notify.py:260	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:576	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:1019	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:1020	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:1923	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:2023	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:2449	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:2594	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:2756	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:2852	cause	registered-class-in-bpy-types	registered-class-in-bpy-types	typechecker-fix	an add-on's registered class read back as bpy.types.<IDNAME>	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:2982	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:3087	cause	registered-class-in-bpy-types	registered-class-in-bpy-types	typechecker-fix	an add-on's registered class read back as bpy.types.<IDNAME>	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:3391	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:3878	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:4064	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/bl_pkg/bl_extension_ops.py:4465	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/bl_pkg/cli/blender_ext.py:2914	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/cli/blender_ext.py:4930	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/bl_pkg/tests/test_blender_asset_auth.py:521	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/hydra_storm/engine.py:20	cause	cross-file-registered-property	cross-file-registered-property	typing-debt	Scene.hydra_storm registered in another file of the add-on	
+scripts/addons_core/hydra_storm/engine.py:21	cause	cross-file-registered-property	cross-file-registered-property	typing-debt	Scene.hydra_storm registered in another file of the add-on	
+scripts/addons_core/hydra_storm/engine.py:39	cause	callback-never-none	callback-never-none	typechecker-fix	RenderEngine.update_render_passes(scene, render_layer)	
+scripts/addons_core/hydra_storm/engine.py:41	cause	callback-never-none	callback-never-none	typechecker-fix	RenderEngine.update_render_passes(scene, render_layer)	
+scripts/addons_core/hydra_storm/ui.py:40	cause	cross-file-registered-property	cross-file-registered-property	typing-debt	Scene.hydra_storm registered in another file of the add-on	
+scripts/addons_core/hydra_storm/ui.py:54	cause	cross-file-registered-property	cross-file-registered-property	typing-debt	Scene.hydra_storm registered in another file of the add-on	
+scripts/addons_core/hydra_storm/ui.py:79	cause	cross-file-registered-property	cross-file-registered-property	typing-debt	Scene.hydra_storm registered in another file of the add-on	
+scripts/addons_core/hydra_storm/ui.py:96	cause	cross-file-registered-property	cross-file-registered-property	typing-debt	Scene.hydra_storm registered in another file of the add-on	
+scripts/addons_core/io_anim_bvh/__init__.py:152	cause	narrowed-by-parent-panel	narrowed-by-parent-panel	implied-narrowing	sub-panel poll/draw relies on the parent panel's poll	
+scripts/addons_core/io_anim_bvh/__init__.py:176	cause	narrowed-by-parent-panel	narrowed-by-parent-panel	implied-narrowing	sub-panel poll/draw relies on the parent panel's poll	
+scripts/addons_core/io_anim_bvh/__init__.py:203	cause	narrowed-by-parent-panel	narrowed-by-parent-panel	implied-narrowing	sub-panel poll/draw relies on the parent panel's poll	
+scripts/addons_core/io_anim_bvh/__init__.py:325	cause	narrowed-by-parent-panel	narrowed-by-parent-panel	implied-narrowing	sub-panel poll/draw relies on the parent panel's poll	
+scripts/addons_core/io_anim_bvh/__init__.py:352	cause	narrowed-by-parent-panel	narrowed-by-parent-panel	implied-narrowing	sub-panel poll/draw relies on the parent panel's poll	
+scripts/addons_core/io_anim_bvh/import_bvh.py:224	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/io_anim_bvh/import_bvh.py:224	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/io_anim_bvh/import_bvh.py:225	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/io_anim_bvh/import_bvh.py:225	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/io_anim_bvh/import_bvh.py:531	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_anim_bvh/import_bvh.py:532	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_curve_svg/import_svg.py:212	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/io_curve_svg/import_svg.py:213	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/io_curve_svg/import_svg.py:215	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/io_curve_svg/import_svg.py:574	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/io_scene_fbx/__init__.py:594	cause	editor-context-member	editor-context-member	typing-debt	space_data read in an operator's draw	
+scripts/addons_core/io_scene_fbx/encode_bin.py:96	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/encode_bin.py:97	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/encode_bin.py:321	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/export_fbx_bin.py:2782	cause	bmesh-ops-sequence	stub-signature-gap	typechecker-fix	bmesh.ops.* takes a BMElemSeq	
+scripts/addons_core/io_scene_fbx/export_fbx_bin.py:3840	cause	correlated-union	correlated-union	typing-debt	Scene | Collection picked by an export flag	
+scripts/addons_core/io_scene_fbx/export_fbx_bin.py:3844	cause	correlated-union	correlated-union	typing-debt	Scene | Collection picked by an export flag	
+scripts/addons_core/io_scene_fbx/fbx_utils.py:732	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/fbx_utils.py:1344	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/fbx_utils.py:1525	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/fbx_utils.py:1574	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_fbx/import_fbx.py:655	cause	mathutils-sequence-protocol	mathutils-protocol-stub	typechecker-fix	Vector/Euler used as a MutableSequence	
+scripts/addons_core/io_scene_fbx/import_fbx.py:660	cause	mathutils-sequence-protocol	mathutils-protocol-stub	typechecker-fix	Vector/Euler used as a MutableSequence	
+scripts/addons_core/io_scene_fbx/import_fbx.py:1931	cause	base-class-subtype	base-class-subtype	typing-debt	collection/accessor typed with the base class	
+scripts/addons_core/io_scene_fbx/import_fbx.py:2177	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_fbx/import_fbx.py:3164	cause	str-for-literal	general-typing	typing-debt	a str variable/attribute passed where an enum literal is expected	
+scripts/addons_core/io_scene_fbx/import_fbx.py:3164	cause	str-for-literal	general-typing	typing-debt	a str variable/attribute passed where an enum literal is expected	
+scripts/addons_core/io_scene_fbx/parse_fbx.py:230	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/io_scene_gltf2/blender/com/gltf2_blender_ui.py:41	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/io_scene_gltf2/blender/com/gltf2_blender_ui.py:274	cause	narrowed-by-poll-alias	narrowed-by-poll-alias	implied-narrowing	poll checks the pointer through bpy.context or a local alias, execute reads it through con	
+scripts/addons_core/io_scene_gltf2/blender/com/gltf2_blender_ui.py:473	cause	narrowed-by-poll-alias	narrowed-by-poll-alias	implied-narrowing	poll checks the pointer through bpy.context or a local alias, execute reads it through con	
+scripts/addons_core/io_scene_gltf2/blender/com/gltf2_blender_ui.py:745	cause	editor-context-member	editor-context-member	typing-debt	space_data read in an operator's draw	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:28	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:31	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:35	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:39	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:42	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:46	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/com/material_helpers.py:47	cause	none-excluded-by-arguments	none-excluded-by-arguments	typing-debt	function returns None only for arguments the caller rules out	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:517	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:517	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:518	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:518	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:519	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:519	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:520	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:520	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:522	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:522	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:523	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:523	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:526	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:526	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:527	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py:527	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/gather.py:54	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/exp/material/encode_image.py:255	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/exp/material/encode_image.py:530	cause	id-copy-self-type	stub-signature-gap	typechecker-fix	ID.copy() typed `ID | None` instead of the receiver's type	
+scripts/addons_core/io_scene_gltf2/blender/exp/material/encode_image.py:532	cause	id-copy-self-type	stub-signature-gap	typechecker-fix	ID.copy() typed `ID | None` instead of the receiver's type	
+scripts/addons_core/io_scene_gltf2/blender/exp/material/encode_image.py:541	cause	id-copy-self-type	stub-signature-gap	typechecker-fix	ID.copy() typed `ID | None` instead of the receiver's type	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:157	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:565	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:571	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:622	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:622	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:633	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:891	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/exp/tree.py:897	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/imp/animation_pointer.py:358	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/imp/animation_pointer.py:358	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/imp/animation_pointer.py:360	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/imp/animation_pointer.py:365	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/imp/node.py:170	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/io_scene_gltf2/blender/imp/node.py:171	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/io_scene_gltf2/blender/imp/node.py:172	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/imp/node.py:206	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/imp/scene.py:24	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/imp/scene.py:25	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/imp/scene.py:66	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/io_scene_gltf2/blender/imp/vnode.py:171	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/io_scene_gltf2/blender/imp/vnode.py:186	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:69	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:76	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:78	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:133	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:146	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:147	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:147	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:149	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:150	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/node_wrangler/operators/add_image_sequence.py:151	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:82	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:83	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:141	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:150	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:172	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:180	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:191	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:201	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:201	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:203	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:203	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:209	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:211	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:217	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:217	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:217	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:220	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:231	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:231	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:238	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:238	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:243	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:243	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:243	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:251	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:251	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:251	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:255	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:271	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:271	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:275	cause	paired-locals	general-typing	typing-debt	two locals initialised to None and set together; one is tested, the other read	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:279	cause	paired-locals	general-typing	typing-debt	two locals initialised to None and set together; one is tested, the other read	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:287	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:292	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:293	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:296	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:299	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:317	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_principled_setup.py:321	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_reroutes.py:44	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/add_reroutes.py:85	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/add_texture_setup.py:42	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/align_selected.py:52	cause	membership-narrowing	general-typing	typing-debt	`x in list_of_non_none` doesn't narrow x	
+scripts/addons_core/node_wrangler/operators/align_selected.py:96	cause	correlated-condition	correlated-condition	typing-debt	pointer guarded by a compound condition on a sibling enum or flag	
+scripts/addons_core/node_wrangler/operators/copy_label.py:39	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/copy_label.py:53	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/copy_label.py:61	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/copy_settings.py:96	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/copy_settings.py:96	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/labels_clear.py:31	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/labels_modify.py:44	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/lazy_connect.py:150	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/lazy_connect.py:175	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:40	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:47	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:48	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:63	cause	base-class-subtype	base-class-subtype	typing-debt	collection/accessor typed with the base class	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:63	cause	base-class-subtype	base-class-subtype	typing-debt	collection/accessor typed with the base class	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:79	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:80	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_active_to_selected.py:81	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:38	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:62	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:62	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:63	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:65	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:66	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:70	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:77	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:77	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:79	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:79	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:82	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:82	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:84	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/link_to_output.py:84	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/merge_selected.py:190	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/merge_selected.py:191	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/reload_images.py:31	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/reload_images.py:59	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/reload_images.py:61	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/reload_images.py:83	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/select_hierarchy.py:48	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/node_wrangler/operators/swap_links.py:30	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:59	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:59	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:59	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:65	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:65	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:65	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:97	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:97	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:99	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:100	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:101	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:102	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:103	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:103	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:104	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:104	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:107	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:109	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:110	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:112	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:115	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:117	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:118	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:119	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:120	cause	container-as-record	general-typing	typing-debt	heterogeneous list/dict used as a record	
+scripts/addons_core/node_wrangler/operators/swap_links.py:121	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:121	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:122	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/operators/swap_links.py:122	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/node_wrangler/utils/constants.py:17	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/node_wrangler/utils/draw.py:38	cause	deprecated-enum-value	deprecated-enum-value	typing-debt	batch_for_shader(..., 'TRI_FAN')	
+scripts/addons_core/node_wrangler/utils/draw.py:43	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:68	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:77	cause	deprecated-enum-value	deprecated-enum-value	typing-debt	batch_for_shader(..., 'TRI_FAN')	
+scripts/addons_core/node_wrangler/utils/draw.py:81	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:90	cause	deprecated-enum-value	deprecated-enum-value	typing-debt	batch_for_shader(..., 'TRI_FAN')	
+scripts/addons_core/node_wrangler/utils/draw.py:94	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:103	cause	deprecated-enum-value	deprecated-enum-value	typing-debt	batch_for_shader(..., 'TRI_FAN')	
+scripts/addons_core/node_wrangler/utils/draw.py:107	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:116	cause	deprecated-enum-value	deprecated-enum-value	typing-debt	batch_for_shader(..., 'TRI_FAN')	
+scripts/addons_core/node_wrangler/utils/draw.py:125	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:126	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:135	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:136	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:146	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:147	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:156	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/node_wrangler/utils/draw.py:157	cause	draw-handler-context	editor-context-member	typing-debt	region draw handler reads bpy.context.area/region, always set while drawing	
+scripts/addons_core/pose_library/asset_browser.py:57	cause	helper-checks-none	helper-checks-none	typing-debt	a helper without TypeGuard tests for None	
+scripts/addons_core/pose_library/asset_browser.py:61	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute or its helpers read window/screen/collection/layer_collection, present whenever an	
+scripts/addons_core/pose_library/gui.py:94	cause	wrong-annotation	wrong-annotation	blender-fix	add-on annotation that contradicts runtime	c51f2847c83
+scripts/addons_core/pose_library/gui.py:134	cause	registered-class-in-bpy-types	registered-class-in-bpy-types	typechecker-fix	an add-on's registered class read back as bpy.types.<IDNAME>	
+scripts/addons_core/pose_library/gui.py:163	cause	stub-msgbus-key	stub-signature-gap	typechecker-fix	msgbus.subscribe_rna key=(StructClass, 'prop') rejected	
+scripts/addons_core/pose_library/gui.py:199	cause	wrong-annotation	wrong-annotation	blender-fix	add-on annotation that contradicts runtime	c51f2847c83
+scripts/addons_core/pose_library/gui.py:212	cause	wrong-annotation	wrong-annotation	blender-fix	add-on annotation that contradicts runtime	c51f2847c83
+scripts/addons_core/pose_library/operators.py:69	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
+scripts/addons_core/pose_library/operators.py:69	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
+scripts/addons_core/pose_library/operators.py:72	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
+scripts/addons_core/pose_library/operators.py:72	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
+scripts/addons_core/pose_library/operators.py:89	cause	modal-after-poll	narrowed-by-poll-in-caller	implied-narrowing	modal() of an operator whose poll checked the pointer before execute started the modal	
+scripts/addons_core/pose_library/operators.py:104	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
+scripts/addons_core/pose_library/operators.py:117	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
+scripts/addons_core/pose_library/operators.py:168	cause	helper-checks-none	helper-checks-none	typing-debt	a helper without TypeGuard tests for None	
+scripts/addons_core/pose_library/operators.py:172	cause	helper-checks-none	helper-checks-none	typing-debt	a helper without TypeGuard tests for None	
+scripts/addons_core/pose_library/operators.py:229	cause	narrowed-by-poll-in-mixin	narrowed-by-poll-in-caller	implied-narrowing	callback of an operator mixin whose own poll checks context.asset (ty applies a poll only on an Operator)	
+scripts/addons_core/pose_library/operators.py:240	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/operators.py:247	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/operators.py:250	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/operators.py:253	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/operators.py:259	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/operators.py:261	cause	library-load-names-to-ids	stub-signature-gap	typechecker-fix	data_to.<coll>[i] after libraries.load() is the loaded ID, not the name string	
+scripts/addons_core/pose_library/operators.py:274	cause	override-narrows-parameter	general-typing	typing-debt	method override narrows a parameter	
+scripts/addons_core/pose_library/operators.py:285	cause	override-narrows-parameter	general-typing	typing-debt	method override narrows a parameter	
+scripts/addons_core/pose_library/pose_creation.py:226	cause	wrong-annotation	wrong-annotation	blender-fix	add-on annotation that contradicts runtime	ef6b1fe15f6
+scripts/addons_core/pose_library/pose_creation.py:323	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/pose_creation.py:324	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/pose_creation.py:325	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/pose_library/pose_creation.py:413	cause	asset-data-of-asset	rarely-none-member	typing-debt	asset_data read on an ID the function's contract says is an asset	
+scripts/addons_core/rigify/base_generate.py:466	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/generate.py:283	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
+scripts/addons_core/rigify/generate.py:315	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/generate.py:443	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/operators/action_layers.py:35	cause	property-callback-context	rarely-none-member	typing-debt	PointerProperty poll / EnumProperty items callback reads bpy.context or its context argume	
+scripts/addons_core/rigify/operators/action_layers.py:94	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/operators/action_layers.py:104	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/operators/action_layers.py:134	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/operators/action_layers.py:137	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/operators/action_layers.py:321	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/operators/action_layers.py:341	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/operators/action_layers.py:342	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/operators/action_layers.py:344	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/operators/action_layers.py:448	cause	narrowed-by-parent-panel	narrowed-by-parent-panel	implied-narrowing	sub-panel poll/draw relies on the parent panel's poll	
+scripts/addons_core/rigify/operators/action_layers.py:505	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/operators/action_layers.py:512	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/operators/action_layers.py:512	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/operators/action_layers.py:515	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/operators/action_layers.py:536	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/rig_ui_template.py:1154	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rig_ui_template.py:1245	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/chain_rigs.py:252	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/chain_rigs.py:360	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/experimental/super_chain.py:746	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/rigs/face/skin_eye.py:111	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/faces/super_face.py:798	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/limbs/leg.py:227	cause	str-for-literal	general-typing	typing-debt	a str variable/attribute passed where an enum literal is expected	
+scripts/addons_core/rigify/rigs/limbs/spline_tentacle.py:77	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/limbs/spline_tentacle.py:662	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/limbs/spline_tentacle.py:715	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/limbs/spline_tentacle.py:715	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/skin/basic_chain.py:425	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/skin/basic_chain.py:432	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/skin/skin_nodes.py:234	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/skin/skin_nodes.py:235	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/skin/skin_rigs.py:243	cause	ui-draw-helper	ui-draw-pointer	typing-debt	helper of a panel draw or rigify parameters_ui reading the object the panel's poll guarant	
+scripts/addons_core/rigify/rigs/spines/basic_tail.py:140	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/spines/spine_rigs.py:227	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/spines/spine_rigs.py:228	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rigs/spines/spine_rigs.py:240	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/rot_mode.py:225	cause	narrowed-by-alias	correlated-condition	typing-debt	checked through a local alias	
+scripts/addons_core/rigify/rot_mode.py:225	cause	narrowed-by-alias	correlated-condition	typing-debt	checked through a local alias	
+scripts/addons_core/rigify/rot_mode.py:225	cause	narrowed-by-alias	correlated-condition	typing-debt	checked through a local alias	
+scripts/addons_core/rigify/rot_mode.py:247	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/rot_mode.py:247	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/rot_mode.py:248	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/rot_mode.py:248	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/rot_mode.py:251	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/rot_mode.py:270	fix	unchecked-pointer-bug		blender-fix	deprecated Convert Rotation Modes reads the assigned slot / selected Action without a None check	105685b6f12
+scripts/addons_core/rigify/rot_mode.py:270	fix	unchecked-pointer-bug		blender-fix	deprecated Convert Rotation Modes reads the assigned slot / selected Action without a None check	105685b6f12
+scripts/addons_core/rigify/rot_mode.py:271	fix	unchecked-pointer-bug		blender-fix	deprecated Convert Rotation Modes reads the assigned slot / selected Action without a None check	105685b6f12
+scripts/addons_core/rigify/rot_mode.py:271	fix	unchecked-pointer-bug		blender-fix	deprecated Convert Rotation Modes reads the assigned slot / selected Action without a None check	105685b6f12
+scripts/addons_core/rigify/rot_mode.py:275	cause	general-typing	general-typing	typing-debt	plain Python typing	
+scripts/addons_core/rigify/ui.py:236	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/rigify/ui.py:386	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/rigify/ui.py:1086	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/rigify/ui.py:1113	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before	
+scripts/addons_core/rigify/ui.py:1128	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/ui.py:1141	cause	operator-without-poll	operator-without-poll	typing-debt	operator without poll and no menu entry	
+scripts/addons_core/rigify/ui.py:1158	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/rigify/ui.py:1194	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_*', which implies an active object of that type	
+scripts/addons_core/rigify/ui.py:1238	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/rigify/ui.py:1266	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/rigify/ui.py:1327	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_*', which implies an active object of that type	
+scripts/addons_core/rigify/ui.py:1637	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/ui.py:1653	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/ui.py:1669	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/ui.py:1685	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/ui.py:1702	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/ui.py:1730	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/rigify/utils/action_layers.py:197	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:198	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:232	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:232	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:257	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:296	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:297	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:385	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/action_layers.py:386	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/animation.py:992	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/bones.py:329	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/collections.py:22	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/collections.py:61	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/collections.py:77	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/mechanism.py:324	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:325	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:327	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:330	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:331	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:341	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:345	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:494	cause	id-properties-ui-optional	none-excluded-by-arguments	typing-debt	id_properties_ui() documented `| None` for a paranoid case that cannot happen on bones/IDs	
+scripts/addons_core/rigify/utils/mechanism.py:572	cause	id-properties-ui-optional	none-excluded-by-arguments	typing-debt	id_properties_ui() documented `| None` for a paranoid case that cannot happen on bones/IDs	
+scripts/addons_core/rigify/utils/mechanism.py:593	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/mechanism.py:593	cause	type-enum-sub-pointer	type-enum-sub-pointer	typing-debt	pointer that exists for one kind	
+scripts/addons_core/rigify/utils/naming.py:35	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/rig.py:320	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/rig.py:326	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/rig.py:336	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/rig.py:665	cause	id-properties-ui-optional	none-excluded-by-arguments	typing-debt	id_properties_ui() documented `| None` for a paranoid case that cannot happen on bones/IDs	
+scripts/addons_core/rigify/utils/switch_parent.py:74	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/switch_parent.py:75	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/widgets.py:100	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/widgets.py:104	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/widgets.py:109	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/widgets.py:137	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/widgets.py:147	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/rigify/utils/widgets.py:159	cause	modifiers-new	modifiers-new	typing-debt	result of modifiers.new() used unchecked	
+scripts/addons_core/ui_translate/__init__.py:52	cause	assumed-preferences	assumed-preferences	assumption	add-on preferences read in register() after `__name__ in addons`; the assumed-preferences 	
+scripts/addons_core/ui_translate/__init__.py:53	cause	assumed-preferences	assumed-preferences	assumption	add-on preferences read in register() after `__name__ in addons`; the assumed-preferences 	
+scripts/addons_core/ui_translate/__init__.py:53	cause	assumed-preferences	assumed-preferences	assumption	add-on preferences read in register() after `__name__ in addons`; the assumed-preferences 	
+scripts/addons_core/ui_translate/settings.py:109	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/settings.py:119	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/settings.py:128	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/settings.py:137	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/settings.py:146	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:117	cause	operator-call	operator-call	typing-debt	bpy.ops operator resolved with getattr and called	
+scripts/addons_core/ui_translate/update_addon.py:156	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:165	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:165	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:172	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:200	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:247	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:304	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:344	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:346	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:353	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:361	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_addon.py:367	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/ui_translate/update_repo.py:208	cause	untyped-python	untyped-python	typing-debt	internal Optional attributes/contracts of untyped packages	
+scripts/addons_core/viewport_vr_preview/action_map.py:110	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/viewport_vr_preview/action_map.py:111	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/viewport_vr_preview/action_map.py:111	cause	python-optional	python-optional	typing-debt	plain Python Optional	
+scripts/addons_core/viewport_vr_preview/operators.py:65	cause	narrowed-by-poll-alias	narrowed-by-poll-alias	implied-narrowing	poll checks the pointer through bpy.context or a local alias, execute reads it through con	
+scripts/addons_core/viewport_vr_preview/operators.py:92	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:93	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:120	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:121	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:150	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:151	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:201	cause	correlated-condition	correlated-condition	typing-debt	pointer guarded by a compound condition on a sibling enum or flag	
+scripts/addons_core/viewport_vr_preview/operators.py:287	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/viewport_vr_preview/operators.py:294	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/viewport_vr_preview/operators.py:296	cause	temp-override-member	temp-override-member	implied-narrowing	context member read inside a temp_override() block that sets it	
+scripts/addons_core/viewport_vr_preview/operators.py:359	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:360	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:362	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:363	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:364	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:365	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:367	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:438	cause	xr-session-running	narrowed-by-poll-helper	implied-narrowing	poll calls XrSessionState.is_running(context), which implies wm.xr_session_state is not No	
+scripts/addons_core/viewport_vr_preview/operators.py:441	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:446	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:449	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:452	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:458	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:458	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:465	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:466	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:469	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:471	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:477	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:480	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:484	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:489	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:499	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:499	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:505	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:507	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:511	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:514	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:517	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:529	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:552	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/viewport_vr_preview/operators.py:556	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:559	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:561	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:588	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/viewport_vr_preview/operators.py:592	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:594	cause	stub-rna-type	stub-signature-gap	typechecker-fix	bpy_struct.rna_type missing from the stubs	
+scripts/addons_core/viewport_vr_preview/operators.py:596	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:599	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:602	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:605	cause	stub-rna-type	stub-signature-gap	typechecker-fix	bpy_struct.rna_type missing from the stubs	
+scripts/addons_core/viewport_vr_preview/operators.py:607	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:610	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:613	cause	stub-rna-type	stub-signature-gap	typechecker-fix	bpy_struct.rna_type missing from the stubs	
+scripts/addons_core/viewport_vr_preview/operators.py:615	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:618	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:629	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/viewport_vr_preview/operators.py:642	cause	internal-operator	internal-operator	assumption	INTERNAL operator	
+scripts/addons_core/viewport_vr_preview/operators.py:645	cause	stub-rna-type	stub-signature-gap	typechecker-fix	bpy_struct.rna_type missing from the stubs	
+scripts/addons_core/viewport_vr_preview/operators.py:651	cause	rna-never-none	rna-never-none	typechecker-fix	RNA pointer that is never None but lacks PROP_NEVER_NULL	
+scripts/addons_core/viewport_vr_preview/operators.py:732	cause	helper-checks-none	helper-checks-none	typing-debt	a helper without TypeGuard tests for None	
+scripts/addons_core/viewport_vr_preview/operators.py:1053	cause	correlated-condition	correlated-condition	typing-debt	pointer guarded by a compound condition on a sibling enum or flag	
+scripts/freestyle/modules/parameter_editor.py:186	cause	render-requires-camera	rarely-none-member	typing-debt	scene.camera read while rendering, which aborts without a camera	
+scripts/freestyle/modules/parameter_editor.py:386	cause	render-requires-camera	rarely-none-member	typing-debt	scene.camera read while rendering, which aborts without a camera	
+scripts/freestyle/modules/parameter_editor.py:407	cause	render-requires-camera	rarely-none-member	typing-debt	scene.camera read while rendering, which aborts without a camera	
+scripts/freestyle/modules/parameter_editor.py:431	cause	render-requires-camera	rarely-none-member	typing-debt	scene.camera read while rendering, which aborts without a camera	
+scripts/freestyle/modules/parameter_editor.py:1099	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1102	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1105	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1105	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1116	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1119	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1122	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/freestyle/modules/parameter_editor.py:1122	cause	base-class-subtype	base-class-subtype	typing-debt	FEdge told apart by is_smooth	
+scripts/modules/_bl_console_utils/autocomplete/complete_import.py:152	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/_bl_console_utils/autocomplete/complete_namespace.py:46	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/modules/_bl_i18n_utils/bl_extract_messages.py:460	cause	keyconfig-pointer	rarely-none-member	typing-debt	wm.keyconfigs.active/user/addon, None only without key-configurations	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:72	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:112	cause	dynamic-enum	dynamic-enum	typechecker-fix	dynamic enum stubbed with a placeholder literal	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:135	cause	object-data-untagged	object-data-untagged	typing-debt	object data read untagged	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:258	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:259	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:319	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:340	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:384	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:401	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:409	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bl_previews_utils/bl_previews_render.py:424	cause	background-script-window	window-context-in-execute	typing-debt	context.window in a script run in one known invocation where it exists	
+scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py:202	fix	wrong-annotation		blender-fix	Blender annotation/docstring type is wrong	0587affba85
+scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py:203	fix	wrong-annotation		blender-fix	Blender annotation/docstring type is wrong	0587affba85
+scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py:233	fix	wrong-annotation		blender-fix	Blender annotation/docstring type is wrong	0587affba85
+scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py:331	cause	checked-by-caller	helper-checks-none	typing-debt	helper only called after its caller checked the pointer	
+scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py:332	cause	checked-by-caller	helper-checks-none	typing-debt	helper only called after its caller checked the pointer	
+scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator_asset_finder.py:348	cause	checked-by-caller	helper-checks-none	typing-debt	helper only called after its caller checked the pointer	
+scripts/modules/_bpy_internal/http/downloader.py:870	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/_bpy_internal/system_info/text_generate_runtime.py:101	cause	unexported-function	unexported-function	typing-debt	bpy.utils function missing from __all__, so missing from the stub	
+scripts/modules/_bpy_restrict_state.py:45	cause	monkeypatch	general-typing	typing-debt	deliberate replacement of a module attribute	
+scripts/modules/_bpy_restrict_state.py:46	cause	monkeypatch	general-typing	typing-debt	deliberate replacement of a module attribute	
+scripts/modules/_console_python.py:55	cause	monkeypatch	general-typing	typing-debt	deliberate replacement of a module attribute	
+scripts/modules/_console_python.py:56	cause	monkeypatch	general-typing	typing-debt	deliberate replacement of a module attribute	
+scripts/modules/_console_python.py:123	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/modules/_rna_xml.py:315	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/_rna_xml.py:316	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/_rna_xml.py:318	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/_rna_xml.py:318	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/addon_utils.py:152	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/addon_utils.py:164	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/addon_utils.py:597	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/modules/addon_utils.py:598	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/modules/addon_utils.py:1099	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/modules/bl_keymap_utils/versioning.py:189	cause	keyconfig-pointer	rarely-none-member	typing-debt	wm.keyconfigs.active/user/addon, None only without key-configurations	
+scripts/modules/blend_render_info.py:54	cause	set-by-earlier-callback	set-by-preceding-call	typing-debt	instance attribute set by execute/invoke/__enter__ that always precedes	
+scripts/modules/bpy/utils/__init__.py:107	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/bpy/utils/__init__.py:118	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/bpy/utils/__init__.py:118	cause	stdlib-typeshed	general-typing	typing-debt	typeshed type differs from the runtime use (Optional spec, file iterator, Callable.__name__)	
+scripts/modules/bpy_extras/anim_utils.py:736	fix	wrong-annotation		blender-fix	Blender annotation/docstring type is wrong	56d2b7df8d3
+scripts/modules/bpy_extras/anim_utils.py:818	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+scripts/modules/bpy_extras/anim_utils.py:819	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/bpy_extras/anim_utils.py:822	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+scripts/modules/bpy_extras/anim_utils.py:830	cause	stub-signature-gap	stub-signature-gap	typechecker-fix	stub parameter/return stricter than the C API (invariant set/list, foreach buffer, msgbus key, context.property, nested rect)	
+scripts/modules/bpy_extras/keyconfig_utils.py:67	cause	keyconfig-pointer	rarely-none-member	typing-debt	wm.keyconfigs.active/user/addon, None only without key-configurations	
+scripts/modules/bpy_extras/mesh_utils.py:133	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/bpy_extras/mesh_utils.py:432	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/bpy_extras/mesh_utils.py:432	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/bpy_extras/node_shader_utils.py:18	cause	harmless-redundant-condition	general-typing	typing-debt	always-true/false condition, no behaviour change	
+scripts/modules/bpy_extras/view3d_utils.py:143	cause	int-for-bool	general-typing	typing-debt	passes 1 for a bool parameter	
+scripts/modules/bpy_extras/wm_utils/progress_report.py:96	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/modules/rna_keymap_ui.py:38	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_app_templates_system/2D_Animation/__init__.py:18	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/2D_Animation/__init__.py:22	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/2D_Animation/__init__.py:29	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/2D_Animation/__init__.py:30	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/Storyboarding/__init__.py:18	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/Storyboarding/__init__.py:22	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/Video_Editing/__init__.py:14	cause	area-type-active-space	area-type-active-space	implied-narrowing	area.spaces.active after an area.type check	
+scripts/startup/bl_app_templates_system/Video_Editing/__init__.py:29	cause	build-option-gap	build-option-gap	typing-debt	FFMPEG missing from the stub's Blender build	
+scripts/startup/bl_operators/anim.py:319	cause	id-data-owner	base-class-subtype	typing-debt	id_data typed ID, owner is an Object here	
+scripts/startup/bl_operators/anim.py:449	cause	rna-never-none	rna-never-none	typechecker-fix	RNA struct member never None but not flagged NEVER_NULL (Bone.color)	
+scripts/startup/bl_operators/anim.py:449	cause	rna-never-none	rna-never-none	typechecker-fix	RNA struct member never None but not flagged NEVER_NULL (Bone.color)	
+scripts/startup/bl_operators/anim.py:451	cause	rna-never-none	rna-never-none	typechecker-fix	RNA struct member never None but not flagged NEVER_NULL (Bone.color)	
+scripts/startup/bl_operators/anim.py:452	cause	rna-never-none	rna-never-none	typechecker-fix	RNA struct member never None but not flagged NEVER_NULL (Bone.color)	
+scripts/startup/bl_operators/anim.py:648	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr(context, "member", None); execute reads context.member	
+scripts/startup/bl_operators/anim.py:649	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr(context, "member", None); execute reads context.member	
+scripts/startup/bl_operators/anim.py:805	fix	unchecked-pointer-bug		blender-fix	skip gated by warn flag, later objects without action reach call	c2ba324fa30
+scripts/startup/bl_operators/anim.py:805	fix	unchecked-pointer-bug		blender-fix	skip gated by warn flag, later objects without action reach call	c2ba324fa30
+scripts/startup/bl_operators/anim.py:805	fix	unchecked-pointer-bug		blender-fix	skip gated by warn flag, later objects without action reach call	c2ba324fa30
+scripts/startup/bl_operators/anim.py:805	fix	unchecked-pointer-bug		blender-fix	skip gated by warn flag, later objects without action reach call	c2ba324fa30
+scripts/startup/bl_operators/assets.py:44	cause	rna-never-none	rna-never-none	typechecker-fix	AssetRepresentation.metadata always set for a local asset	
+scripts/startup/bl_operators/assets.py:62	cause	poll-after-super-poll	narrowed-by-poll-helper	implied-narrowing	read in a poll after 'if not super().poll(context): return False' (mixin poll checked it)	
+scripts/startup/bl_operators/assets.py:63	cause	rna-never-none	rna-never-none	typechecker-fix	AssetRepresentation.metadata always set for a local asset	
+scripts/startup/bl_operators/assets.py:63	cause	rna-never-none	rna-never-none	typechecker-fix	AssetRepresentation.metadata always set for a local asset	
+scripts/startup/bl_operators/assets.py:114	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/assets.py:118	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/assets.py:188	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/assets.py:191	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/clip.py:273	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/clip.py:305	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/clip.py:307	cause	rna-never-none	rna-never-none	typechecker-fix	RNA struct member never None but not flagged NEVER_NULL (tracking.objects.active, .reconstruction)	
+scripts/startup/bl_operators/clip.py:310	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/clip.py:317	cause	stub-docstring	stub-docstring	typechecker-fix	unpack_list docstring types the parameter Sequence[tuple], too narrow for Vectors	
+scripts/startup/bl_operators/clip.py:320	cause	collection-context-member	collection-context-member	assumption	context.collection in an editor operator; falls back to the view layer's active collection	
+scripts/startup/bl_operators/clip.py:544	cause	rna-never-none	rna-never-none	typechecker-fix	RNA struct member never None but not flagged NEVER_NULL	
+scripts/startup/bl_operators/clip.py:544	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/clip.py:722	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:723	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:724	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:725	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:727	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:728	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:733	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:734	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:735	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:736	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:756	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:762	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:764	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:766	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:768	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:770	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:772	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/clip.py:773	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/connect_to_output.py:150	cause	editor-context-member	editor-context-member	typing-debt	bpy.context.space_data in a helper of an invoke-only node editor operator	
+scripts/startup/bl_operators/connect_to_output.py:179	cause	editor-context-member	editor-context-member	typing-debt	bpy.context.space_data in a helper of an invoke-only node editor operator	
+scripts/startup/bl_operators/connect_to_output.py:187	cause	editor-context-member	editor-context-member	typing-debt	bpy.context.space_data in a helper of an invoke-only node editor operator	
+scripts/startup/bl_operators/connect_to_output.py:289	fix	unchecked-pointer-bug		blender-fix	guard 'not active and ...' never cancels; reads None.outputs	5c6164d2e68
+scripts/startup/bl_operators/connect_to_output.py:313	fix	unchecked-pointer-bug		blender-fix	guard 'not active and ...' never cancels; reads None.outputs	5c6164d2e68
+scripts/startup/bl_operators/connect_to_output.py:334	fix	unchecked-pointer-bug		blender-fix	guard 'not active and ...' never cancels; reads None.outputs	5c6164d2e68
+scripts/startup/bl_operators/connect_to_output.py:371	fix	unchecked-pointer-bug		blender-fix	guard 'not active and ...' never cancels; reads None.outputs	5c6164d2e68
+scripts/startup/bl_operators/connect_to_output.py:389	fix	unchecked-pointer-bug		blender-fix	guard 'not active and ...' never cancels; reads None.outputs	5c6164d2e68
+scripts/startup/bl_operators/constraint.py:27	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/constraint.py:45	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/constraint.py:62	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/constraint.py:97	cause	internal-operator	internal-operator	assumption	INTERNAL operator only called from buttons of one editor reads its space_data/screen	
+scripts/startup/bl_operators/constraint.py:101	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (context.constraint in the properties editor) that implies the owner object/pose bone	
+scripts/startup/bl_operators/constraint.py:101	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (context.constraint in the properties editor) that implies the owner object/pose bone	
+scripts/startup/bl_operators/constraint.py:103	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (context.constraint in the properties editor) that implies the owner object/pose bone	
+scripts/startup/bl_operators/constraint.py:105	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/constraint.py:109	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (context.constraint in the properties editor) that implies the owner object/pose bone	
+scripts/startup/bl_operators/constraint.py:109	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (context.constraint in the properties editor) that implies the owner object/pose bone	
+scripts/startup/bl_operators/constraint.py:111	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (context.constraint in the properties editor) that implies the owner object/pose bone	
+scripts/startup/bl_operators/copy_global_transform.py:47	cause	poll-correlated-pointer	correlated-condition	typing-debt	active_pose_bone set implies active_object (its armature) is set	
+scripts/startup/bl_operators/copy_global_transform.py:49	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper of an operator whose poll checks 'active_pose_bone or active_object' reads active_object in the not-bone branch	
+scripts/startup/bl_operators/copy_global_transform.py:59	cause	poll-correlated-pointer	correlated-condition	typing-debt	active_pose_bone set implies active_object (its armature) is set	
+scripts/startup/bl_operators/copy_global_transform.py:59	cause	view-layer-depsgraph	rarely-none-member	typing-debt	context.view_layer.depsgraph typed | None; built for the active view layer in an operator	
+scripts/startup/bl_operators/copy_global_transform.py:63	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper of an operator whose poll checks 'active_pose_bone or active_object' reads active_object in the not-bone branch	
+scripts/startup/bl_operators/copy_global_transform.py:64	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper of an operator whose poll checks 'active_pose_bone or active_object' reads active_object in the not-bone branch	
+scripts/startup/bl_operators/copy_global_transform.py:95	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper of an operator whose poll checks 'active_pose_bone or active_object' reads active_object in the not-bone branch	
+scripts/startup/bl_operators/copy_global_transform.py:96	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper of an operator whose poll checks 'active_pose_bone or active_object' reads active_object in the not-bone branch	
+scripts/startup/bl_operators/copy_global_transform.py:366	cause	view-layer-depsgraph	rarely-none-member	typing-debt	context.view_layer.depsgraph typed | None; built for the active view layer in an operator	
+scripts/startup/bl_operators/copy_global_transform.py:560	cause	override-param-name	general-typing	typing-debt	override renames a parameter (context -> _context); no runtime effect	
+scripts/startup/bl_operators/copy_global_transform.py:595	cause	view-layer-depsgraph	rarely-none-member	typing-debt	context.view_layer.depsgraph typed | None; built for the active view layer in an operator	
+scripts/startup/bl_operators/copy_global_transform.py:718	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper called from execute reads a pointer the operator's poll checked (scene.camera)	
+scripts/startup/bl_operators/copy_global_transform.py:719	cause	view-layer-depsgraph	rarely-none-member	typing-debt	context.view_layer.depsgraph typed | None; built for the active view layer in an operator	
+scripts/startup/bl_operators/copy_global_transform.py:719	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper called from execute reads a pointer the operator's poll checked (scene.camera)	
+scripts/startup/bl_operators/copy_global_transform.py:730	cause	classmethod-contextmanager	general-typing	typing-debt	@classmethod over @contextlib.contextmanager not understood by ty	
+scripts/startup/bl_operators/copy_global_transform.py:746	cause	view-layer-depsgraph	rarely-none-member	typing-debt	context.view_layer.depsgraph typed | None; built for the active view layer in an operator	
+scripts/startup/bl_operators/copy_global_transform.py:746	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper called from execute reads a pointer the operator's poll checked (scene.camera)	
+scripts/startup/bl_operators/copy_global_transform.py:749	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper called from execute reads a pointer the operator's poll checked (scene.camera)	
+scripts/startup/bl_operators/copy_global_transform.py:753	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper called from execute reads a pointer the operator's poll checked (scene.camera)	
+scripts/startup/bl_operators/copy_global_transform.py:815	cause	stub-msgbus-key	stub-signature-gap	typechecker-fix	msgbus.subscribe_rna key documented as Struct instance, class passed	
+scripts/startup/bl_operators/freestyle.py:77	fix	unchecked-pointer-bug		blender-fix	context.active_object read unchecked; None with only selected objects	a240dab6cb1
+scripts/startup/bl_operators/freestyle.py:77	fix	unchecked-pointer-bug		blender-fix	context.active_object read unchecked; None with only selected objects	a240dab6cb1
+scripts/startup/bl_operators/freestyle.py:77	fix	unchecked-pointer-bug		blender-fix	context.active_object read unchecked; None with only selected objects	a240dab6cb1
+scripts/startup/bl_operators/freestyle.py:79	fix	unchecked-pointer-bug		blender-fix	context.active_object read unchecked; None with only selected objects	a240dab6cb1
+scripts/startup/bl_operators/freestyle.py:85	fix	unchecked-pointer-bug		blender-fix	context.active_object read unchecked; None with only selected objects	a240dab6cb1
+scripts/startup/bl_operators/freestyle.py:94	fix	unchecked-pointer-bug		blender-fix	context.active_object read unchecked; None with only selected objects	a240dab6cb1
+scripts/startup/bl_operators/freestyle.py:217	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member (freestyle_module) stored by invoke, set by the UI button	
+scripts/startup/bl_operators/geometry_nodes.py:16	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:17	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:21	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:22	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:139	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:140	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:151	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:152	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:156	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:161	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:174	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:180	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:185	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:208	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:214	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:227	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:229	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:231	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:236	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/geometry_nodes.py:275	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (modifier from context/active object) that implies this one	
+scripts/startup/bl_operators/geometry_nodes.py:309	cause	base-class-subtype	base-class-subtype	typing-debt	assignment to a subclass attribute (NodesModifier.node_group) on the Modifier base	
+scripts/startup/bl_operators/grease_pencil.py:41	cause	narrowed-by-poll-alias	narrowed-by-poll-alias	implied-narrowing	poll checks '(obj := context.active_object) is not None'; walrus alias not followed	
+scripts/startup/bl_operators/image.py:297	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.edit_image set by the bpy.ops.image.open() just before (raises on failure)	
+scripts/startup/bl_operators/image.py:299	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.edit_image set by the bpy.ops.image.open() just before (raises on failure)	
+scripts/startup/bl_operators/image.py:299	cause	general-typing	general-typing	typing-debt	heterogeneous dict values typed as a union	
+scripts/startup/bl_operators/image_as_planes.py:108	cause	python-optional	python-optional	typing-debt	Optional[int] index set whenever the guarding count > 1	
+scripts/startup/bl_operators/image_as_planes.py:108	cause	python-optional	python-optional	typing-debt	Optional[int] index set whenever the guarding count > 1	
+scripts/startup/bl_operators/image_as_planes.py:120	cause	python-optional	python-optional	typing-debt	Optional[int] index set whenever the guarding count > 1	
+scripts/startup/bl_operators/image_as_planes.py:120	cause	python-optional	python-optional	typing-debt	Optional[int] index set whenever the guarding count > 1	
+scripts/startup/bl_operators/image_as_planes.py:146	cause	load-image-after-isfile	none-excluded-by-arguments	typing-debt	load_image() result after os.path.isfile() check; None only on unreadable file	
+scripts/startup/bl_operators/image_as_planes.py:148	cause	load-image-after-isfile	none-excluded-by-arguments	typing-debt	load_image() result after os.path.isfile() check; None only on unreadable file	
+scripts/startup/bl_operators/image_as_planes.py:152	cause	load-image-after-isfile	none-excluded-by-arguments	typing-debt	load_image() result after os.path.isfile() check; None only on unreadable file	
+scripts/startup/bl_operators/image_as_planes.py:153	cause	load-image-after-isfile	none-excluded-by-arguments	typing-debt	load_image() result after os.path.isfile() check; None only on unreadable file	
+scripts/startup/bl_operators/image_as_planes.py:156	cause	load-image-after-isfile	none-excluded-by-arguments	typing-debt	load_image() result after os.path.isfile() check; None only on unreadable file	
+scripts/startup/bl_operators/image_as_planes.py:436	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:441	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:445	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:452	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:454	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:458	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:460	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:462	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:463	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:464	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:465	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:468	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a (new or overwritten) surface material; all materials use nodes since 5.0	
+scripts/startup/bl_operators/image_as_planes.py:547	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:548	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:550	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:551	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:554	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:555	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:557	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:558	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:560	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:566	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:569	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:570	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:572	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:576	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:578	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:582	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:584	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:587	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:588	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:590	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:593	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:594	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:596	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:599	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:600	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:602	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:603	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:604	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:605	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:607	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/image_as_planes.py:744	cause	computed-enum-items	dynamic-enum	typechecker-fix	EnumProperty items built by tuple concatenation typed str, not Literal	
+scripts/startup/bl_operators/image_as_planes.py:794	cause	layout-in-operator-helper	layout-in-operator-helper	typing-debt	self.layout read in an operator's draw helper	
+scripts/startup/bl_operators/image_as_planes.py:807	cause	layout-in-operator-helper	layout-in-operator-helper	typing-debt	self.layout read in an operator's draw helper	
+scripts/startup/bl_operators/image_as_planes.py:1148	cause	helper-checks-none	helper-checks-none	typing-debt	pointer checked by a helper (staticmethod/function) the caller filters on	
+scripts/startup/bl_operators/image_as_planes.py:1175	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an image empty typed ID	
+scripts/startup/bl_operators/image_as_planes.py:1175	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an image empty typed ID	
+scripts/startup/bl_operators/mesh.py:23	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_MESH', which implies context.active_object	
+scripts/startup/bl_operators/mesh.py:24	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an object in mesh edit mode typed ID	
+scripts/startup/bl_operators/mesh.py:28	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an object in mesh edit mode typed ID	
+scripts/startup/bl_operators/mesh.py:48	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_MESH', which implies context.active_object	
+scripts/startup/bl_operators/mesh.py:49	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an object in mesh edit mode typed ID	
+scripts/startup/bl_operators/mesh.py:53	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an object in mesh edit mode typed ID	
+scripts/startup/bl_operators/node.py:745	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/node.py:749	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/node.py:783	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/node.py:787	cause	id-collection-new	none-excluded-by-arguments	typing-debt	bpy.data.X.new() with a literal valid type, typed | None	
+scripts/startup/bl_operators/node.py:1227	cause	general-typing	general-typing	typing-debt	list[type[NodeSocket]] vs class-object element type	
+scripts/startup/bl_operators/node.py:1250	cause	item-type-tag-narrowing	item-type-tag-narrowing	typechecker-fix	item_type == 'PANEL' does not narrow NodeTreeInterfaceItem to NodeTreeInterfacePanel (missing Type tag)	
+scripts/startup/bl_operators/node.py:1250	cause	item-type-tag-narrowing	item-type-tag-narrowing	typechecker-fix	item_type == 'PANEL' does not narrow NodeTreeInterfaceItem to NodeTreeInterfacePanel (missing Type tag)	
+scripts/startup/bl_operators/node.py:1279	cause	poll-try-attributeerror	narrowed-by-poll-helper	implied-narrowing	poll reads guarded by try/except AttributeError returning False	
+scripts/startup/bl_operators/node.py:1298	cause	poll-try-attributeerror	narrowed-by-poll-helper	implied-narrowing	poll reads guarded by try/except AttributeError returning False	
+scripts/startup/bl_operators/node.py:1325	cause	poll-after-super-poll	narrowed-by-poll-helper	implied-narrowing	read in a poll after 'if not super().poll(context): return False' (mixin poll checked it)	
+scripts/startup/bl_operators/node.py:1354	cause	base-class-subtype	base-class-subtype	typing-debt	attribute of the concrete subclasses read on the base type	
+scripts/startup/bl_operators/node.py:1360	cause	item-type-tag-narrowing	item-type-tag-narrowing	typechecker-fix	item_type == 'PANEL' does not narrow NodeTreeInterfaceItem to NodeTreeInterfacePanel (missing Type tag)	
+scripts/startup/bl_operators/node.py:1371	cause	structural-invariant	correlated-condition	typing-debt	data-model invariant (panel-toggle socket always has a parent panel)	
+scripts/startup/bl_operators/node.py:1388	cause	poll-after-super-poll	narrowed-by-poll-helper	implied-narrowing	read in a poll after 'if not super().poll(context): return False' (mixin poll checked it)	
+scripts/startup/bl_operators/node.py:1445	cause	poll-after-super-poll	narrowed-by-poll-helper	implied-narrowing	read in a poll after 'if not super().poll(context): return False' (mixin poll checked it)	
+scripts/startup/bl_operators/node.py:1465	cause	item-type-tag-narrowing	item-type-tag-narrowing	typechecker-fix	item_type == 'PANEL' does not narrow NodeTreeInterfaceItem to NodeTreeInterfacePanel (missing Type tag)	
+scripts/startup/bl_operators/node.py:1468	cause	item-type-tag-narrowing	item-type-tag-narrowing	typechecker-fix	item_type == 'PANEL' does not narrow NodeTreeInterfaceItem to NodeTreeInterfacePanel (missing Type tag)	
+scripts/startup/bl_operators/node.py:1473	cause	item-type-tag-narrowing	item-type-tag-narrowing	typechecker-fix	item_type == 'PANEL' does not narrow NodeTreeInterfaceItem to NodeTreeInterfacePanel (missing Type tag)	
+scripts/startup/bl_operators/node.py:1544	cause	base-class-subtype	base-class-subtype	typing-debt	attribute of the concrete subclasses read on the base type	
+scripts/startup/bl_operators/node.py:1572	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks a related pointer (space.node_tree) that implies this one (edit_tree)	
+scripts/startup/bl_operators/object.py:940	cause	collection-context-member	collection-context-member	assumption	context.collection in an INTERNAL operator from the collection properties; falls back to the view layer's active collection	
+scripts/startup/bl_operators/object.py:954	cause	collection-context-member	collection-context-member	assumption	context.collection in an INTERNAL operator from the collection properties; falls back to the view layer's active collection	
+scripts/startup/bl_operators/object.py:969	cause	view-layer-depsgraph	rarely-none-member	typing-debt	context.view_layer.depsgraph typed | None; built for the active view layer in an operator	
+scripts/startup/bl_operators/object.py:972	cause	collection-context-member	collection-context-member	assumption	context.collection in an INTERNAL operator from the collection properties; falls back to the view layer's active collection	
+scripts/startup/bl_operators/object_quick_effects.py:160	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:161	cause	object-data-untagged	object-data-untagged	typing-debt	object data of a known-type object read through a variable	
+scripts/startup/bl_operators/object_quick_effects.py:173	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:174	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:175	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:176	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:177	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:180	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:181	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:184	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:185	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:186	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:187	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:188	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:192	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:196	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:201	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:205	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:205	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:207	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:209	cause	hasattr-protocol-assignment	general-typing	typing-debt	assignment to an attribute narrowed by hasattr() (read-only synthesized protocol)	
+scripts/startup/bl_operators/object_quick_effects.py:321	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:324	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:326	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:326	fix	unchecked-pointer-bug		blender-fix	uv_layers.new() returns None at 8 UV maps	2eaff48cf61
+scripts/startup/bl_operators/object_quick_effects.py:376	fix	unchecked-pointer-bug		blender-fix	uv_layers.new() returns None at 8 UV maps	2eaff48cf61
+scripts/startup/bl_operators/object_quick_effects.py:396	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:397	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:466	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:469	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:472	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:475	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:486	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:489	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:490	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:494	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:496	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:498	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:502	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:510	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:514	cause	material-node-tree	type-enum-sub-pointer	typing-debt	node_tree of a material just created by bpy.data.materials.new()	
+scripts/startup/bl_operators/object_quick_effects.py:515	cause	material-node-tree	type-enum-sub-pointer	typing-debt	node_tree of a material just created by bpy.data.materials.new()	
+scripts/startup/bl_operators/object_quick_effects.py:567	fix	unchecked-pointer-bug		blender-fix	bpy.context.screen in execute, None in background	253c6d5f0de
+scripts/startup/bl_operators/object_quick_effects.py:575	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:578	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:581	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:584	fix	unchecked-pointer-bug		blender-fix	Single-type FLUID modifiers.new() returns None on a second run	0e8776b3018
+scripts/startup/bl_operators/object_quick_effects.py:595	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:598	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:599	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:603	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:605	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:606	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:607	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:608	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:609	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:610	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:614	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:615	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:618	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:621	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:624	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:627	cause	modifiers-new	modifiers-new	typing-debt	variable assigned from modifiers.new() that cannot fail (non-Single type or fresh object)	
+scripts/startup/bl_operators/object_quick_effects.py:636	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	context.active_object read right after a bpy.ops add operator made it	
+scripts/startup/bl_operators/object_quick_effects.py:640	cause	material-node-tree	type-enum-sub-pointer	typing-debt	node_tree of a material just created by bpy.data.materials.new()	
+scripts/startup/bl_operators/object_quick_effects.py:641	cause	material-node-tree	type-enum-sub-pointer	typing-debt	node_tree of a material just created by bpy.data.materials.new()	
+scripts/startup/bl_operators/object_randomize_transform.py:17	cause	mathutils-sequence-protocol	mathutils-protocol-stub	typechecker-fix	mathutils.Vector() documented as Sequence[float]; accepts any iterable	
+scripts/startup/bl_operators/presets.py:813	cause	rna-never-none	rna-never-none	typechecker-fix	wm.keyconfigs.active always set	
+scripts/startup/bl_operators/presets.py:817	cause	rna-never-none	rna-never-none	typechecker-fix	wm.keyconfigs.active always set	
+scripts/startup/bl_operators/presets.py:821	cause	rna-never-none	rna-never-none	typechecker-fix	wm.keyconfigs.active always set	
+scripts/startup/bl_operators/rigidbody.py:173	fix	unchecked-pointer-bug		blender-fix	animation_data None when nothing was keyed (empty frame range)	b0303c3c88b
+scripts/startup/bl_operators/rigidbody.py:174	fix	unchecked-pointer-bug		blender-fix	animation_data None when nothing was keyed (empty frame range)	b0303c3c88b
+scripts/startup/bl_operators/rigidbody.py:287	cause	narrowed-by-poll-alias	narrowed-by-poll-alias	implied-narrowing	poll checks context.object, execute reads context.active_object (same pointer in the viewport)	
+scripts/startup/bl_operators/rigidbody.py:294	cause	narrowed-by-poll-alias	narrowed-by-poll-alias	implied-narrowing	poll checks context.object, execute reads context.active_object (same pointer in the viewport)	
+scripts/startup/bl_operators/sequencer.py:47	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks context.active_strip, which implies scene.sequence_editor	
+scripts/startup/bl_operators/sequencer.py:59	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:61	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:61	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:62	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:62	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:63	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:64	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:64	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:65	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:65	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:66	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:67	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:67	cause	python-optional	python-optional	typing-debt	Optional locals correlated by the loop (strip1 set whenever strip2 is), swapped	
+scripts/startup/bl_operators/sequencer.py:111	cause	poll-correlated-pointer	correlated-condition	typing-debt	poll checks context.active_strip, which implies scene.sequence_editor	
+scripts/startup/bl_operators/sequencer.py:224	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before (animation_data_create(), bpy.ops add)	
+scripts/startup/bl_operators/sequencer.py:226	cause	set-by-preceding-call	set-by-preceding-call	typing-debt	pointer set by the call just before (animation_data_create(), bpy.ops add)	
+scripts/startup/bl_operators/userpref.py:202	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/userpref.py:352	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/userpref.py:372	cause	rna-never-none	rna-never-none	typechecker-fix	pointer Blender always sets at runtime (tracking.objects.active, wm.keyconfigs.*) not flagged NEVER_NULL	
+scripts/startup/bl_operators/userpref.py:376	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member set by the UI button that calls the operator (context_pointer_set), no poll	
+scripts/startup/bl_operators/userpref.py:399	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/userpref.py:401	cause	ui-supplied-lookup	set-by-ui-button	typing-debt	item looked up by an id the calling UI button passes (from_id), typed | None	
+scripts/startup/bl_operators/userpref.py:401	cause	ui-supplied-lookup	set-by-ui-button	typing-debt	item looked up by an id the calling UI button passes (from_id), typed | None	
+scripts/startup/bl_operators/userpref.py:402	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/userpref.py:402	cause	ui-supplied-lookup	set-by-ui-button	typing-debt	item looked up by an id the calling UI button passes (from_id), typed | None	
+scripts/startup/bl_operators/userpref.py:416	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member set by the UI button that calls the operator (context_pointer_set), no poll	
+scripts/startup/bl_operators/userpref.py:417	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member set by the UI button that calls the operator (context_pointer_set), no poll	
+scripts/startup/bl_operators/userpref.py:419	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member set by the UI button that calls the operator (context_pointer_set), no poll	
+scripts/startup/bl_operators/userpref.py:422	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute of an operator only used from editor buttons reads space_data/workspace (None from a background script)	
+scripts/startup/bl_operators/userpref.py:423	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute of an operator only used from editor buttons reads space_data/workspace (None from a background script)	
+scripts/startup/bl_operators/userpref.py:424	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member set by the UI button that calls the operator (context_pointer_set), no poll	
+scripts/startup/bl_operators/userpref.py:425	cause	context-store-set-by-ui	set-by-ui-button	typing-debt	context-store member set by the UI button that calls the operator (context_pointer_set), no poll	
+scripts/startup/bl_operators/userpref.py:447	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/userpref.py:448	cause	poll-getattr-context	narrowed-by-poll-alias	implied-narrowing	poll checks getattr/hasattr(context, member); execute reads context.member	
+scripts/startup/bl_operators/userpref.py:448	cause	ui-supplied-lookup	set-by-ui-button	typing-debt	item looked up by an id the calling UI button passes (from_id), typed | None	
+scripts/startup/bl_operators/userpref.py:902	fix	unchecked-pointer-bug		blender-fix	context.area redraw in execute, None in background	43667ed2a26
+scripts/startup/bl_operators/userpref.py:971	cause	internal-operator	internal-operator	assumption	INTERNAL operator only called from buttons of one editor reads its space_data/screen	
+scripts/startup/bl_operators/uvcalc_lightmap.py:650	cause	poll-in-operator-draw	narrowed-by-poll-in-caller	implied-narrowing	Operator.draw (redo panel) reads a pointer the poll checked; Operator.draw is not gated	
+scripts/startup/bl_operators/view3d.py:34	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_MESH', which implies context.object	
+scripts/startup/bl_operators/view3d.py:37	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_MESH', which implies context.object	
+scripts/startup/bl_operators/view3d.py:40	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an object in mesh edit mode typed ID	
+scripts/startup/bl_operators/view3d.py:41	cause	object-data-untagged	object-data-untagged	typing-debt	Object.data of an object in mesh edit mode typed ID	
+scripts/startup/bl_operators/view3d.py:201	cause	narrowed-by-mode	narrowed-by-mode	implied-narrowing	poll checks context.mode == 'EDIT_MESH', which implies context.object	
+scripts/startup/bl_operators/view3d.py:279	cause	rna-never-none	rna-never-none	typechecker-fix	SpaceView3D.region_3d always set for a 3D viewport	
+scripts/startup/bl_operators/view3d.py:279	cause	rna-never-none	rna-never-none	typechecker-fix	SpaceView3D.region_3d always set for a 3D viewport	
+scripts/startup/bl_operators/view3d.py:293	cause	rna-never-none	rna-never-none	typechecker-fix	SpaceView3D.region_3d always set for a 3D viewport	
+scripts/startup/bl_operators/wm.py:829	cause	stub-rna-type	stub-signature-gap	typechecker-fix	member present at runtime missing from the stubs (BlendData.rna_type)	
+scripts/startup/bl_operators/wm.py:1272	cause	dynamic-class-lookup	general-typing	typing-debt	class looked up by name with getattr(bpy.types, name) / bl_rna_get_subclass_py	
+scripts/startup/bl_operators/wm.py:2215	cause	internal-operator	internal-operator	assumption	INTERNAL operator only called from buttons of one editor reads its space_data/screen	
+scripts/startup/bl_operators/wm.py:2324	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute of an operator only used from editor buttons reads space_data/workspace (None from a background script)	
+scripts/startup/bl_operators/wm.py:2339	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute of an operator only used from editor buttons reads space_data/workspace (None from a background script)	
+scripts/startup/bl_operators/wm.py:2340	cause	window-context-in-execute	window-context-in-execute	typing-debt	execute of an operator only used from editor buttons reads space_data/workspace (None from a background script)	
+scripts/startup/bl_operators/wm.py:2433	cause	dynamic-operator-instance	general-typing	typing-debt	private attribute of a Python operator instance fetched generically (modal_operators.get)	
+scripts/startup/bl_operators/wm.py:2435	cause	dynamic-operator-instance	general-typing	typing-debt	private attribute of a Python operator instance fetched generically (modal_operators.get)	
+scripts/startup/bl_operators/wm.py:3470	cause	registered-class-in-bpy-types	registered-class-in-bpy-types	typechecker-fix	Python-defined class (or its Python methods) read through bpy.types.<ClassName>	
+scripts/startup/bl_operators/wm.py:3471	cause	registered-class-in-bpy-types	registered-class-in-bpy-types	typechecker-fix	Python-defined class (or its Python methods) read through bpy.types.<ClassName>	
+scripts/startup/bl_operators/wm.py:3574	cause	registered-class-in-bpy-types	registered-class-in-bpy-types	typechecker-fix	Python-defined class (or its Python methods) read through bpy.types.<ClassName>	
+scripts/startup/bl_operators/world.py:57	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a material just created	
+scripts/startup/bl_operators/world.py:58	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a material just created	
+scripts/startup/bl_operators/world.py:59	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a material just created	
+scripts/startup/bl_operators/world.py:75	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a material just created	
+scripts/startup/bl_operators/world.py:76	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a material just created	
+scripts/startup/bl_operators/world.py:77	cause	material-node-tree	type-enum-sub-pointer	typing-debt	Material.node_tree of a material just created	
+scripts/startup/bl_ui/node_add_menu.py:93	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/node_add_menu.py:522	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/startup/bl_ui/properties_data_armature.py:405	cause	registered-class-lookup	registered-class-in-bpy-types	typechecker-fix	bpy.types.<registered Python class> lacks its Python members	
+scripts/startup/bl_ui/properties_data_camera.py:360	cause	harmless-redundant-condition	general-typing	typing-debt	always-true/false condition, no behaviour change	
+scripts/startup/bl_ui/properties_material_gpencil.py:200	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_object.py:33	cause	collection-struct-argument	stub-signature-gap	typechecker-fix	collection with its own RNA struct (LayerObjects, KeyingSets) passed as bpy_struct	
+scripts/startup/bl_ui/properties_object.py:293	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/properties_object.py:349	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/properties_output.py:71	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/startup/bl_ui/properties_output.py:386	cause	hasattr-narrowing	general-typing	typing-debt	hasattr() narrows to object	
+scripts/startup/bl_ui/properties_output.py:414	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/startup/bl_ui/properties_paint_common.py:49	cause	python-inference	general-typing	typing-debt	ty infers a narrower type for a literal/variable than later use	
+scripts/startup/bl_ui/properties_particle.py:275	cause	context-member-reread	narrowed-by-poll-alias	implied-narrowing	context member checked through a local alias, then read again from context	
+scripts/startup/bl_ui/properties_particle.py:457	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_particle.py:493	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_particle.py:528	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_dynamicpaint.py:314	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_dynamicpaint.py:316	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_dynamicpaint.py:709	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_dynamicpaint.py:710	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_dynamicpaint.py:800	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_field.py:164	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_field.py:202	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_field.py:228	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_field.py:257	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_field.py:300	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_fluid.py:201	cause	harmless-redundant-condition	general-typing	typing-debt	always-true/false condition, no behaviour change	
+scripts/startup/bl_ui/properties_physics_fluid.py:688	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/properties_physics_fluid.py:1541	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:72	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:72	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:109	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:110	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:111	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:162	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:162	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:195	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:196	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:197	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:235	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:235	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:261	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody.py:261	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:141	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:164	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:227	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:299	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:322	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:366	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:408	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:438	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_physics_rigidbody_constraint.py:492	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_strip.py:237	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:265	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:280	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:282	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:284	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:288	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:309	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:328	cause	correlated-union	correlated-union	typing-debt	strip subtype told apart by an aliased strip.type	
+scripts/startup/bl_ui/properties_strip.py:356	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_strip.py:376	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_strip.py:410	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_strip.py:437	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_strip.py:467	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/properties_workspace.py:137	cause	wrong-annotation	wrong-annotation	blender-fix	sort_items_helper docstring `list[tuple[int, Any, ...]]` is not a valid type; left for the BF2 pass (needs a variadic tuple form the stub generator accepts)	9a7af0b8477
+scripts/startup/bl_ui/space_clip.py:659	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/space_clip.py:661	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+scripts/startup/bl_ui/space_clip.py:841	cause	narrowed-by-parent-poll	narrowed-by-parent-panel	implied-narrowing	subpanel poll reads a member its bl_parent_id panel's poll guarantees (child polls run only after the parent's)	
+scripts/startup/bl_ui/space_filebrowser.py:878	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll returns early through a shared poll helper / base-class poll that checks the member	
+scripts/startup/bl_ui/space_filebrowser.py:879	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+scripts/startup/bl_ui/space_filebrowser.py:883	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+scripts/startup/bl_ui/space_node.py:1213	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_node.py:1221	cause	pointer-never-none	rna-never-none	typechecker-fix	RNA pointer whose getter never returns NULL but lacks PROP_NEVER_NULL	
+scripts/startup/bl_ui/space_outliner.py:89	cause	collection-struct-argument	stub-signature-gap	typechecker-fix	collection with its own RNA struct (LayerObjects, KeyingSets) passed as bpy_struct	
+scripts/startup/bl_ui/space_project.py:144	cause	dynamic-enum	dynamic-enum	typechecker-fix	dynamic enum stubbed with a placeholder literal	
+scripts/startup/bl_ui/space_project.py:209	cause	poll-guarded-callback	narrowed-by-poll-in-caller	implied-narrowing	callback or draw helper Blender only calls after the class's poll passed	
+scripts/startup/bl_ui/space_project.py:211	cause	poll-guarded-callback	narrowed-by-poll-in-caller	implied-narrowing	callback or draw helper Blender only calls after the class's poll passed	
+scripts/startup/bl_ui/space_project.py:216	cause	poll-guarded-callback	narrowed-by-poll-in-caller	implied-narrowing	callback or draw helper Blender only calls after the class's poll passed	
+scripts/startup/bl_ui/space_time.py:322	cause	collection-struct-argument	stub-signature-gap	typechecker-fix	collection with its own RNA struct (LayerObjects, KeyingSets) passed as bpy_struct	
+scripts/startup/bl_ui/space_toolsystem_toolbar.py:563	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_toolsystem_toolbar.py:1209	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_toolsystem_toolbar.py:1616	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_toolsystem_toolbar.py:1691	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_toolsystem_toolbar.py:1765	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_toolsystem_toolbar.py:1846	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_topbar.py:386	cause	registered-class-lookup	registered-class-in-bpy-types	typechecker-fix	bpy.types.<registered Python class> lacks its Python members	
+scripts/startup/bl_ui/space_userpref.py:2478	cause	unexported-function	unexported-function	typing-debt	bpy.utils function missing from __all__, so missing from the stub	
+scripts/startup/bl_ui/space_userpref.py:2565	cause	unexported-function	unexported-function	typing-debt	bpy.utils function missing from __all__, so missing from the stub	
+scripts/startup/bl_ui/space_view3d.py:9367	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_view3d_toolbar.py:1060	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_view3d_toolbar.py:1162	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_view3d_toolbar.py:1254	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_view3d_toolbar.py:1325	cause	ui-callback-editor-member	ui-callback-editor-member	assumption	region/space_data in a UI poll, draw helper or viewport-engine callback, which run inside their editor	
+scripts/startup/bl_ui/space_view3d_toolbar.py:1945	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/space_view3d_toolbar.py:2003	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/space_view3d_toolbar.py:2075	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/space_view3d_toolbar.py:2096	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/space_view3d_toolbar.py:2164	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/bl_ui/space_view3d_toolbar.py:2263	cause	bl-context-implies-member	bl-context-implies-member	assumption	panel bl_context (Properties tab or .mode tool context) exists only with this member	
+scripts/startup/keyingsets_builtins.py:356	cause	poll-editor-member	editor-context-member	typing-debt	operator/keying-set poll reads space_data/area; None only without an editor (scripts, background)	
+scripts/startup/keyingsets_builtins.py:544	cause	poll-guarded-callback	narrowed-by-poll-in-caller	implied-narrowing	callback or draw helper Blender only calls after the class's poll passed	
+scripts/startup/nodeitems_builtins.py:24	cause	override-param-name	general-typing	typing-debt	Python override renames _context to context	
+scripts/startup/nodeitems_builtins.py:33	cause	override-param-name	general-typing	typing-debt	Python override renames _context to context	
+scripts/templates_py/Gizmo/custom_geometry.py:85	cause	callback-positional	callback-positional	typechecker-fix	callback stub makes a parameter keyword-only that Blender passes positionally	
+scripts/templates_py/Gizmo/operator.py:199	cause	mathutils-protocol-stub	mathutils-protocol-stub	typechecker-fix	mathutils/gpu stub lacks slice assignment, buffer protocol, Matrix as sequence, 3D-only cross	
+scripts/templates_py/Operator/mesh_uv.py:15	cause	bmesh-layer-subscript	stub-signature-gap	typechecker-fix	BMVert/BMLoop[layer] subscript missing from stub	
+scripts/templates_py/Operator/mesh_uv.py:17	cause	bmesh-layer-subscript	stub-signature-gap	typechecker-fix	BMVert/BMLoop[layer] subscript missing from stub	
+scripts/templates_py/Operator/modal_timer.py:20	cause	set-by-earlier-callback	set-by-preceding-call	typing-debt	instance attribute set by execute/invoke/__enter__ that always precedes	
+scripts/templates_py/Operator/modal_timer.py:38	cause	set-by-earlier-callback	set-by-preceding-call	typing-debt	instance attribute set by execute/invoke/__enter__ that always precedes	
+scripts/templates_py/Operator/modal_timer.py:39	cause	set-by-earlier-callback	set-by-preceding-call	typing-debt	instance attribute set by execute/invoke/__enter__ that always precedes	
+scripts/templates_py/Operator/modal_view3d.py:18	cause	set-by-earlier-callback	set-by-preceding-call	typing-debt	instance attribute set by execute/invoke/__enter__ that always precedes	
+scripts/templates_py/Operator/node.py:43	cause	poll-editor-member	editor-context-member	typing-debt	operator/keying-set poll reads space_data/area; None only without an editor (scripts, background)	
+scripts/templates_py/UI/previews_dynamic_enum.py:120	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	
+scripts/templates_py/UI/previews_dynamic_enum.py:121	cause	dynamic-attribute	general-typing	typing-debt	attribute set at runtime on a module/class/object that does not declare it	

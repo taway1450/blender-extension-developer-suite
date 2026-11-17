@@ -5,15 +5,16 @@
 """Type-check the Blender source code of a given version with ty.
 
 Builds ty (see build_ty.py), makes sure the source worktree and bpy stubs exist (see
-generate_stubs.py) and runs ty on all Python files of the worktree (excluding ``lib/`` and
-``extern/``), once per stub generator (``--generator``). The full output goes to
+generate_stubs.py) and runs ty on all Python files of the worktree (excluding ``lib/``, ``extern/`` and the 2.7x
+test scripts ``tests/python/CMakeLists.txt`` never runs), once per stub generator (``--generator``). The full output goes to
 ``.cache/ty-results/<version>.txt`` (fake-bpy-module stubs) and ``<version>-builtin.txt`` (Blender's own stubs).
 
 Blender's bundled numpy is on the search path, through a link in ``.cache/blender-site/<version>/`` (only numpy:
 the whole ``site-packages`` would put a runtime ``typing_extensions.py`` in front of typeshed's).
 
-Each diagnostic is sorted into a bucket and an area (see _buckets.py). The bucket x area table and the counts per
-rule go to ``.cache/ty-results/<version>-<generator>-summary.txt``, samples per bucket to ``...-buckets.txt``. For
+Each diagnostic is sorted into a cause, which has a group, and an area (see _buckets.py). The cause x area table,
+the totals per group, errors and warnings, and the counts per rule and severity go to
+``.cache/ty-results/<version>-<generator>-summary.txt``, samples per cause to ``...-buckets.txt``. For
 ``main`` the summary is compared with ``tests/blender/expected/<generator>/main-summary.txt``: a difference is
 printed (the task still succeeds), and ``--update`` records the new summary.
 
@@ -42,7 +43,14 @@ from _target import Target, add_target_arguments
 from download_blender import BLENDER_BIN_DIR
 from generate_stubs import results_name
 
-EXCLUDED_DIRS = ["lib", "extern"]
+# Paths (relative to the Blender source root) left out of the check: libraries, and the dead 2.7x test scripts.
+EXCLUDED = [
+    "lib/",
+    "extern/",
+    "tests/python/view_layer/",
+    "tests/python/bl_mesh_modifiers.py",
+    "tests/python/rna_array.py",
+]
 # Directories (relative to the Blender source root) that Blender puts on ``sys.path``.
 # The generated stubs are searched before these.
 BLENDER_SEARCH_PATHS = [
@@ -119,8 +127,8 @@ def run_ty(target: Target, generator: str, site: Path | None) -> Path:
         cmd += ["--extra-search-path", site]
     for path in BLENDER_SEARCH_PATHS:
         cmd += ["--extra-search-path", source / path]
-    for excluded in EXCLUDED_DIRS:
-        cmd += ["--exclude", f"{excluded}/"]
+    for excluded in EXCLUDED:
+        cmd += ["--exclude", excluded]
     cmd.append(source)
 
     log(f"Running ty (Python {python_version}, {generator} stubs) on {source}")
@@ -161,18 +169,18 @@ def run_ty_with_summary(cmd: list[str | Path], cwd: Path, results: Path) -> Path
 
 
 def report_buckets(target: Target, generator: str, results: Path, *, update: bool) -> None:
-    """Sort the diagnostics in ``results`` into buckets, write the summary and samples next to it and, for
+    """Sort the diagnostics in ``results`` into causes, write the summary and samples next to it and, for
     BASELINE_VERSION, compare the summary with the recorded one (or record it with ``update``)."""
     diagnostics = read_diagnostics(results.read_text(encoding="utf-8"), target.source)
     commit = git_output(target.source, "rev-parse", "--short=10", "HEAD")
     title = f"# check:blender {target.version}, {generator} stubs, Blender {commit}"
-    text = summary(title, ((d.bucket, d.area, d.rule) for d in diagnostics))
+    text = summary(title, ((d.cause.name, d.area, d.rule, d.severity) for d in diagnostics))
     out_dir = CACHE_DIR / "ty-results"
     (out_dir / f"{target.version}-{generator}-summary.txt").write_text(text, encoding="utf-8")
     buckets = out_dir / f"{target.version}-{generator}-buckets.txt"
     buckets.write_text(samples(diagnostics), encoding="utf-8")
     print(text, flush=True)
-    log(f"Samples per bucket: {buckets}")
+    log(f"Samples per cause: {buckets}")
 
     if target.version != BASELINE_VERSION:
         return

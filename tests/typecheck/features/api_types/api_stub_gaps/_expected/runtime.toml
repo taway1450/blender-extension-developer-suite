@@ -62,3 +62,28 @@ reason = "every RNA class has bl_rna, readable from an instance too"
 code = "addon.module_members()"
 expect = "str bool frozenset str mappingproxy str ImBufFileType"
 reason = "the public module members the stubs left out"
+
+[[probe]]
+code = "addon.bmesh_links()"
+expect = "BMVert BMEdge BMLoop BMLoop"
+reason = "a BMElemSeq holds the element type its attribute names"
+
+[[probe]]
+code = "addon.data_lookup()"
+expect = true
+reason = "a bpy.data collection looks a local item up by its (name, None) key"
+
+[[probe]]
+code = "addon.temp_data()"
+expect = "BlendData"
+reason = "entering bpy.data.temp_data() gives a temporary BlendData"
+
+[[probe]]
+code = "type(bpy.data.libraries.load(bpy.data.filepath or __import__('bpy').utils.resource_path('LOCAL'))).__name__"
+expect = "bpy_lib"
+reason = "libraries.load returns a context manager (entered in check_api_stub_gaps.py)"
+
+[[probe]]
+code = "addon.API_STUB_GAPS_Engine.is_registered"
+expect = true
+reason = "an engine overriding the update callbacks with positional parameters registers (Blender checks the count)"

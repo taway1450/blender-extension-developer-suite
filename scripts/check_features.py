@@ -27,11 +27,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import subprocess
 
+import _strictness
 from _baseline import FEATURES, record, type_entries
-from _common import TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import evaluate, parse_diagnostics, print_table, select, summary_markdown
+from _common import TYPECHECK_TESTS_DIR, log, main_wrapper
+from _features import evaluate, parse_diagnostics, print_table, run_ty, select, summary_markdown
 from _target import Target, add_target_arguments
 
 
@@ -52,36 +52,21 @@ def main() -> int:
 
     changed = False
     for generator, stubs in target.stubs.items():
-        cmd = [
-            target.binary,
-            "check",
-            "--project",
-            TYPECHECK_TESTS_DIR,
-            "--python-version",
-            python_version,
-            "--extra-search-path",
-            stubs,
-            "--output-format",
-            "concise",
-            "--no-progress",
-            *(a.path for a in addons),
-        ]
+        ty_cmd = [target.binary, "check", "--python-version", python_version, "--extra-search-path", stubs]
+        ty_cmd += ["--output-format", "concise", "--no-progress"]
         log(f"Running ty (Python {python_version}, Blender {args.version}, {generator} stubs) on {len(addons)} addons")
-        result = subprocess.run(
-            [str(c) for c in cmd], cwd=TYPECHECK_TESTS_DIR, capture_output=True, text=True, encoding="utf-8"
-        )
-        if result.returncode not in (0, 1):
-            raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
+        output = run_ty([*ty_cmd, "--project", TYPECHECK_TESTS_DIR, *(a.path for a in addons)], TYPECHECK_TESTS_DIR)
 
-        results = evaluate(addons, parse_diagnostics(result.stdout))
+        results = evaluate(addons, parse_diagnostics(output))
         results_dir = target.results_dir(generator)
-        (results_dir / "ty.txt").write_text(result.stdout, encoding="utf-8")
+        (results_dir / "ty.txt").write_text(output, encoding="utf-8")
         title = f"Feature tests: {generator} stubs, Blender {args.version}"
         (results_dir / "summary.md").write_text(summary_markdown(title, results), encoding="utf-8")
         print_table(results)
         log(f"Summary: {results_dir / 'summary.md'}")
 
-        changed |= record(FEATURES, generator, args.version, type_entries(results), addons, update=args.update)
+        entries = {**type_entries(results), **_strictness.check(ty_cmd, results, results_dir)}
+        changed |= record(FEATURES, generator, args.version, entries, addons, update=args.update)
     return 1 if changed else 0
 
 

@@ -2,12 +2,14 @@
 parent. Explicit annotations that are incompatible are ty's invalid-method-override; an unannotated callback whose
 return value does not fit the parent's return type is invalid-return-type (Blender raises "incompatible return
 value" when it calls execute, invoke or modal; checked in Blender 5.4). Blender turns any poll result into a bool,
-so poll may return any value. Compatible annotations (a wider parameter, a narrower return) are fine."""
+so poll may return any value. Compatible annotations (a wider parameter, a narrower return) are fine: a set of
+fewer result names or a frozenset for execute, invoke and modal (Blender reads any set of the enum's names), lists
+for the two arrays UIList.filter_items returns."""
 
 from typing import Literal
 
 import bpy
-from bpy.types import Context, Operator
+from bpy.types import Context, Operator, UIList
 
 
 class INH_OVERRIDE_TYPES_OT_annotations(Operator):
@@ -53,5 +55,52 @@ class INH_OVERRIDE_TYPES_OT_no_return(Operator):
         print("forgot to return a set")
 
 
-classes = (INH_OVERRIDE_TYPES_OT_annotations, INH_OVERRIDE_TYPES_OT_returns, INH_OVERRIDE_TYPES_OT_no_return)
+class INH_OVERRIDE_TYPES_OT_enum_sets(Operator):
+    bl_idname = "inh_override_types.enum_sets"
+    bl_label = "Enum sets"
+
+    def execute(self, context) -> set[Literal["FINISHED"]]:  # fewer result names than the parent: fine
+        return {"FINISHED"}
+
+    def invoke(self, context, event) -> frozenset[Literal["FINISHED", "CANCELLED"]]:  # a frozenset: fine
+        return frozenset({"CANCELLED"})
+
+    def modal(self, context, event) -> set[Literal["FINSHED"]]:  # ty: ignore[invalid-method-override]  # bare-ok: a name that is not a result stays an error
+        return {"FINSHED"}
+
+
+class INH_OVERRIDE_TYPES_OT_enum_set_returns(Operator):
+    bl_idname = "inh_override_types.enum_set_returns"
+    bl_label = "Enum set returns"
+
+    def execute(self, context):
+        return frozenset({"FINISHED"})
+
+
+class INH_OVERRIDE_TYPES_UL_filter(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_property):
+        pass
+
+    def filter_items(self, context, data, property):
+        flags = [self.bitflag_filter_item] * len(getattr(data, property))
+        return flags, []  # two lists for the two int arrays: fine
+
+
+class INH_OVERRIDE_TYPES_UL_filter_annotated(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_property):
+        pass
+
+    def filter_items(self, context, data, property) -> tuple[list[int], list[int]]:  # lists for the arrays: fine
+        return [], []
+
+
+classes = (
+    INH_OVERRIDE_TYPES_OT_annotations,
+    INH_OVERRIDE_TYPES_OT_returns,
+    INH_OVERRIDE_TYPES_OT_no_return,
+    INH_OVERRIDE_TYPES_OT_enum_sets,
+    INH_OVERRIDE_TYPES_OT_enum_set_returns,
+    INH_OVERRIDE_TYPES_UL_filter,
+    INH_OVERRIDE_TYPES_UL_filter_annotated,
+)
 register, unregister = bpy.utils.register_classes_factory(classes)

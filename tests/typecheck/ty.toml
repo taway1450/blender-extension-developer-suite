@@ -9,9 +9,12 @@ root = [
     "features/addon_discovery",
     "features/addon_preferences",
     "features/api_types",
+    "features/assumptions",
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
     "features/context_members",
+    "features/implied_narrowings",
+    "features/imprecise_annotations",
     "features/inheritance",
     "features/inheritance/generated",
     "features/operator_calls",
@@ -35,3 +38,28 @@ unused-ignore-comment = "error"
 unused-type-ignore-comment = "error"
 # Default already; stated because the assert_type markers rely on it.
 type-assertion-failure = "error"
+
+# The Imprecise annotation rules configured for one add-on (features/imprecise_annotations/imp_config): the
+# category's level, overridden for one of its rules.
+[[overrides]]
+include = ["features/imprecise_annotations/imp_config/**"]
+
+[overrides.rules]
+blender-imprecise-annotations = "error"
+blender-imprecise-enum-value = "ignore"
+
+# The Implied narrowing rules configured for one add-on (features/implied_narrowings/nar_config).
+[[overrides]]
+include = ["features/implied_narrowings/nar_config/**"]
+
+[overrides.rules]
+blender-implied-narrowings = "error"
+blender-narrowed-by-menu-prefix = "ignore"
+
+# The Assumption rules configured for one add-on (features/assumptions/asm_config).
+[[overrides]]
+include = ["features/assumptions/asm_config/**"]
+
+[overrides.rules]
+blender-assumptions = "error"
+blender-assumed-context-member = "ignore"

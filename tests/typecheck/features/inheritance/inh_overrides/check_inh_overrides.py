@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Literal, TypeAlias, assert_type
+from typing import Any, Literal, TypeAlias, assert_type
 
-from bpy.types import Context, Event, Panel, UILayout
+from bpy.types import Context, Event, Header, Menu, Operator, Panel, UILayout
 
 from . import INH_OVERRIDES_MT_menu, INH_OVERRIDES_Node, INH_OVERRIDES_OT_all, INH_OVERRIDES_OT_variants, INH_OVERRIDES_UL_short
 
@@ -30,9 +30,10 @@ def variants(op: INH_OVERRIDES_OT_variants, context: Context, event: Event) -> N
     op.modal(context, event, 1, 2)
 
 
-def ui(menu: INH_OVERRIDES_MT_menu, ui_list: INH_OVERRIDES_UL_short, context: Context, layout: UILayout) -> None:
+def ui(menu: INH_OVERRIDES_MT_menu, ui_list: INH_OVERRIDES_UL_short, context: Context, layout: UILayout,
+       data: Any) -> None:
     assert_type(menu.draw(context), None)
-    ui_list.draw_item(context, layout, None, None, 0, None)
+    ui_list.draw_item(context, layout, data, None, 0, None)
 
 
 def node(node: INH_OVERRIDES_Node, context: Context, layout: UILayout) -> None:
@@ -51,3 +52,37 @@ class CheckLayoutPanel(Panel):  # ty: ignore[blender-unregistered-class]
         assert_type(layout, UILayout)  # oracle-skip: a class defined in the check file
         for other in OTHER_PANELS:
             assert_type(other.layout, UILayout | None)  # bare-ok: another panel is not being drawn, so its layout may be None
+
+    def draw_settings(self, context: Context) -> None:  # a helper the panel's draw calls on itself
+        assert_type(self.layout, UILayout)  # oracle-skip: a class defined in the check file
+
+
+class INH_OVERRIDES_MT_check_layout(Menu):  # ty: ignore[blender-unregistered-class]
+    bl_label = "Check layout"
+
+    def draw(self, context):
+        self.draw_items()
+
+    def draw_items(self) -> None:
+        assert_type(self.layout, UILayout)  # oracle-skip: a class defined in the check file
+
+
+class INH_OVERRIDES_HT_check_layout(Header):  # ty: ignore[blender-unregistered-class]
+    bl_space_type = "VIEW_3D"
+
+    def draw(self, context):
+        self._draw_mode()
+
+    def _draw_mode(self) -> None:
+        assert_type(self.layout, UILayout)  # oracle-skip: a class defined in the check file
+
+
+class INH_OVERRIDES_OT_check_layout(Operator):  # ty: ignore[blender-unregistered-class]
+    bl_idname = "inh_overrides.check_layout"
+    bl_label = "Check layout"
+
+    def draw(self, context):
+        self._draw_config()
+
+    def _draw_config(self) -> None:
+        assert_type(self.layout, UILayout | None)  # bare-ok: an Operator's helper may run outside draw, where its layout is None

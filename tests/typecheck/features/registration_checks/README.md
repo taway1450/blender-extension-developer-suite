@@ -6,12 +6,13 @@ visible in another.
 | Addon | Rule | Variant |
 | --- | --- | --- |
 | `regchk_unregistered` | `blender-unregistered-class` | operators, panels, menus, UI lists, PropertyGroups and preferences never registered, also in imported and in orphan modules; base classes and mixins are not reported |
-| `regchk_unreachable` | `blender-unreachable-registration` | functions that register classes but that `register()` never calls; a function `register()` hands to a timer is reachable. A class registered only by such a function gets no `blender-unregistered-class`: one diagnostic per mistake |
+| `regchk_unreachable` | `blender-unreachable-registration` | functions that register classes but that `register()` never calls; a function `register()` hands to a timer is reachable (its operator's use is reported, `blender-assumed-registration`). A class registered only by such a function gets no `blender-unregistered-class`: one diagnostic per mistake |
 | `regchk_order` | `blender-register-order` | pointers and collections to a PropertyGroup registered later, the same on a Blender class, a subpanel before its parent (fails to load) |
 | `regchk_duplicate` | `blender-duplicate-registration` | a class registered twice (explicit, loop, twice in a sequence); two classes with one `bl_idname` (fails to load) |
 | `regchk_paths` | | registration that is valid on every path: a branch that returns, a list rebound in a branch, a tuple concatenated onto itself, a helper calling itself with other keywords; nothing is reported |
 | `regchk_main_guard` | | Blender's bundled add-ons' shape: a reload guard, a registration loop and `if __name__ == "__main__": register()`, which never runs in an add-on; nothing is reported |
 | `regchk_idname` | `blender-invalid-idname` | operator idnames Blender refuses, a missing `bl_idname`; panel / menu idnames without `_PT_` / `_MT_` (fails to load) |
+| `regchk_type_bases` | | a Menu without `bl_idname` that is only the base of menus made with `type(name, (Base,), namespace)`: a base, neither checked nor unregistered |
 | `regchk_unregister_leak` | `blender-unregister-mismatch` | classes, properties, handlers and menu functions that `unregister()` leaves behind |
 | `regchk_unregister_unknown` | `blender-unregister-mismatch` | `unregister_class` for a class that was not registered (fails in unregister) |
 | `regchk_isolation_a`, `_b` | `unresolved-attribute` | each sees only its own operators and properties; only A calls the shared library's `register_tool()` |

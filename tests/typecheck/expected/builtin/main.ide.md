@@ -56,6 +56,22 @@ bpy_prop_array[float]
 PASS
 ````
 
+## features/assumptions/asm_context_member/ide_asm_context_member.py | ^hover @17 | bpy.context.scene
+
+````text
+```python
+Scene
+```
+````
+
+## features/assumptions/asm_list_item/ide_asm_list_item.py | ^hover @13 | item
+
+````text
+```python
+bpy_struct
+```
+````
+
 ## features/bpy_symbols/sym_bpy_extras/ide_sym_bpy_extras.py | ^hover-contains "-Z" @9 | imp.axis_up
 
 ````text
@@ -69,6 +85,44 @@ PASS
   documentation: (none)
 - axis_up: detail: Literal["X", "Y", "Z", "-X", "-Y", "-Z"]
   documentation: (none)
+````
+
+## features/implied_narrowings/nar_menu_prefix/ide_nar_menu_prefix.py | ^hover-contains "SpaceClipEditor" @17 | context.space_data
+
+````text
+PASS
+````
+
+## features/implied_narrowings/nar_poll/ide_nar_poll.py | ^hover @17 | context.object
+
+````text
+```python
+Object
+```
+````
+
+## features/implied_narrowings/nar_poll/ide_nar_poll.py | ^hover-contains "SpaceNodeEditor" @17 | context.space_data
+
+````text
+PASS
+````
+
+## features/implied_narrowings/nar_popover/ide_nar_popover.py | ^hover-contains "SpaceView3D" @17 | context.space_data
+
+````text
+PASS
+````
+
+## features/imprecise_annotations/imp_callback_parameter/ide_imp_callback_parameter.py | ^hover-contains "Armature" @9 | data.name
+
+````text
+PASS
+````
+
+## features/imprecise_annotations/imp_operator_return/ide_imp_operator_return.py | ^hover-contains "set[Literal[" @8 | op.execute(context)
+
+````text
+PASS
 ````
 
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "Context" @11 | ctx

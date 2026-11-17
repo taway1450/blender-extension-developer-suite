@@ -1,0 +1,13 @@
+# The `[[overrides]]` entry of this add-on in tests/typecheck/ty.toml sets explicit levels, which win over every
+# `[blender] strictness` preset (spec #95). A rule not listed must report nothing.
+[lenient]
+blender-narrowed-by-poll = "error"
+blender-narrowed-by-menu-prefix = "ignore"
+
+[default]
+blender-narrowed-by-poll = "error"
+blender-narrowed-by-menu-prefix = "ignore"
+
+[strict]
+blender-narrowed-by-poll = "error"
+blender-narrowed-by-menu-prefix = "ignore"

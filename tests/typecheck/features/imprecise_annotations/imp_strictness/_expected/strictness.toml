@@ -1,0 +1,16 @@
+# The level of each rule reported in this add-on under each `[blender] strictness` preset (spec #95), checked by
+# check:features with the add-on's `blender-*` markers removed. A rule not listed must report nothing.
+[lenient]
+blender-imprecise-operator-return = "ignore"
+blender-imprecise-enum-value = "ignore"
+blender-imprecise-callback-parameter = "ignore"
+
+[default]
+blender-imprecise-operator-return = "warn"
+blender-imprecise-enum-value = "warn"
+blender-imprecise-callback-parameter = "warn"
+
+[strict]
+blender-imprecise-operator-return = "error"
+blender-imprecise-enum-value = "error"
+blender-imprecise-callback-parameter = "error"

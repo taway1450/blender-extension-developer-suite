@@ -18,6 +18,18 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   `iterator` / `generate` and `RenderEngine.draw` / `view_update` / `view_pause` / `view_resume`: the C caller
   passes the live `bContext`. `RenderEngine.view_draw` gets None when a viewport is drawn off-screen (Viewport
   Render, `GPUOffScreen.draw_view3d`), so it stays `Context | None`.
+- **The context's preferences and window manager are never None:** `Context.preferences` is the global `U` and
+  `Context.window_manager` the window manager, which exists whenever Python runs. Blender's fork flags both
+  `PROP_NEVER_NULL` (both are read-only). `Context.blend_data` is left as it is.
+- **Blender always fills some other callback parameters:** `UIList.draw_item` / `filter_items`' `data` (the struct
+  holding the collection), `KeyingSetInfo.iterator` / `generate`'s `ks` (`validate_keyingset` returns early without
+  a keying set), `AssetShelf.asset_poll` / `draw_context_menu`'s `asset` and `draw_context_menu`'s `layout`, and
+  the `depsgraph` of `RenderEngine.update` / `render` / `bake` / `view_update` / `view_draw`. Blender's fork flags
+  them `PROP_NEVER_NULL`; `RenderEngine.update` also takes its `data` and `depsgraph` positionally, as Blender calls
+  it. `UIList.draw_item`'s `item` (an empty slot of an ID-pointer array is None) and `active_data` stay `| None` in
+  the stubs (the checker takes an unannotated `item` as not None, an Assumption: features/assumptions), and
+  so does `ObjectModifiers.new()`'s result: a modifier that cannot be added (a second one of a unique type, an object
+  type without modifiers) is only a warning report, so it returns None instead of raising.
 - **A struct is refined to the subclass its Type tag names** (`rna_Modifier_refine`, `rna_Space_refine`, ... in C,
   which introspection cannot read): a modifier of type `'SUBSURF'` is a `SubsurfModifier`, a space of type
   `'VIEW_3D'` a `SpaceView3D`. Blender's fork probes them when it writes the API docs (`sphinx_doc_gen_type_tags.py`
@@ -45,6 +57,24 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
     are frozensets and `imbuf.file_types` is a read-only dictionary;
   - `Operator.description` may return None (its `result` string is not never-None), and Blender then shows the
     operator's own description. There is no probe: Blender calls it only for a tooltip.
+- **Stub-generator gaps** (Blender's fork fixes them in `sphinx_stub_gen.py` / `sphinx_doc_gen.py` and the docstrings):
+  - `BMElemSeq` is one C type for every element link (`BMFace.loops`, `BMVert.link_faces`, `BMLoop.link_loops`,
+    ...), each attribute holding one element type: it is generic and the attributes say which
+    (`loops: BMElemSeq[BMLoop]`), so `face.loops[0].vert` is a `BMVert`;
+  - a `bpy.data` collection looks an item up by a `(name, library_filepath)` key too, the library None for local data
+    (`bpy.data.objects[name, None]`);
+  - Blender's UI sets context store members that RNA does not list (`context.constraint`, `keymap`, `animated_id`,
+    `freestyle_module`, `tool`, `asset_shelf`): each is `X | None`, set only inside the layouts that store it;
+  - `bpy.data.libraries.load()` and `bpy.data.temp_data()` return context managers (the input and output libraries,
+    a temporary `BlendData`);
+  - Freestyle calls an overridable `__call__` (predicates), `traverse` and `shade` with positional arguments, and
+    Blender a render engine's `update_script_node` / `update_render_passes` / `update_custom_camera` with all their
+    arguments positionally: the parameters are positional-only or required, so an override may rename them or drop
+    their defaults (Freestyle's `UnaryFunction*D` document no `__call__`, so there is nothing to override);
+  - a dynamic enum whose items come from a callback (`NodeTreeInterface.new_socket(socket_type=...)`,
+    `GREASE_PENCIL_OT_set_material.slot`) lists only the `'DEFAULT'` placeholder, so it is a `str`;
+  - `bpy.utils.keyconfig_set` returns whether it loaded the key configuration, and `Gizmo.target_set_value` takes a
+    documented `value`.
 - **A math or array property takes any sequence** of the right length (`pyrna_py_to_array`): `ob.location = (1, 1,
   1)`, `ob.matrix_world = rows`, `ob.lock_location = (True, False, True)`, and an array's slice any iterable of its
   elements (`image.pixels[:] = buffer`). Reading it still gives the `Vector` / `Color` / `Euler` / `Quaternion` /
@@ -60,14 +90,16 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 
 | Addon | Variant |
 | --- | --- |
-| `api_never_none` | embedded and DNA pointers; unannotated callback overrides of `Menu`, `Header`, `UIList` and `RenderEngine`, and their callers |
+| `api_never_none` | embedded and DNA pointers, the context's preferences and window manager; unannotated callback overrides of `Menu`, `Header`, `UIList`, `RenderEngine`, `KeyingSetInfo` and `AssetShelf`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form), the tag views of `Object` and `FluidModifier` (sibling form), action strips |
-| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None |
+| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value` |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
 | `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |
 
 Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the declared
 tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views and the C modules (named
-exceptions in spec #75). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
+exceptions in spec #75). fake-bpy-module also misses the stub-generator gaps it does not read from the docstrings
+(`BMElemSeq` attributes, the `(name, None)` key, the two context managers, the positional Freestyle methods; named
+exceptions in spec #95). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
 `description`) need the checker's inheritance typing.
