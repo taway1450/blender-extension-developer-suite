@@ -3,9 +3,9 @@ cause                           group                 slice    shipped   presets
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
 undefined-name                  blender-fix           BF1            4         0         0         0        38        42
-missing-argument                blender-fix           BF1            0         0         0         0         2         2
+missing-argument                blender-fix           BF1          182         0         0         0         2       184
 rigify-get-bone                 blender-fix           BF2            0         0         0         0         0         0
-tooldef                         blender-fix           BF2          191         0         0         0         0       191
+tooldef                         blender-fix           BF2          182         0         0         0         0       182
 none-for-non-optional           blender-fix           BF2           32         0         0         0         1        33
 wrong-annotation                blender-fix           BF2            0         0         0         0         0         0
 operator-return-misuse          blender-fix           BF1            0         0         0         0         0         0
@@ -25,9 +25,9 @@ narrowed-by-popover             implied-narrowing     S5            30         0
 narrowed-by-poll                implied-narrowing     S5           797         0         2         6         0       805
 narrowed-by-poll-helper         implied-narrowing     -            133         0         0         0         0       133
 narrowed-by-parent-panel        implied-narrowing     -             38         0         0         0         0        38
-narrowed-by-poll-alias          implied-narrowing     -             20         0         0         0         0        20
+narrowed-by-poll-alias          implied-narrowing     -             22         0         0         0         0        22
 narrowed-by-mode                implied-narrowing     -              7         0         0         0         0         7
-narrowed-by-poll-in-caller      implied-narrowing     -             22         0         0         0         0        22
+narrowed-by-poll-in-caller      implied-narrowing     -             24         0         0         0         0        24
 area-type-active-space          implied-narrowing     -              7         0         0         0        11        18
 temp-override-member            implied-narrowing     -              1         0         0         0        10        11
 imprecise-operator-return       imprecise-annotation  S4             0         0         0         0         0         0
@@ -62,43 +62,43 @@ layout-in-operator-helper       typing-debt           -             36         0
 cross-file-registered-property  typing-debt           -             13        12         0         0        12        37
 mixin-self                      typing-debt           -            495         0         3         0       200       698
 type-enum-sub-pointer           typing-debt           -            532        63         3         0       144       742
-python-optional                 typing-debt           -            220         0         7         3       100       330
+python-optional                 typing-debt           -            224         0         7         3       101       335
 preset-context-member           typing-debt           -              0       350         0         0         0       350
 ui-draw-pointer                 typing-debt           -            531         0         6         2         0       539
 object-data-untagged            typing-debt           -             25         0         0         0        14        39
 editor-context-member           typing-debt           -             43         0         0        15         0        58
 script-context-member           typing-debt           -              0         0        48         3         0        51
-base-class-subtype              typing-debt           -            250         0         7        11       251       519
+base-class-subtype              typing-debt           -            251         0         7        11       251       520
 set-by-ui-button                typing-debt           -             11         0         0         0         0        11
 window-context-in-execute       typing-debt           -             25         0         0         0        34        59
-set-by-preceding-call           typing-debt           -             19         0         1         5       198       223
+set-by-preceding-call           typing-debt           -             24         0         1         5       198       228
 rarely-none-member              typing-debt           -             13         0         0         0         6        19
 correlated-condition            typing-debt           -             19         0         0         0         0        19
-none-excluded-by-arguments      typing-debt           -             93         0         3         0       108       204
+none-excluded-by-arguments      typing-debt           -             95         0         3         0       108       206
 operator-without-poll           typing-debt           -              7         0         0         0         0         7
 operator-call                   typing-debt           -              8         0        11         7        43        69
 unresolved-import               typing-debt           -            118         0         6         0       100       224
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
-untyped-python                  typing-debt           -           1052         0         1         0         0      1053
+untyped-python                  typing-debt           -           1051         0         1         0         0      1052
 private-member                  typing-debt           -             23         0         0         0        13        36
 build-option-gap                typing-debt           -              6        65         0         0         0        71
-general-typing                  typing-debt           -            530         8        11         4       317       870
+general-typing                  typing-debt           -            539         8        11         4       317       879
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
-unchecked-pointer               unsorted              -             57         0         0         0       713       770
+unchecked-pointer               unsorted              -             44         0         0         0       713       757
 stub-gap                        unsorted              -            160         0         4        10       274       448
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -            199         0        11         9       366       585
+unsorted                        unsorted              -            193         0        11         9       365       578
 
 group                                                          shipped   presets  examples templates     other     total
-blender-fix                                                        247         0         0         0        43       290
+blender-fix                                                        420         0         0         0        43       463
 assumption                                                         325       275        25         4       483      1112
-implied-narrowing                                                 1142         0         2         6        21      1171
+implied-narrowing                                                 1146         0         2         6        21      1175
 imprecise-annotation                                                 3         0         0         0         5         8
 typechecker-fix                                                    228         0        37         1        77       343
-typing-debt                                                       4290       498       127        50      1901      6866
-unsorted                                                           416         0        15        19      1367      1817
-errors                                                            5367       498       182        70      3342      9459
+typing-debt                                                       4310       498       127        50      1902      6887
+unsorted                                                           397         0        15        19      1366      1797
+errors                                                            5545       498       182        70      3342      9637
 warnings                                                          1284       275        24        10       555      2148
 
 rule                                       error warning
@@ -120,7 +120,7 @@ deprecated                                     0      15
 empty-body                                    32       0
 import-not-found                             220       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1424       0
+invalid-argument-type                       1606       0
 invalid-assignment                           772       0
 invalid-attribute-override                    71       0
 invalid-base                                   2       0
@@ -135,7 +135,7 @@ invalid-return-type                           40       0
 invalid-super-argument                         1       0
 invalid-type-form                              7       0
 mismatched-type-name                           0       1
-missing-argument                               7       0
+missing-argument                             189       0
 no-matching-overload                          39       0
 not-iterable                                 127       0
 not-subscriptable                            166       0
@@ -143,7 +143,7 @@ possibly-missing-submodule                     0       4
 redundant-condition                            0      65
 too-many-positional-arguments                 41       0
 unknown-argument                             348       0
-unresolved-attribute                        5664       0
+unresolved-attribute                        5478       0
 unresolved-global                              0      37
 unresolved-reference                          65       0
 unsupported-operator                          93       0

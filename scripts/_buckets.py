@@ -178,15 +178,16 @@ UNCHECKED_POINTER_BUGS = [
 ]  # fmt: skip
 # The sites whose cause is a fact about their callers or a related check, which no pattern on the line shows
 # (docs/reports/spec-95-site-decisions.md): (path, enclosing class or "", enclosing function or "", text on the line).
-# A helper or callback reached only after the poll of the operator or panel that runs it checked the pointer.
+# A helper or callback reached only after the poll of the operator or panel that runs it checked the pointer, or a
+# callback of an operator mixin whose own poll checks it (ty takes a poll as narrowing only on an Operator).
 NARROWED_IN_CALLER_SITES = [
-    ("scripts/addons_core/pose_library/operators.py", "PoseAssetUser", "_load_and_use_pose", ""),
+    ("scripts/addons_core/pose_library/operators.py", "PoseAssetUser", "", ""),
     ("scripts/addons_core/pose_library/operators.py", "POSELIB_OT_restore_previous_action", "modal", ""),
     ("scripts/addons_core/pose_library/pose_creation.py", "", "create_pose_asset_from_context", ""),
     ("scripts/addons_core/rigify/generate.py", "Generator", "__duplicate_rig", ""),
     ("scripts/startup/bl_operators/copy_global_transform.py", "", "_selected_keyframes", ""),
     ("scripts/startup/bl_operators/copy_global_transform.py", "", "get_matrix", "context.active_object"),
-    ("scripts/startup/bl_operators/copy_global_transform.py", "", "set_matrix", "context.active_object.matrix_world"),
+    ("scripts/startup/bl_operators/copy_global_transform.py", "", "set_matrix", "context.active_object"),
     ("scripts/startup/bl_operators/copy_global_transform.py", "OBJECT_OT_fix_to_camera", "_execute", ""),
     ("scripts/startup/bl_operators/uvcalc_lightmap.py", "LightMapPack", "draw", ""),
     ("scripts/startup/bl_ui/space_project.py", "PROJECT_PT_color_management", "draw_centered", ""),
@@ -297,10 +298,11 @@ DEPSGRAPH_MEMBER = re.compile(r"\b(?:dup|inst|instance|object_instance|update)\.
 # Functions that return None only for arguments or states the caller rules out (`bpy.data.<collection>.new()` with
 # a valid type, `animation_data_create()`, `load_image()` after an `isfile` check, `begin_result()`, `to_mesh()`).
 NONE_ON_FAILURE = re.compile(
-    r"\bbpy\.data\.\w+\.new\(|\.(?:uv_layers|asset_libraries)\.new\(|animation_data_create\(\)|\bload_image\("
+    r"\bbpy\.data\.\w+\.new\(|\b(?:uv_layers|asset_libraries)\.new\(|animation_data_create\(\)|\bload_image\("
     r"|\bbegin_result\(|\.to_mesh\(|\bid_properties_ui\("
 )
 # Calls that make a context member or a pointer exist for the lines after them.
+CREATING_CALL = re.compile(r"\bbpy\.ops\.\w+\.(?:open|new|\w+_add)\(")
 SETTING_CALL = re.compile(r"\bbpy\.ops\.\w+\.\w+\(|animation_data_create\(\)|\bgenerate_rig\(|nodes\.active = ")
 SET_BY_UI_BUTTON_TYPE = re.compile(r"`(?:KeyMap|KeyMapItem|FreestyleModuleSettings) \| None`")
 CONTEXT_COLLECTION_TYPE = re.compile(r"`(?:Window|Screen|Collection|LayerCollection|Space|WorkSpace) \| None`")
@@ -336,7 +338,7 @@ GENERAL_TYPING = re.compile(
     r"|Expected `Literal\[[^`]*\]( \| [^`]*)?`, found `(?:Unknown \| )?str`|Invalid subscript assignment with key of type `(?:Unknown|int|Literal\[\"\w+\"\])`"
     r"|`EllipsisType|`type\.__new__`|`\w+\.__init__` is incorrect: Expected `Sequence\[\(\) ->|`\(\) -> None` has no"
     r"|`int \| NodeSocket|between objects of type `(?:NodeSocket|Literal\[\"#\"\])`|^Invalid subscript assignment"
-    r"|cannot be called with key of type `(?:list\[str\]|NodeSocket|None` on object of type `bpy_prop_collection)`"
+    r"|cannot be called with key of type `(?:list\[str\]|NodeSocket|None` on object of type `bpy_prop_collection(?:\[\w+\])?)`"
     r"|found `_version_info`|\) \| list\[str\]"
     r"|& ~AlwaysTruthy\)|^Object of type `def |^Object of type `None` is not assignable to `\(|object of type `None`$"
     r"|`float\*`|No overload of function `dirname`|on type `<module '|Argument to function `(?P<cls>\w+)\.\w+` is "
@@ -382,6 +384,15 @@ def union_members(type_: str) -> list[str]:
             members.append(current[:-3])
             current = ""
     return [*members, current]
+
+
+def base_class_target(type_: str) -> bool:
+    """Whether ``type_`` (as ty prints it, in backticks) is a base class, alone or in a union with ``Unknown``
+    (``(Node & ~AlwaysFalsy) | (Unknown & ~AlwaysFalsy)``)."""
+    if BASE_CLASS.search(type_):
+        return True
+    members = [m for m in union_members(type_.strip("`")) if not re.match(r"\(?Unknown\b", m)]
+    return bool(members) and all(BASE_CLASS.fullmatch(f"`{m}`") for m in members)
 
 
 def python_optional(d: Diagnostic) -> bool:
@@ -453,6 +464,9 @@ def in_presets(d: Diagnostic) -> bool:
 
 def in_tests(d: Diagnostic) -> bool:
     return d.path.replace("\\", "/").startswith("tests/")
+
+
+NONE_KEY = "with key of type `None`"
 
 
 def nullable(d: Diagnostic) -> bool:
@@ -561,12 +575,19 @@ def assignments(d: Diagnostic, name: str) -> list[str]:
     return [m[1] for line in reversed(d.scope.source.splitlines()[:-1]) if (m := pattern.match(line))]
 
 
-def reads_from(d: Diagnostic, pattern: re.Pattern[str] | str) -> bool:
+def reads_from(d: Diagnostic, pattern: re.Pattern[str] | str, hops: int = 1) -> bool:
     """Whether the diagnostic's line, or the last assignment in its function of a name it is about, matches
-    ``pattern`` (``tree = bpy.data.node_groups.new(...)`` for ``tree.nodes``)."""
+    ``pattern`` (``tree = bpy.data.node_groups.new(...)`` for ``tree.nodes``). With ``hops`` above 1 it follows
+    that many assignments of a plain name (``last = obj_act``, then ``obj_act = context.active_object``)."""
     if re.search(pattern, d.text):
         return True
-    return any((rhs := assignments(d, name)) and re.search(pattern, rhs[0]) for name in read_names(d))
+    names = read_names(d)
+    for _ in range(hops):
+        sources = [rhs[0].strip() for name in names if (rhs := assignments(d, name))]
+        if any(re.search(pattern, rhs) for rhs in sources):
+            return True
+        names = {rhs for rhs in sources if re.fullmatch(r"[A-Za-z_]\w*", rhs)}
+    return False
 
 
 def initialised_to_none(d: Diagnostic) -> bool:
@@ -596,7 +617,7 @@ def poll_checks_elsewhere(d: Diagnostic) -> bool:
 
 def poll_checks_alias(d: Diagnostic) -> bool:
     """A nullable read of a context member the class's poll checks through another expression: ``getattr(context,
-    "member", None)``, ``(ob := context.member)``, ``bpy.context.member``, or (in the poll) a local alias."""
+    "member", None)``, ``(ob := context.member)``, ``bpy.context.member``, or a local alias (``obj = context.object``, tested in the poll)."""
     if not nullable(d) or d.scope.function not in {"execute", "invoke", "poll"}:
         return False
     members = re.findall(
@@ -604,6 +625,18 @@ def poll_checks_alias(d: Diagnostic) -> bool:
     )
     if d.scope.function == "poll":
         members += re.findall(r"^\s+\w+ = ()context\.(\w+)()", d.scope.poll, re.MULTILINE)
+    else:
+        # `obj = context.object` then `return obj and ...`: the poll tests the member through its alias. Only a
+        # read of the member itself counts (not `context.space_data.edit_tree` after a test of `space_data`).
+        tested = {
+            member
+            for alias, member in re.findall(r"^\s+(\w+) = context\.(\w+)\s*$", d.scope.poll, re.MULTILINE)
+            if re.search(rf"\breturn \(?{alias} and\b|\b{alias} is not None\b", d.scope.poll)
+        }
+        if tested & {"object", "active_object"}:
+            tested |= {"object", "active_object"}
+        if any(reads_from(d, rf"\bcontext\.{m}\b(?![.\w])", hops=2) for m in tested):
+            return True
     names = {m for groups in members for m in groups if m}
     if names & {"object", "active_object"}:
         names |= {"object", "active_object"}
@@ -690,7 +723,21 @@ def set_by_preceding_call(d: Diagnostic) -> bool:
     calls = [i for i, line in enumerate(earlier) if SETTING_CALL.search(line)]
     if not calls:
         return False
-    if re.search(r"\bcontext\.\w+", d.text) and len(earlier) - calls[-1] <= 4:
+    if re.search(r"\bcontext\.\w+", d.text):
+        # Counted from the end of a call that creates what the context then points at (`bpy.ops.image.open(...)`
+        # over several lines), else from the line the call starts on.
+        last = calls[-1]
+        if CREATING_CALL.search(earlier[last]):
+            last = call_end(earlier, last)
+        if len(earlier) - last <= 4:
+            return True
+    # `if not scene.animation_data: scene.animation_data_create()`, then `scene.animation_data.action`.
+    source = "\n".join(earlier)
+    if any(
+        re.search(rf"\b{name}\.animation_data\b", d.text)
+        and re.search(rf"if not {name}\.animation_data:\s*{name}\.animation_data_create\(\)", source)
+        for name in read_names(d)
+    ):
         return True
     pointer = re.compile(r"\bcontext\.\w+|nodes\.active\b|\bget_rigify_target_rig\(")
     for name in read_names(d):
@@ -700,6 +747,16 @@ def set_by_preceding_call(d: Diagnostic) -> bool:
                     return True
                 break
     return False
+
+
+def call_end(lines: list[str], start: int) -> int:
+    """The index of the line that closes the call opened on ``lines[start]`` (the call can span several lines)."""
+    depth = 0
+    for i in range(start, len(lines)):
+        depth += lines[i].count("(") - lines[i].count(")")
+        if depth <= 0:
+            return i
+    return start
 
 
 def rarely_none_member(d: Diagnostic) -> bool:
@@ -817,7 +874,7 @@ CAUSES = [
         SETTINGS_POINTER.search(d.msg) is not None or SUB_POINTER.search(d.msg) is not None
         or "`Driver | None`" in d.msg or ("NodeTree | None" in d.msg and reads_from(d, r"\.node_tree\b")))),
     # A plain Python Optional: no Blender type, a stdlib or Python class, or a local initialised to None.
-    Cause("python-optional", "typing-debt", "", lambda d: nullable(d) and (
+    Cause("python-optional", "typing-debt", "", lambda d: (nullable(d) or (NONE_KEY in d.msg and not poll_checks_elsewhere(d))) and (
         python_optional(d) or PYTHON_OPTIONAL_TYPE.search(d.msg) is not None
         or (initialised_to_none(d) and not untyped_python(d)))),
     # A preset's module-level reads of the context members of the panel that runs it (`bpy.context.cloth`,
@@ -841,7 +898,7 @@ CAUSES = [
     Cause("rna-never-none", "typechecker-fix", "S1", rna_never_none),
     Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule == "unresolved-attribute"
           and BASE_CLASS.search(d.msg) is not None) or (d.rule == "invalid-assignment"
-          and BASE_CLASS.search(d.msg.partition(" on type ")[2]) is not None)
+          and base_class_target(d.msg.partition(" on type ")[2]))
           or "Object of type `Node | None` has no attribute" in d.msg or "found `list[tuple[ID," in d.msg),
     Cause("bl-context-implies-member", "assumption", "", bl_context_member),
     Cause("set-by-ui-button", "typing-debt", "", lambda d: "`KeyMapItem | None`" in d.msg
@@ -874,7 +931,9 @@ CAUSES = [
         OTHER_CONTEXT_TYPE.search(d.msg) is not None
         or (nullable(d) and re.search(CONTEXT + r"\w+", d.text) is not None and not d.scope.function))),
     # Untyped packages (rigify, glTF) keep their internal Optionals: they go to `untyped-python` below.
-    Cause("unchecked-pointer", "unsorted", "", lambda d: nullable(d) and not untyped_python(d)),
+    # A heterogeneous list read as a record (`[index, socket]`) names None among its items: general typing below.
+    Cause("unchecked-pointer", "unsorted", "", lambda d: nullable(d) and not untyped_python(d)
+          and GENERAL_TYPING.search(d.msg) is None),
     # The rest, by rule.
     Cause("operator-call", "typing-debt", "", lambda d: "bpy.ops." in d.text or "OperatorProperties" in d.msg
           or "`<module 'bpy.ops'>` is not callable" in d.msg

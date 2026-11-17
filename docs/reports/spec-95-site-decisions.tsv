@@ -327,7 +327,7 @@ scripts/addons_core/pose_library/operators.py:104	cause	narrowed-by-poll-bool-wr
 scripts/addons_core/pose_library/operators.py:117	cause	narrowed-by-poll-bool-wrapper	narrowed-by-poll-helper	implied-narrowing	poll returns bool(a and b and ...); the rule doesn't unwrap bool()	
 scripts/addons_core/pose_library/operators.py:168	cause	helper-checks-none	helper-checks-none	typing-debt	a helper without TypeGuard tests for None	
 scripts/addons_core/pose_library/operators.py:172	cause	helper-checks-none	helper-checks-none	typing-debt	a helper without TypeGuard tests for None	
-scripts/addons_core/pose_library/operators.py:229	cause	narrowed-by-poll-helper	narrowed-by-poll-helper	implied-narrowing	poll checks the pointer inside a helper	
+scripts/addons_core/pose_library/operators.py:229	cause	narrowed-by-poll-in-mixin	narrowed-by-poll-in-caller	implied-narrowing	callback of an operator mixin whose own poll checks context.asset (ty applies a poll only on an Operator)	
 scripts/addons_core/pose_library/operators.py:240	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
 scripts/addons_core/pose_library/operators.py:247	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	
 scripts/addons_core/pose_library/operators.py:250	cause	narrowed-by-poll-in-caller	narrowed-by-poll-in-caller	implied-narrowing	helper	

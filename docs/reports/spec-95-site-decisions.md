@@ -72,14 +72,28 @@ These counts are for `check:blender main` at `9a7af0b8477`, in shipped scripts, 
 With the builtin stubs:
 
 - Before: 1068 unsorted. After: 21 (20 shipped, 1 example, 0 templates).
-- Two of the 21 are `sort_items_helper` calls. They go away once the `main` binary includes `9a7af0b8477`, because the builtin stubs are built from the binary's own `bl_ui`.
-- The other 19 are single sites the patterns do not cover:
-  - `image.py` and `sequencer.py` read a pointer set by an earlier operator call
-  - `image_as_planes.py` uses an `Optional` index
-  - aliases in `rigidbody.py`
-  - Node Wrangler `swap_links`
+- Two of the 21 were `sort_items_helper` calls. They went away once the `main` binary was rebuilt from
+  `9a7af0b8477`, because the builtin stubs are built from the binary's own `bl_ui`.
+- The other 19 already had a decision in the TSV that the predicates missed. None is a bug. A second round widened
+  the existing causes, adding no new cause:
+  - `none-excluded-by-arguments` (2, `bl_pkg` asset library): `asset_libraries.new()` called on a local name.
+  - `set-by-preceding-call` (4): `context.edit_image` after a `bpy.ops.image.open()` that spans several lines (the
+    window is counted from the end of a call that creates something), and the `if not x.animation_data:
+    x.animation_data_create()` idiom in `sequencer.py`.
+  - `narrowed-by-poll-alias` (2, `rigidbody.py`): the poll tests `obj = context.object`. `execute` reads
+    `context.active_object`, through one more local alias.
+  - `narrowed-by-poll-in-caller` (2): the `PoseAssetUser` mixin, whose own poll checks `context.asset` (ty applies a
+    poll only on an Operator; it was `narrowed-by-poll-helper` in the TSV), and `set_matrix` in
+    `copy_global_transform.py`, whose site entry now covers every read of `context.active_object`.
+  - `general-typing` (4): heterogeneous lists used as records (`swap_links`, `add_principled_setup`), and a
+    `None` class attribute used as a key in `properties_paint_common.py` (`bpy_prop_collection[Property]` now
+    carries its item type).
+  - `python-optional` (4, `image_as_planes.py`): an index initialised to `None` and used as a key.
+  - `base-class-subtype` (1, `node.py`): a viewer node's `ui_shortcut` on `Node | Unknown`.
+
+After the second round, with the builtin stubs: 0 unsorted in shipped scripts, presets, examples and templates.
 
 With the fake-bpy-module stubs:
 
-- Before: 1666 unsorted. After: 450.
+- Before: 1666 unsorted. After: 450. After the second round: 431 (397 shipped, 15 examples, 19 templates).
 - Most of what remains is gaps in fake-bpy-module's stubs, which these sites were not sorted for.

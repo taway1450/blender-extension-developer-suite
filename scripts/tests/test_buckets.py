@@ -1290,6 +1290,151 @@ POLLED_PANEL = {**PANEL, "has_poll": True}
         pytest.param(
             diagnostic(
                 "unresolved-attribute",
+                "Attribute `enabled` is not defined on `None` in union `UserAssetLibrary | Unknown | None`",
+                "if lib.enabled != enable:",
+                path="scripts/addons_core/bl_pkg/bl_extension_ops.py",
+                function="extension_asset_library_ensure",
+                source="    asset_libraries = bpy.context.preferences.filepaths.asset_libraries\n"
+                "    lib = asset_libraries.new(name=name, remote_url=remote_url, extension_id=extension_id)\n"
+                "    if lib.enabled != enable:",
+            ),
+            "none-excluded-by-arguments",
+            id="none-excluded-by-arguments-local-collection",
+        ),
+        # Sorted site by site (docs/reports/spec-95-site-decisions.md), second round.
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `source` is not defined on `None` in union `Image | None`",
+                "is_tiled = context.edit_image.source == 'TILED'",
+                path="scripts/startup/bl_operators/image.py",
+                cls="IMAGE_OT_open_images",
+                function="execute",
+                source="            bpy.ops.image.open(\n                filepath=filepath,\n                directory=self.directory,\n"
+                "                files=files,\n                use_sequence_detection=self.use_sequence_detection,\n"
+                "                relative_path=self.relative_path,\n            )\n"
+                "            is_tiled = context.edit_image.source == 'TILED'",
+            ),
+            "set-by-preceding-call",
+            id="set-by-preceding-call-multiline-call",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `action` is not defined on `None` in union `AnimData | None`",
+                "if not scene.animation_data.action:",
+                path="scripts/startup/bl_operators/sequencer.py",
+                cls="SequencerFadesAdd",
+                function="execute",
+                source="        scene = context.sequencer_scene\n        if not scene.animation_data:\n"
+                "            scene.animation_data_create()\n        if not scene.animation_data.action:",
+            ),
+            "set-by-preceding-call",
+            id="set-by-preceding-call-ensure-idiom",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `location` is not defined on `None` in union `Object | None`",
+                "objects_tmp.sort(key=lambda o: (last_obj.location - o.location).length)",
+                path="scripts/startup/bl_operators/rigidbody.py",
+                cls="ConnectRigidBodies",
+                bases="Operator",
+                function="execute",
+                has_poll=True,
+                poll="        obj = context.object\n        return (obj and obj.rigid_body)",
+                source="        obj_act = context.active_object\n        last_obj = obj_act\n"
+                "        objects_tmp.sort(key=lambda o: (last_obj.location - o.location).length)",
+            ),
+            "narrowed-by-poll-alias",
+            id="narrowed-by-poll-alias-local-alias",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
+                "Attribute `nodes` is not defined on `None` in union `NodeTree | None`",
+                "nodes = context.space_data.edit_tree.nodes",
+                path="scripts/startup/bl_operators/node.py",
+                cls="NODE_OT_viewer_shortcut_get",
+                bases="Operator",
+                function="execute",
+                has_poll=True,
+                poll="        space = context.space_data\n        return (\n            (space is not None) and\n"
+                "            space.node_tree is not None\n        )",
+                source="        nodes = context.space_data.edit_tree.nodes",
+            ),
+            "correlated-condition",
+            id="poll-alias-of-another-member",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Method `__getitem__` of type `Overload[(i: SupportsIndex, /) -> int, (s: slice[SupportsIndex | None, "
+                "SupportsIndex | None, SupportsIndex | None], /) -> list[int]]` cannot be called with key of type `None` "
+                "on object of type `list[int]`",
+                "yield prev_file, matches[segment], length",
+                path="scripts/startup/bl_operators/image_as_planes.py",
+                function="find_image_sequences",
+                source="    segment = None\n    for filename in files:\n        yield prev_file, matches[segment], length",
+            ),
+            "python-optional",
+            id="python-optional-index",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Method `__getitem__` of type `Overload[(key: int, /) -> Property, (key: str, /) -> Property, (key: "
+                "slice[Any, Any, Any], /) -> list[Property]]` cannot be called with key of type `None` on object of type "
+                "`bpy_prop_collection[Property]`",
+                "brush_type_items = bpy.types.Brush.bl_rna.properties[cls.brush_type_prop].enum_items",
+                path="scripts/startup/bl_ui/properties_paint_common.py",
+                cls="BrushAssetShelf",
+                function="has_tool_with_brush_type",
+            ),
+            "general-typing",
+            id="general-typing-none-class-attribute-key",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-argument-type",
+                "Argument to function `connect_sockets` is incorrect: Expected `NodeSocket`, found `int | NodeSocket | None`",
+                "connect_sockets(n2.outputs[connection[0]], connection[1])",
+                path="scripts/addons_core/node_wrangler/operators/swap_links.py",
+                cls="NODE_OT_swap_links",
+                function="execute",
+            ),
+            "general-typing",
+            id="general-typing-list-as-record",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Object of type `int` is not assignable to attribute `ui_shortcut` on type "
+                "`(Node & ~AlwaysFalsy) | (Unknown & ~AlwaysFalsy)`",
+                "viewer_node.ui_shortcut = self.viewer_index",
+                path="scripts/startup/bl_operators/node.py",
+                cls="NODE_OT_viewer_shortcut_set",
+                function="execute",
+            ),
+            "base-class-subtype",
+            id="base-class-subtype-with-unknown",
+        ),
+        pytest.param(
+            diagnostic(
+                "invalid-assignment",
+                "Object of type `AssetRepresentation | None` is not assignable to `AssetRepresentation`",
+                "asset: AssetRepresentation = context.asset",
+                path="scripts/addons_core/pose_library/operators.py",
+                cls="PoseAssetUser",
+                function="execute",
+                has_poll=True,
+            ),
+            "narrowed-by-poll-in-caller",
+            id="narrowed-by-poll-in-mixin",
+        ),
+        pytest.param(
+            diagnostic(
+                "unresolved-attribute",
                 "Attribute `animation_data` is not defined on `None` in union `Object | None`",
                 "assigned_action = obj.animation_data and obj.animation_data.action",
                 path="scripts/addons_core/rigify/rot_mode.py",
