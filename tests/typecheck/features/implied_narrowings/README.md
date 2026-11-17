@@ -33,7 +33,9 @@ default), while a pointer nothing checked stays an error.
 | `blender-narrowed-by-popover` | `space_data` in a Panel the same add-on opens as a popover | its `bl_space_type` subclass |
 
 What a poll checks is read from its code: the conjuncts of a `return` (`X`, `X is not None`, `isinstance(X, T)`,
-`bool(X)`, `X.type == 'LIT'` / `in {...}`), attribute reads always evaluated while the result is computed, early
+`bool(X)`, `X.type == 'LIT'` / `in {...}`, `context.mode == 'EDIT_MESH'` / `in {...}`, which gives what that mode
+implies by `CTX_data_mode_enum_ex`: the edit object of the mode's type, the paint mode's tool settings, the pose of
+an armature), attribute reads always evaluated while the result is computed, early
 `return False` guards, local aliases (`ob = context.object`, `ob = getattr(context, "object", None)`, `(ob :=
 context.object)`), `super().poll(context)` / `Base.poll(context)`, an inherited or mixin poll, `bool(a and b)`, a `try`
 whose handlers never return true, `XrSessionState.is_running(context)` (which checks
@@ -59,6 +61,7 @@ An ignored rule still narrows.
 | --- | --- |
 | `nar_poll` | Panel conjuncts (`is not None`, truth, `isinstance`, `bool`, `bpy.context`, a sub-pointer, an alias), `draw_header`; early guards with a Type tag giving `ob.data`; a mixin poll, `super().poll`, `Base.poll` and helpers two calls deep giving `space_data` a subclass; a Menu poll reading `area.type`; a GizmoGroup; not reported: a tested read; errors: a pointer the poll did not check; guards: `modal`, `Operator.draw`, a class with no poll |
 | `nar_poll_reach` | a sub-panel's `poll` and `draw`, a grandchild and a sub-panel in another module reading their parents' facts; the poll's own flow after a helper guard and through `and` (silent); `getattr` and walrus aliases; `XrSessionState.is_running`; `bool(a and b)`; a helper's `try` body; errors: a sub-panel also opened as a popover, a pointer no poll up the chain checked |
+| `nar_mode` | `context.mode` in a poll: `EDIT_MESH` (object, active and edit object as mesh objects), `SCULPT` (`tool_settings.sculpt`, also silently in the poll after a guard), `in {"PAINT_VERTEX", "PAINT_WEIGHT"}` (only what both give), `POSE` (`object.pose`); errors: `OBJECT` gives nothing |
 | `nar_menu_prefix` | `VIEW3D_`, `CLIP_` (`bl_idname`), `TIME_`, `TOPBAR_` menus in `draw` and `poll`; guards: a helper method, an add-on's own prefix |
 | `nar_popover` | a panel opened by `layout.popover` and one by `wm.call_panel`; silent: a panel drawn only in its region; `strictness` presets (`_expected/strictness.toml`) |
 | `nar_config` | an `[[overrides]]` entry in `tests/typecheck/ty.toml`: the category at `error`, `blender-narrowed-by-menu-prefix` at `ignore` |
@@ -67,5 +70,6 @@ The `blender-*` markers need the checker; the upstream ones and the `| None` mar
 
 **Named exceptions:** only Blender main's builtin stubs type the dynamic context members (`context.object`,
 `active_node`, ...) `X | None`; 5.2's stubs type them non-None and its callbacks' `context` parameter `Context |
-None`, so the poll markers (`nar_poll`, `nar_poll_reach`) fail on 5.2. fake-bpy-module has no Type tag views, so `nar_poll`'s two markers that a
-Type tag narrows (`active_object.data` as `Mesh`, `object.data` as `Light`) fail with it.
+None`, so the poll markers (`nar_poll`, `nar_poll_reach`, `nar_mode`) fail on 5.2. fake-bpy-module has no Type tag
+views, so the markers that a Type tag narrows (`nar_poll`'s `active_object.data` as `Mesh` and `object.data` as
+`Light`, `nar_mode`'s `object.data` as `Mesh`) fail with it.

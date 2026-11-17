@@ -32,6 +32,7 @@ mise run check:features main --update # record the current results after a revie
 | [imprecise_annotations](features/imprecise_annotations/README.md) | code less precise than the stubs but right in Blender (`-> set[str]` on `execute`, a `str` enum value, `draw_item(..., data: Armature)`) is accepted, typed as the precise form and reported under a `blender-imprecise-*` rule, configurable by category and `[blender] strictness` |
 | [implied_narrowings](features/implied_narrowings/README.md) | a read Blender's call order or conventions make safe (a pointer `poll()` checked, `space_data` in a `CLIP_MT_` menu, a popover panel's `bl_space_type`) is narrowed and reported under a `blender-narrowed-by-*` rule |
 | [assumptions](features/assumptions/README.md) | code that relies on what Blender keeps in ordinary use (`bpy.context.scene` outside a callback, a list item, a class registered on a branch, preferences read while registering) is accepted, typed as if it held and reported under a `blender-assumed-*` rule |
+| [pointer_aliases](features/pointer_aliases/README.md) | what Blender keeps between two pointers (`node_tree` → `edit_tree`, `active_node` ≡ `edit_tree.nodes.active`, a Grease Pencil brush's settings), an area's type and `temp_override` narrow silently |
 
 ## Layout
 

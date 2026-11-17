@@ -19,6 +19,7 @@ root = [
     "features/inheritance/generated",
     "features/operator_calls",
     "features/operator_properties",
+    "features/pointer_aliases",
     "features/properties",
     "features/properties/generated",
     "features/property_wrappers",

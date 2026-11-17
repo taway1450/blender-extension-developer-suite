@@ -12,14 +12,15 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | assumptions | 5/5 | 25/25 | 3/3 | - | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
 | context_members | 43/43 | - | 10/10 | - | 0 |
-| implied_narrowings | 7/7 | 42/44 | 12/12 | 3/3 | 0 |
+| implied_narrowings | 8/8 | 45/52 | 16/16 | 3/3 | 0 |
 | imprecise_annotations | 3/3 | 20/20 | 5/5 | 2/2 | 0 |
 | inheritance | 67/67 | 48/48 | 15/15 | 3/3 | 0 |
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
 | operator_properties | 54/54 | 13/13 | 10/11 | 5/5 | 0 |
+| pointer_aliases | 17/17 | 5/5 | 9/9 | 1/1 | 0 |
 | properties | 423/433 | 102/102 | 8/10 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
 | registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 11/18 | - | 2/2 | - | 5 |
-| **total** | 915/932 | 399/401 | 198/237 | 44/44 | 28 |
+| **total** | 933/950 | 407/414 | 211/250 | 45/45 | 28 |

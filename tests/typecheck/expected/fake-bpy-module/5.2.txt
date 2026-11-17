@@ -325,6 +325,25 @@ features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an add-on's own prefix names no editor
 features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.area, Area | None)  # bare-ok: an add-on's own prefix names no editor
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | return context.mode == "EDIT_MESH"
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | if context.mode != "SCULPT":
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.tool_settings.sculpt, Sculpt)  # oracle-skip: the poll's own guard, silent
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.tool_settings.sculpt, Sculpt)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | context.object.data.name  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | return context.mode in {"PAINT_VERTEX", "PAINT_WEIGHT"}
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.tool_settings.weight_paint, VertexPaint | None)  # bare-ok: only one of the two modes
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | return context.mode == "POSE"
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.object.pose, Pose)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | assert_type(context.active_object.pose, Pose)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | return context.mode == "OBJECT"
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | context.object is not None
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and context.active_node
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and isinstance(context.edit_bone, EditBone)
@@ -447,6 +466,48 @@ features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-i
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.template_popup_confirm("", cancel_text="Close"), OperatorProperties | None)  # bare-ok: no operator, only a cancel button: the stub type is kept and no idname is reported
+features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(space, SpaceView3D)  # oracle-skip: narrowed by the area's Type tag
+features/pointer_aliases/ptr_area_type/__init__.py | missing-attribute | space.shading.type = "MATERIAL"
+features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceImageEditor | SpaceClipEditor)  # oracle-skip: a Type tag
+features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceNodeEditor)  # oracle-skip: narrowed after the early continue
+features/pointer_aliases/ptr_area_type/__init__.py | missing-attribute | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
+features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
+features/pointer_aliases/ptr_area_type/__init__.py | type-assertion-failure | assert_type(views, list[SpaceView3D])  # oracle-skip: a Type tag in the comprehension's condition
+features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | paint = context.tool_settings.gpencil_paint
+features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | brush = context.tool_settings.gpencil_paint.brush  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | paint = context.tool_settings.gpencil_weight_paint
+features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | vertex = context.tool_settings.gpencil_vertex_paint
+features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | sculpt = context.tool_settings.sculpt
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | tree = context.space_data.edit_tree  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | tree = context.space_data.edit_tree  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(tree, NodeTree)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_node_editor/__init__.py | unused-ignore-comment | nodes.active.name  # ty: ignore[missing-union-attribute]  # bare-ok: no poll checked the active node
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | tree = context.space_data.edit_tree  # ty: ignore[blender-narrowed-by-poll] #2
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | tree = context.space_data.edit_tree  # ty: ignore[blender-narrowed-by-poll] #2
+features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(active, Node)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | assert_type(context.space_data.edit_tree.nodes.active, Node)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | assert_type(context.space_data.edit_tree.nodes.active, Node)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(context.space_data.edit_tree.nodes.active, Node)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | tree = context.space_data.edit_tree
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | tree = context.space_data.edit_tree
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | assert_type(context.active_node, Node)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_node_editor/__init__.py | blender-narrowed-by-poll | context.space_data.node_tree.name  # ty: ignore[missing-union-attribute]  # bare-ok: edit_tree does not imply node_tree
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | context.space_data.node_tree.name  # ty: ignore[missing-union-attribute]  # bare-ok: edit_tree does not imply node_tree
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | return context.space_data.node_tree is not None
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | return context.space_data.node_tree is not None
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | assert_type(context.space_data.node_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | assert_type(context.space_data.node_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(context.space_data.node_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_node_editor/__init__.py | blender-narrowed-by-poll | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(context.space_data.edit_tree, NodeTree)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | with context.temp_override(active_object=target, object=target):
+features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | assert_type(context.active_object, Object)  # oracle-skip: the member temp_override passed
+features/pointer_aliases/ptr_temp_override/__init__.py | type-assertion-failure | assert_type(context.active_object, Object)  # oracle-skip: the member temp_override passed
+features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # oracle-skip: the member temp_override passed
+features/pointer_aliases/ptr_temp_override/__init__.py | type-assertion-failure | assert_type(context.object, Object)  # oracle-skip: the member temp_override passed
+features/pointer_aliases/ptr_temp_override/__init__.py | missing-union-attribute | assert_type(context.material, bpy.types.Material | None)  # bare-ok: not passed
 features/properties/props_data_blocks/__init__.py | missing-union-attribute | layout.label(text=item.name)
 features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=str(self.value))
 features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=text)

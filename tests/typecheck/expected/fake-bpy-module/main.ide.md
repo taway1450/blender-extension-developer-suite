@@ -99,6 +99,26 @@ PASS
 PASS
 ````
 
+## features/implied_narrowings/nar_mode/ide_nar_mode.py | ^hover @31 | context.tool_settings.sculpt
+
+````text
+```python
+Sculpt
+```
+---
+(readonly)
+````
+
+## features/implied_narrowings/nar_mode/ide_nar_mode.py | ^hover @24 | context.object.pose
+
+````text
+```python
+Pose
+```
+---
+Current pose for armatures (readonly)
+````
+
 ## features/implied_narrowings/nar_poll/ide_nar_poll.py | ^hover @17 | context.object
 
 ````text
@@ -318,6 +338,52 @@ PASS
 
 ````text
 PASS
+````
+
+## features/pointer_aliases/ptr_area_type/ide_ptr_area_type.py | ^hover @25 | area.spaces.active
+
+````text
+```python
+SpaceView3D
+```
+---
+Space currently being displayed in this area (readonly)
+````
+
+## features/pointer_aliases/ptr_brush/ide_ptr_brush.py | ^hover @51 | context.tool_settings.gpencil_paint.brush.gpencil_settings
+
+````text
+```python
+BrushGpencilSettings
+```
+---
+(readonly)
+````
+
+## features/pointer_aliases/ptr_node_editor/ide_ptr_node_editor.py | ^hover-contains "NodeTree" @28 | context.space_data.edit_tree
+
+````text
+PASS
+````
+
+## features/pointer_aliases/ptr_node_editor/ide_ptr_node_editor.py | ^hover @44 | context.space_data.edit_tree.nodes.active
+
+````text
+```python
+Node
+```
+---
+Active node in this tree
+````
+
+## features/pointer_aliases/ptr_temp_override/ide_ptr_temp_override.py | ^hover @21 | bpy.context.area
+
+````text
+```python
+Area
+```
+---
+(readonly)
 ````
 
 ## features/properties/props_callbacks/ide_props_callbacks.py | ^hover @7 | s.count

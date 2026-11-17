@@ -65,6 +65,11 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | context.object.data.name  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll] #2
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | missing-attribute | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
