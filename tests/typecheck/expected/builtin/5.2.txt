@@ -23,19 +23,45 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #3
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #4
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(data, bpy_struct)
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(item, bpy_struct | None)  # an empty slot of an ID-pointer array
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(active_data, bpy_struct | None)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #5
+features/api_types/api_never_none/__init__.py | invalid-method-override | def update(self, data, depsgraph):
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph)
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph) #2
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph) #3
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #6
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph) #4
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph) #5
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(ks, KeyingSet)
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(ks, KeyingSet) #2
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation)
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation) #2
+features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(camera.dof, CameraDOFSettings)  # bare-ok: a stub fact: the struct is a member of Camera
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.view_settings, ColorManagedViewSettings)  # bare-ok: a stub fact: the struct is a member of Scene
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.eevee, SceneEEVEE)  # bare-ok: a stub fact: the struct is a member of Scene
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(render.ffmpeg, FFmpegSettings)  # bare-ok: a stub fact: the struct is a member of RenderSettings
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tool_settings.image_paint, ImagePaint)  # bare-ok: a stub fact: the struct is a member of ToolSettings
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(context.preferences, Preferences)  # bare-ok: a stub fact: always the global preferences
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(context.window_manager, WindowManager)  # bare-ok: a stub fact: the window manager exists whenever Python runs
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | header.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ui_list.draw_filter(None, layout)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ui_list.draw_item(context, layout, None, None, 0, None, "", 0, 0)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes the data
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ui_list.filter_items(context, None, "items")  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes the data
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.render(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a depsgraph
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_draw(context, None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a depsgraph
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ksi.iterator(context, None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a keying set
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | shelf.asset_poll(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes an asset
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | shelf.draw_context_menu(context, None, layout)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes an asset
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.view_update(None, depsgraph)  # ty: ignore[invalid-argument-type]
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.render(None)  # ty: ignore[invalid-argument-type]
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ksi.iterator(context, None)  # ty: ignore[invalid-argument-type]
+features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | shelf.asset_poll(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_setters/__init__.py | invalid-assignment | ob.location = (1, 2, 3)
 features/api_types/api_setters/__init__.py | invalid-assignment | ob.rotation_euler = (0.0, 0.0, 1.0)
 features/api_types/api_setters/__init__.py | invalid-assignment | ob.rotation_quaternion = [1.0, 0.0, 0.0, 0.0]

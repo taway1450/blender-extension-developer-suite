@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender 7031144c2c
+# check:blender main, builtin stubs, Blender 848838a59b
 cause                           group                 slice   shipped  presets    other    total
 property-on-panel               blender-fix           BF1           3        0        0        3
 dead-api                        blender-fix           BF1           2        0        0        2
@@ -14,7 +14,7 @@ unchecked-pointer-bug           blender-fix           BF1          31        0  
 assumed-registration            assumption            S6            0        0        0        0
 assumed-complete-registration   assumption            S6            0        0        0        0
 assumed-preferences             assumption            S6            0        0        0        0
-assumed-list-item               assumption            S6          123        0       10      133
+assumed-list-item               assumption            S6          122        0       10      132
 assumed-context-member          assumption            S6          141      263      678     1082
 narrowed-by-menu-prefix         implied-narrowing     S5          257        0        0      257
 narrowed-by-popover             implied-narrowing     S5            1        0        0        1
@@ -22,14 +22,14 @@ narrowed-by-poll                implied-narrowing     S5          665        0  
 imprecise-operator-return       imprecise-annotation  S4           15        0        3       18
 imprecise-enum-value            imprecise-annotation  S4           16        0       14       30
 imprecise-callback-parameter    imprecise-annotation  S4            1        0        1        2
-context-never-none              typechecker-fix       S1          165       14      114      293
-callback-never-none             typechecker-fix       S1           20        0       11       31
+context-never-none              typechecker-fix       S1            0        0        0        0
+callback-never-none             typechecker-fix       S1            0        0        0        0
 modifiers-new                   typechecker-fix       S1            2        0        1        3
 bmesh-elem-seq                  typechecker-fix       S2            0        0       15       15
 blend-data-lib-key              typechecker-fix       S2            2        0        8       10
 context-store-member            typechecker-fix       S2           14        0        0       14
 freestyle-positional            typechecker-fix       S2           35        0        0       35
-render-engine-positional        typechecker-fix       S2            5        0        3        8
+render-engine-positional        typechecker-fix       S2            4        0        2        6
 dynamic-enum                    typechecker-fix       S2           18        0        4       22
 stub-context-manager            typechecker-fix       S2            5        0       14       19
 stub-docstring                  typechecker-fix       S2            4        0        2        6
@@ -49,24 +49,24 @@ base-class-subtype              typing-debt           -           195       54  
 operator-call                   typing-debt           -             6        0       61       67
 unresolved-import               typing-debt           -            52        0       90      142
 general-typing                  typing-debt           -            76        0      120      196
-untyped-python                  typing-debt           -           581        0        2      583
+untyped-python                  typing-debt           -           585        0        2      587
 private-member                  typing-debt           -            12        0        0       12
 build-option-gap                typing-debt           -             5       65        0       70
 context-member-outside-callback unsorted              -            97        0       68      165
-unchecked-pointer               unsorted              -           437       31     1028     1496
+unchecked-pointer               unsorted              -           437       31     1027     1495
 stub-gap                        unsorted              -            77        0      107      184
 blender-rule                    unsorted              -             0        0        5        5
-unsorted                        unsorted              -           213        0      420      633
+unsorted                        unsorted              -           218        0      419      637
 
 group                                                         shipped  presets    other    total
 blender-fix                                                       690        0       48      738
-assumption                                                        264      263      688     1215
+assumption                                                        263      263      688     1214
 implied-narrowing                                                 923        0        6      929
 imprecise-annotation                                               32        0       18       50
-typechecker-fix                                                   491       14      386      891
-typing-debt                                                      2447      194     1146     3787
-unsorted                                                          824       31     1628     2483
-errors                                                           5629      502     3855     9986
+typechecker-fix                                                   305        0      260      565
+typing-debt                                                      2451      194     1146     3791
+unsorted                                                          829       31     1626     2486
+errors                                                           5451      488     3727     9666
 warnings                                                           42        0       65      107
 
 rule                                       error warning
@@ -80,13 +80,13 @@ deprecated                                     0      15
 empty-body                                    32       0
 import-not-found                             138       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1752       0
-invalid-assignment                           807       0
+invalid-argument-type                       1747       0
+invalid-assignment                           794       0
 invalid-attribute-override                    70       0
 invalid-base                                   4       0
 invalid-context-manager                       21       0
 invalid-generic-class                          1       0
-invalid-method-override                      133       0
+invalid-method-override                      129       0
 invalid-mutable-override                       5       0
 invalid-parameter-default                      5       0
 invalid-property-type-override                 6       0
@@ -100,9 +100,9 @@ not-iterable                                  47       0
 not-subscriptable                             90       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      12
-too-many-positional-arguments                 10       0
+too-many-positional-arguments                  9       0
 unknown-argument                               5       0
-unresolved-attribute                        6569       0
+unresolved-attribute                        6272       0
 unresolved-global                              0      37
 unresolved-reference                          72       0
 unsupported-operator                          61       0

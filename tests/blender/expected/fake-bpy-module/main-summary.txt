@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender 7031144c2c
+# check:blender main, fake-bpy-module stubs, Blender 848838a59b
 cause                           group                 slice   shipped  presets    other    total
 property-on-panel               blender-fix           BF1           3        0        0        3
 dead-api                        blender-fix           BF1           2        0        0        2
@@ -22,14 +22,14 @@ narrowed-by-poll                implied-narrowing     S5         2050        0  
 imprecise-operator-return       imprecise-annotation  S4           23        0        5       28
 imprecise-enum-value            imprecise-annotation  S4           16        0       14       30
 imprecise-callback-parameter    imprecise-annotation  S4            1        0        1        2
-context-never-none              typechecker-fix       S1          165       14      114      293
-callback-never-none             typechecker-fix       S1           22        0       11       33
+context-never-none              typechecker-fix       S1            0        0        0        0
+callback-never-none             typechecker-fix       S1           10        0        0       10
 modifiers-new                   typechecker-fix       S1           10        0       10       20
 bmesh-elem-seq                  typechecker-fix       S2            0        0        0        0
 blend-data-lib-key              typechecker-fix       S2            2        0        0        2
 context-store-member            typechecker-fix       S2           14        0        0       14
 freestyle-positional            typechecker-fix       S2           35        0        0       35
-render-engine-positional        typechecker-fix       S2            5        0        3        8
+render-engine-positional        typechecker-fix       S2            4        0        2        6
 dynamic-enum                    typechecker-fix       S2            6        0        0        6
 stub-context-manager            typechecker-fix       S2            4        0       14       18
 stub-docstring                  typechecker-fix       S2            4        0        2        6
@@ -43,30 +43,30 @@ layout-in-operator-helper       typing-debt           -            19        0  
 cross-file-registered-property  typing-debt           -            31       12       14       57
 mixin-self                      typing-debt           -           495        0      203      698
 type-enum-sub-pointer           typing-debt           -           890       63      126     1079
-python-optional                 typing-debt           -           350        0      118      468
+python-optional                 typing-debt           -           341        0      118      459
 object-data-untagged            typing-debt           -            22        0       11       33
 base-class-subtype              typing-debt           -           199        0      514      713
 operator-call                   typing-debt           -             6        0       62       68
 unresolved-import               typing-debt           -           114        0      102      216
 general-typing                  typing-debt           -            76        0      120      196
-untyped-python                  typing-debt           -           982        0        1      983
+untyped-python                  typing-debt           -           986        0        1      987
 private-member                  typing-debt           -            23        0       13       36
 build-option-gap                typing-debt           -             5       65        0       70
 context-member-outside-callback unsorted              -            96      264       76      436
-unchecked-pointer               unsorted              -           640       86     1182     1908
+unchecked-pointer               unsorted              -           640       86     1181     1907
 stub-gap                        unsorted              -           409        0      356      765
 blender-rule                    unsorted              -             0        0        5        5
-unsorted                        unsorted              -           488        8      674     1170
+unsorted                        unsorted              -           493        8      674     1175
 
 group                                                         shipped  presets    other    total
 blender-fix                                                       710        0       46      756
 assumption                                                        170      263      678     1111
 implied-narrowing                                                2289        0       13     2302
 imprecise-annotation                                               40        0       20       60
-typechecker-fix                                                   488       14      373      875
-typing-debt                                                      3233      140     1284     4657
-unsorted                                                         1633      358     2293     4284
-errors                                                           8469      775     4639    13883
+typechecker-fix                                                   310        0      247      557
+typing-debt                                                      3228      140     1284     4652
+unsorted                                                         1638      358     2292     4288
+errors                                                           8291      761     4512    13564
 warnings                                                           94        0       68      162
 
 rule                                       error warning
@@ -80,14 +80,14 @@ deprecated                                     0      15
 empty-body                                    32       0
 import-not-found                             212       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       2729       0
-invalid-assignment                           996       0
+invalid-argument-type                       2725       0
+invalid-assignment                           983       0
 invalid-attribute-override                    71       0
 invalid-base                                   4       0
 invalid-context-manager                       81       0
 invalid-exception-caught                       1       0
 invalid-generic-class                          1       0
-invalid-method-override                      238       0
+invalid-method-override                      234       0
 invalid-mutable-override                       4       0
 invalid-parameter-default                      5       0
 invalid-property-type-override                 6       0
@@ -101,9 +101,9 @@ not-iterable                                 126       0
 not-subscriptable                            164       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      67
-too-many-positional-arguments                 45       0
+too-many-positional-arguments                 44       0
 unknown-argument                             348       0
-unresolved-attribute                        8484       0
+unresolved-attribute                        8187       0
 unresolved-global                              0      37
 unresolved-reference                          72       0
 unsupported-operator                          97       0

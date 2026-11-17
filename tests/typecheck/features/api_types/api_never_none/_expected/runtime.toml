@@ -7,3 +7,8 @@ reason = "pointers to structs embedded by value are set on new data"
 code = "(lambda scene, ob: all(x is None for x in (scene.tool_settings.sculpt, ob.pose, ob.animation_data)))(bpy.data.scenes.new('api_never_none'), bpy.data.objects.new('api_never_none', None))"
 expect = true
 reason = "DNA pointers are None on new data"
+
+[[probe]]
+code = "bpy.context.preferences is not None and bpy.context.window_manager is not None"
+expect = true
+reason = "the context always has the preferences and the window manager"

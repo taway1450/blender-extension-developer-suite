@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, TypeAlias, assert_type
+from typing import Any, Literal, TypeAlias, assert_type
 
 from bpy.types import Context, Event, Header, Menu, Operator, Panel, UILayout
 
@@ -30,9 +30,10 @@ def variants(op: INH_OVERRIDES_OT_variants, context: Context, event: Event) -> N
     op.modal(context, event, 1, 2)
 
 
-def ui(menu: INH_OVERRIDES_MT_menu, ui_list: INH_OVERRIDES_UL_short, context: Context, layout: UILayout) -> None:
+def ui(menu: INH_OVERRIDES_MT_menu, ui_list: INH_OVERRIDES_UL_short, context: Context, layout: UILayout,
+       data: Any) -> None:
     assert_type(menu.draw(context), None)
-    ui_list.draw_item(context, layout, None, None, 0, None)
+    ui_list.draw_item(context, layout, data, None, 0, None)
 
 
 def node(node: INH_OVERRIDES_Node, context: Context, layout: UILayout) -> None:

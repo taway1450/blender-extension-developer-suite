@@ -18,6 +18,17 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   `iterator` / `generate` and `RenderEngine.draw` / `view_update` / `view_pause` / `view_resume`: the C caller
   passes the live `bContext`. `RenderEngine.view_draw` gets None when a viewport is drawn off-screen (Viewport
   Render, `GPUOffScreen.draw_view3d`), so it stays `Context | None`.
+- **The context's preferences and window manager are never None:** `Context.preferences` is the global `U` and
+  `Context.window_manager` the window manager, which exists whenever Python runs. Blender's fork flags both
+  `PROP_NEVER_NULL` (both are read-only). `Context.blend_data` is left as it is.
+- **Blender always fills some other callback parameters:** `UIList.draw_item` / `filter_items`' `data` (the struct
+  holding the collection), `KeyingSetInfo.iterator` / `generate`'s `ks` (`validate_keyingset` returns early without
+  a keying set), `AssetShelf.asset_poll` / `draw_context_menu`'s `asset` and `draw_context_menu`'s `layout`, and
+  the `depsgraph` of `RenderEngine.update` / `render` / `bake` / `view_update` / `view_draw`. Blender's fork flags
+  them `PROP_NEVER_NULL`; `RenderEngine.update` also takes its `data` and `depsgraph` positionally, as Blender calls
+  it. `UIList.draw_item`'s `item` (an empty slot of an ID-pointer array is None) and `active_data` stay `| None`, and
+  so does `ObjectModifiers.new()`'s result: a modifier that cannot be added (a second one of a unique type, an object
+  type without modifiers) is only a warning report, so it returns None instead of raising.
 - **A struct is refined to the subclass its Type tag names** (`rna_Modifier_refine`, `rna_Space_refine`, ... in C,
   which introspection cannot read): a modifier of type `'SUBSURF'` is a `SubsurfModifier`, a space of type
   `'VIEW_3D'` a `SpaceView3D`. Blender's fork probes them when it writes the API docs (`sphinx_doc_gen_type_tags.py`
@@ -60,7 +71,7 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 
 | Addon | Variant |
 | --- | --- |
-| `api_never_none` | embedded and DNA pointers; unannotated callback overrides of `Menu`, `Header`, `UIList` and `RenderEngine`, and their callers |
+| `api_never_none` | embedded and DNA pointers, the context's preferences and window manager; unannotated callback overrides of `Menu`, `Header`, `UIList`, `RenderEngine`, `KeyingSetInfo` and `AssetShelf`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form), the tag views of `Object` and `FluidModifier` (sibling form), action strips |
 | `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
