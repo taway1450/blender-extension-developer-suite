@@ -65,6 +65,8 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
 features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(Keyframe.bl_rna.properties["interpolation"], EnumProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(keyframe.bl_rna.properties["select_control_point"], BoolProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["mode"], EnumProperty)  # oracle-skip: typed by the key

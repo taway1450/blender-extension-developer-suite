@@ -12,6 +12,7 @@ root = [
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
     "features/context_members",
+    "features/implied_narrowings",
     "features/imprecise_annotations",
     "features/inheritance",
     "features/inheritance/generated",
@@ -45,3 +46,11 @@ include = ["features/imprecise_annotations/imp_config/**"]
 [overrides.rules]
 blender-imprecise-annotations = "error"
 blender-imprecise-enum-value = "ignore"
+
+# The Implied narrowing rules configured for one add-on (features/implied_narrowings/nar_config).
+[[overrides]]
+include = ["features/implied_narrowings/nar_config/**"]
+
+[overrides.rules]
+blender-implied-narrowings = "error"
+blender-narrowed-by-menu-prefix = "ignore"

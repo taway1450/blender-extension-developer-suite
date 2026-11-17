@@ -11,7 +11,8 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | api_types | 26/26 | 5/5 | 85/121 | 3/3 | 23 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
 | context_members | 43/43 | - | 12/12 | - | 0 |
-| imprecise_annotations | 3/3 | 19/19 | 4/4 | 2/2 | 0 |
+| implied_narrowings | 4/4 | 28/30 | 8/8 | 3/3 | 0 |
+| imprecise_annotations | 3/3 | 20/20 | 5/5 | 2/2 | 0 |
 | inheritance | 67/67 | 48/48 | 15/15 | 3/3 | 0 |
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
 | operator_properties | 54/54 | 13/13 | 11/11 | 5/5 | 0 |
@@ -20,4 +21,4 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | registration | 47/47 | 5/5 | 9/9 | 3/3 | 0 |
 | registration_checks | 9/9 | 37/37 | 10/10 | - | 0 |
 | type_narrowing | 11/18 | - | 2/2 | - | 5 |
-| **total** | 909/926 | 322/322 | 185/223 | 41/41 | 28 |
+| **total** | 913/930 | 351/353 | 194/232 | 44/44 | 28 |

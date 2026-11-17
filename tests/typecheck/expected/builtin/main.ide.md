@@ -71,6 +71,32 @@ PASS
   documentation: (none)
 ````
 
+## features/implied_narrowings/nar_menu_prefix/ide_nar_menu_prefix.py | ^hover-contains "SpaceClipEditor" @17 | context.space_data
+
+````text
+PASS
+````
+
+## features/implied_narrowings/nar_poll/ide_nar_poll.py | ^hover @17 | context.object
+
+````text
+```python
+Object
+```
+````
+
+## features/implied_narrowings/nar_poll/ide_nar_poll.py | ^hover-contains "SpaceNodeEditor" @17 | context.space_data
+
+````text
+PASS
+````
+
+## features/implied_narrowings/nar_popover/ide_nar_popover.py | ^hover-contains "SpaceView3D" @17 | context.space_data
+
+````text
+PASS
+````
+
 ## features/imprecise_annotations/imp_callback_parameter/ide_imp_callback_parameter.py | ^hover-contains "Armature" @9 | data.name
 
 ````text

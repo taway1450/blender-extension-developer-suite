@@ -322,6 +322,115 @@ features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_
 features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | unresolved-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
+features/implied_narrowings/nar_config/__init__.py | unresolved-attribute | return context.object is not None
+features/implied_narrowings/nar_config/__init__.py | unresolved-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_config/__init__.py | unused-ignore-comment | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_config/__init__.py | invalid-argument-type | self.layout.prop(context.space_data, "show_gizmo")  # blender-narrowed-by-menu-prefix is ignored here
+features/implied_narrowings/nar_config/__init__.py | unresolved-attribute | self.layout.prop(context.space_data, "show_gizmo")  # blender-narrowed-by-menu-prefix is ignored here
+features/implied_narrowings/nar_config/__init__.py | strictness-default | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_config/__init__.py | strictness-lenient | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_config/__init__.py | strictness-strict | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
+features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | invalid-argument-type | self.layout.prop(context.space_data, "show_gizmo")  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | self.layout.prop(context.space_data, "show_gizmo")  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | self.layout.prop(context.space_data, "show_gizmo")  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | invalid-argument-type | self.draw_helper(context)
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | space = context.space_data  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | space = context.space_data  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(space.clip, bpy.types.MovieClip | None)
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(space.clip, bpy.types.MovieClip | None)
+features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an add-on's own prefix names no editor
+features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: an add-on's own prefix names no editor
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | context.object is not None
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and context.active_node
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and isinstance(context.edit_bone, EditBone)
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and bool(context.pose_bone)
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and context.object.active_material is not None
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.active_node, Node)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.active_node, Node)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.edit_bone, EditBone)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.edit_bone, EditBone)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(bpy.context.edit_object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | invalid-argument-type | self.layout.prop(context.object, "name")  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | self.layout.prop(context.object, "name")  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | self.layout.prop(context.object, "name")  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | ob = context.object  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | ob = context.object  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.material, Material | None)  # bare-ok: the poll did not check it
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.material, Material | None)  # bare-ok: the poll did not check it
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | ob = context.active_object
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | if not context.material or context.material.node_tree is None:
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | if context.material:  # tested for truth only: not reported
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | self.layout.label(text=context.material.name)
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | material = context.material
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | return super().poll(context) and context.material is not None
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: modal runs on later events, without a new poll
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object | None)  # bare-ok: modal runs on later events, without a new poll
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: a props dialog draws without a new poll
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object | None)  # bare-ok: a props dialog draws without a new poll
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | return context.area is not None and context.area.type == "VIEW_3D"
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | ob = context.object
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | unused-ignore-comment | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object, Object | None)  # bare-ok: no poll checked it
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object | None)  # bare-ok: no poll checked it
+features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceProperties)
+features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceProperties)
+features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.area, Area)
+features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | assert_type(context.area, Area)
+features/implied_narrowings/nar_popover/__init__.py | invalid-argument-type | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | unused-ignore-comment | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
+features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
+features/implied_narrowings/nar_popover/__init__.py | strictness-default | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | strictness-default | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | strictness-strict | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | strictness-strict | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
 features/imprecise_annotations/imp_callback_parameter/__init__.py | invalid-method-override | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
 features/imprecise_annotations/imp_callback_parameter/__init__.py | unused-ignore-comment | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
 features/imprecise_annotations/imp_callback_parameter/__init__.py | invalid-method-override | def draw_item(self, context: Context, layout: UILayout, data, item: ImpCallbackParameterItem, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]

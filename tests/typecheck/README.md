@@ -30,6 +30,7 @@ mise run check:features main --update # record the current results after a revie
 | [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None, the Type tags of refined subclasses, the facts introspection misses (class bases, protocols, module members) |
 | [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`) |
 | [imprecise_annotations](features/imprecise_annotations/README.md) | code less precise than the stubs but right in Blender (`-> set[str]` on `execute`, a `str` enum value, `draw_item(..., data: Armature)`) is accepted, typed as the precise form and reported under a `blender-imprecise-*` rule, configurable by category and `[blender] strictness` |
+| [implied_narrowings](features/implied_narrowings/README.md) | a read Blender's call order or conventions make safe (a pointer `poll()` checked, `space_data` in a `CLIP_MT_` menu, a popover panel's `bl_space_type`) is narrowed and reported under a `blender-narrowed-by-*` rule |
 
 ## Layout
 
@@ -90,6 +91,7 @@ The `blender-*` rules ty-blender is to add:
 | `blender-preferences-idname` | addon_preferences |
 | `blender-invalid-override`, `blender-missing-callback`, `blender-mixin-order`, `blender-invalid-base`, `blender-registered-base` | inheritance |
 | `blender-imprecise-operator-return`, `blender-imprecise-enum-value`, `blender-imprecise-callback-parameter` | imprecise_annotations |
+| `blender-narrowed-by-poll`, `blender-narrowed-by-menu-prefix`, `blender-narrowed-by-popover` | implied_narrowings |
 
 ### Strictness (`_expected/strictness.toml`)
 
