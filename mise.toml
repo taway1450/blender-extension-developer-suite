@@ -378,3 +378,14 @@ uv run scripts/report_flags.py {{usage.version}}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 {%- if usage.force %} --force{% endif %}
 '''
+
+[tasks."probe:never-none"]
+description = "Probe which RNA pointers and returns Blender leaves None, in edge states and over tests/files (#109, research)"
+usage = '''
+arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
+flag "--limit <n>" help="Only probe the first N corpus files"
+'''
+run = '''
+uv run scripts/probe_never_none.py {{usage.version}}
+{%- if usage.limit %} --limit {{usage.limit}}{% endif %}
+'''
