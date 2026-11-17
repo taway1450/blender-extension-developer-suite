@@ -28,10 +28,10 @@ mise run check:features main --update # record the current results after a revie
 | [inheritance](features/inheritance/README.md) | unannotated overrides get the parent's types; `self` in a mixin is typed by its users; subclass, mixin and override rules |
 | [context_members](features/context_members/README.md) | Guaranteed context members are non-None in Blender callbacks; `space_data` follows `bl_space_type` |
 | [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None, the Type tags of refined subclasses, the facts introspection misses (class bases, protocols, module members) |
-| [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`) |
+| [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`); a constructor's tag argument types its result (`constraints.new('COPY_LOCATION')`) |
 | [imprecise_annotations](features/imprecise_annotations/README.md) | code less precise than the stubs but right in Blender (`-> set[str]` on `execute`, a `str` enum value, `draw_item(..., data: Armature)`) is accepted, typed as the precise form and reported under a `blender-imprecise-*` rule, configurable by category and `[blender] strictness` |
 | [implied_narrowings](features/implied_narrowings/README.md) | a read Blender's call order or conventions make safe (a pointer `poll()` checked, `space_data` in a `CLIP_MT_` menu, a popover panel's `bl_space_type`, a panel's `bl_context`) is narrowed and reported under a `blender-narrowed-by-*` rule |
-| [assumptions](features/assumptions/README.md) | code that relies on what Blender keeps in ordinary use (`bpy.context.scene` outside a callback, a list item, a class registered on a branch, preferences read while registering) is accepted, typed as if it held and reported under a `blender-assumed-*` rule |
+| [assumptions](features/assumptions/README.md) | code that relies on what Blender keeps in ordinary use (`bpy.context.scene` outside a callback, a list item, a class registered on a branch, preferences read while registering, a subclass member of `constraints[0]`) is accepted, typed as if it held and reported under a `blender-assumed-*` rule |
 | [pointer_aliases](features/pointer_aliases/README.md) | what Blender keeps between two pointers (`node_tree` → `edit_tree`, `active_node` ≡ `edit_tree.nodes.active`, a Grease Pencil brush's settings), an area's type and `temp_override` narrow silently |
 
 ## Layout
@@ -94,7 +94,7 @@ The `blender-*` rules ty-blender is to add:
 | `blender-invalid-override`, `blender-missing-callback`, `blender-mixin-order`, `blender-invalid-base`, `blender-registered-base` | inheritance |
 | `blender-imprecise-operator-return`, `blender-imprecise-enum-value`, `blender-imprecise-callback-parameter` | imprecise_annotations |
 | `blender-narrowed-by-poll`, `blender-narrowed-by-menu-prefix`, `blender-narrowed-by-popover`, `blender-narrowed-by-bl-context` | implied_narrowings |
-| `blender-assumed-context-member`, `blender-assumed-list-item`, `blender-assumed-registration`, `blender-assumed-complete-registration`, `blender-assumed-preferences`, `blender-assumed-internal-operator`, `blender-assumed-editor-member`, `blender-assumed-preset-context`, `blender-assumed-added-object` | assumptions |
+| `blender-assumed-context-member`, `blender-assumed-list-item`, `blender-assumed-registration`, `blender-assumed-complete-registration`, `blender-assumed-preferences`, `blender-assumed-internal-operator`, `blender-assumed-editor-member`, `blender-assumed-preset-context`, `blender-assumed-added-object`, `blender-assumed-subclass-member` | assumptions |
 
 ### Strictness (`_expected/strictness.toml`)
 

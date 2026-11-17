@@ -1,13 +1,13 @@
 """Feature test: the Assumption rules configured for one add-on.
 
 `tests/typecheck/ty.toml` has an `[[overrides]]` entry for this add-on that sets the category `blender-assumptions` to
-`error`, the rule `blender-assumed-context-member` to `ignore` and the four rules of spec #123
-(`blender-assumed-internal-operator`, `-editor-member`, `-preset-context`, `-added-object`) to `warn`: the rule's own
-level wins over its category's. An ignored rule still narrows, so the helper's read below is neither reported nor an
-error. The preset is in presets/asm_config/."""
+`error`, the rule `blender-assumed-context-member` to `ignore` and the five rules of spec #123
+(`blender-assumed-internal-operator`, `-editor-member`, `-preset-context`, `-added-object`, `-subclass-member`) to
+`warn`: the rule's own level wins over its category's. An ignored rule still narrows, so the helper's read below
+is neither reported nor an error. The preset is in presets/asm_config/."""
 
 import bpy
-from bpy.types import Context, Menu, Operator, UIList
+from bpy.types import Context, Menu, Object, Operator, UIList
 
 
 def frame() -> int:
@@ -43,6 +43,10 @@ class ASM_CONFIG_MT_menu(Menu):
 def add_cube(context: Context) -> str:
     bpy.ops.mesh.primitive_cube_add()
     return context.object.name  # ty: ignore[blender-assumed-added-object]
+
+
+def first_target(ob: Object) -> Object | None:
+    return ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 
 
 classes = (ASM_CONFIG_UL_items, ASM_CONFIG_OT_internal, ASM_CONFIG_MT_menu)

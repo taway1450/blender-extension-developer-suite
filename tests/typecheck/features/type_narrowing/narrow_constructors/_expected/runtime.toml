@@ -1,0 +1,19 @@
+[[probe]]
+code = "type(bpy.data.objects.new('narrow_constructors', None).constraints.new('COPY_LOCATION')).__name__"
+expect = "CopyLocationConstraint"
+reason = "constraints.new refines the new constraint by its type"
+
+[[probe]]
+code = "type(bpy.data.lights.new('narrow_constructors', 'SPOT')).__name__"
+expect = "SpotLight"
+reason = "lights.new refines the new light by its type"
+
+[[probe]]
+code = "type(bpy.data.meshes.new('narrow_constructors').attributes.new('weight', 'FLOAT', 'POINT')).__name__"
+expect = "FloatAttribute"
+reason = "attributes.new refines the new attribute by its data type"
+
+[[probe]]
+code = "type(bpy.data.node_groups.new('narrow_constructors', 'ShaderNodeTree').nodes.new(type='ShaderNodeMath')).__name__"
+expect = "ShaderNodeMath"
+reason = "nodes.new gives the node class its bl_idname names"

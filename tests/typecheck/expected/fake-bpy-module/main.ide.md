@@ -96,6 +96,14 @@ bpy_struct[Unknown]
 ```
 ````
 
+## features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | ^hover @23 | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
+
+````text
+```python
+None | Object
+```
+````
+
 ## features/bpy_symbols/sym_bpy_extras/ide_sym_bpy_extras.py | ^hover-contains "-Z" @9 | imp.axis_up
 
 ````text
@@ -610,4 +618,12 @@ bpy.ops.reg_explicit.dotted(execution_context, undo, *, count: int)
 
 ````text
 PASS
+````
+
+## features/type_narrowing/narrow_constructors/ide_narrow_constructors.py | ^hover @6 | con = ob.constraints.new('COPY_LOCATION')
+
+````text
+```python
+Constraint
+```
 ````

@@ -36,6 +36,10 @@ as if the fact held, and report it under a `blender-assumed-*` rule (category `b
 - **Added objects:** `bpy.ops.mesh.primitive_cube_add()` and the other `*_add` operators add an object, select it and
   make it active (`ED_object_add_type`), so `context.object` and `active_object` are the new object after the call,
   when it succeeded. A failed poll gives `{'CANCELLED'}` or an exception, which the code does not show.
+- **Subclass members:** a struct read by index or by name (`ob.constraints[0]`, `ob.modifiers["Subdivision"]`,
+  `bpy.data.lights["Key"]`, `node.inputs["Color"]`) is always one of the subclasses its Type tag names
+  (`rna_Constraint_refine`, ...), but nothing in the code says which: reading `target` takes it for one of the
+  constraints that have a target.
 
 ## Rules
 
@@ -50,6 +54,7 @@ as if the fact held, and report it under a `blender-assumed-*` rule (category `b
 | `blender-assumed-editor-member` | a read of `area` / `region` / `space_data` in the `poll` of a Panel or Menu that names no editor, a tool's `draw_settings` and `RenderEngine.view_update` / `view_draw` | not `None` |
 | `blender-assumed-preset-context` | a module-level read of a context member in a file under a `presets` folder (`scene` and its siblings stay `blender-assumed-context-member`) | not `None` |
 | `blender-assumed-added-object` | a read of `context.object` / `active_object` after a `bpy.ops.<category>.<name>_add()` (or `.add()`) call earlier in the same function or module-level script | not `None` |
+| `blender-assumed-subclass-member` | a read of a member that a refined base with a Type tag (`Constraint`, `Modifier`, `Light`, `Node`, `NodeSocket`, ...) lacks but some of its tagged subclasses declare; never on `bpy_struct` or `ID`, and a member no subclass declares stays an error | the union of the subclasses' declarations |
 
 A read that is only tested for truth or `None` (`if bpy.context.scene:`, `item is None`) or that sits where the code's
 own test already narrows it is not reported. Unannotated helper parameters are `Unknown` and get nothing. Inside a
@@ -57,7 +62,7 @@ Blender callback `scene` and its siblings stay a silent guarantee (context_membe
 
 ## Configuration
 
-The category's name sets all nine rules (`blender-assumptions = "ignore"`), a rule's name one of them;
+The category's name sets all ten rules (`blender-assumptions = "ignore"`), a rule's name one of them;
 `[blender] strictness = "lenient"` and `"default"` warn, `"strict"` makes them errors. An ignored rule still narrows.
 
 | Addon | Variant |
@@ -71,6 +76,7 @@ The category's name sets all nine rules (`blender-assumptions = "ignore"`), a ru
 | `asm_editor_member` | `region` in the poll of a Panel whose `bl_space_type` comes from a mixin after `Panel`, `space_data` / `area` in a Menu's poll, `region` in `view_update` / `view_draw` and a WorkSpaceTool's `draw_settings`; not reported: a tested read; guards: `RenderEngine.render`, an operator; `strictness` presets |
 | `asm_preset_context` | `camera` and `object` read at module level in `presets/asm_preset_context/small_sensor.py`, `scene` there under `blender-assumed-context-member`; not reported: a tested read; guards: a function of the preset, a file outside `presets`; `strictness` presets |
 | `asm_added_object` | `object` / `active_object` after `primitive_cube_add()`, `object.add()` and `light_add()` in a helper and an operator; not reported: a tested read; guards: a read before the call, another function, after a non-`_add` operator; `strictness` presets |
-| `asm_config` | an `[[overrides]]` entry in `tests/typecheck/ty.toml`: the category at `error`, `blender-assumed-context-member` at `ignore`, the four rules of spec #123 at `warn` |
+| `asm_subclass_member` | `target` of `ob.constraints[0]`, `levels` of `ob.modifiers["Subdivision"]`, `spot_size` of `bpy.data.lights["Key"]`, `default_value` of `node.inputs["Color"]`; not reported: after a Type tag test; errors: a misspelt member, a member of `ID`'s subclasses on an `ID`, of `TextCurve` on a `Curve` (no Type tag); `strictness` presets |
+| `asm_config` | an `[[overrides]]` entry in `tests/typecheck/ty.toml`: the category at `error`, `blender-assumed-context-member` at `ignore`, the five rules of spec #123 at `warn` |
 
 The `blender-*` markers need the checker; the `| None` markers and the upstream ones are guards (`bare-ok`).

@@ -226,15 +226,20 @@ features/assumptions/asm_config/__init__.py | unused-ignore-comment | print(cont
 features/assumptions/asm_config/__init__.py | missing-union-attribute | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_config/__init__.py | unused-ignore-comment | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_config/__init__.py | unused-ignore-comment | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | missing-attribute | return ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_config/__init__.py | unused-ignore-comment | return ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_config/__init__.py | strictness-default | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
 features/assumptions/asm_config/__init__.py | strictness-default | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_config/__init__.py | strictness-default | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | strictness-default | return ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_config/__init__.py | strictness-lenient | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
 features/assumptions/asm_config/__init__.py | strictness-lenient | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_config/__init__.py | strictness-lenient | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | strictness-lenient | return ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_config/__init__.py | strictness-strict | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
 features/assumptions/asm_config/__init__.py | strictness-strict | return context.space_data.type == 'VIEW_3D'  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_config/__init__.py | strictness-strict | return context.object.name  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_config/__init__.py | strictness-strict | return ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_config/presets/asm_config/camera.py | unused-ignore-comment | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
 features/assumptions/asm_config/presets/asm_config/camera.py | strictness-default | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
 features/assumptions/asm_config/presets/asm_config/camera.py | strictness-lenient | bpy.context.camera.lens = 35.0  # ty: ignore[blender-assumed-preset-context]
@@ -369,6 +374,48 @@ features/assumptions/asm_registration/__init__.py | unused-ignore-comment | layo
 features/assumptions/asm_registration/__init__.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences  # ty: ignore[blender-assumed-registration]
 features/assumptions/asm_registration/__init__.py | invalid-argument-type | layout.prop(prefs, "flag")
 features/assumptions/asm_registration/__init__.py | missing-attribute | if cls.is_registered:
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | type-assertion-failure | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return con.target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | return con.target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | type-assertion-failure | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return md.levels  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | return md.levels  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | type-assertion-failure | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return con.target  # narrowed by the Type tag: not reported
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | return con.target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | return md.levels  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | return con.target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | return md.levels  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | return con.target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | return md.levels  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | strictness-default | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | strictness-lenient | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | strictness-strict | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/bpy_symbols/sym_bpy_extras/__init__.py | incompatible-method-override | class SYM_BPY_EXTRAS_OT_import(Operator, ImportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | incompatible-method-override | class SYM_BPY_EXTRAS_OT_export(Operator, ExportHelper):
 features/bpy_symbols/sym_bpy_extras/__init__.py | incompatible-method-override | class SYM_BPY_EXTRAS_OT_export_module(Operator, io_utils_from.ExportHelper):
@@ -828,6 +875,18 @@ features/registration/reg_conditional/__init__.py | missing-attribute | if cls.i
 features/registration_checks/regchk_unregister_leak/__init__.py | missing-attribute | bpy.types.VIEW3D_MT_object.append(draw_menu)
 features/registration_checks/regchk_unregister_leak/__init__.py | missing-attribute | bpy.types.VIEW3D_MT_object.append(draw_leaked_menu)  # ty: ignore[blender-unregister-mismatch]
 features/registration_checks/regchk_unregister_leak/__init__.py | missing-attribute | bpy.types.VIEW3D_MT_object.remove(draw_menu)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
+features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | con.target = target
+features/type_narrowing/narrow_constructors/__init__.py | unknown-argument | track = ob.constraints.new(type='TRACK_TO', name="Aim")
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(track, TrackToConstraint)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SpotLight)
+features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | light.spot_size = 0.8
+features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return light
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SunLight | SpotLight)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(attribute, FloatAttribute)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath)
+features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | node.operation = 'MULTIPLY'
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(other, ShaderNodeMath)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | levels = max(levels, md.levels)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, MultiresModifier)  # elif: the earlier tag is ruled out

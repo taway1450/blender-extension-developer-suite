@@ -1190,6 +1190,77 @@ CASES = [
     ),
     pytest.param(
         diagnostic(
+            "blender-assumed-subclass-member",
+            "`Constraint` has no member `target`, only its subclasses `ActionConstraint`, `ArmatureConstraint`, "
+            "`ChildOfConstraint` and 17 more declare it: the struct is taken to be one, so it is `Object | None`",
+            "target = con.target",
+            path="scripts/startup/bl_operators/constraint.py",
+            function="execute",
+        ),
+        "assumed-subclass-member",
+        id="c7-assumed-subclass-member",
+    ),
+    pytest.param(
+        diagnostic(
+            "not-subscriptable",
+            "Cannot subscript object of type `None` with no `__getitem__` method",
+            'core_shader.inputs["Emission Strength"].default_value = self.emit_strength',
+            path="scripts/startup/bl_operators/image_as_planes.py",
+            function="create_cycles_material",
+        ),
+        "fake-bpy-node-sockets",
+        id="c7-fake-bpy-node-sockets",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-return-type",
+            "Return type does not match returned value: expected `FileAssetSelectParams`, found "
+            "`FileSelectParams | None`",
+            "return space_data.params",
+            path="scripts/addons_core/pose_library/asset_browser.py",
+            function="params",
+        ),
+        "helper-checks-none",
+        id="c7-helper-checks-asset-browser-params",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            'Method `__getitem__` of type `Overload[(key: Literal[0, "Factor"]) -> NodeSocketFloatFactor, (key: '
+            'Literal[1, "Shader"]) -> NodeSocketShader, (key: Literal[2, "Shader"]) -> NodeSocketShader]` cannot be '
+            'called with key of type `Literal["Fac"]` on object of type `_ShaderNodeMixShader_NodeInputs`',
+            'node_tree.links.new(mix_shader.inputs["Fac"], tex_image.outputs["Alpha"])',
+            path="scripts/startup/bl_operators/image_as_planes.py",
+            function="create_cycles_material",
+        ),
+        "fake-bpy-node-sockets",
+        id="c7-fake-bpy-node-socket-identifier",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-assignment",
+            'Object of type `Literal["Background"]` is not assignable to attribute `layer` of type '
+            '`Literal["PLACEHOLDER"]`',
+            'rlayer_bg.layer = "Background"',
+            path="scripts/startup/bl_operators/clip.py",
+            function="_setupNodes",
+        ),
+        "dynamic-enum",
+        id="c7-dynamic-enum-placeholder",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Object of type `ID` has no attribute `vertices`",
+            "verts = block.vertices",
+            path="scripts/startup/bl_operators/object.py",
+            function="execute",
+        ),
+        "base-class-subtype",
+        id="c7-no-subclass-member-on-id-falls-through",
+    ),
+    pytest.param(
+        diagnostic(
             "invalid-assignment",
             "Object of type `Text` is not assignable to attribute `script` on type `FreestyleModuleSettings | None`",
             "self.freestyle_module.script = text",

@@ -88,6 +88,14 @@ features/properties/props_rna/check_props_rna.py | missing-union-attribute | ass
 features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
 features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(settings.bl_rna.properties["count"], IntProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(PROPS_RNA_Settings.bl_rna.properties["flags"], EnumProperty)  # oracle-skip: typed by the key
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
+features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | con.target = target
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(track, TrackToConstraint)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SpotLight)
+features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | light.spot_size = 0.8
+features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return light
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SunLight | SpotLight)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(attribute, FloatAttribute)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
 features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return len(ob.data.vertices)

@@ -217,6 +217,7 @@ CORRELATED_SITES = [
 # The None test lives in a helper without a TypeGuard, or in the only caller.
 HELPER_CHECKS_SITES = [
     ("scripts/addons_core/pose_library/operators.py", "POSELIB_OT_paste_asset", "poll", ""),
+    ("scripts/addons_core/pose_library/asset_browser.py", "", "params", "return space_data.params"),
     (
         "scripts/addons_core/viewport_vr_preview/operators.py",
         "VIEW3D_OT_vr_location_scouting_add_marker_from_capture",
@@ -440,6 +441,11 @@ FAKE_BPY_NULLABLE = re.compile(r"in union `Struct \| None`|`SceneRenderView \| N
 FAKE_BPY_NONE_INDEX = re.compile(
     r"\(key: int \| str(?: \| tuple\[str, \.\.\.\])?\) -> \w+, .* cannot be called with key of type `None`"
     r"|between objects of type `None` and `Literal\[1\]`"
+)
+DYNAMIC_ENUM_PLACEHOLDER = re.compile(r"""Literal\[(['"])(?:DEFAULT|PLACEHOLDER)\1\]`""")
+# The per-node socket collections of fake-bpy-module, whose `__getitem__` takes the socket names as literals.
+FAKE_BPY_NODE_SOCKETS_KEY = re.compile(
+    r"Method `__getitem__` of type `(?:Overload\[\(key: Literal\[0, |bound method _\w+_Node(?:In|Out)puts\.)"
 )
 # The library key `(name, None)` of a local data-block, which fake-bpy-module's `tuple[str, ...]` rejects.
 FAKE_BPY_LIB_KEY = re.compile(r"tuple\[str, \.\.\.\]\) -> .* cannot be called with key of type `tuple\[[^`]*, None\]`")
@@ -982,6 +988,7 @@ CAUSES = [
         ("assumption", "C5", ("assumed-internal-operator", "assumed-editor-member", "assumed-preset-context",
                               "assumed-added-object")),
         ("implied-narrowing", "C6", ("narrowed-by-bl-context",)),
+        ("assumption", "C7", ("assumed-subclass-member",)),
     ) for name in names if name != "assumed-preferences"),
     # An add-on's `register()` reads its own preferences, which exist once the add-on is enabled.
     Cause("assumed-preferences", "assumption", "S6", any_of(rule("blender-assumed-preferences"), lambda d: (
@@ -995,6 +1002,12 @@ CAUSES = [
     Cause("fake-bpy-nullable", "typechecker-fix", "", lambda d: FAKE_BPY_NULLABLE.search(d.msg) is not None
           or (FAKE_BPY_NONE_INDEX.search(d.msg) is not None and reads_from(d, r"\.active_\w+"))),
     Cause("fake-bpy-lib-key", "typechecker-fix", "", lambda d: FAKE_BPY_LIB_KEY.search(d.msg) is not None),
+    # fake-bpy-module types a node class's own sockets `_<Node>_NodeInputs | None`, indexed by the socket names
+    # only, which a node typed by its constructor (`nodes.new('ShaderNodeBsdfPrincipled')`) or a Type tag test
+    # exposes at `node.inputs["Color"]` (and at an identifier such as `"Fac"`).
+    Cause("fake-bpy-node-sockets", "typechecker-fix", "", lambda d: re.search(r"\.(?:inputs|outputs)\[", d.text)
+          is not None and ((d.rule == "not-subscriptable" and "`None`" in d.msg)
+                           or FAKE_BPY_NODE_SOCKETS_KEY.search(d.msg) is not None)),
     Cause("fake-bpy-protocol", "typechecker-fix", "", lambda d: FAKE_BPY_PROTOCOL.search(d.msg) is not None),
     # Blender's own code is wrong (BF1 runtime, BF2 annotations).
     Cause("property-on-panel", "blender-fix", "BF1", rule("blender-unsupported-property-host")),
@@ -1037,9 +1050,10 @@ CAUSES = [
     Cause("render-engine-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and RENDER_ENGINE_UPDATES.search(d.msg) is not None),
     # Enums whose items are computed: at runtime (render engines, project sections) or from a tuple expression.
-    Cause("dynamic-enum", "typechecker-fix", "S2", lambda d: "Literal['DEFAULT']`" in d.msg
-          or 'Literal["DEFAULT"]`' in d.msg or re.search(r"Object of type `str & ~Literal\[|to attribute "
-                                                       r"`(?:engine|active_section)` of type `Literal", d.msg) is not None),
+    # The stubs give a computed enum the placeholder item its definition starts with (`DEFAULT`, `PLACEHOLDER`).
+    Cause("dynamic-enum", "typechecker-fix", "S2", lambda d: DYNAMIC_ENUM_PLACEHOLDER.search(d.msg) is not None
+          or re.search(r"Object of type `str & ~Literal\[|to attribute `(?:engine|active_section)` of type `Literal",
+                       d.msg) is not None),
     Cause("stub-context-manager", "typechecker-fix", "S2", lambda d: d.rule == "invalid-context-manager"
           and re.search(r"libraries\.load|temp_data", d.text) is not None),
     Cause("stub-docstring", "typechecker-fix", "S2", lambda d: re.search(
