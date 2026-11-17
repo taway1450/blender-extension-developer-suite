@@ -92,9 +92,9 @@ _Avoid_: heuristic, soft error
 **Implied narrowing**:
 Narrowing from a Blender fact visible in the code that Python itself does not treat as a check, such as a `poll()` that checks a pointer, a menu's idname prefix naming the space it is drawn in, or a panel's `bl_context` naming the Properties tab or mode it is drawn in. Like an Assumption, it is reported under its own rule.
 
-**Pointer invariant**:
+**Pointer alias**:
 A guarantee Blender's C code keeps between two pointers, such that one being set means the other is set too, or the two are the same pointer: `space_data.node_tree` being set means `space_data.edit_tree` is set, and `context.active_node` is `space_data.edit_tree.nodes.active`. The typechecker applies it without reporting, so it is no Rule category.
-_Avoid_: alias, correlated pointer
+_Avoid_: pointer invariant, correlated pointer
 
 **Imprecise annotation**:
 An annotation that is less precise than the stubs but works and is common in add-ons, such as `-> set[str]` on `execute`. The typechecker accepts it, types the code as the precise form, and reports it under its own rule.
