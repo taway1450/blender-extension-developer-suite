@@ -1,8 +1,8 @@
 # Feature-test results that are not passes, fake-bpy-module stubs, Blender 5.2.
 # `mise run check:features 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | if context.preferences is not None:
-features/addon_preferences/prefs_ext/ui/panel.py | unresolved-attribute | self.layout.prop(preferences(context.preferences), "scale")
+features/addon_preferences/prefs_ext/ui/panel.py | missing-union-attribute | if context.preferences is not None:
+features/addon_preferences/prefs_ext/ui/panel.py | missing-union-attribute | self.layout.prop(preferences(context.preferences), "scale")
 features/api_types/api_c_modules/__init__.py | import-not-found | import _freestyle
 features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _bpy
 features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _bpy_hydra
@@ -22,7 +22,7 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]  # None only for an empty slot of an ID-pointer array
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(active_data, bpy_struct | None)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(context, Context) #5
-features/api_types/api_never_none/__init__.py | invalid-method-override | def update(self, data, depsgraph):
+features/api_types/api_never_none/__init__.py | incompatible-method-override | def update(self, data, depsgraph):
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(depsgraph, Depsgraph) #3
@@ -58,36 +58,36 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ksi.iterator(context, None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | shelf.asset_poll(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
-features/api_types/api_stub_gaps/__init__.py | invalid-return-type | return None
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def update_script_node(self, node):
+features/api_types/api_stub_gaps/__init__.py | invalid-explicit-return | return None
+features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_script_node(self, node):
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(node, Node | None)
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def update_render_passes(self, scene, renderlayer):
+features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_render_passes(self, scene, renderlayer):
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(scene, Scene | None)
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(renderlayer, ViewLayer | None)
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def update_custom_camera(self, cam):
+features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_custom_camera(self, cam):
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(cam, Camera | None)
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def __call__(self, edge: Interface1D) -> bool:
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
-features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | return None if iter.is_end else iter.object
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def shade(self, s: Stroke) -> None:
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, edge: Interface1D) -> bool:
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
+features/api_types/api_stub_gaps/__init__.py | missing-attribute | return None if iter.is_end else iter.object
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def shade(self, s: Stroke) -> None:
 features/api_types/api_stub_gaps/__init__.py | unknown-argument | return BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False)
 features/api_types/api_stub_gaps/__init__.py | invalid-argument-type | return bpy.data.objects["api_stub_gaps_lookup", None] == ob
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
 features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
-features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | values = (bpy.utils.system_resource('SCRIPTS'), bpy.utils.is_path_builtin(""), bpy.path.extensions_image,
-features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | next(iter(bpy.path.extensions_image)), imbuf.file_types, next(iter(imbuf.file_types)),
-features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | next(iter(imbuf.file_types.values())))
+features/api_types/api_stub_gaps/__init__.py | missing-attribute | values = (bpy.utils.system_resource('SCRIPTS'), bpy.utils.is_path_builtin(""), bpy.path.extensions_image,
+features/api_types/api_stub_gaps/__init__.py | missing-attribute | next(iter(bpy.path.extensions_image)), imbuf.file_types, next(iter(imbuf.file_types)),
+features/api_types/api_stub_gaps/__init__.py | missing-attribute | next(iter(imbuf.file_types.values())))
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with ibuf.with_buffer() as buf:
@@ -103,12 +103,12 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | unsupported-operator | assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(Operator.description(context, properties), str | None)  # bare-ok: a stub fact: None shows the docstring
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(API_STUB_GAPS_OT_describe.description(context, properties), str | None)
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face.loops, BMElemSeq[BMLoop])  # bare-ok: a stub fact: an element link names its element type
@@ -122,18 +122,18 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type 
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.objects[name, None], Object)  # bare-ok: a stub fact: a local object by its (name, None) key
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(data.materials[name, library], Material)  # bare-ok: a stub fact: a linked material by its library path
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.materials[name, library], Material)  # bare-ok: a stub fact: a linked material by its library path
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.constraint, Constraint | None)  # bare-ok: a stub fact: set by the constraint panels' layouts
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.constraint, Constraint | None)  # bare-ok: a stub fact: set by the constraint panels' layouts
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(context.constraint, Constraint | None)  # bare-ok: a stub fact: set by the constraint panels' layouts
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.keymap, KeyMap | None)  # bare-ok: a stub fact: set by the keymap editor
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.keymap, KeyMap | None)  # bare-ok: a stub fact: set by the keymap editor
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(context.keymap, KeyMap | None)  # bare-ok: a stub fact: set by the keymap editor
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.animated_id, ID | None)  # bare-ok: a stub fact: set by the driver editor's layout
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.animated_id, ID | None)  # bare-ok: a stub fact: set by the driver editor's layout
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(context.animated_id, ID | None)  # bare-ok: a stub fact: set by the driver editor's layout
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.freestyle_module, FreestyleModuleSettings | None)  # bare-ok: a stub fact: set by the Freestyle panel
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.freestyle_module, FreestyleModuleSettings | None)  # bare-ok: a stub fact: set by the Freestyle panel
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(context.freestyle_module, FreestyleModuleSettings | None)  # bare-ok: a stub fact: set by the Freestyle panel
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.tool, WorkSpaceTool | None)  # bare-ok: a stub fact: set by the tool settings' layouts
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.tool, WorkSpaceTool | None)  # bare-ok: a stub fact: set by the tool settings' layouts
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(context.tool, WorkSpaceTool | None)  # bare-ok: a stub fact: set by the tool settings' layouts
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.asset_shelf, AssetShelf | None)  # bare-ok: a stub fact: set by an asset shelf's layout
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.asset_shelf, AssetShelf | None)  # bare-ok: a stub fact: set by an asset shelf's layout
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(context.asset_shelf, AssetShelf | None)  # bare-ok: a stub fact: set by an asset shelf's layout
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.libraries.load(path), AbstractContextManager[tuple[Any, Any]])  # bare-ok: a stub fact: entering it gives the input and output libraries
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.libraries.load(path, link=True) as (data_from, data_to):
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(temp, BlendData)  # bare-ok: a stub fact: entering temp_data gives a temporary BlendData
@@ -174,213 +174,216 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips.new(), ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips[0], ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(strip, ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
-features/assumptions/asm_config/__init__.py | unresolved-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
-features/assumptions/asm_context_member/__init__.py | unresolved-attribute | self.layout.label(text=context.scene.name)  # a callback: Guaranteed, not reported
-features/assumptions/asm_context_member/__init__.py | unresolved-attribute | return context.scene.name  # ty: ignore[blender-assumed-context-member]
+features/assumptions/asm_config/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | self.layout.label(text=context.scene.name)  # a callback: Guaranteed, not reported
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | return context.scene.name  # ty: ignore[blender-assumed-context-member]
 features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | return context.scene.name  # ty: ignore[blender-assumed-context-member]
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
-features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
-features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
 features/assumptions/asm_context_member/__init__.py | unused-ignore-comment | assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member] #2
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
-features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
+features/assumptions/asm_context_member/__init__.py | missing-union-attribute | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
 features/assumptions/asm_context_member/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
-features/assumptions/asm_context_member/__init__.py | unresolved-attribute | assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
-features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.label(text=str(index))
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=str(index))
 features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]
-features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.prop(item, "name", text="", emboss=False)  # ty: ignore[blender-assumed-list-item]
-features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.label(text=str(index)) #2
-features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
-features/assumptions/asm_list_item/__init__.py | unresolved-attribute | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name", text="", emboss=False)  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=str(index)) #2
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[blender-assumed-list-item]
+features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
 features/assumptions/asm_list_item/__init__.py | unused-ignore-comment | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
-features/assumptions/asm_preferences/__init__.py | unresolved-attribute | prefs = context.preferences.addons[__package__].preferences  # a callback: not reported
-features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__)
-features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__) #2
-features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__)  # the entry exists while Blender enables the add-on
-features/assumptions/asm_preferences/__init__.py | unresolved-attribute | entry = bpy.context.preferences.addons.get(__package__) #3
-features/assumptions/asm_registration/__init__.py | unresolved-attribute | layout.label(text=str(context.scene.asm_registration_always))
-features/assumptions/asm_registration/__init__.py | unresolved-attribute | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
+features/assumptions/asm_preferences/__init__.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences  # a callback: not reported
+features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__)
+features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__) #2
+features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__)  # the entry exists while Blender enables the add-on
+features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__) #3
+features/assumptions/asm_registration/__init__.py | missing-attribute | layout.label(text=str(context.scene.asm_registration_always))
+features/assumptions/asm_registration/__init__.py | missing-union-attribute | layout.label(text=str(context.scene.asm_registration_always))
+features/assumptions/asm_registration/__init__.py | missing-attribute | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
+features/assumptions/asm_registration/__init__.py | missing-union-attribute | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
 features/assumptions/asm_registration/__init__.py | unused-ignore-comment | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
-features/assumptions/asm_registration/__init__.py | unresolved-attribute | prefs = context.preferences.addons[__package__].preferences  # ty: ignore[blender-assumed-registration]
+features/assumptions/asm_registration/__init__.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences  # ty: ignore[blender-assumed-registration]
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.scene, Scene)
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences)
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager)
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.blend_data, BlendData)
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.scene, Scene) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #2
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer)
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings)
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings)
-features/context_members/ctx_members/__init__.py | unresolved-attribute | scene = context.scene
+features/context_members/ctx_members/__init__.py | missing-union-attribute | scene = context.scene
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(scene, Scene)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #2
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager) #2
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.blend_data, BlendData) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData) #2
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.scene, Scene) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #3
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #2
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #2
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(ctx.scene, Scene)  # a renamed context parameter
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(ctx.scene, Scene)  # a renamed context parameter
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(ctx.scene, Scene)  # a renamed context parameter
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #3
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager) #3
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.blend_data, BlendData) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData) #3
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.scene, Scene) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #4
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #4
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #3
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #3
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #4
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.preferences, Preferences) #4
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window_manager, WindowManager) #4
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.window_manager, WindowManager) #4
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.blend_data, BlendData) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.blend_data, BlendData) #4
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.blend_data, BlendData) #4
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.scene, Scene) #5
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.scene, Scene) #5
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.scene, Scene) #5
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #4
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.view_layer, ViewLayer) #4
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #4
-features/context_members/ctx_members/__init__.py | unresolved-attribute | assert_type(context.tool_settings, ToolSettings) #4
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D) #2
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D) #2
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D) #2
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area)
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area)
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area)
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.region, Region)
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.region, Region)
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region)
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | space = context.space_data
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | space = context.space_data
+features/context_members/ctx_spaces/__init__.py | missing-attribute | assert_type(space.shading, bpy.types.View3DShading)
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(space.shading, bpy.types.View3DShading)
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(space.shading, bpy.types.View3DShading)
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceImageEditor)  # bl_space_type from a base
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceImageEditor)  # bl_space_type from a base
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceImageEditor)  # bl_space_type from a base
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceProperties)
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceProperties)
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceProperties)
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area) #2
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area) #2
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area) #2
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.region, Region) #2
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.region, Region) #2
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region) #2
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, Space)  # the top bar has no Space subclass
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, Space)  # the top bar has no Space subclass
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space)  # the top bar has no Space subclass
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area) #3
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area) #3
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area) #3
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D) #3
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D) #3
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D) #3
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area) #4
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.area, Area) #4
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area) #4
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.region, Region) #3
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.region, Region) #3
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region) #3
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: a menu opens from any editor
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: a menu opens from any editor
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: a list is drawn in any layout
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an operator runs from anywhere, or in --background
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
-features/context_members/ctx_spaces/__init__.py | unresolved-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
-features/implied_narrowings/nar_config/__init__.py | unresolved-attribute | return context.object is not None
-features/implied_narrowings/nar_config/__init__.py | unresolved-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_config/__init__.py | unresolved-attribute | self.layout.prop(context.space_data, "show_gizmo")  # blender-narrowed-by-menu-prefix is ignored here
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, Space | None)  # bare-ok: a menu opens from any editor
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area | None)  # bare-ok: a menu opens from any editor
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, Space | None)  # bare-ok: a list is drawn in any layout
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an operator runs from anywhere, or in --background
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
+features/context_members/ctx_spaces/__init__.py | missing-union-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
+features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | return context.object is not None
+features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | self.layout.prop(context.space_data, "show_gizmo")  # blender-narrowed-by-menu-prefix is ignored here
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
 features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix] #2
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-menu-prefix]
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | self.layout.prop(context.space_data, "show_gizmo")  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | self.layout.prop(context.space_data, "show_gizmo")  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | self.layout.prop(context.space_data, "show_gizmo")  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | invalid-argument-type | self.draw_helper(context)
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | space = context.space_data  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | space = context.space_data  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | space = context.space_data  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-attribute | assert_type(space.clip, bpy.types.MovieClip | None)
 features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(space.clip, bpy.types.MovieClip | None)
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(space.clip, bpy.types.MovieClip | None)
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceDopeSheetEditor)  # ty: ignore[blender-narrowed-by-menu-prefix]
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | type-assertion-failure | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
 features/implied_narrowings/nar_menu_prefix/__init__.py | unused-ignore-comment | assert_type(context.space_data, Space)  # ty: ignore[blender-narrowed-by-menu-prefix]
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an add-on's own prefix names no editor
-features/implied_narrowings/nar_menu_prefix/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: an add-on's own prefix names no editor
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | context.object is not None
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and context.active_node
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and isinstance(context.edit_bone, EditBone)
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and bool(context.pose_bone)
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | and context.object.active_material is not None
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.active_node, Node)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.edit_bone, EditBone)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | self.layout.prop(context.object, "name")  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | ob = context.object  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.material, Material | None)  # bare-ok: the poll did not check it
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll] #2
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | ob = context.active_object
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | if not context.material or context.material.node_tree is None:
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.space_data, Space | None)  # bare-ok: an add-on's own prefix names no editor
+features/implied_narrowings/nar_menu_prefix/__init__.py | missing-union-attribute | assert_type(context.area, Area | None)  # bare-ok: an add-on's own prefix names no editor
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | context.object is not None
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and context.active_node
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and isinstance(context.edit_bone, EditBone)
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and bool(context.pose_bone)
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and context.object.active_material is not None
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.active_node, Node)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.edit_bone, EditBone)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.prop(context.object, "name")  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | ob = context.object  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.material, Material | None)  # bare-ok: the poll did not check it
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | ob = context.active_object
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | if not context.material or context.material.node_tree is None:
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | if context.material:  # tested for truth only: not reported
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | self.layout.label(text=context.material.name)
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | material = context.material
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | return super().poll(context) and context.material is not None
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | if context.material:  # tested for truth only: not reported
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.label(text=context.material.name)
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | material = context.material
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | return super().poll(context) and context.material is not None
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object | None)  # bare-ok: modal runs on later events, without a new poll
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object | None)  # bare-ok: a props dialog draws without a new poll
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | return context.area is not None and context.area.type == "VIEW_3D"
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: modal runs on later events, without a new poll
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: a props dialog draws without a new poll
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | return context.area is not None and context.area.type == "VIEW_3D"
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.area, Area)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | ob = context.object
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | ob = context.object
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.object, Object | None)  # bare-ok: no poll checked it
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: no poll checked it
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceProperties)
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceProperties)
-features/implied_narrowings/nar_poll/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceProperties)
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
-features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.area, Area)
 features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.area, Area)
-features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | assert_type(context.area, Area)
-features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | unused-ignore-comment | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
 features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
-features/implied_narrowings/nar_popover/__init__.py | unresolved-attribute | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
 features/implied_narrowings/nar_popover/__init__.py | strictness-default | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | strictness-default | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | strictness-strict | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | strictness-strict | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
-features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
+features/inheritance/inh_override_types/__init__.py | missing-union-attribute | return context.active_object  # any value: Blender takes its truth value
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #2
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #3
@@ -412,51 +415,53 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #17
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(layout, UILayout) #5
 features/inheritance/inh_overrides/check_inh_overrides.py | type-assertion-failure | assert_type(INH_OVERRIDES_OT_all.description(context, op.properties), str | None)
-features/inheritance/inh_registered_base/__init__.py | unresolved-attribute | layout.label(text=item.name)
+features/inheritance/inh_registered_base/__init__.py | missing-union-attribute | layout.label(text=item.name)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.register_class(OPCALL_MACRO_OT_combo)
 features/operator_calls/opcall_macro/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPCALL_MACRO_OT_combo)
 features/operator_properties/opprops_idnames/check_opprops_idnames.py | type-assertion-failure | assert_type(layout.operator(name), OperatorProperties | None)  # bare-ok: the stub type is kept for a non-literal idname
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | missing-attribute | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.register_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/__init__.py | invalid-argument-type | bpy.utils.unregister_class(OPPROPS_SINKS_OT_combo)
 features/operator_properties/opprops_sinks/check_opprops_sinks.py | type-assertion-failure | assert_type(layout.template_popup_confirm("", cancel_text="Close"), OperatorProperties | None)  # bare-ok: no operator, only a cancel button: the stub type is kept and no idname is reported
-features/properties/props_data_blocks/__init__.py | unresolved-attribute | layout.label(text=item.name)
-features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=str(self.value))
-features/properties/props_hosts/__init__.py | unresolved-attribute | layout.label(text=text)
+features/properties/props_data_blocks/__init__.py | missing-union-attribute | layout.label(text=item.name)
+features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=str(self.value))
+features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=text)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | levels = max(levels, md.levels)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | levels = max(levels, md.levels)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, MultiresModifier)  # elif: the earlier tag is ruled out
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | levels = max(levels, md.levels) #2
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | levels = max(levels, md.levels) #2
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, ArrayModifier)  # the rest of the function after `!=` ... return
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return md.count
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return md.count
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier | MultiresModifier)
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return md.levels > 0
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return md.levels > 0
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return con.target
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return con.target
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(strip, ColorStrip)
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | colors.append(strip.color)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | colors.append(strip.color)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(light, SunLight)
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return light.angle
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return light.angle
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(light, PointLight | SpotLight)  # the rest of the function after `not in` ... return
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return light.shadow_soft_size
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return light.shadow_soft_size
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath)
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return node.operation
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return node.operation
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)  # a match on the tag
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return f"Subdivision {md.levels}"
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return f"Subdivision {md.levels}"
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(socket, NodeSocketString | NodeSocketStringFilePath)  # several socket classes share a type
-features/type_narrowing/narrow_values/__init__.py | unresolved-attribute | return socket.default_value
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return socket.default_value
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return len(ob.data.vertices)
+features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return len(ob.data.vertices)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, TextCurve)  # the curve of a text object is refined again
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.body
+features/type_narrowing/narrow_views/__init__.py | missing-attribute | return ob.data.body
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(meshes, list[Mesh])  # the test in a comprehension
-features/type_narrowing/narrow_views/__init__.py | invalid-return-type | return meshes
+features/type_narrowing/narrow_views/__init__.py | invalid-explicit-return | return meshes
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a match on the tag
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.name
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | if md.type == 'FLUID' and md.fluid_type == 'DOMAIN':
+features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return ob.data.name
+features/type_narrowing/narrow_views/__init__.py | missing-attribute | if md.type == 'FLUID' and md.fluid_type == 'DOMAIN':
+features/type_narrowing/narrow_views/__init__.py | missing-attribute | assert_type(md.domain_settings, FluidDomainSettings)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(md.domain_settings, FluidDomainSettings)
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | assert_type(md.domain_settings, FluidDomainSettings)
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return md.domain_settings.resolution_max
+features/type_narrowing/narrow_views/__init__.py | missing-attribute | return md.domain_settings.resolution_max
 features/type_narrowing/narrow_views/check_narrow_views.py | type-assertion-failure | assert_type(ob.data, Mesh)  # oracle-skip: narrowing by a Type tag needs the checker

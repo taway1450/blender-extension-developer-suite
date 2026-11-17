@@ -17,5 +17,5 @@ def own(scene: Scene) -> None:
 
 
 def other_addons(scene: Scene) -> None:
-    bpy.ops.regchk_isolation_b  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
-    scene.regchk_isolation_b_value  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    bpy.ops.regchk_isolation_b  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    scene.regchk_isolation_b_value  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it

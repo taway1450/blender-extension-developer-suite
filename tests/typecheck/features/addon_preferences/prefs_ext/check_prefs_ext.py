@@ -16,9 +16,9 @@ def key_spellings(preferences: Preferences) -> None:
 
 
 def through_functions(prefs: Preferences) -> None:
-    assert_type(preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-return-type
-    assert_type(helpers.preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-return-type
-    assert_type(panel.preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-return-type
+    assert_type(preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-explicit-return
+    assert_type(helpers.preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-explicit-return
+    assert_type(panel.preferences(prefs), PREFS_EXT_Preferences)  # bare-ok: the return annotation types the call; the checker's part is the helper's return, otherwise invalid-explicit-return
 
 
 def members(preferences: Preferences) -> None:
@@ -27,7 +27,7 @@ def members(preferences: Preferences) -> None:
     assert_type(prefs.mode, Literal["A", "B"])  # oracle-skip: stock ty types __package__ as str | None
     prefs.scale = 2.0  # oracle-skip: stock ty types __package__ as str | None
     prefs.scale = "2"  # ty: ignore[invalid-assignment]  # oracle-skip: stock ty types __package__ as str | None  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-    prefs.missing  # ty: ignore[unresolved-attribute]  # oracle-skip: stock ty types __package__ as str | None  # bare-ok: must stay missing: ty-blender must not add it
+    prefs.missing  # ty: ignore[missing-attribute]  # oracle-skip: stock ty types __package__ as str | None  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def get(preferences: Preferences) -> None:

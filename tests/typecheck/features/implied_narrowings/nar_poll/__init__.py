@@ -39,7 +39,7 @@ class NAR_POLL_PT_conjuncts(Panel):
         ob = context.object  # ty: ignore[blender-narrowed-by-poll]
         assert_type(ob.active_material, Material)  # ty: ignore[blender-narrowed-by-poll]
         assert_type(context.material, Material | None)  # bare-ok: the poll did not check it
-        context.scene.camera.name  # ty: ignore[unresolved-attribute]  # bare-ok: the poll did not check scene.camera
+        context.scene.camera.name  # ty: ignore[missing-union-attribute]  # bare-ok: the poll did not check scene.camera
 
     def draw_header(self, context):
         assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll]

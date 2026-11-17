@@ -16,10 +16,10 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | imprecise_annotations | 3/3 | 20/20 | 5/5 | 2/2 | 0 |
 | inheritance | 67/67 | 48/48 | 15/15 | 3/3 | 0 |
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
-| operator_properties | 54/54 | 13/13 | 11/11 | 5/5 | 0 |
+| operator_properties | 54/54 | 13/13 | 10/11 | 5/5 | 0 |
 | properties | 433/433 | 102/102 | 10/10 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
 | registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 18/18 | - | 2/2 | - | 0 |
-| **total** | 929/929 | 387/387 | 233/233 | 44/44 | 0 |
+| **total** | 929/929 | 387/387 | 232/233 | 44/44 | 0 |

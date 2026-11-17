@@ -65,7 +65,7 @@ def test_bare_hits_are_the_markers_that_hold_without_the_checker():
     result = bare_result(
         {
             2: [ASSERT_FAILURE],  # needs the checker
-            3: ["unresolved-attribute"],  # the assert holds on Unknown, but the line fails
+            3: ["missing-attribute"],  # the assert holds on Unknown, but the line fails
             6: [UNUSED_IGNORE],  # stock ty reports no invalid-assignment: needs the checker
             7: [UNKNOWN_RULE],  # stock ty already reports invalid-assignment
             8: [UNKNOWN_RULE, UNUSED_IGNORE],

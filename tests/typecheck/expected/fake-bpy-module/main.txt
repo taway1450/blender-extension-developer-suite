@@ -13,20 +13,20 @@ features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(QuantitativeInvisibilityUP1D(0), predicates.QuantitativeInvisibilityUP1D)  # bare-ok: a stub fact: from freestyle.predicates
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(_freestyle.getCurrentScene(), Scene)  # bare-ok: a stub fact: its functions keep their types too
 features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def __call__(self, edge: Interface1D) -> bool:
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
-features/api_types/api_stub_gaps/__init__.py | unresolved-attribute | return None if iter.is_end else iter.object
-features/api_types/api_stub_gaps/__init__.py | invalid-method-override | def shade(self, s: Stroke) -> None:
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, edge: Interface1D) -> bool:
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
+features/api_types/api_stub_gaps/__init__.py | missing-attribute | return None if iter.is_end else iter.object
+features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def shade(self, s: Stroke) -> None:
 features/api_types/api_stub_gaps/__init__.py | invalid-argument-type | return bpy.data.objects["api_stub_gaps_lookup", None] == ob
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with bpy.data.temp_data() as data:
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
 features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | unresolved-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
@@ -67,27 +67,29 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(Keyframe.bl_rna.properties["interpolation"], EnumProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(keyframe.bl_rna.properties["select_control_point"], BoolProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["mode"], EnumProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["pass_index"], IntProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["location"], FloatProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["name"], StringProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["material_slots"], CollectionProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["parent"], PointerProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a name Object lacks keeps Property
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(settings.bl_rna.properties["count"], IntProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | unresolved-attribute | assert_type(PROPS_RNA_Settings.bl_rna.properties["flags"], EnumProperty)  # oracle-skip: typed by the key
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | missing-attribute | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(Keyframe.bl_rna.properties["interpolation"], EnumProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(keyframe.bl_rna.properties["select_control_point"], BoolProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["mode"], EnumProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["pass_index"], IntProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["location"], FloatProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["name"], StringProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["material_slots"], CollectionProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["parent"], PointerProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a name Object lacks keeps Property
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(settings.bl_rna.properties["count"], IntProperty)  # oracle-skip: typed by the key
+features/properties/props_rna/check_props_rna.py | missing-union-attribute | assert_type(PROPS_RNA_Settings.bl_rna.properties["flags"], EnumProperty)  # oracle-skip: typed by the key
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return len(ob.data.vertices)
+features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return len(ob.data.vertices)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, TextCurve)  # the curve of a text object is refined again
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.body
+features/type_narrowing/narrow_views/__init__.py | missing-attribute | return ob.data.body
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(meshes, list[Mesh])  # the test in a comprehension
-features/type_narrowing/narrow_views/__init__.py | invalid-return-type | return meshes
+features/type_narrowing/narrow_views/__init__.py | invalid-explicit-return | return meshes
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a match on the tag
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return ob.data.name
+features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return ob.data.name
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(md.domain_settings, FluidDomainSettings)
-features/type_narrowing/narrow_views/__init__.py | unresolved-attribute | return md.domain_settings.resolution_max
+features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return md.domain_settings.resolution_max
 features/type_narrowing/narrow_views/check_narrow_views.py | type-assertion-failure | assert_type(ob.data, Mesh)  # oracle-skip: narrowing by a Type tag needs the checker

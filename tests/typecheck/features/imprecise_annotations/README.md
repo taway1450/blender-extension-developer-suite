@@ -26,7 +26,7 @@ default), while a string literal that is not an enum item stays an error.
 | `blender-imprecise-callback-parameter` | a callback parameter annotated with a subtype of the parent's type without `None` | the annotation |
 
 String literals are precise: one that is not an item is an error under every level, and so is a parameter type that
-is no subtype of the parent's (`invalid-method-override`). An add-on's own `Literal` keeps ty's check.
+is no subtype of the parent's (`incompatible-method-override`). An add-on's own `Literal` keeps ty's check.
 
 ## Configuration
 
@@ -50,4 +50,4 @@ the reported level differs.
 
 **Named exceptions (5.2):** Blender 5.2's own stubs type `UIList.draw_item`'s `data` and `item` as `AnyType`, a
 struct class no add-on type derives from, so `data: Armature` and `item: <PropertyGroup>` stay
-`invalid-method-override` there (and `imp_strictness` records `strictness-*` entries for that line).
+`incompatible-method-override` there (and `imp_strictness` records `strictness-*` entries for that line).

@@ -35,11 +35,11 @@ class REG_CLASSMETHOD_PG_scene(PropertyGroup):
 class REG_CLASSMETHOD_PG_never(PropertyGroup):  # ty: ignore[blender-unregistered-class]
     @classmethod
     def register(cls):
-        bpy.types.Scene.reg_classmethod_never = PointerProperty(type=cls)  # ty: ignore[unresolved-attribute]  # bare-ok: never registered: ty-blender must not add it
+        bpy.types.Scene.reg_classmethod_never = PointerProperty(type=cls)  # ty: ignore[missing-attribute]  # bare-ok: never registered: ty-blender must not add it
 
     @classmethod
     def unregister(cls):
-        del bpy.types.Scene.reg_classmethod_never  # ty: ignore[unresolved-attribute]  # bare-ok: never registered: ty-blender must not add it
+        del bpy.types.Scene.reg_classmethod_never  # ty: ignore[missing-attribute]  # bare-ok: never registered: ty-blender must not add it
 
 
 def register():

@@ -3,7 +3,7 @@
 # scripts/ruff.toml; Blender code goes through the ruff built from ty-blender (`mise run lint:*` / `format:*`).
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.2
+    rev: v0.17.5
     hooks:
       - id: ruff-check
         args: [--fix]

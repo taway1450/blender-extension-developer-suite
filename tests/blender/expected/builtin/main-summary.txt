@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender 9a7af0b847
+# check:blender main, builtin stubs, Blender e8e03296af
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -67,7 +67,7 @@ layout-in-operator-helper       typing-debt           -             36         0
 cross-file-registered-property  typing-debt           -             13        12         0         0        12        37
 mixin-self                      typing-debt           -            378         0         3         0       195       576
 type-enum-sub-pointer           typing-debt           -            369        63         2         0       138       572
-python-optional                 typing-debt           -            203         0         3         1        97       304
+python-optional                 typing-debt           -            202         0         3         1        97       303
 preset-context-member           typing-debt           -              0       350         0         0         0       350
 ui-draw-pointer                 typing-debt           -            613         0         7         2         0       622
 object-data-untagged            typing-debt           -             63         0        23         4       371       461
@@ -85,7 +85,7 @@ operator-call                   typing-debt           -              7         0
 unresolved-import               typing-debt           -             52         0         6         0        84       142
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              3         0         0         0         0         3
-untyped-python                  typing-debt           -            667         0         0         2         0       669
+untyped-python                  typing-debt           -            623         0         0         2         0       625
 private-member                  typing-debt           -             12         0         0         0         0        12
 build-option-gap                typing-debt           -              6        65         0         0         0        71
 general-typing                  typing-debt           -            228         0        10         4       256       498
@@ -101,9 +101,9 @@ assumption                                                         332       275
 implied-narrowing                                                 1107         0         2         6        22      1137
 imprecise-annotation                                                 0         0         0         0         5         5
 typechecker-fix                                                    151         0        37         4        52       244
-typing-debt                                                       3271       490       121        54      1777      5713
+typing-debt                                                       3226       490       121        54      1777      5668
 unsorted                                                             0         0         0         0       962       962
-errors                                                            3667       490       161        61      2791      7170
+errors                                                            3622       490       161        61      2791      7125
 warnings                                                          1223       275        24        10       552      2084
 
 rule                                       error warning
@@ -119,34 +119,37 @@ blender-narrowed-by-menu-prefix                0     100
 blender-narrowed-by-poll                       0     778
 blender-narrowed-by-popover                    0      30
 blender-unsupported-property-target            0       1
-call-non-callable                             19       0
 deprecated                                     0      15
-empty-body                                    32       0
 import-not-found                             138       0
+incompatible-attribute-override               28       0
+incompatible-method-override                  23       0
+incompatible-mutable-override                  5       0
+incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1110       0
-invalid-assignment                           762       0
-invalid-attribute-override                    70       0
+invalid-argument-type                       1109       0
+invalid-assignment                           761       0
 invalid-base                                   2       0
 invalid-context-manager                        2       0
+invalid-explicit-return                       25       0
 invalid-generic-class                          1       0
-invalid-method-override                       75       0
-invalid-mutable-override                       5       0
+invalid-implicit-return                        5       0
+invalid-implicit-return-in-function-with-stub-body      32       0
 invalid-parameter-default                      3       0
-invalid-property-type-override                 6       0
-invalid-return-type                           30       0
 invalid-super-argument                         1       0
 invalid-type-form                              7       0
+lost-keyword-for-regular-parameter            52       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-no-matching-overload                          32       0
+missing-attribute                           2082       0
+missing-union-attribute                     2513       0
+no-matching-overload                          31       0
+not-callable                                  19       0
 not-iterable                                  45       0
 not-subscriptable                             89       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      10
 too-many-positional-arguments                  6       0
 unknown-argument                               5       0
-unresolved-attribute                        4595       0
 unresolved-global                              0      37
 unresolved-reference                          65       0
 unsupported-operator                          57       0

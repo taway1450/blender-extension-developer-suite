@@ -247,19 +247,24 @@ NEVER_NONE_CONTEXT_TYPE = re.compile(r"`(?:Preferences|WindowManager) \| None`")
 CALLBACK_PARAMETER_TYPE = re.compile(
     r"`(?:bpy_struct|AnyType|KeyingSet|AssetRepresentation|Depsgraph|ViewLayer) \| None`"
 )
+# The rules ty 0.0.103 split one rule into. The causes do not sort by what tells them apart (a union receiver, a
+# lost keyword, an implicit return), so a cause that names one names all of its split.
+MISSING_ATTRIBUTE_RULES = {"missing-attribute", "missing-union-attribute"}
+METHOD_OVERRIDE_RULES = {"incompatible-method-override", "lost-keyword-for-regular-parameter"}
+RETURN_RULES = {"invalid-explicit-return", "invalid-implicit-return", "invalid-generator-return-type"}
 STUB_GAP_RULES = {
     "not-iterable",
     "unsupported-operator",
     "not-subscriptable",
-    "call-non-callable",
-    "invalid-method-override",
-    "invalid-attribute-override",
-    "invalid-property-type-override",
-    "invalid-mutable-override",
+    "not-callable",
+    *METHOD_OVERRIDE_RULES,
+    "incompatible-attribute-override",
+    "incompatible-property-override",
+    "incompatible-mutable-override",
 }
 GENERAL_TYPING_RULES = {
     "deprecated",
-    "empty-body",
+    "invalid-implicit-return-in-function-with-stub-body",
     "unused-type-ignore-comment",
     "unused-ignore-comment",
     "unresolved-global",
@@ -431,9 +436,9 @@ PYTHON_CLASSES = {"None", "EllipsisType", "ModuleType", "~None"}
 PYTHON_USE_RULES = {
     "not-subscriptable",
     "not-iterable",
-    "call-non-callable",
+    "not-callable",
     "unsupported-operator",
-    "unresolved-attribute",
+    *MISSING_ATTRIBUTE_RULES,
 }
 
 
@@ -490,7 +495,7 @@ def python_types_only(d: Diagnostic) -> bool:
 def correlated_union(d: Diagnostic) -> bool:
     """Whether the message names a union of Blender types, without ``None``, that the code tells apart by a mode, a
     flag or a type field ty does not follow (``PoseBone | EditBone | Object`` picked by ``is_ebone``)."""
-    if d.rule not in {"unresolved-attribute", "invalid-assignment", "invalid-argument-type"}:
+    if d.rule not in {*MISSING_ATTRIBUTE_RULES, "invalid-assignment", "invalid-argument-type"}:
         return False
     # ty names the members that lack an attribute when there are many: "not defined on `AddStrip`, `ColorStrip`".
     if re.search(r"is not defined on `\w+`, `\w+`", d.msg):
@@ -917,9 +922,9 @@ CAUSES = [
     Cause("blend-data-lib-key", "typechecker-fix", "S2", lambda d: "`tuple[str, " in d.msg and "[" in d.text),
     Cause("context-store-member", "typechecker-fix", "S2", lambda d: d.msg.startswith("Object of type `Context`")
           and missing_attribute(d.msg) in CONTEXT_STORE_MEMBERS),
-    Cause("freestyle-positional", "typechecker-fix", "S2", lambda d: d.rule == "invalid-method-override"
+    Cause("freestyle-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and FREESTYLE_OVERRIDES.search(d.msg) is not None),
-    Cause("render-engine-positional", "typechecker-fix", "S2", lambda d: d.rule == "invalid-method-override"
+    Cause("render-engine-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and RENDER_ENGINE_UPDATES.search(d.msg) is not None),
     # Enums whose items are computed: at runtime (render engines, project sections) or from a tuple expression.
     Cause("dynamic-enum", "typechecker-fix", "S2", lambda d: "Literal['DEFAULT']`" in d.msg
@@ -933,7 +938,7 @@ CAUSES = [
           or (d.rule == "invalid-assignment" and "data_to." in d.text)
           or ("`ID | None`" in d.msg and reads_from(d, r"\.copy\(\)"))),
     Cause("mathutils-protocol-stub", "typechecker-fix", "S2", lambda d: MATHUTILS_PROTOCOL.search(d.msg) is not None),
-    Cause("callback-positional", "typechecker-fix", "S2", lambda d: d.rule == "invalid-method-override"
+    Cause("callback-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and "`Gizmo.draw_select`" in d.msg),
     Cause("registered-class-in-bpy-types", "typechecker-fix", "S2", lambda d: "bpy.types." in d.text
           and REGISTERED_CLASS.search(d.msg) is not None),
@@ -948,12 +953,12 @@ CAUSES = [
     Cause("file-registered-property", "typechecker-fix", "S3", registered_property),
     Cause("bl-rna-property", "typechecker-fix", "S3", lambda d: d.msg.startswith("Object of type `Property`")),
     Cause("type-call-bases", "typechecker-fix", "S3", rule("blender-invalid-idname")),
-    Cause("filter-items-tuple", "typechecker-fix", "S3", lambda d: d.rule == "invalid-return-type"
+    Cause("filter-items-tuple", "typechecker-fix", "S3", lambda d: d.rule in RETURN_RULES
           and d.scope.function == "filter_items"),
     # Returns that contradict the operator API or the function's own annotation.
     Cause("operator-return-misuse", "blender-fix", "BF1", outside_tests(
-        lambda d: d.rule == "invalid-return-type" and d.scope.function in OPERATOR_RETURNS)),
-    Cause("return-annotation", "blender-fix", "BF2", outside_tests(rule("invalid-return-type"))),
+        lambda d: d.rule in RETURN_RULES and d.scope.function in OPERATOR_RETURNS)),
+    Cause("return-annotation", "blender-fix", "BF2", outside_tests(rule(*RETURN_RULES))),
     # Nullable reads, from the most specific source.
     Cause("unchecked-pointer-bug", "blender-fix", "BF1", unchecked_pointer_bug),
     Cause("mixin-self", "typing-debt", "", lambda d: "Self@" in d.msg),
@@ -983,7 +988,7 @@ CAUSES = [
           and not ui_callback_editor_member(d) and not set_by_preceding_call(d)),
     # The causes sorted site by site (docs/reports/spec-95-site-decisions.md), from the most specific.
     Cause("rna-never-none", "typechecker-fix", "S1", rna_never_none),
-    Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule == "unresolved-attribute"
+    Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule in MISSING_ATTRIBUTE_RULES
           and BASE_CLASS.search(d.msg) is not None) or (d.rule == "invalid-assignment"
           and base_class_target(d.msg.partition(" on type ")[2]))
           or "Object of type `Node | None` has no attribute" in d.msg
@@ -1028,7 +1033,7 @@ CAUSES = [
           or ("`dict[str, Any]`" in d.msg and re.match(r"\s*props\.\w+_OT_", d.text) is not None)
           or (d.rule == "too-many-positional-arguments" and STRING_LITERAL.search(d.text) is not None)),
     Cause("unresolved-import", "typing-debt", "", lambda d: d.rule in {
-        "import-not-found", "unresolved-import", "possibly-missing-submodule"} or "Cannot resolve imported" in d.msg),
+        "import-not-found", "possibly-missing-submodule"} or "Cannot resolve imported" in d.msg),
     # `batch_for_shader()`'s deprecated primitives, left out of the documented literal.
     Cause("deprecated-enum-value", "typing-debt", "", lambda d: "`batch_for_shader`" in d.msg
           and re.search(r"found `Literal\[\"(?:TRI_FAN|LINE_LOOP)\"\]`", d.msg) is not None),
@@ -1040,7 +1045,7 @@ CAUSES = [
     Cause("general-typing", "typing-debt", "", lambda d: d.rule in GENERAL_TYPING_RULES
           or PYTHON_OBJECT_ATTRIBUTE.search(d.msg) is not None or python_types_only(d)
           or d.rule in {"redundant-condition", "mismatched-type-name"}
-          or (d.rule == "invalid-method-override" and not in_tests(d))
+          or (d.rule in METHOD_OVERRIDE_RULES and not in_tests(d))
           or (d.rule == "invalid-context-manager" and "`Iterator[None]`" in d.msg)
           or GENERAL_TYPING.search(d.msg) is not None or MONKEYPATCH.match(d.text) is not None),
     Cause("stub-gap", "unsorted", "", lambda d: d.rule in STUB_GAP_RULES or "object.__init__" in d.msg

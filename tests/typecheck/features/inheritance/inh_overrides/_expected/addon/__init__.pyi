@@ -41,7 +41,7 @@ class INH_OVERRIDES_HT_header(Header):
 class INH_OVERRIDES_UL_full(UIList): ...
 
 class INH_OVERRIDES_UL_short(UIList):
-    def draw_item(self, context: Context, layout: UILayout, data: Any, item: Any, icon: Any, active_data: Any) -> None: ...  # ty: ignore[invalid-method-override]
+    def draw_item(self, context: Context, layout: UILayout, data: Any, item: Any, icon: Any, active_data: Any) -> None: ...  # ty: ignore[incompatible-method-override]
 
 class INH_OVERRIDES_Tree(NodeTree):
     @classmethod

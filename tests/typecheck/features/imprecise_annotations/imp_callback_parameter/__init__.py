@@ -3,7 +3,7 @@
 Blender calls `UIList.draw_item` with the `data` and `item` the add-on gave `template_list`, so annotating them with
 that subclass (`data: Armature`, `item: MyItem`) is narrower than the parent's `bpy_struct` but right: it is
 accepted and reported (blender-imprecise-callback-parameter), and the body sees the annotated type. A type that is
-no subtype of the parent's stays ty's invalid-method-override."""
+no subtype of the parent's stays ty's incompatible-method-override."""
 
 import bpy
 from bpy.props import StringProperty
@@ -25,7 +25,7 @@ class IMP_CALLBACK_PARAMETER_UL_items(UIList):
 
 
 class IMP_CALLBACK_PARAMETER_UL_unrelated(UIList):
-    def draw_item(self, context, layout, data, item, icon: str, active_data, active_property):  # ty: ignore[invalid-method-override]  # bare-ok: a type that is no subtype of the parent's stays an error
+    def draw_item(self, context, layout, data, item, icon: str, active_data, active_property):  # ty: ignore[incompatible-method-override]  # bare-ok: a type that is no subtype of the parent's stays an error
         pass
 
 

@@ -34,5 +34,5 @@ def reads(scene: Scene, obj: Object) -> None:
     assert_type(obj.script_name, str)
     scene.script_int = 2
     scene.script_int = "2"  # ty: ignore[invalid-assignment]
-    obj.script_int  # ty: ignore[unresolved-attribute]  # bare-ok: registered on Scene only
-    scene.script_shared  # ty: ignore[unresolved-attribute]  # bare-ok: registered by another file of no add-on
+    obj.script_int  # ty: ignore[missing-attribute]  # bare-ok: registered on Scene only
+    scene.script_shared  # ty: ignore[missing-attribute]  # bare-ok: registered by another file of no add-on

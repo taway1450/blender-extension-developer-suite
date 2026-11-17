@@ -30,7 +30,7 @@ def on_scene(scene: Scene) -> None:
     scene.reg_items = scene.reg_items  # ty: ignore[invalid-assignment]
     scene.reg_locked = scene.reg_locked  # ty: ignore[invalid-assignment]
     scene.reg_object = None  # an ID pointer stays writable
-    scene.reg_float  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    scene.reg_float  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def on_ids(obj: Object, material: Material, camera: Camera, collection: Collection, image: Image) -> None:
@@ -41,7 +41,7 @@ def on_ids(obj: Object, material: Material, camera: Camera, collection: Collecti
     assert_type(camera.reg_module_level, int)
     assert_type(collection.reg_alias, str)
     assert_type(image.reg_setattr, float)
-    obj.reg_str  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    obj.reg_str  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def on_other_structs(wm: WindowManager, bone: Bone, edit_bone: EditBone, pose_bone: PoseBone,
@@ -58,7 +58,7 @@ def on_other_structs(wm: WindowManager, bone: Bone, edit_bone: EditBone, pose_bo
 
 def on_unsupported_targets(area: Area) -> None:
     # Blender keeps a property assigned to Area as a plain class attribute; an instance has no such property.
-    area.reg_area  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    area.reg_area  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def most_derived_owner(scene: Scene, obj: Object) -> None:
@@ -85,8 +85,8 @@ def through_constraints(either: SceneOrObjectT) -> SceneOrObjectT:
 
 def on_the_class(scene_class: type[Scene]) -> None:
     """A class read gives the property declaration (_PropertyDeferred), not the value: the checker leaves it missing."""
-    Scene.reg_int  # ty: ignore[unresolved-attribute]  # oracle-skip: the reference stubs declare it on the class  # bare-ok: must stay missing: a class read is not the value
-    scene_class.reg_int  # ty: ignore[unresolved-attribute]  # oracle-skip: the reference stubs declare it on the class  # bare-ok: must stay missing: a class read is not the value
+    Scene.reg_int  # ty: ignore[missing-attribute]  # oracle-skip: the reference stubs declare it on the class  # bare-ok: must stay missing: a class read is not the value
+    scene_class.reg_int  # ty: ignore[missing-attribute]  # oracle-skip: the reference stubs declare it on the class  # bare-ok: must stay missing: a class read is not the value
 
 
 def through_data(context: Context) -> None:

@@ -1,3 +1,5 @@
 # Feature-test results that are not passes, builtin stubs, Blender main.
 # `mise run check:features main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | missing-attribute | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
+features/operator_properties/opprops_idnames/check_opprops_idnames.py | unused-ignore-comment | mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor

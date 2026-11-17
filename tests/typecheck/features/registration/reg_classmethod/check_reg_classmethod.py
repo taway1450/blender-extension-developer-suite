@@ -18,4 +18,4 @@ def registered(scene: Scene, obj: Object) -> None:
 
 
 def not_registered(scene: Scene) -> None:
-    scene.reg_classmethod_never  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    scene.reg_classmethod_never  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it

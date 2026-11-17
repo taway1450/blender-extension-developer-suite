@@ -35,5 +35,5 @@ def inherited(b: PROPS_STYLES_Base, c: PROPS_STYLES_Child, o: PROPS_STYLES_Overr
 
 def class_level() -> None:
     # Registration turns annotations into RNA properties; the class itself has no such attribute.
-    PROPS_STYLES_Base.base_value  # ty: ignore[unresolved-attribute]  # oracle-skip: a stub cannot make class-level access an error
-    PROPS_STYLES_Plain.count  # ty: ignore[unresolved-attribute]  # oracle-skip: a stub cannot make class-level access an error
+    PROPS_STYLES_Base.base_value  # ty: ignore[missing-attribute]  # oracle-skip: a stub cannot make class-level access an error
+    PROPS_STYLES_Plain.count  # ty: ignore[missing-attribute]  # oracle-skip: a stub cannot make class-level access an error

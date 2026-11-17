@@ -15,7 +15,7 @@ visible in another.
 | `regchk_type_bases` | | a Menu without `bl_idname` that is only the base of menus made with `type(name, (Base,), namespace)`: a base, neither checked nor unregistered |
 | `regchk_unregister_leak` | `blender-unregister-mismatch` | classes, properties, handlers and menu functions that `unregister()` leaves behind |
 | `regchk_unregister_unknown` | `blender-unregister-mismatch` | `unregister_class` for a class that was not registered (fails in unregister) |
-| `regchk_isolation_a`, `_b` | `unresolved-attribute` | each sees only its own operators and properties; only A calls the shared library's `register_tool()` |
+| `regchk_isolation_a`, `_b` | `missing-attribute` | each sees only its own operators and properties; only A calls the shared library's `register_tool()` |
 | `regchk_shared_lib` | | a package both import; not an add-on (`load = false`) |
 
 **Runtime facts (Blender 5.4):** a valid operator idname is `category.name` with lower case letters, digits and
