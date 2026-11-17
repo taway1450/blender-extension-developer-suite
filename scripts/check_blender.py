@@ -9,8 +9,11 @@ generate_stubs.py) and runs ty on all Python files of the worktree (excluding ``
 test scripts ``tests/python/CMakeLists.txt`` never runs), once per stub generator (``--generator``). The full output goes to
 ``.cache/ty-results/<version>.txt`` (fake-bpy-module stubs) and ``<version>-builtin.txt`` (Blender's own stubs).
 
-Blender's bundled numpy is on the search path, through a link in ``.cache/blender-site/<version>/`` (only numpy:
-the whole ``site-packages`` would put a runtime ``typing_extensions.py`` in front of typeshed's).
+The packages of Blender's bundled Python that its code imports (numpy, setuptools, requests, USD, ...) are on the
+search path, through links in ``.cache/blender-site/<version>/`` (not the whole ``site-packages``: it would put a
+runtime ``typing_extensions.py`` in front of typeshed's), and so are the directories Blender's tools and tests add
+to ``sys.path`` themselves. Modules nothing can resolve (compiled into Blender, given by GDB, or a developer tool's
+own requirements) are allowed to be unresolved, so ``import-not-found`` reports only real gaps.
 
 Each diagnostic is sorted into a cause, which has a group, and an area (see _buckets.py). The cause x area table,
 the totals per group, errors and warnings, and the counts per rule and severity go to
@@ -59,11 +62,66 @@ BLENDER_SEARCH_PATHS = [
     "scripts/addons_core",
     "scripts/freestyle/modules",
 ]
+# Directories (relative to the Blender source root) that Blender's own tools and tests put on ``sys.path`` before
+# importing from them (``sys.path.append(os.path.join(PWD, "modules"))``).
+SCRIPT_SEARCH_PATHS = [
+    "tools/modules",
+    "tools/utils_maintenance/modules",
+    "scripts/addons_core/bl_pkg/tests/modules",
+]
+# Modules no search path can give ty: compiled into Blender (``aud``, ``_bpy_path``, ``_cycles``) or bundled compiled
+# without stubs (``pxr``, ``PyOpenColorIO``), given by the program
+# that runs the script (``gdb``), or third-party packages that only a developer tool needs, which Blender does not
+# bundle. ty does not report them as unresolved; every other unresolved import is a real gap.
+ALLOWED_UNRESOLVED_IMPORTS = [
+    # Compiled into Blender, or bundled as compiled modules without stubs (linking these would make every member
+    # they import from their extension module unknown to ty).
+    "aud",
+    "_bpy_path",
+    "_cycles",
+    "MaterialX.**",
+    "OpenEXR",
+    "openvdb",
+    "oslquery",
+    "pxr.**",
+    "PyOpenColorIO",
+    "pyopenvdb",
+    # Given by the program that runs the script.
+    "gdb.**",
+    # Requirements of developer tools and the documentation build.
+    "autopep8",
+    "clang.**",
+    "cython",
+    "docformatter",
+    "enchant",
+    "iso8601",
+    "matplotlib.**",
+    "pygments.**",
+    "retry",
+    "scipy.**",
+    "sphinx.**",
+    "sphobjinv",
+    "wheel.**",
+    "yarl",
+]
 
 DIAGNOSTIC_RE = re.compile(r"^.+?:\d+:\d+: (?P<severity>\w+)\[(?P<rule>[\w-]+)\]", re.MULTILINE)
 
-# Packages of Blender's bundled Python put on the search path, each through a link in BLENDER_SITE_DIR/<version>/.
-BLENDER_SITE_PACKAGES = ["numpy"]
+# Packages of Blender's bundled Python that its code imports and that ty can read (Python source, or a compiled
+# module with stubs), put on the search path, each through a link in
+# BLENDER_SITE_DIR/<version>/ (not the whole ``site-packages``, whose ``typing_extensions.py`` would shadow typeshed's).
+BLENDER_SITE_PACKAGES = [
+    "numpy",
+    "setuptools",
+    "requests",
+    "urllib3",
+    "certifi",
+    "cattrs",
+    "docutils",
+    "zstandard",
+    "OpenImageIO",
+    "opentimelineio",
+]
 BLENDER_SITE_DIR = CACHE_DIR / "blender-site"
 # The recorded bucket summaries, per stub generator; only BASELINE_VERSION has one.
 EXPECTED_DIR = REPO_ROOT / "tests" / "blender" / "expected"
@@ -72,11 +130,15 @@ BASELINE_VERSION = "main"
 
 def blender_site(version: str, blender: Path | None) -> Path | None:
     """``.cache/blender-site/<version>/`` with a link to each of BLENDER_SITE_PACKAGES in Blender's bundled
-    ``site-packages`` (a junction on Windows), or None when that Blender has none of them."""
+    ``site-packages`` (a junction on Windows), and no other link, or None when that Blender has none of them."""
     install = blender or BLENDER_BIN_DIR / version
     if install.is_file():
         install = install.parent
     site = BLENDER_SITE_DIR / version
+    for stale in site.iterdir() if site.is_dir() else ():
+        if stale.name not in BLENDER_SITE_PACKAGES:
+            unlink(stale)
+            log(f"Removed {stale}: no longer in BLENDER_SITE_PACKAGES")
     linked = False
     for package in BLENDER_SITE_PACKAGES:
         found = sorted(install.glob(f"*/python/lib/**/site-packages/{package}"))
@@ -88,10 +150,7 @@ def blender_site(version: str, blender: Path | None) -> Path | None:
         if link.exists() and link.resolve() == found[0].resolve():
             continue
         if os.path.lexists(link):  # stale: points elsewhere or nowhere
-            if link.is_symlink():
-                link.unlink()
-            else:
-                link.rmdir()  # a junction is removed like a directory, without touching its target
+            unlink(link)
         site.mkdir(parents=True, exist_ok=True)
         if sys.platform == "win32":
             import _winapi
@@ -101,6 +160,14 @@ def blender_site(version: str, blender: Path | None) -> Path | None:
             link.symlink_to(found[0], target_is_directory=True)
         log(f"Linked {link} -> {found[0]}")
     return site if linked else None
+
+
+def unlink(link: Path) -> None:
+    """Remove a package link of BLENDER_SITE_DIR without touching its target."""
+    if link.is_symlink():
+        link.unlink()
+    else:
+        link.rmdir()  # a junction is removed like a directory, without touching its target
 
 
 def run_ty(target: Target, generator: str, site: Path | None) -> Path:
@@ -125,8 +192,10 @@ def run_ty(target: Target, generator: str, site: Path | None) -> Path:
     ]
     if site is not None:
         cmd += ["--extra-search-path", site]
-    for path in BLENDER_SEARCH_PATHS:
+    for path in BLENDER_SEARCH_PATHS + SCRIPT_SEARCH_PATHS:
         cmd += ["--extra-search-path", source / path]
+    allowed = ", ".join(f'"{module}"' for module in ALLOWED_UNRESOLVED_IMPORTS)
+    cmd += ["--config", f"analysis.allowed-unresolved-imports = [{allowed}]"]
     for excluded in EXCLUDED:
         cmd += ["--exclude", excluded]
     cmd.append(source)

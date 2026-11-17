@@ -164,15 +164,15 @@ CASES = [
             "None,",
             path="scripts/addons_core/io_scene_gltf2/blender/exp/animation/action.py",
         ),
-        "none-for-non-optional",
-        id="bf2-none-argument",
+        "untyped-python",
+        id="debt-none-argument-in-untyped-package",
     ),
     pytest.param(
         diagnostic(
             "invalid-parameter-default",
             "Default value of type `None` is not assignable to annotated parameter type `Context`",
             "def get_instance(context: Context = None):",
-            path="scripts/addons_core/rigify/__init__.py",
+            path="scripts/startup/bl_operators/presets.py",
         ),
         "none-for-non-optional",
         id="bf2-none-default",
@@ -194,6 +194,16 @@ CASES = [
             "return None",
             path="scripts/addons_core/io_scene_gltf2/blender/com/data_path.py",
             function="get_target_property_name",
+        ),
+        "untyped-python",
+        id="debt-return-annotation-in-untyped-package",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-implicit-return",
+            "Function always implicitly returns `None`, which is not assignable to return type `int`",
+            "def main() -> int:",
+            path="release/lts/create_release_notes.py",
         ),
         "return-annotation",
         id="bf2-return-annotation",
@@ -1463,6 +1473,239 @@ CASES = [
         "unexported-function",
         id="unexported-function",
     ),
+    # Regrouped from the Blender fixes (spec #123, C1): right code, or code outside Blender's reach.
+    pytest.param(
+        diagnostic(
+            "unresolved-reference",
+            "Name `properties_paint_common` used when not defined",
+            "properties_paint_common.register()",
+            path="scripts/startup/bl_ui/__init__.py",
+            function="register",
+        ),
+        "reload-idiom",
+        id="regrouped-dynamic-import-of-submodules",
+    ),
+    pytest.param(
+        diagnostic(
+            "unresolved-reference",
+            "Name `_icon_cache` used when not defined",
+            "    for icon_value in set(_icon_cache.values()):",
+            path="scripts/startup/bl_ui/space_toolsystem_common.py",
+            source='# Support reloading icons.\nif "_icon_cache" in locals():\n    release = bpy.app.icons.release\n'
+            "    for icon_value in set(_icon_cache.values()):",
+        ),
+        "reload-idiom",
+        id="regrouped-locals-guard",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to bound method `Area.header_text_set` is incorrect: Expected `str`, found `None`",
+            "context.area.header_text_set(None)",
+            path="scripts/startup/bl_operators/wm.py",
+            cls="WM_OT_context_modal_mouse",
+            function="modal",
+        ),
+        "stub-none-mismatch",
+        id="regrouped-header-text-set-none",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to bound method `GPUVertBuf.attr_fill` is incorrect: Expected `int | str`, found `None`",
+            "vbo.attr_fill(id=pos_id, data=verts)",
+            path="scripts/modules/gpu_extras/presets.py",
+            function="draw_circle_2d",
+        ),
+        "stub-none-mismatch",
+        id="regrouped-attr-fill-id",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-explicit-return",
+            "Return type does not match returned value: expected `IdPropSequence[RigifyName]`, found "
+            "`bpy_prop_collection_idprop[RigifyName]`",
+            "return id_store.rigify_types  # noqa",
+            path="scripts/addons_core/rigify/ui.py",
+            function="get_rigify_types",
+        ),
+        "untyped-python",
+        id="regrouped-rigify-typed-return",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-explicit-return",
+            "Return type does not match returned value: expected `TypedObject[Armature]`, found "
+            "`_Object_ARMATURE & ~AlwaysFalsy`",
+            "return obj  # noqa",
+            path="scripts/addons_core/rigify/utils/misc.py",
+            function="verify_armature_obj",
+        ),
+        "untyped-python",
+        id="regrouped-rigify-typed-object-return",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to constructor `zip.__new__` is incorrect: Expected `Iterable[Unknown]`, found `None`",
+            "for svert, t in zip(stroke, iter_t2d_along_stroke(stroke)):",
+            path="scripts/freestyle/modules/parameter_editor.py",
+            cls="ColorAlongStrokeShader",
+            function="shade",
+        ),
+        "untyped-python",
+        id="regrouped-freestyle-zip-none",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to `Keyframe.__init__` is incorrect: Expected `tuple[FCurve]`, found `None`",
+            "key = Keyframe(None, frame, channel)",
+            path="scripts/addons_core/io_scene_gltf2/blender/exp/animation/sampled/object/keyframes.py",
+            function="gather_object_sampled_keyframes",
+        ),
+        "untyped-python",
+        id="regrouped-gltf-keyframe-none",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-explicit-return",
+            "Return type does not match returned value: expected `HASH`, found `_HashObjectWithOptionalLength`",
+            "return hashlib.new(algorithm, usedforsecurity=False)",
+            path="scripts/modules/_bpy_internal/disk_file_hash_service/hash_service.py",
+            cls="DiskFileHashService",
+            function="_get_hasher",
+        ),
+        "general-typing",
+        id="regrouped-typeshed-private-return",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-argument",
+            "No argument provided for required parameter `version` of bound method "
+            "`PackageInstaller.package_name_version_gen`",
+            "for pn in self.package_name_version_gen(package, package_distro_name):",
+            path="build_files/linux/install_linux_packages.py",
+            cls="PackageInstaller",
+            function="package_find",
+        ),
+        "general-typing",
+        id="regrouped-signature-of-every-override",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to function `set_convenience_variable` is incorrect: Expected `Value`, found `None`",
+            "gdb.set_convenience_variable(variable_name, None)",
+            path="tools/debug/gdb/blender_gdb_extension.py",
+            function="eval_var",
+        ),
+        "general-typing",
+        id="regrouped-third-party-stub",
+    ),
+    pytest.param(
+        diagnostic(
+            "unresolved-reference",
+            "Name `BMO_OP_SLOT_FLT` used when not defined",
+            "if tp == BMO_OP_SLOT_FLT:",
+            path="doc/python_api/rst_from_bmesh_opdefines.py",
+            function="get_args_wash",
+        ),
+        "runtime-name",
+        id="regrouped-globals-update",
+    ),
+    pytest.param(
+        diagnostic(
+            "unresolved-reference",
+            "Name `gdb` used when not defined",
+            "class PrintStructC99(gdb.Command):",
+            path="tools/utils/gdb_struct_repr_c99.py",
+        ),
+        "runtime-name",
+        id="regrouped-host-program-module",
+    ),
+    pytest.param(
+        diagnostic(
+            "unresolved-reference",
+            "Name `me_loops_color_active` used when not defined",
+            "me_loops_color = me_loops_color_active.data[:]",
+            path="release/datafiles/blender_icons_geom.py",
+            function="mesh_data_lists_from_mesh",
+        ),
+        "undefined-name",
+        id="bf1-undefined-name-in-tools",
+    ),
+    # fake-bpy-module's lossy stubs of Blender's Python modules (`-> None`, a dropped `@staticmethod`).
+    pytest.param(
+        diagnostic(
+            "missing-argument",
+            "No argument provided for required parameter `fn` of function `ToolDef.from_fn`",
+            "@ToolDef.from_fn",
+            path="scripts/startup/bl_ui/space_toolsystem_toolbar.py",
+            cls="_defs_view3d_generic",
+        ),
+        "fake-bpy-python-module",
+        id="regrouped-fake-bpy-static-method",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to function `ToolDef.from_fn` is incorrect: Expected `ToolDef`, found `def cursor() -> Unknown`",
+            "@ToolDef.from_fn",
+            path="scripts/startup/bl_ui/space_toolsystem_toolbar.py",
+            cls="_defs_view3d_generic",
+        ),
+        "fake-bpy-python-module",
+        id="regrouped-fake-bpy-static-method-argument",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to bound method `KeyingSetPaths.add` is incorrect: Expected `str`, found `None`",
+            "ks.paths.add(id_block, path)",
+            path="scripts/startup/keyingsets_builtins.py",
+            cls="BUILTIN_KSI_DeltaLocation",
+            function="generate",
+        ),
+        "fake-bpy-python-module",
+        id="regrouped-fake-bpy-none-return-argument",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-explicit-return",
+            "Return type does not match returned value: expected `AssetLibraryMeta`, found `None`",
+            "return metadata",
+            path="scripts/modules/_bpy_internal/assets/remote_library/cli_listing_generator.py",
+            function="_toplevel_metadata",
+        ),
+        "fake-bpy-python-module",
+        id="regrouped-fake-bpy-none-return",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-assignment",
+            "Object of type `Literal[0]` is not assignable to attribute `shift_x` on type `Armature | Camera | Curve | "
+            "... omitted 11 union elements`",
+            "cam.data.shift_x = 0",
+            path="scripts/addons_core/viewport_vr_preview/operators.py",
+            cls="VIEW3D_OT_vr_location_scouting_active_camera_to_capture",
+            function="execute",
+        ),
+        "object-data-untagged",
+        id="regrouped-fake-bpy-object-data-in-a-buggy-class",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-explicit-return",
+            "Return type does not match returned value: expected `tuple[dict[tuple[str, str], InfoStructRNA]]`, found "
+            "`tuple[dict[tuple[str, str], InfoStructRNA]] | None`",
+            "return ret",
+            path="doc/python_api/sphinx_doc_gen.py",
+            function="rna_info_BuildRNAInfo_cache",
+        ),
+        "fake-bpy-python-module",
+        id="regrouped-fake-bpy-none-return-cached",
+    ),
     # Unsorted
     pytest.param(
         diagnostic("not-iterable", "Object of type `ImBufBuffer` is not iterable", "for p in buf:"),
@@ -1528,6 +1771,9 @@ def test_every_cause_has_a_known_group_and_a_unique_name():
         ("assumed-context-member", "assumption", "S6"),
         ("mixin-self", "typing-debt", ""),
         ("modifiers-new", "typing-debt", ""),
+        ("stub-none-mismatch", "typechecker-fix", ""),
+        ("runtime-name", "typing-debt", ""),
+        ("reload-idiom", "typing-debt", ""),
         ("unsorted", "unsorted", ""),
     ],
 )

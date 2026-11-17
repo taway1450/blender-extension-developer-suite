@@ -291,6 +291,27 @@ POLL_HELPER_BASES = re.compile(r"\bNWBase\b")
 # a walrus or local alias, or `bpy.context` for the `context` parameter.
 POLL_ALIAS = re.compile(r"\b(?:getattr|hasattr)\(context, |:=|\bbpy\.context\.\w+|^\s+\w+ = context\.\w+", re.MULTILINE)
 POLL_MODE = re.compile(r"\bcontext\.mode == 'EDIT_")
+# Where Blender's stubs and its C API disagree about None: `Area.header_text_set(None)` clears the header text but the
+# parameter is typed `str`, and `GPUVertFormat.attr_add` returns the attribute's id but is typed `-> None` (so the id
+# passed to `attr_fill` is None). Fixed in the stubs by the Blender spec.
+STUB_NONE_MISMATCH = re.compile(
+    r"`(?:Area\.header_text_set|GPUVertBuf\.attr_fill)` is incorrect: Expected `[^`]*`, found `None`"
+)
+# Modules that import their submodules by name at runtime (`__import__(name=__name__, fromlist=_modules)`) and reload
+# them when the module is reloaded.
+DYNAMIC_IMPORT_MODULES = ("scripts/startup/bl_ui/__init__.py", "scripts/startup/bl_operators/__init__.py")
+# Modules whose names come at runtime: put into `globals()` from a parsed C header, or given by the program that runs
+# the script (`gdb` inside GDB).
+RUNTIME_NAME_MODULES = ("doc/python_api/rst_from_bmesh_opdefines.py", "tools/utils/gdb_struct_repr_c99.py")
+# A return annotation naming a private typeshed type (`hashlib._Hash`), which ty resolves to another private type.
+TYPESHED_PRIVATE = re.compile(r"found `_[A-Z]\w*`$")
+# Arguments ty checks against a third-party stub that is stricter than the library (`gdb.set_convenience_variable`
+# takes None to clear a variable).
+THIRD_PARTY_STUB = re.compile(r"`set_convenience_variable` is incorrect")
+# A base class method called on `self` whose every override gives the parameter a default.
+OVERRIDDEN_SIGNATURE_SITES = [
+    ("build_files/linux/install_linux_packages.py", "PackageInstaller", "package_find", "package_name_version_gen("),
+]
 # RNA pointers Blender always sets that lack PROP_NEVER_NULL (S1): embedded structs (`Bone.color`, a tracking
 # object's reconstruction, the XR viewfinder of a session), `wm.keyconfigs.active/user/default`, the active
 # tracking object, `SpaceView3D.region_3d`, `AssetRepresentation.metadata`.
@@ -374,6 +395,7 @@ FAKE_BPY_PYTHON_MODULE = re.compile(
     r"|`<class 'BlendHeaderError'>`|found `ExtraFileMetadataProvider`|found `def asset_listing_main\("
     r"|^Object of type `None` is not assignable to (?:`str \| URLWithHash`|attribute `enabled`)"
     r"|between objects of type `Path` and `None`"
+    r"|function `ToolDef\.from_fn`"
 )
 # The values those lossy stubs return feed a builtin call or a nullable read: (path, enclosing class or "",
 # enclosing function or "", text on the line).
@@ -385,7 +407,24 @@ FAKE_BPY_PYTHON_MODULE_SITES = [
     ("scripts/modules/_bpy_internal/assets/remote_library/listing_downloader.py", "", "", "urljoin"),
     ("scripts/modules/bl_app_template_utils.py", "", "", "app_template_paths("),
     ("scripts/startup/bl_operators/wm.py", "", "", "path_split"),
+    ("doc/python_api/sphinx_doc_gen.py", "", "rna_info_BuildRNAInfo_cache", "return ret"),
 ]
+# A value those lossy stubs type `None` (a function's lost return annotation), passed on or returned: `None` is not
+# written on the line. Blender's own stubs resolve these functions to their source.
+FAKE_BPY_NONE_VALUE = re.compile(
+    r"(?:is incorrect: Expected|does not match returned value: expected) `[^`]*`, found `None`$"
+)
+
+
+def fake_bpy_none_value(d: Diagnostic) -> bool:
+    return (
+        d.rule in {"invalid-argument-type", *RETURN_RULES}
+        and FAKE_BPY_NONE_VALUE.search(d.msg) is not None
+        and re.search(r"\bNone\b", d.text) is None
+        and STUB_NONE_MISMATCH.search(d.msg) is None
+    )
+
+
 # fake-bpy-module's `_bpy_types` stub declares its own `Context`, `Menu`, ... beside `bpy.types`, and `bpy.types`
 # declares the registered Python classes as instances (`X_OT_y: module.X_OT_y`), not as the classes.
 FAKE_BPY_TYPE_ALIAS = re.compile(
@@ -414,6 +453,19 @@ FAKE_BPY_PROTOCOL = re.compile(
     r"|^Object of type `(?:BLFImBufContext|ImBufBuffer|OffScreenStackContext|MatrixStackContext)` cannot be used"
     r" with `with`"
 )
+
+
+def reload_idiom(d: Diagnostic) -> bool:
+    """A name bound only when the module is reloaded: ``importlib.reload(x)``, a ``"x" in locals()`` guard before
+    it, or a module that imports its submodules by name at runtime."""
+    if d.rule != "unresolved-reference":
+        return False
+    name = next(iter(re.findall(r"^Name `(\w+)`", d.msg)), "")
+    return (
+        "reload(" in d.text
+        or re.search(rf"[\"']{re.escape(name)}[\"'] in locals\(\)", d.scope.source) is not None
+        or d.path.replace("\\", "/") in DYNAMIC_IMPORT_MODULES
+    )
 
 
 def missing_attribute(msg: str) -> str | None:
@@ -472,7 +524,11 @@ def python_optional(d: Diagnostic) -> bool:
 
 
 def unchecked_pointer_bug(d: Diagnostic) -> bool:
+    """A nullable read at one of UNCHECKED_POINTER_BUGS; not ``obj.data`` read as a whole ``ID | None`` (fake-bpy-module's
+    ``Object.data`` union), which is ``object-data-untagged`` wherever it is."""
     path = d.path.replace("\\", "/")
+    if re.search(r"`ID \| None`", d.msg) and ".data" in d.text:
+        return False
     return nullable(d) and any(
         path == p and (not c or d.scope.cls == c) and (not f or d.scope.function == f) and t in d.text
         for p, c, f, t in UNCHECKED_POINTER_BUGS
@@ -886,7 +942,8 @@ CAUSES = [
     # Stub shapes of fake-bpy-module that Blender's own stubs do not have: a fix in fake-bpy-module.
     Cause("fake-bpy-python-module", "typechecker-fix", "", lambda d: not untyped_python(d) and not in_tests(d)
           and re.search(r"libraries\.load|temp_data", d.text) is None
-          and (FAKE_BPY_PYTHON_MODULE.search(d.msg) is not None or in_sites(FAKE_BPY_PYTHON_MODULE_SITES)(d))),
+          and (FAKE_BPY_PYTHON_MODULE.search(d.msg) is not None or in_sites(FAKE_BPY_PYTHON_MODULE_SITES)(d)
+               or fake_bpy_none_value(d))),
     Cause("fake-bpy-type-alias", "typechecker-fix", "", lambda d: FAKE_BPY_TYPE_ALIAS.search(d.msg) is not None),
     Cause("fake-bpy-nullable", "typechecker-fix", "", lambda d: FAKE_BPY_NULLABLE.search(d.msg) is not None
           or (FAKE_BPY_NONE_INDEX.search(d.msg) is not None and reads_from(d, r"\.active_\w+"))),
@@ -895,16 +952,22 @@ CAUSES = [
     # Blender's own code is wrong (BF1 runtime, BF2 annotations).
     Cause("property-on-panel", "blender-fix", "BF1", rule("blender-unsupported-property-host")),
     Cause("dead-api", "blender-fix", "BF1", outside_tests(lambda d: DEAD_API.search(d.msg) is not None)),
-    Cause("reload-idiom", "typing-debt", "", lambda d: d.rule == "unresolved-reference" and "reload(" in d.text),
+    Cause("reload-idiom", "typing-debt", "", reload_idiom),
+    Cause("runtime-name", "typing-debt", "", lambda d: d.rule == "unresolved-reference"
+          and d.path.replace("\\", "/") in RUNTIME_NAME_MODULES),
     Cause("undefined-name", "blender-fix", "BF1", outside_tests(rule("unresolved-reference"))),
-    Cause("missing-argument", "blender-fix", "BF1", outside_tests(rule("missing-argument"))),
+    Cause("missing-argument", "blender-fix", "BF1", outside_tests(lambda d: d.rule == "missing-argument"
+          and not in_sites(OVERRIDDEN_SIGNATURE_SITES)(d))),
     Cause("rigify-get-bone", "blender-fix", "BF2", lambda d: d.path.replace("\\", "/").startswith(RIGIFY)
           and re.search(r"EditBone \| PoseBone|PoseBone \| EditBone", d.msg) is not None),
     Cause("correlated-union", "typing-debt", "", correlated_union),
     Cause("tooldef", "blender-fix", "BF2", lambda d: "ToolDef" in d.msg),
-    Cause("none-for-non-optional", "blender-fix", "BF2", outside_tests(any_of(
+    Cause("stub-none-mismatch", "typechecker-fix", "", lambda d: STUB_NONE_MISMATCH.search(d.msg) is not None),
+    # Untyped packages (rigify, glTF, Freestyle) keep their typing as it is: `untyped-python` below.
+    Cause("none-for-non-optional", "blender-fix", "BF2", lambda d: not in_tests(d) and not untyped_python(d)
+          and THIRD_PARTY_STUB.search(d.msg) is None and any_of(
         rule("invalid-parameter-default"),
-        lambda d: d.rule == "invalid-argument-type" and d.msg.endswith("found `None`")))),
+        lambda d: d.rule == "invalid-argument-type" and d.msg.endswith("found `None`"))(d)),
     Cause("wrong-annotation", "blender-fix", "BF2", outside_tests(any_of(
         lambda d: d.rule == "invalid-type-form" and "bpy.context" in d.text,
         lambda d: d.rule == "invalid-base" and "`Menu`" in d.msg,
@@ -958,7 +1021,8 @@ CAUSES = [
     # Returns that contradict the operator API or the function's own annotation.
     Cause("operator-return-misuse", "blender-fix", "BF1", outside_tests(
         lambda d: d.rule in RETURN_RULES and d.scope.function in OPERATOR_RETURNS)),
-    Cause("return-annotation", "blender-fix", "BF2", outside_tests(rule(*RETURN_RULES))),
+    Cause("return-annotation", "blender-fix", "BF2", outside_tests(lambda d: d.rule in RETURN_RULES
+          and not untyped_python(d) and TYPESHED_PRIVATE.search(d.msg) is None)),
     # Nullable reads, from the most specific source.
     Cause("unchecked-pointer-bug", "blender-fix", "BF1", unchecked_pointer_bug),
     Cause("mixin-self", "typing-debt", "", lambda d: "Self@" in d.msg),
@@ -1043,6 +1107,8 @@ CAUSES = [
     Cause("private-member", "typing-debt", "", lambda d: re.search(r"has no member `_\w+`", d.msg) is not None),
     Cause("build-option-gap", "typing-debt", "", lambda d: BUILD_OPTION_TYPE.search(d.msg) is not None),
     Cause("general-typing", "typing-debt", "", lambda d: d.rule in GENERAL_TYPING_RULES
+          or TYPESHED_PRIVATE.search(d.msg) is not None or THIRD_PARTY_STUB.search(d.msg) is not None
+          or in_sites(OVERRIDDEN_SIGNATURE_SITES)(d)
           or PYTHON_OBJECT_ATTRIBUTE.search(d.msg) is not None or python_types_only(d)
           or d.rule in {"redundant-condition", "mismatched-type-name"}
           or (d.rule in METHOD_OVERRIDE_RULES and not in_tests(d))
