@@ -29,6 +29,7 @@ mise run check:features main --update # record the current results after a revie
 | [context_members](features/context_members/README.md) | Guaranteed context members are non-None in Blender callbacks; `space_data` follows `bl_space_type` |
 | [api_types](features/api_types/README.md) | the stubs state it: pointers and callback parameters that are never None, the Type tags of refined subclasses, the facts introspection misses (class bases, protocols, module members) |
 | [type_narrowing](features/type_narrowing/README.md) | a Type tag test narrows the struct (`md.type == 'SUBSURF'`) or types its sibling pointer (`ob.data` after `ob.type == 'MESH'`) |
+| [imprecise_annotations](features/imprecise_annotations/README.md) | code less precise than the stubs but right in Blender (`-> set[str]` on `execute`, a `str` enum value, `draw_item(..., data: Armature)`) is accepted, typed as the precise form and reported under a `blender-imprecise-*` rule, configurable by category and `[blender] strictness` |
 
 ## Layout
 
@@ -88,6 +89,23 @@ The `blender-*` rules ty-blender is to add:
 | `blender-invalid-operator-property`, `blender-unknown-operator` | operator_calls, operator_properties |
 | `blender-preferences-idname` | addon_preferences |
 | `blender-invalid-override`, `blender-missing-callback`, `blender-mixin-order`, `blender-invalid-base`, `blender-registered-base` | inheritance |
+| `blender-imprecise-operator-return`, `blender-imprecise-enum-value`, `blender-imprecise-callback-parameter` | imprecise_annotations |
+
+### Strictness (`_expected/strictness.toml`)
+
+A `# ty: ignore[...]` marker hides the level its diagnostic is reported at. An add-on with
+`_expected/strictness.toml` is also checked once per `[blender] strictness` preset: `check:features` copies it
+without its `blender-*` markers, runs ty on the copy with `--config blender.strictness="<preset>"` (and the
+`[[overrides]]` of `ty.toml`), and each removed marker's rule must be reported on its line at the level the file
+gives for that preset (`ignore`: not at all). A line where it differs is recorded as a `strictness-<preset>` entry.
+
+```toml
+[lenient]
+blender-imprecise-operator-return = "ignore"
+
+[strict]
+blender-imprecise-operator-return = "error"
+```
 
 ## Reference stubs and the oracle (`check:oracle`)
 

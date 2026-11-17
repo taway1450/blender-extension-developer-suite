@@ -18,10 +18,10 @@ assumed-list-item               assumption            S6            0        0  
 assumed-context-member          assumption            S6          172      263      681     1116
 narrowed-by-menu-prefix         implied-narrowing     S5          238        0        0      238
 narrowed-by-popover             implied-narrowing     S5            1        0        0        1
-narrowed-by-poll                implied-narrowing     S5         2069        0       13     2082
-imprecise-operator-return       imprecise-annotation  S4           23        0        5       28
+narrowed-by-poll                implied-narrowing     S5         2068        0       13     2081
+imprecise-operator-return       imprecise-annotation  S4           24        0        5       29
 imprecise-enum-value            imprecise-annotation  S4           15        0       18       33
-imprecise-callback-parameter    imprecise-annotation  S4            1        0        1        2
+imprecise-callback-parameter    imprecise-annotation  S4            5        0        1        6
 context-never-none              typechecker-fix       S1            0        0        0        0
 callback-never-none             typechecker-fix       S1           10        0        0       10
 bmesh-elem-seq                  typechecker-fix       S2            0        0        0        0
@@ -61,15 +61,18 @@ unsorted                        unsorted              -           487        8  
 group                                                         shipped  presets    other    total
 blender-fix                                                       710        0       46      756
 assumption                                                        172      263      681     1116
-implied-narrowing                                                2308        0       13     2321
-imprecise-annotation                                               39        0       24       63
+implied-narrowing                                                2307        0       13     2320
+imprecise-annotation                                               44        0       24       68
 typechecker-fix                                                    85        0       39      124
 typing-debt                                                      3225      140     1288     4653
 unsorted                                                         1637      358     2293     4288
-errors                                                           8084      761     4316    13161
-warnings                                                           92        0       68      160
+errors                                                           8055      761     4299    13115
+warnings                                                          125        0       85      210
 
 rule                                       error warning
+blender-imprecise-callback-parameter           0       5
+blender-imprecise-enum-value                   0      31
+blender-imprecise-operator-return              0      14
 blender-invalid-operator-property              1       0
 blender-invalid-property                       3       0
 blender-unsupported-property-host              0       3
@@ -79,18 +82,18 @@ deprecated                                     0      15
 empty-body                                    32       0
 import-not-found                             212       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       2708       0
-invalid-assignment                           971       0
+invalid-argument-type                       2688       0
+invalid-assignment                           959       0
 invalid-attribute-override                    71       0
 invalid-base                                   4       0
 invalid-context-manager                       82       0
 invalid-exception-caught                       1       0
 invalid-generic-class                          1       0
-invalid-method-override                      228       0
+invalid-method-override                      217       0
 invalid-mutable-override                       4       0
 invalid-parameter-default                      5       0
 invalid-property-type-override                 6       0
-invalid-return-type                           78       0
+invalid-return-type                           75       0
 invalid-super-argument                         1       0
 invalid-type-form                              9       0
 mismatched-type-name                           0       1

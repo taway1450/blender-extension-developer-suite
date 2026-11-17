@@ -27,12 +27,64 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
+from pathlib import Path
 
-from _baseline import FEATURES, record, type_entries
+from _baseline import FEATURES, record, type_entries, type_entry
 from _common import TYPECHECK_TESTS_DIR, StepError, log, main_wrapper
-from _features import evaluate, parse_diagnostics, print_table, select, summary_markdown
+from _features import (
+    Addon,
+    AddonResult,
+    evaluate,
+    import_roots,
+    parse_diagnostics,
+    print_table,
+    select,
+    summary_markdown,
+)
+from _strictness import compare, copy_addon, expectations
 from _target import Target, add_target_arguments
+from generate_features import TY_TOML, updated_ty_toml
+
+
+def run_ty(cmd: list, cwd: Path) -> str:
+    result = subprocess.run([str(c) for c in cmd], cwd=cwd, capture_output=True, text=True, encoding="utf-8")
+    if result.returncode not in (0, 1):
+        raise StepError(f"ty failed with exit code {result.returncode}:\n{result.stderr}")
+    return result.stdout
+
+
+def check_strictness(base_cmd: list, results: list[AddonResult], results_dir: Path) -> dict[str, str]:
+    """The ``[blender] strictness`` check (``_strictness.py``) of the addons with ``_expected/strictness.toml``:
+    a ``strictness-<preset>`` entry per line whose reported level differs, with the difference as its message."""
+    checked = [(r, expected) for r in results if (expected := expectations(r.addon)) is not None]
+    if not checked:
+        return {}
+    copy_dir = results_dir / "strictness"
+    shutil.rmtree(copy_dir, ignore_errors=True)
+    copy_dir.mkdir(parents=True)
+    addons: list[Addon] = [r.addon for r, _ in checked]
+    (copy_dir / "ty.toml").write_text(
+        updated_ty_toml(TY_TOML.read_text(encoding="utf-8"), import_roots(addons)), encoding="utf-8"
+    )
+    markers = {a.rel: copy_addon(a, TYPECHECK_TESTS_DIR, copy_dir) for a in addons}
+    presets = sorted({preset for _, expected in checked for preset in expected})
+    entries: dict[str, str] = {}
+    for preset in presets:
+        log(f'Strictness check: {len(addons)} addons with `blender.strictness = "{preset}"`')
+        cmd = [*base_cmd, "--project", copy_dir, "--config", f'blender.strictness="{preset}"', *(a.rel for a in addons)]
+        diagnostics = parse_diagnostics(run_ty(cmd, copy_dir), base=copy_dir)
+        for result, expected in checked:
+            if preset not in expected:
+                continue
+            addon = result.addon
+            tested = {rule for table in expected.values() for rule in table}
+            found = [d for d in diagnostics if addon.contains(d.path)]
+            for mismatch in compare(preset, expected[preset], markers[addon.rel], found, tested):
+                key = type_entry(mismatch.path, f"strictness-{preset}", result.line_key(mismatch.path, mismatch.line))
+                entries[key] = mismatch.message
+    return entries
 
 
 def main() -> int:
@@ -81,7 +133,10 @@ def main() -> int:
         print_table(results)
         log(f"Summary: {results_dir / 'summary.md'}")
 
-        changed |= record(FEATURES, generator, args.version, type_entries(results), addons, update=args.update)
+        base_cmd = [target.binary, "check", "--python-version", python_version, "--extra-search-path", stubs]
+        base_cmd += ["--output-format", "concise", "--no-progress"]
+        entries = {**type_entries(results), **check_strictness(base_cmd, results, results_dir)}
+        changed |= record(FEATURES, generator, args.version, entries, addons, update=args.update)
     return 1 if changed else 0
 
 

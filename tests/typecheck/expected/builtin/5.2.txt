@@ -171,9 +171,8 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(engine.update_render_passes(scene, view_layer), None)  # bare-ok: a stub fact: Blender passes them positionally
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(engine.update_script_node(node), None)  # bare-ok: a stub fact: Blender passes it positionally
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(engine.update_custom_camera(camera), None)  # bare-ok: a stub fact: Blender passes it positionally
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(interface.new_socket("Value", socket_type=idname), NodeTreeInterfaceSocket)  # bare-ok: a stub fact: the socket types come from a callback
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(bpy.ops.grease_pencil.set_material(slot=idname), Result)  # bare-ok: a stub fact: the material slots come from a callback
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.ops.grease_pencil.set_material(slot=idname), Result)  # bare-ok: a stub fact: the material slots come from a callback
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | blender-imprecise-enum-value | assert_type(interface.new_socket("Value", socket_type=idname), NodeTreeInterfaceSocket)  # bare-ok: a stub fact: the socket types come from a callback
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | blender-imprecise-enum-value | assert_type(bpy.ops.grease_pencil.set_material(slot=idname), Result)  # bare-ok: a stub fact: the material slots come from a callback
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.utils.keyconfig_set(path), bool)  # bare-ok: a stub fact: whether the key configuration loaded
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(gizmo.target_set_value("offset", 1.0), None)  # bare-ok: a stub fact: the value parameter is documented
 features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _FluidModifier_DOMAIN, _Object_EMPTY, _Object_FONT, _Object_MESH, _Object_SURFACE)
@@ -323,6 +322,13 @@ features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_
 features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | unresolved-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | unresolved-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
+features/imprecise_annotations/imp_callback_parameter/__init__.py | invalid-method-override | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+features/imprecise_annotations/imp_callback_parameter/__init__.py | unused-ignore-comment | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+features/imprecise_annotations/imp_callback_parameter/__init__.py | invalid-method-override | def draw_item(self, context: Context, layout: UILayout, data, item: ImpCallbackParameterItem, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+features/imprecise_annotations/imp_strictness/__init__.py | invalid-method-override | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+features/imprecise_annotations/imp_strictness/__init__.py | unused-ignore-comment | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+features/imprecise_annotations/imp_strictness/__init__.py | strictness-default | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+features/imprecise_annotations/imp_strictness/__init__.py | strictness-strict | def draw_item(self, context, layout, data: Armature, item, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(context, Context)
 features/inheritance/inh_mixins/__init__.py | type-assertion-failure | assert_type(event, Event)
 features/inheritance/inh_override_types/__init__.py | unresolved-attribute | return context.active_object  # any value: Blender takes its truth value
@@ -337,12 +343,12 @@ features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert
 features/inheritance/inh_overrides/__init__.py | invalid-argument-type | self.layout.prop(self, "count")
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #7
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(ctx, Context)
-features/inheritance/inh_overrides/__init__.py | invalid-method-override | def invoke(self, context: Context, event):  # partly annotated
+features/inheritance/inh_overrides/__init__.py | blender-imprecise-callback-parameter | def invoke(self, context: Context, event):  # partly annotated
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #3
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(event, Event) #4
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #8
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #9
-features/inheritance/inh_overrides/__init__.py | invalid-method-override | def cancel(self, context: "Context"):  # string annotation
+features/inheritance/inh_overrides/__init__.py | blender-imprecise-callback-parameter | def cancel(self, context: "Context"):  # string annotation
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #10
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #11
 features/inheritance/inh_overrides/__init__.py | type-assertion-failure | assert_type(context, Context) #12

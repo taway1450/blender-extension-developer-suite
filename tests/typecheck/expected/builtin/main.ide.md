@@ -71,6 +71,18 @@ PASS
   documentation: (none)
 ````
 
+## features/imprecise_annotations/imp_callback_parameter/ide_imp_callback_parameter.py | ^hover-contains "Armature" @9 | data.name
+
+````text
+PASS
+````
+
+## features/imprecise_annotations/imp_operator_return/ide_imp_operator_return.py | ^hover-contains "set[Literal[" @8 | op.execute(context)
+
+````text
+PASS
+````
+
 ## features/inheritance/inh_overrides/ide_inh_overrides.py | ^hover-contains "Context" @11 | ctx
 
 ````text

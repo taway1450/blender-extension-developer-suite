@@ -12,6 +12,7 @@ root = [
     "features/bpy_symbols",
     "features/bpy_symbols/generated",
     "features/context_members",
+    "features/imprecise_annotations",
     "features/inheritance",
     "features/inheritance/generated",
     "features/operator_calls",
@@ -35,3 +36,12 @@ unused-ignore-comment = "error"
 unused-type-ignore-comment = "error"
 # Default already; stated because the assert_type markers rely on it.
 type-assertion-failure = "error"
+
+# The Imprecise annotation rules configured for one add-on (features/imprecise_annotations/imp_config): the
+# category's level, overridden for one of its rules.
+[[overrides]]
+include = ["features/imprecise_annotations/imp_config/**"]
+
+[overrides.rules]
+blender-imprecise-annotations = "error"
+blender-imprecise-enum-value = "ignore"
