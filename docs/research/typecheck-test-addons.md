@@ -375,7 +375,7 @@ class BadReturn(Operator):
     bl_label = "Bad"
 
     def execute(self, context: Context):
-        return {"FINISH"}  # ty: ignore[invalid-return-type]
+        return {"FINISH"}  # ty: ignore[invalid-explicit-return]
 
 
 class BadOptions(Operator):
