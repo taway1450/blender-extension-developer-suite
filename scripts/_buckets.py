@@ -819,7 +819,9 @@ def parent_panel(d: Diagnostic) -> bool:
 
 
 def bl_context_member(d: Diagnostic) -> bool:
-    """The active object a top-level Properties tab (``object``, ``physics``) or a mode's tool panels need."""
+    """The active object a top-level Properties tab (``object``, ``physics``) or a mode's tool panels need: the
+    ``bl_context`` Implied narrowing where its rule did not accept the read, such as a display-only context
+    (``.grease_pencil_paint``), which the tool header also draws as a popover."""
     if "Object | None" not in d.msg or d.scope.function != "poll":
         return False
     if re.search(r"bl_context = [\"']\.", d.scope.attributes):
@@ -979,6 +981,7 @@ CAUSES = [
                               "assumed-list-item", "assumed-context-member")),
         ("assumption", "C5", ("assumed-internal-operator", "assumed-editor-member", "assumed-preset-context",
                               "assumed-added-object")),
+        ("implied-narrowing", "C6", ("narrowed-by-bl-context",)),
     ) for name in names if name != "assumed-preferences"),
     # An add-on's `register()` reads its own preferences, which exist once the add-on is enabled.
     Cause("assumed-preferences", "assumption", "S6", any_of(rule("blender-assumed-preferences"), lambda d: (
@@ -1101,7 +1104,8 @@ CAUSES = [
           and base_class_target(d.msg.partition(" on type ")[2]))
           or "Object of type `Node | None` has no attribute" in d.msg
           or re.search(r"found `list\[tuple\[ID(?: \| None)?,", d.msg) is not None),
-    Cause("bl-context-implies-member", "assumption", "", bl_context_member),
+    # A panel's `bl_context`: the bl-context Implied narrowing, where its rule did not accept the read.
+    Cause("bl-context-implies-member", "implied-narrowing", "", bl_context_member),
     Cause("set-by-ui-button", "typing-debt", "", lambda d: "`KeyMapItem | None`" in d.msg
           or (SET_BY_UI_BUTTON_TYPE.search(d.msg) is not None and not poll_checks_alias(d))),
     Cause("window-context-in-execute", "typing-debt", "", lambda d: window_context(d)

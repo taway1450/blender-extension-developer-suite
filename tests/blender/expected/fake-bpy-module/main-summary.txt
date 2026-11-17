@@ -21,14 +21,15 @@ assumed-preset-context          assumption            C5             0       268
 assumed-added-object            assumption            C5             6         0         0         0        77        83
 assumed-preferences             assumption            S6             4         0         0         0         0         4
 preset-context-member           assumption            -              0        31         0         0         0        31
-bl-context-implies-member       assumption            -              5         0         0         0         0         5
 added-object                    assumption            -              0         0         0         0         0         0
 collection-context-member       assumption            -              0         0         0         0         0         0
 internal-operator               assumption            -              6         0         0         0         0         6
 ui-callback-editor-member       assumption            -              1         0         2         0         0         3
 narrowed-by-menu-prefix         implied-narrowing     S5            87         0         0         0         0        87
 narrowed-by-popover             implied-narrowing     S5            30         0         0         0         0        30
-narrowed-by-poll                implied-narrowing     S5           939         0         2         6         0       947
+narrowed-by-poll                implied-narrowing     S5           881         0         2         6         0       889
+narrowed-by-bl-context          implied-narrowing     C6            11         0         2         2         0        15
+bl-context-implies-member       implied-narrowing     -              3         0         0         0         0         3
 narrowed-by-poll-helper         implied-narrowing     -             52         0         0         0         0        52
 narrowed-by-parent-panel        implied-narrowing     -              5         0         0         0         0         5
 narrowed-by-poll-alias          implied-narrowing     -              6         0         0         0         0         6
@@ -76,7 +77,7 @@ cross-file-registered-property  typing-debt           -             11        12
 mixin-self                      typing-debt           -            411         0         3         0       200       614
 type-enum-sub-pointer           typing-debt           -            424        63         3         0       144       634
 python-optional                 typing-debt           -            226         0         7         3       101       337
-ui-draw-pointer                 typing-debt           -            515         0         6         2         0       523
+ui-draw-pointer                 typing-debt           -            459         0         5         0         0       464
 object-data-untagged            typing-debt           -             67         0         2         6        75       150
 editor-context-member           typing-debt           -             40         0         0        15         0        55
 script-context-member           typing-debt           -              0         0        47         3         0        50
@@ -105,14 +106,14 @@ unsorted                        unsorted              -              0         0
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         5         5
-assumption                                                         342       574        26         4       575      1521
-implied-narrowing                                                 1144         0         2         6        12      1164
+assumption                                                         337       574        26         4       575      1516
+implied-narrowing                                                 1100         0         4         8        12      1124
 imprecise-annotation                                                 3         0         0         0         5         8
 typechecker-fix                                                   1001         0        50        15       154      1220
-typing-debt                                                       3988       202       122        56      1762      6130
+typing-debt                                                       3932       202       121        54      1762      6071
 unsorted                                                             1         0         0         0      1244      1245
-errors                                                            5002       233       173        71      3106      8585
-warnings                                                          1477       543        27        10       651      2708
+errors                                                            4944       233       172        69      3106      8524
+warnings                                                          1430       543        29        12       651      2665
 
 rule                                       error warning
 blender-assumed-added-object                   0      83
@@ -128,8 +129,9 @@ blender-imprecise-callback-parameter           0       3
 blender-imprecise-enum-value                   0       5
 blender-invalid-operator-property              1       0
 blender-invalid-property                       3       0
+blender-narrowed-by-bl-context                 0      15
 blender-narrowed-by-menu-prefix                0      87
-blender-narrowed-by-poll                       0     947
+blender-narrowed-by-poll                       0     889
 blender-narrowed-by-popover                    0      30
 blender-unsupported-property-target            0       1
 deprecated                                     0      15
@@ -139,7 +141,7 @@ incompatible-method-override                 132       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1494       0
+invalid-argument-type                       1452       0
 invalid-assignment                           593       0
 invalid-base                                   2       0
 invalid-context-manager                       82       0
@@ -155,7 +157,7 @@ lost-keyword-for-regular-parameter            85       0
 mismatched-type-name                           0       1
 missing-argument                             189       0
 missing-attribute                           2132       0
-missing-union-attribute                     2761       0
+missing-union-attribute                     2742       0
 no-matching-overload                          38       0
 not-callable                                  20       0
 not-iterable                                 127       0

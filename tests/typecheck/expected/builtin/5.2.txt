@@ -487,6 +487,39 @@ features/context_members/ctx_spaces/__init__.py | missing-union-attribute | asse
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.area, Area | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from anywhere, or in --background
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | return {"FINISHED"} if context.space_data is None else {"CANCELLED"}
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | ob = context.object  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | ob = context.object  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context] #2
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context] #2
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | unused-ignore-comment | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object.pose, Pose)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | ob = context.object  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context] #2
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-default | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | ob = context.object  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-bl-context] #2
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | strictness-strict | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/ide_nar_bl_context.py | strictness-default | context.object  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/ide_nar_bl_context.py | strictness-strict | context.object  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | return context.object is not None
 features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_config/__init__.py | unused-ignore-comment | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]

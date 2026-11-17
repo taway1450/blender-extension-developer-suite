@@ -12,7 +12,7 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | assumptions | 10/10 | 50/50 | 11/11 | - | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
 | context_members | 43/43 | - | 10/10 | - | 0 |
-| implied_narrowings | 8/8 | 52/52 | 16/16 | 3/3 | 0 |
+| implied_narrowings | 8/8 | 60/60 | 23/23 | 3/3 | 0 |
 | imprecise_annotations | 3/3 | 20/20 | 5/5 | 2/2 | 0 |
 | inheritance | 73/73 | 50/50 | 15/15 | 5/5 | 0 |
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
@@ -23,4 +23,4 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
 | registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 18/18 | - | 2/2 | - | 0 |
-| **total** | 961/961 | 441/441 | 257/258 | 47/47 | 0 |
+| **total** | 961/961 | 449/449 | 264/265 | 47/47 | 0 |

@@ -1166,6 +1166,30 @@ CASES = [
     ),
     pytest.param(
         diagnostic(
+            "missing-union-attribute",
+            "Attribute `type` is not defined on `None` in union `Object | None`",
+            "if ob.type != 'GREASEPENCIL':",
+            path="scripts/startup/bl_ui/space_view3d_toolbar.py",
+            function="poll",
+            attributes='bl_context = ".grease_pencil_paint"\nbl_parent_id = "VIEW3D_PT_tools_grease_pencil_v3_brush_settings"',
+        ),
+        "bl-context-implies-member",
+        id="c6-bl-context-display-only-falls-through",
+    ),
+    pytest.param(
+        diagnostic(
+            "blender-narrowed-by-bl-context",
+            '`context.object` is taken as `Object` because `ObjectButtonsPanel` has `bl_context = "object"`',
+            "ob = context.object",
+            path="scripts/startup/bl_ui/properties_object.py",
+            function="draw",
+            attributes='bl_context = "object"',
+        ),
+        "narrowed-by-bl-context",
+        id="c6-narrowed-by-bl-context",
+    ),
+    pytest.param(
+        diagnostic(
             "invalid-assignment",
             "Object of type `Text` is not assignable to attribute `script` on type `FreestyleModuleSettings | None`",
             "self.freestyle_module.script = text",
@@ -1857,6 +1881,8 @@ def test_every_cause_has_a_known_group_and_a_unique_name():
         ("narrowed-by-poll", "implied-narrowing", "S5"),
         ("assumed-context-member", "assumption", "S6"),
         ("assumed-internal-operator", "assumption", "C5"),
+        ("narrowed-by-bl-context", "implied-narrowing", "C6"),
+        ("bl-context-implies-member", "implied-narrowing", ""),
         ("assumed-added-object", "assumption", "C5"),
         ("preset-context-member", "assumption", ""),
         ("added-object", "assumption", ""),

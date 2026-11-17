@@ -159,7 +159,7 @@ class NAR_POLL_PT_no_poll(Panel):
     bl_label = "No poll"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "object"
+    bl_context = "data"
 
     def draw(self, context):
         assert_type(context.object, Object | None)  # bare-ok: no poll checked it
