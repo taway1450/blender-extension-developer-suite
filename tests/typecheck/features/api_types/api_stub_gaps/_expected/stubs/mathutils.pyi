@@ -1,5 +1,5 @@
 """Reference stub delta: a matrix row or column is a Vector; a Vector is a sequence of floats that compares by length,
-and a Quaternion negates. The math types take an item or a slice and are buffers."""
+and a Quaternion negates. The math types take an item or a slice and are buffers, and are made from any iterable."""
 
 from collections.abc import Iterable, Iterator, Sequence
 from typing import Self, overload
@@ -9,6 +9,7 @@ class MatrixAccess:
     def __iter__(self) -> Iterator[Vector]: ...
 
 class Vector(Sequence[float]):
+    def __init__(self, seq: Iterable[float] = (0.0, 0.0, 0.0), /) -> None: ...
     def __len__(self) -> int: ...
     @overload
     def __getitem__(self, key: int, /) -> float: ...

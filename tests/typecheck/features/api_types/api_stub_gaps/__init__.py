@@ -4,7 +4,8 @@ row is a Vector, the version arrays are tuples, every struct has bl_rna, a few p
 __all__ or are not plain constants, and Operator.description may return None (Blender then shows the docstring).
 BMesh element links are sequences of one element type, bpy.data collections take a (name, library) key, and
 libraries.load and temp_data are context managers. Freestyle calls its overridable methods and Blender a render
-engine's update callbacks with positional arguments, so overrides may rename the parameters or drop their defaults.
+engine's update callbacks and a gizmo's draw_select with positional arguments, so overrides may rename the parameters
+or drop their defaults.
 The stubs must state it (check_api_stub_gaps.py); the helpers below compute the facts for the runtime probes
 (_expected/runtime.toml). The assert_type calls in the bodies are no-ops at runtime."""
 
@@ -12,7 +13,7 @@ import importlib
 from typing import assert_type
 
 import bpy
-from bpy.types import Camera, Node, Operator, RenderEngine, Scene, ViewLayer
+from bpy.types import Camera, Gizmo, Node, Operator, RenderEngine, Scene, ViewLayer
 from bpy_extras.anim_utils import BakeOptions
 from freestyle.types import (AdjacencyIterator, BinaryPredicate1D, ChainingIterator, Interface1D, Stroke,
                              StrokeShader, UnaryPredicate1D, ViewEdge)
@@ -42,11 +43,24 @@ class API_STUB_GAPS_Engine(RenderEngine):
         assert_type(node, Node | None)
 
     def update_render_passes(self, scene, renderlayer):
-        assert_type(scene, Scene | None)
-        assert_type(renderlayer, ViewLayer | None)
+        # Blender calls it only with a scene and a view layer (`RE_engine_update_render_passes`).
+        assert_type(scene, Scene)
+        assert_type(renderlayer, ViewLayer)
 
     def update_custom_camera(self, cam):
         assert_type(cam, Camera | None)
+
+
+class API_STUB_GAPS_GT_select(Gizmo):
+    """Blender passes draw_select's optional select_id positionally too."""
+
+    bl_idname = "API_STUB_GAPS_GT_select"
+
+    def draw(self, context):
+        pass
+
+    def draw_select(self, context, select_id):
+        pass
 
 
 class LongEdgeUP1D(UnaryPredicate1D):
@@ -172,5 +186,5 @@ def module_members():
     return " ".join(type(value).__name__ for value in values)
 
 
-classes = (API_STUB_GAPS_OT_describe, API_STUB_GAPS_Engine)
+classes = (API_STUB_GAPS_OT_describe, API_STUB_GAPS_Engine, API_STUB_GAPS_GT_select)
 register, unregister = bpy.utils.register_classes_factory(classes)

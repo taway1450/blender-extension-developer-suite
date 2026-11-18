@@ -26,5 +26,10 @@ def register():
         prefs.scale = 2.0
 
 
+def root_rsplit_key(preferences: bpy.types.Preferences) -> None:
+    # In the root module, `rsplit` finds no dot and keeps the whole name, the add-on's.
+    assert_type(preferences.addons[__name__.rsplit(".", 1)[0]].preferences, settings.PREFS_SPLIT_Preferences)  # oracle-skip: stock ty types the key as str
+
+
 def unregister():
     bpy.utils.unregister_class(settings.PREFS_SPLIT_Preferences)

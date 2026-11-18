@@ -19,6 +19,7 @@ features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-paramete
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with bpy.data.temp_data() as data:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unused-ignore-comment | ob.rna_type = node.rna_type  # ty: ignore[invalid-assignment]  # a stub fact: a read-only attribute can't be assigned
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(face.loops, BMElemSeq[BMLoop])  # bare-ok: a stub fact: an element link names its element type

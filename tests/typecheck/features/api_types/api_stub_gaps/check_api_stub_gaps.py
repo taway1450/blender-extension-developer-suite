@@ -3,10 +3,11 @@ protocols, the Vector and Quaternion operators, the version tuples, bl_rna, modu
 constants, the private module members Blender's own scripts read, a callback that may return None, BMesh links of one
 element type, bpy.data's (name, library) key, the context store members Blender's UI sets, the context managers, the
 item and slice assignment and buffer protocol of the math types, rna_type, the sequences a BMesh operator's element
-buffer takes, positional callbacks, dynamic enums, two documented returns and Freestyle's undocumented members and
-generators. These are stub facts.
-The overrides of Freestyle's methods and of the render engine's update callbacks are in __init__.py: an incompatible
-override would be an unexpected diagnostic there."""
+buffer takes, the argument types of C functions and RNA functions, the type ID.copy returns, BMesh layer access,
+context.property, positional callbacks, dynamic enums, read-only attributes, two documented returns and Freestyle's
+undocumented members and generators. These are stub facts.
+The overrides of Freestyle's methods, the render engine's update callbacks and a gizmo's draw_select are in __init__.py:
+an incompatible override would be an unexpected diagnostic there."""
 
 from __future__ import annotations
 
@@ -20,10 +21,11 @@ import bmesh
 import bpy
 import gpu
 import imbuf
-from bmesh.types import BMEdge, BMElemSeq, BMesh, BMFace, BMLoop, BMVert
-from bpy.types import (AssetShelf, BlendData, Camera, Constraint, Context, FreestyleModuleSettings, Gizmo, ID, KeyMap,
-                       Library, Material, Node, NodeTreeInterface, NodeTreeInterfaceSocket, Object, Operator,
-                       OperatorProperties, Preferences, RenderEngine, Scene, Struct, ViewLayer, WorkSpaceTool)
+from bmesh.types import BMEdge, BMElemSeq, BMesh, BMFace, BMLayerItem, BMLoop, BMVert
+from bpy.types import (Area, AssetShelf, BlendData, Camera, Constraint, Context, Depsgraph, FreestyleModuleSettings,
+                       Gizmo, ID, KeyMap, Library, Material, Mesh, Node, NodeTreeInterface, NodeTreeInterfaceSocket,
+                       Object, Operator, OperatorProperties, Preferences, PropertyGroup, RenderEngine, Scene, Struct,
+                       UILayout, ViewLayer, WorkSpaceTool, bpy_struct)
 from bpy_extras.anim_utils import BakeOptions
 from freestyle.chainingiterators import pyChainSilhouetteGenericIterator
 from freestyle.functions import pyDensityAnisotropyF1D
@@ -32,7 +34,7 @@ from freestyle.shaders import ConstantThicknessShader, SamplingShader
 from freestyle.types import (Interface0DIterator, Interface1D, Noise, Operators, Stroke, StrokeVertex,
                              UnaryFunction0DDouble, UnaryFunction1DDouble, UnaryPredicate1D, ViewEdge)
 from freestyle.utils import BoundingBox, get_strokes, iter_distance_from_camera, iter_t2d_along_stroke, pairwise, stroke_normal
-from gpu.types import GPUOffScreen
+from gpu.types import GPUOffScreen, GPUShader, GPUVertFormat
 from imbuf.types import ImBuf, ImBufFileType
 from mathutils import Matrix, Quaternion, Vector
 
@@ -97,6 +99,35 @@ def math_item_assignment(vector: Vector, other: Vector, quaternion: Quaternion, 
     assert_type(memoryview(matrix), memoryview)  # bare-ok: a stub fact: a Matrix is a buffer
 
 
+def c_argument_types(shader: GPUShader, vertex_format: GPUVertFormat, mesh: Mesh, ob: Object, data: BlendData,
+                     ints: list[int], flags: list[bool], objects: set[Object], path: str) -> None:
+    assert_type(vertex_format.attr_add(id="pos", comp_type='F32', len=3, fetch_mode='FLOAT'), int)  # bare-ok: a stub fact: the attribute's index
+    shader.uniform_float("matrix", Matrix())  # a stub fact: a uniform takes a 3x3 or 4x4 matrix
+    mesh.vertices.foreach_get("index", ints)  # a stub fact: foreach_get fills a list of ints
+    mesh.vertices.foreach_get("select", flags)  # a stub fact: or of bools
+    assert_type(Vector(value for value in (1.0, 2.0)), Vector)  # bare-ok: a stub fact: a vector takes any iterable
+    assert_type(Quaternion(iter((1.0, 0.0, 0.0, 0.0))), Quaternion)  # bare-ok: a stub fact: so does a quaternion
+    bpy.msgbus.subscribe_rna(key=ob.location, owner=ob, args=(), notify=print)  # a stub fact: a key is a math value with an owner
+    bpy.msgbus.subscribe_rna(key=(bpy.types.Object, "location"), owner=ob, args=(), notify=print)  # a stub fact: or a (struct type, name) pair
+    data.libraries.write(path, objects)  # a stub fact: write takes a set of one ID type
+
+
+def rna_argument_types(area: Area, layout: UILayout, view_layer: ViewLayer, scene: Scene) -> None:
+    area.header_text_set(None)  # a stub fact: a string argument without PROP_NEVER_NULL takes None
+    layout.template_ID(view_layer.objects, "active")  # a stub fact: an AnyType argument takes a typed collection
+    layout.prop_search(scene.keying_sets, "active", scene, "keying_sets")  # a stub fact: and so does prop_search's
+    scene.render.engine = 'CYCLES'  # a stub fact: an add-on's render engine is an engine too
+
+
+def rna_returns(ob: Object, mesh: Mesh, depsgraph: Depsgraph, context: Context, loop: BMLoop,
+                uv_layer: BMLayerItem) -> None:
+    assert_type(ob.copy(), Object)  # bare-ok: a stub fact: a copy has the type of the original
+    assert_type(mesh.copy(), Mesh)  # bare-ok: a stub fact: a copy has the type of the original
+    assert_type(ob.evaluated_get(depsgraph), Object)  # bare-ok: a stub fact: so has the evaluated data-block
+    assert_type(loop[uv_layer], Any)  # bare-ok: a stub fact: an element's layer value has the layer's type
+    assert_type(context.property, tuple[bpy_struct, str, int] | None)  # bare-ok: a stub fact: the data, its path and index
+
+
 def gpu_context_managers(offscreen: GPUOffScreen, font_id: int, ibuf: ImBuf) -> None:
     with gpu.matrix.push_pop():  # a stub fact: the matrix stack is a context manager
         pass
@@ -113,12 +144,14 @@ def versions(data: BlendData, preferences: Preferences, library: Library) -> Non
     assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
 
 
-def bl_rna(ob: Object, node: Node, data: BlendData) -> None:
+def bl_rna(ob: Object, node: Node, data: BlendData, group: PropertyGroup) -> None:
     assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
     assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
     assert_type(ob.rna_type, Struct)  # bare-ok: a stub fact: every RNA struct has the rna_type property
     assert_type(node.rna_type, Struct)  # bare-ok: a stub fact: a node's too
     assert_type(data.rna_type, Struct)  # bare-ok: a stub fact: and bpy.data's
+    ob.rna_type = node.rna_type  # ty: ignore[invalid-assignment]  # a stub fact: a read-only attribute can't be assigned
+    group.name = "renamed"  # a stub fact: a property group's name is an ID property, which can be set
 
 
 def bmesh_operator_buffers(bm: BMesh, face: BMFace) -> None:
