@@ -90,3 +90,56 @@ With fake-bpy-module, `narrowed-by-poll-helper` gives 8 sites to `base-class-sub
 
 The done area keeps 0 in the `unsorted` cause with both stub sets. The one `unchecked-pointer` site, the file
 browser `params` in the Video Editing template's `__init__.py`, predates this slice and is unchanged.
+
+## H2: scripts/startup
+
+All 488 `scripts/startup` rows have a decision: 72 `bug`, 344 `gap`, 72 `debt`.
+
+### Bugs
+
+Each fix is one commit on `typecheck-fixes`, touching only `scripts/startup`. In the rare state the guard draws
+nothing, a placeholder, or an inactive row. `mise run probe:ui-draw main` draws each panel in its state in background
+Blender, on a stub layout that rejects None pointers as `UILayout` does. All 20 draws raised before the fixes and
+pass after them.
+
+| commit | state | panels and menus |
+|---|---|---|
+| `ae67f65f0c4` | a paint mode without a brush (deleted, or missing asset library) | the sculpt, vertex and texture paint and three Grease Pencil context menus, Sculpt Gravity, Grease Pencil sculpt settings |
+| `9e044bbf86e` | pinned particle settings: no `particle_system` | Fluid Interaction, Render Timing |
+| `4137594c096` | pinned object data: no `object` | Curves Surface, both light probe Viewport Display panels, Lattice |
+| `352cd7a8c54` | pinned armature in the Bone tab while a mesh is in edit mode | Bone Collections (shows its placeholder) |
+| `f73173d1f22` | a node group interface without an active item | interface context menu |
+| `8536c0b027d` | no sequencer scene | sequencer View panel and pie |
+| `d4f812a5dc2` | a sequencer scene without a sequence editor | Preview Overlays |
+| `613e3dcb8a6` | no open project | Project Variables |
+
+### Gaps
+
+Follow-up notes; no checker code changed.
+
+| mechanism | rows |
+|---|---:|
+| narrowed-by-poll-in-caller: a menu or popover drawn only from a parent, guarded header or mode keymap | 108 |
+| bl-context-mode: a tool-settings `bl_context` implies the active object, its type and data | 56 |
+| poll-type-comparison: `type(context.curve) is Curve` / `in {...}` in the poll | 55 |
+| poll-or-fallback: poll `bone or edit_bone`, draw falls back to `edit_bone` | 53 |
+| context-never-none: `window`, `screen`, `workspace` while a window draws | 27 |
+| rna-never-none: no PROP_NEVER_NULL on file browser `params`, `owner_asset_library`, the graph editor's `dopesheet` | 17 |
+| narrowed-by-poll-alias: the poll checks the pointer through another path | 9 |
+| bl-context-implies-member: the Bone tab's armature, the Curves tab's data | 8 |
+| context-mode: `context.mode` or the UV edit state implies the object | 7 |
+| narrowed-by-poll-helper: a mixin poll in `bpy_extras.asset_utils`, a `hasattr` poll | 4 |
+
+### Debt
+
+| reason | rows |
+|---|---:|
+| correlated-condition (shape key / key, `psys` / object, pinned particle settings, active strip / scene, assets, texture user) | 33 |
+| template-list-stub: the collection wrapper given as active data is not a `bpy_struct` in the stubs | 19 |
+| type-enum-sub-pointer: a visual strip's crop and transform | 11 |
+| base-class-subtype: `id_data` | 3 |
+| helper-checks-none, object-data-untagged (an object just made from the data), none-excluded-by-arguments | 6 |
+
+`check:blender main`, done area, shipped: `ui-draw-pointer` 503 → 431 (builtin) and 439 → 368 (fake-bpy-module).
+With fake-bpy-module, `correlated-union` and `type-enum-sub-pointer` lose one site each. With builtin, only
+`type-enum-sub-pointer` loses one. The `unsorted` cause stays at 0.
