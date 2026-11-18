@@ -22,12 +22,14 @@ from __future__ import annotations
 
 import importlib
 import inspect
-import json
+import os
 import sys
-import traceback
 import types
 
 import bpy
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _recorder import failure, script_args, write_results
 
 MODULES = (
     "node_add_menu",
@@ -200,7 +202,7 @@ def draw(cls: type, variant: dict, tree: bpy.types.NodeTree, light: bpy.types.Ob
 
 
 def main() -> None:
-    out = sys.argv[sys.argv.index("--") + 1]
+    out = script_args()[0]
     light = light_object()
     results: dict = {}
     for module_name in MODULES:
@@ -217,9 +219,8 @@ def main() -> None:
                         raise ProbeError(f"{module_cls.bl_idname} is not registered")
                     results[key] = draw(cls, variant, tree, light)
                 except Exception:
-                    results[key] = {"ok": False, "error": traceback.format_exc()}
-    with open(out, "w", encoding="utf-8") as fh:
-        json.dump(results, fh, indent=1)
+                    results[key] = failure()
+    write_results(out, results, indent=1)
 
 
 main()

@@ -14,7 +14,12 @@ starts from the factory-startup scene (the default cube selected and active):
   modifier: the selected objects (``flow``), or the object the operator creates and reads back as the active object
   (``domain``, and Quick Fur's curves). Every quick-effects operator only takes meshes, which accept all of its
   modifiers, so the rejection is emulated: a stand-in object returns None from ``modifiers.new()`` and passes
-  everything else to the real one. The operator must return ``{'CANCELLED'}`` with an error report naming the object.
+  everything else to the real one. The operator must return ``{'CANCELLED'}`` with an error report naming the object,
+  and leave the scene as it was: the same objects, modifiers, display types and selection (all but Quick Explode,
+  which adds a particle system before its modifier and leaves it behind).
+- ``<operator>_rejected_second``: the same with a second cube selected, where only the second object rejects (the
+  second cube's flow, or the curves object Quick Fur makes for it), so the operator has changed the first object
+  before it cancels and must take that back.
 - ``fbx_import_<file>``: the FBX importer (Python) adds the armature and subdivision modifiers to the meshes.
 
 The JSON holds each check's result (``ok``, and ``value`` or ``error``, or ``skipped``); the driver reads it.
@@ -22,12 +27,18 @@ The JSON holds each check's result (``ok``, and ``value`` or ``error``, or ``ski
 
 from __future__ import annotations
 
-import json
+import os
 import sys
-import traceback
 from pathlib import Path
 
 import bpy
+from bpy.types import Object
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _recorder import check, script_args, write_results
+
+# The objects that rejected a modifier in the current check (an operator may delete them before it cancels).
+REJECTED: list[str] = []
 
 FBX_FILES = {
     "bl_cube_skinned.fbx": "ARMATURE",
@@ -51,7 +62,7 @@ class RejectingModifiers:
         self._obj = obj
 
     def new(self, name: str, type: str) -> None:
-        self._obj["probe_rejected"] = self._obj.get("probe_rejected", 0) + 1
+        REJECTED.append(self._obj.name)
 
     def __iter__(self):
         return iter(self._obj.modifiers)
@@ -86,26 +97,37 @@ class RejectingObject:
         return hash(self._obj)
 
 
-class ProbeContext:
-    """The real context, with the selected objects or the active object replaced by rejecting stand-ins."""
+def every(obj: Object) -> bool:
+    return True
 
-    def __init__(self, context: bpy.types.Context, *, reject_selected: bool, reject_active: bool) -> None:
+
+def never(obj: Object) -> bool:
+    return False
+
+
+class ProbeContext:
+    """The real context, with the selected objects or the active object replaced by rejecting stand-ins where
+    ``reject_selected`` / ``reject_active`` say so for the object."""
+
+    def __init__(self, context: bpy.types.Context, *, reject_selected=never, reject_active=never) -> None:
         self._context = context
         self._reject_selected = reject_selected
         self._reject_active = reject_active
 
     @property
     def selected_objects(self):
-        objects = self._context.selected_objects
-        return [RejectingObject(o) for o in objects] if self._reject_selected else objects
+        return [RejectingObject(o) if self._reject_selected(o) else o for o in self._context.selected_objects]
 
     @property
     def active_object(self):
         obj = self._context.active_object
-        return RejectingObject(obj) if obj is not None and self._reject_active else obj
+        return RejectingObject(obj) if obj is not None and self._reject_active(obj) else obj
 
     def temp_override(self, **kwargs):
-        return self._context.temp_override(**{key: unwrap(value) for key, value in kwargs.items()})
+        def real(value):
+            return [unwrap(v) for v in value] if isinstance(value, list) else unwrap(value)
+
+        return self._context.temp_override(**{key: real(value) for key, value in kwargs.items()})
 
     def __getattr__(self, name: str):
         return getattr(self._context, name)
@@ -151,13 +173,46 @@ def run_adds(idname: str) -> dict:
     return {"modifiers": added, "new_objects": sorted({o.name for o in bpy.data.objects} - before)}
 
 
-def run_rejected(idname: str, *, reject_selected: bool, reject_active: bool) -> dict:
+def scene_state() -> dict:
+    """What a cancelled operator must leave as it was: the objects, their modifiers, display types and selection."""
+    active = bpy.context.view_layer.objects.active
+    objects = {
+        o.name: {"modifiers": [m.type for m in o.modifiers], "display_type": o.display_type, "selected": o.select_get()}
+        for o in bpy.data.objects
+    }
+    return {"objects": objects, "active": active.name if active else None}
+
+
+def add_second_cube() -> None:
+    """Select a second cube beside the default one, which stays active."""
+    cube = bpy.context.active_object
+    bpy.ops.mesh.primitive_cube_add(location=(3.0, 0.0, 0.0))
+    cube.select_set(True)
+    bpy.context.view_layer.objects.active = cube
+
+
+def second_cube(obj: Object) -> bool:
+    return obj.name == "Cube.001"
+
+
+def second_curves(obj: Object) -> bool:
+    """The curves object Quick Fur adds for the second cube (the first one's exists by then)."""
+    return obj.type == "CURVES" and sum(o.type == "CURVES" for o in bpy.data.objects) > 1
+
+
+def run_rejected(
+    idname: str, *, reject_selected=never, reject_active=never, second: bool = False, unchanged: bool = True
+) -> dict:
     reset()
+    if second:
+        add_second_cube()
+    REJECTED.clear()
+    before = scene_state()
     cls = operator_class(idname)
     op = ProbeOperator(idname)
     context = ProbeContext(bpy.context, reject_selected=reject_selected, reject_active=reject_active)
     result = cls.execute(op, context)
-    rejected = sorted(o.name for o in bpy.data.objects if o.get("probe_rejected"))
+    rejected = sorted(set(REJECTED))
     if result != {"CANCELLED"}:
         raise AssertionError(f"{cls.__name__}.execute returned {result!r} (reports {op.reports})")
     if not rejected:
@@ -165,6 +220,8 @@ def run_rejected(idname: str, *, reject_selected: bool, reject_active: bool) -> 
     errors = [message for types, message in op.reports if types == ["ERROR"]]
     if not any(name in message for message in errors for name in rejected):
         raise AssertionError(f"{cls.__name__}.execute reported no error naming {rejected}: {op.reports}")
+    if unchanged and (after := scene_state()) != before:
+        raise AssertionError(f"{cls.__name__}.execute cancelled but changed the scene:\n{before}\n->\n{after}")
     return {"rejected": rejected, "reports": op.reports}
 
 
@@ -189,18 +246,8 @@ def fbx_import(path: Path, modifier_type: str) -> dict:
     return found
 
 
-def check(results: dict, name: str, fn, *, skip: str = "") -> None:
-    if skip:
-        results[name] = {"ok": True, "skipped": skip}
-        return
-    try:
-        results[name] = {"ok": True, "value": fn()}
-    except Exception:
-        results[name] = {"ok": False, "error": traceback.format_exc()}
-
-
 def main() -> None:
-    args = sys.argv[sys.argv.index("--") + 1 :]
+    args = script_args()
     out, fbx_dir = args[0], Path(args[1])
     results: dict = {}
     check(results, "api_empty_subsurf", api_empty_subsurf)
@@ -208,30 +255,31 @@ def main() -> None:
     for idname in ("quick_fur", "quick_explode", "quick_smoke", "quick_liquid"):
         skip = no_fluid if needs_fluid(idname) else ""
         check(results, f"{idname}_adds", lambda: run_adds(idname), skip=skip)
-    check(results, "quick_fur_rejected", lambda: run_rejected("quick_fur", reject_selected=False, reject_active=True))
+    check(results, "quick_fur_rejected", lambda: run_rejected("quick_fur", reject_active=every))
+    check(
+        results,
+        "quick_fur_rejected_second",
+        lambda: run_rejected("quick_fur", reject_active=second_curves, second=True),
+    )
     check(
         results,
         "quick_explode_rejected",
-        lambda: run_rejected("quick_explode", reject_selected=True, reject_active=True),
+        # Quick Explode adds the particle system first, so a rejected Explode modifier leaves it behind.
+        lambda: run_rejected("quick_explode", reject_selected=every, reject_active=every, unchanged=False),
     )
     for idname in ("quick_smoke", "quick_liquid"):
         skip = no_fluid if needs_fluid(idname) else ""
+        check(results, f"{idname}_rejected_flow", lambda: run_rejected(idname, reject_selected=every), skip=skip)
         check(
             results,
-            f"{idname}_rejected_flow",
-            lambda: run_rejected(idname, reject_selected=True, reject_active=False),
+            f"{idname}_rejected_second",
+            lambda: run_rejected(idname, reject_selected=second_cube, second=True),
             skip=skip,
         )
-        check(
-            results,
-            f"{idname}_rejected_domain",
-            lambda: run_rejected(idname, reject_selected=False, reject_active=True),
-            skip=skip,
-        )
+        check(results, f"{idname}_rejected_domain", lambda: run_rejected(idname, reject_active=every), skip=skip)
     for name, modifier_type in FBX_FILES.items():
         check(results, f"fbx_import_{Path(name).stem}", lambda: fbx_import(fbx_dir / name, modifier_type))
-    with open(out, "w", encoding="utf-8") as fh:
-        json.dump(results, fh, indent=2)
+    write_results(out, results)
 
 
 main()

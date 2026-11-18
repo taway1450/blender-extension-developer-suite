@@ -19,23 +19,14 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
-import subprocess
 from pathlib import Path
 
-from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper, validate_version
+from _common import REPO_ROOT, StepError, log, main_wrapper
+from _probe import failed_checks, probe_dir, probe_parser, run_blender, run_probe
 from generate_stubs import find_blender, worktree_path
 
 RIGIFY_PROBE = REPO_ROOT / "scripts" / "blender" / "probe_rigify.py"
 GLTF_TESTS = ("import", "export", "roundtrip")
-BLENDER_ARGS = ["--background", "--factory-startup", "-noaudio", "--python-exit-code", "1"]
-
-
-def run_blender(blender: Path, args: list[str | Path], log_path: Path) -> int:
-    proc = subprocess.run([str(c) for c in [blender, *BLENDER_ARGS, *args]], capture_output=True, text=True)
-    log_path.write_text(proc.stdout + proc.stderr, encoding="utf-8")
-    return proc.returncode
 
 
 def gltf_failures(blender: Path, source: Path, out: Path) -> list[str]:
@@ -45,8 +36,8 @@ def gltf_failures(blender: Path, source: Path, out: Path) -> list[str]:
         testdir = source / "tests" / "files" / "io_tests" / "gltf" / test
         if not script.is_file() or not testdir.is_dir():
             raise StepError(f"{script} or {testdir} is missing")
-        args = ["--python", script, "--", "--testdir", testdir, "--outdir", out / f"gltf-{test}"]
-        code = run_blender(blender, args, out / f"gltf-{test}.log")
+        args = ["--testdir", testdir, "--outdir", out / f"gltf-{test}"]
+        code, _ = run_blender(blender, script, *args, log_path=out / f"gltf-{test}.log")
         log(f"glTF {test}: {'passed' if code == 0 else f'FAILED (exit code {code})'}")
         if code:
             problems.append(f"glTF {test} test failed (see {out / f'gltf-{test}.log'})")
@@ -54,27 +45,22 @@ def gltf_failures(blender: Path, source: Path, out: Path) -> list[str]:
 
 
 def rigify_failures(blender: Path, out: Path) -> list[str]:
-    result_path = out / "rigify.json"
-    result_path.unlink(missing_ok=True)
-    code = run_blender(blender, ["--python", RIGIFY_PROBE, "--", result_path], out / "rigify.log")
-    if code or not result_path.exists():
-        return [f"Rigify probe failed with exit code {code} (see {out / 'rigify.log'})"]
-    results = json.loads(result_path.read_text(encoding="utf-8"))
+    try:
+        results, _ = run_probe(blender, RIGIFY_PROBE, out / "rigify.json", log_path=out / "rigify.log")
+    except StepError as error:
+        return [f"Rigify probe: {error}"]
     passed = [name for name, r in results.items() if r["ok"]]
     log(f"Rigify: {len(passed)} of {len(results)} rigs generated")
-    return [f"Rigify {name} failed:\n{r['error']}" for name, r in results.items() if not r["ok"]]
+    return failed_checks(results, prefix="Rigify ")
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("version", type=validate_version, help="Blender version (X.Y) or build name (e.g. main)")
-    parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
+    parser = probe_parser(__doc__)
     parser.add_argument("--only", choices=["gltf", "rigify"], help="Run only the glTF tests or only Rigify")
     args = parser.parse_args()
 
     blender = find_blender(args.version, args.blender)
-    out = CACHE_DIR / "gltf-rigify-probe" / args.version
-    out.mkdir(parents=True, exist_ok=True)
+    out = probe_dir("gltf-rigify-probe", args.version)
     problems = []
     if args.only in (None, "gltf"):
         problems += gltf_failures(blender, worktree_path(args.version), out)

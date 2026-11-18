@@ -19,12 +19,14 @@ afterwards and has bones. The JSON maps each case to its result; the driver read
 
 from __future__ import annotations
 
-import json
+import os
 import sys
-import traceback
 
 import addon_utils
 import bpy
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _recorder import check, script_args, write_results
 
 # Rig types whose sample cannot generate on its own.
 NOT_STANDALONE = {"skin.glue"}
@@ -77,15 +79,8 @@ def sample_case(rig_type: str) -> int:
     return generate(obj)
 
 
-def check(results: dict, name: str, fn) -> None:
-    try:
-        results[name] = {"ok": True, "value": fn()}
-    except Exception:
-        results[name] = {"ok": False, "error": traceback.format_exc()}
-
-
 def main() -> None:
-    out = sys.argv[sys.argv.index("--") + 1]
+    out = script_args()[0]
     addon_utils.enable("rigify", default_set=True, handle_error=None)
     from rigify import metarig_menu, rig_lists
 
@@ -97,8 +92,7 @@ def main() -> None:
     for rig_type, entry in sorted(rig_lists.rigs.items()):
         if hasattr(entry["module"], "create_sample") and rig_type not in NOT_STANDALONE:
             check(results, f"sample:{rig_type}", lambda t=rig_type: sample_case(t))
-    with open(out, "w", encoding="utf-8") as fh:
-        json.dump(results, fh, indent=2)
+    write_results(out, results)
 
 
 main()

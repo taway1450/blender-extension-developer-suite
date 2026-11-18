@@ -32,6 +32,7 @@ git LFS).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import platform
 import shutil
@@ -40,12 +41,11 @@ import sys
 from pathlib import Path
 
 from _common import CACHE_DIR, StepError, git_output, log, main_wrapper, run, validate_build_name
-from download_blender import BLENDER_BIN_DIR, blender_executable
+from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable
 from generate_stubs import blender_binary_version, ensure_worktree
 
 BUILD_DIR = CACHE_DIR / "blender-build"
 LIBS_DIR = CACHE_DIR / "blender-libs"
-BUILD_INFO = ".build-info"
 CONFIGURE_ARGS = "configure-args.txt"
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
 # Options turned back on after a preset (``-D`` after ``-C`` overrides its forced cache entries).
@@ -196,6 +196,33 @@ def configure_command(
     ]
 
 
+def configure_hash(*, source: Path, build_dir: Path, config: str, build_type: str, install_dir: Path) -> str:
+    """Hash of the arguments that configure the build, which ``.build-info`` records. CMake's and Ninja's own paths
+    are left out: they come from uv's script environment, which moves when it is recreated."""
+    cmd = configure_command(
+        Path("cmake"),
+        Path("ninja"),
+        source=source,
+        build_dir=build_dir,
+        config=config,
+        build_type=build_type,
+        libs=LIBS_DIR / lib_platform(),
+        install_dir=install_dir,
+    )
+    return hashlib.sha256("\n".join(str(c) for c in cmd).encode()).hexdigest()[:16]
+
+
+def build_info_text(*, commit: str, config: str, build_type: str, configure: str, source: Path) -> str:
+    return f"commit={commit}\nconfig={config}\nbuild_type={build_type}\nconfigure={configure}\nsource={source}\n"
+
+
+def is_current_build(build_info: str, *, commit: str, config: str, build_type: str, configure: str) -> bool:
+    """Whether the build that ``.build-info`` reads ``build_info`` matches the requested one."""
+    fields = dict(line.split("=", 1) for line in build_info.splitlines() if "=" in line)
+    wanted = {"commit": commit, "config": config, "build_type": build_type, "configure": configure}
+    return all(fields.get(key) == value for key, value in wanted.items())
+
+
 def build_blender(
     name: str,
     *,
@@ -211,11 +238,17 @@ def build_blender(
     install_dir = BLENDER_BIN_DIR / name
     blender = blender_executable(install_dir)
     build_info = install_dir / BUILD_INFO
+    build_dir = BUILD_DIR / name
+    configure = configure_hash(
+        source=source, build_dir=build_dir, config=config, build_type=build_type, install_dir=install_dir
+    )
     if (
         not force
         and blender.is_file()
         and build_info.is_file()
-        and build_info.read_text().startswith(f"commit={commit}\nconfig={config}\nbuild_type={build_type}\n")
+        and is_current_build(
+            build_info.read_text(), commit=commit, config=config, build_type=build_type, configure=configure
+        )
     ):
         log(f"Reusing Blender build {blender} ({commit[:10]})")
         return blender
@@ -230,7 +263,6 @@ def build_blender(
     libs = ensure_libraries(source)
     env, cmake, ninja = build_env()
 
-    build_dir = BUILD_DIR / name
     if force:
         log(f"Removing build directory {build_dir}")
         shutil.rmtree(build_dir, ignore_errors=True)
@@ -266,7 +298,9 @@ def build_blender(
     run([cmake, "--build", build_dir, "--target", "install"], env=env)
     if not blender.is_file():
         raise StepError(f"Blender binary not found at {blender} after building")
-    build_info.write_text(f"commit={commit}\nconfig={config}\nbuild_type={build_type}\nsource={source}\n")
+    build_info.write_text(
+        build_info_text(commit=commit, config=config, build_type=build_type, configure=configure, source=source)
+    )
     log(f"Blender {blender_binary_version(blender)} ({name}, {commit[:10]}) installed at {blender}")
     return blender
 

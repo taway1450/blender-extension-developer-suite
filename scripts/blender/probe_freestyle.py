@@ -16,12 +16,14 @@ Afterwards ``random.seed(0)`` must still be callable. The JSON holds each check'
 
 from __future__ import annotations
 
-import json
+import os
 import random
 import sys
-import traceback
 
 import bpy
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _recorder import check, script_args, write_results
 
 STYLE_MODULE = """
 import bpy
@@ -83,23 +85,15 @@ def render_parameter_editor(scene: bpy.types.Scene) -> None:
     bpy.ops.render.render()
 
 
-def check(results: dict, name: str, fn) -> None:
-    try:
-        results[name] = {"ok": True, "value": fn()}
-    except Exception:
-        results[name] = {"ok": False, "error": traceback.format_exc()}
-
-
 def main() -> None:
-    out = sys.argv[sys.argv.index("--") + 1]
+    out = script_args()[0]
     scene = setup_scene()
     results: dict = {}
     check(results, "script_first", lambda: render_script(scene))
     check(results, "script_second", lambda: render_script(scene))
     check(results, "parameter_editor", lambda: render_parameter_editor(scene))
     check(results, "random_seed_callable", lambda: random.seed(0))
-    with open(out, "w", encoding="utf-8") as fh:
-        json.dump(results, fh, indent=2)
+    write_results(out, results)
 
 
 main()

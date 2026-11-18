@@ -19,6 +19,9 @@ import traceback
 
 import bpy
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _recorder import script_args
+
 RECORDS: list[dict] = []
 
 
@@ -493,7 +496,7 @@ def files(output: str, file_list: str, skip_list: str | None) -> None:
 
 
 def main() -> None:
-    argv = sys.argv[sys.argv.index("--") + 1 :]
+    argv = script_args()
     if argv[0] == "synthetic":
         synthetic(argv[1], argv[2])
     else:

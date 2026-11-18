@@ -18,56 +18,57 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import json
-import subprocess
-from pathlib import Path
+from collections import defaultdict
 
-from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper, validate_version
+from _common import REPO_ROOT, StepError, log, main_wrapper
+from _probe import failed_checks, probe_dir, probe_parser, run_probe
 from generate_stubs import find_blender
 
 PROBE = REPO_ROOT / "scripts" / "blender" / "probe_node_menus.py"
-BLENDER_ARGS = ["--background", "--factory-startup", "-noaudio", "--python-exit-code", "1"]
 
 
 def changed_menus(previous: dict, results: dict) -> list[str]:
+    """The draws (``<module>:<menu> [<variant>]``) whose result differs between two runs, or that only one has."""
     return sorted(key for key in previous.keys() | results.keys() if previous.get(key) != results.get(key))
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("version", type=validate_version, help="Blender version (X.Y) or build name (e.g. main)")
-    parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
-    args = parser.parse_args()
+def draws_by_menu(results: dict) -> dict[str, list[dict]]:
+    """Each menu's draw results over the variants, by ``<module>:<menu>`` (the draw's key without its variant)."""
+    menus = defaultdict(list)
+    for key, result in results.items():
+        menus[key.partition(" [")[0]].append(result)
+    return menus
 
+
+def menu_problems(results: dict) -> list[str]:
+    """The draws that failed, and the menus whose ``poll`` rejects every variant."""
+    problems = failed_checks(results)
+    problems += [
+        f"{menu} is drawn in no variant (its poll rejects them all)"
+        for menu, draws in sorted(draws_by_menu(results).items())
+        if not any(r.get("poll") for r in draws)
+    ]
+    return problems
+
+
+def main() -> int:
+    args = probe_parser(__doc__).parse_args()
     blender = find_blender(args.version, args.blender)
-    out = CACHE_DIR / "node-menu-probe" / args.version
-    out.mkdir(parents=True, exist_ok=True)
+    out = probe_dir("node-menu-probe", args.version)
     result_path = out / "node_menus.json"
     previous_path = out / "node_menus.previous.json"
     if result_path.exists():
         result_path.replace(previous_path)
 
-    command = [str(c) for c in [blender, *BLENDER_ARGS, "--python", PROBE, "--", result_path]]
-    proc = subprocess.run(command, capture_output=True, text=True)
-    (out / "blender.log").write_text(proc.stdout + proc.stderr, encoding="utf-8")
-    if proc.returncode or not result_path.exists():
-        raise StepError(f"node menu probe failed with exit code {proc.returncode} (see {out / 'blender.log'})")
-
-    results = json.loads(result_path.read_text(encoding="utf-8"))
-    drawn = [key for key, r in results.items() if r.get("poll")]
-    menus = {key.partition(" [")[0] for key in results}
-    entries = sum(len(results[key]["entries"]) for key in drawn)
-    log(f"Node menus: {len(menus)} menus, {len(drawn)} draws over the variants, {entries} entries")
+    results, _ = run_probe(blender, PROBE, result_path)
+    drawn = [r for r in results.values() if r.get("poll")]
+    entries = sum(len(r["entries"]) for r in drawn)
+    log(f"Node menus: {len(draws_by_menu(results))} menus, {len(drawn)} draws over the variants, {entries} entries")
     if previous_path.exists():
         changed = changed_menus(json.loads(previous_path.read_text(encoding="utf-8")), results)
         log(f"Since the previous run: {len(changed)} draws changed" + "".join(f"\n  {key}" for key in changed))
-    problems = [f"{key} failed:\n{r['error']}" for key, r in results.items() if not r["ok"]]
-    problems += [
-        f"{menu} is drawn in no variant (its poll rejects them all)"
-        for menu in sorted(menus)
-        if not any(results[key].get("poll") for key in results if key.partition(" [")[0] == menu)
-    ]
+    problems = menu_problems(results)
     if problems:
         raise StepError("node menu probe failed:\n" + "\n".join(problems))
     log("every node-add and node-swap menu drew")

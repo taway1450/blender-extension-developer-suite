@@ -20,32 +20,17 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import collections
 import json
 import subprocess
 from pathlib import Path
 
-from _common import CACHE_DIR, REPO_ROOT, log, main_wrapper, validate_version
+from _common import REPO_ROOT, blender_script_command, log, main_wrapper
+from _probe import probe_dir, probe_parser
 from generate_stubs import find_blender, worktree_path
 
 PROBE = REPO_ROOT / "scripts" / "blender" / "probe_never_none.py"
 MAX_CRASHES = 200
-
-
-def blender_cmd(blender: Path, *args: str | Path) -> list[str]:
-    return [
-        str(blender),
-        "--background",
-        "--factory-startup",
-        "-noaudio",
-        "--python-exit-code",
-        "1",
-        "--python",
-        str(PROBE),
-        "--",
-        *map(str, args),
-    ]
 
 
 def corpus(source: Path, limit: int | None) -> list[str]:
@@ -61,7 +46,9 @@ def run_files(blender: Path, out: Path, paths: list[str]) -> list[str]:
     file_list.write_text("\n".join(paths), encoding="utf-8")
     crashed = skip.read_text(encoding="utf-8").split() if skip.exists() else []
     for _ in range(MAX_CRASHES):
-        proc = subprocess.run(blender_cmd(blender, "files", results, file_list, skip), capture_output=True, text=True)
+        proc = subprocess.run(
+            blender_script_command(blender, PROBE, "files", results, file_list, skip), capture_output=True, text=True
+        )
         current = Path(str(results) + ".current")
         if not current.exists():
             if proc.returncode:
@@ -95,20 +82,20 @@ def table(synthetic: list[dict], files: list[dict]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("version", type=validate_version, help="Blender version (X.Y) or build name (e.g. main)")
-    parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
+    parser = probe_parser(__doc__)
     parser.add_argument("--limit", type=int, help="Only probe the first N corpus files")
     args = parser.parse_args()
 
     blender = find_blender(args.version, args.blender)
-    out = CACHE_DIR / "never-none-probe" / args.version
+    out = probe_dir("never-none-probe", args.version)
     work = out / "work"
     work.mkdir(parents=True, exist_ok=True)
 
     log("Probing the synthetic edge states")
     proc = subprocess.run(
-        blender_cmd(blender, "synthetic", out / "synthetic.json", work), capture_output=True, text=True
+        blender_script_command(blender, PROBE, "synthetic", out / "synthetic.json", work),
+        capture_output=True,
+        text=True,
     )
     if proc.returncode:
         log(f"Synthetic probe failed:\n{proc.stdout[-3000:]}\n{proc.stderr[-3000:]}")

@@ -40,7 +40,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper
+from _common import CACHE_DIR, REPO_ROOT, StepError, blender_script_command, log, main_wrapper
 from _target import Target, add_target_arguments
 from generate_stubs import BUILTIN, FAKE_BPY, find_blender
 
@@ -90,20 +90,7 @@ def dump_rna(blender: Path, source: Path, out_dir: Path) -> dict:
 
     for _ in range(MAX_CRASH_RETRIES):
         output.unlink(missing_ok=True)
-        cmd = [
-            str(blender),
-            "--background",
-            "--factory-startup",
-            "-noaudio",
-            "--python-exit-code",
-            "1",
-            "--python",
-            str(DUMP_SCRIPT),
-            "--",
-            str(output),
-            "--crashed",
-            str(crashed_file),
-        ]
+        cmd = blender_script_command(blender, DUMP_SCRIPT, output, "--crashed", crashed_file)
         if docs_kw_only:
             cmd.append("--docs-kw-only")
         print(f"    $ {' '.join(cmd)}", flush=True)

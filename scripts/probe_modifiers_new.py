@@ -16,12 +16,8 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
-import subprocess
-from pathlib import Path
-
-from _common import CACHE_DIR, REPO_ROOT, StepError, log, main_wrapper, validate_version
+from _common import REPO_ROOT, StepError, log, main_wrapper
+from _probe import failed_checks, probe_dir, probe_parser, run_probe
 from generate_stubs import find_blender, worktree_path
 
 PROBE = REPO_ROOT / "scripts" / "blender" / "probe_modifiers_new.py"
@@ -29,33 +25,18 @@ PROBE = REPO_ROOT / "scripts" / "blender" / "probe_modifiers_new.py"
 
 def failures(results: dict, output: str) -> list[str]:
     """What went wrong, from the probe's results and Blender's output."""
-    problems = [f"{name} failed:\n{r['error']}" for name, r in results.items() if not r["ok"]]
+    problems = failed_checks(results)
     if "Traceback" in output:
         problems.append("Blender printed a traceback (see blender.log)")
     return problems
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("version", type=validate_version, help="Blender version (X.Y) or build name (e.g. main)")
-    parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
-    args = parser.parse_args()
-
+    args = probe_parser(__doc__).parse_args()
     blender = find_blender(args.version, args.blender)
     fbx_dir = worktree_path(args.version) / "tests" / "files" / "io_tests" / "fbx"
-    out = CACHE_DIR / "modifiers-new-probe" / args.version
-    out.mkdir(parents=True, exist_ok=True)
-    result_path = out / "result.json"
-    result_path.unlink(missing_ok=True)
-
-    cmd = [blender, "--background", "--factory-startup", "-noaudio", "--python-exit-code", "1", "--python", PROBE]
-    proc = subprocess.run([str(c) for c in [*cmd, "--", result_path, fbx_dir]], capture_output=True, text=True)
-    output = proc.stdout + proc.stderr
-    (out / "blender.log").write_text(output, encoding="utf-8")
-    if proc.returncode or not result_path.exists():
-        raise StepError(f"Blender failed with exit code {proc.returncode}:\n{output[-3000:]}")
-
-    results = json.loads(result_path.read_text(encoding="utf-8"))
+    out = probe_dir("modifiers-new-probe", args.version)
+    results, output = run_probe(blender, PROBE, out / "result.json", fbx_dir)
     problems = failures(results, output)
     if problems:
         raise StepError("modifiers.new() probe failed:\n" + "\n".join(problems))
