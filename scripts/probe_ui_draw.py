@@ -1,13 +1,15 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Draw the bl_ui panels and menus that raised in a rare state, in that state, in background Blender (#148).
+"""Draw the bl_ui panels and menus that raised in a rare state, in that state, in background Blender (#148, #149).
 
 Runs ``scripts/blender/probe_ui_draw.py`` in Blender (background, factory startup). Each check calls a panel's or
 menu's ``draw`` on a stub layout (which rejects None RNA pointers as Blender's does) with a context in one of the
 states the spec #146 review found: a paint mode without a brush, a pinned Properties editor (particle settings,
 object data, an armature), a node group interface without an active item, a workspace without a sequencer scene, a
-sequencer scene without a sequence editor, no open project. Fails when a draw raises or a poll rejects its state.
+sequencer scene without a sequence editor, no open project. #149 adds the add-on and render-module states: the glTF
+exporter's action filter list after an action is deleted, the glTF variant operators on a curve, and a Freestyle render
+whose scene camera is an empty. Fails when a draw raises or a poll rejects its state.
 Blender's output goes to ``.cache/ui-draw-probe/<version>/blender.log``, the results to ``result.json``.
 
 Usage:
