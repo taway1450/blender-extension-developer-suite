@@ -12,6 +12,10 @@ features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(iterator, chainingiterators.ChainSilhouetteIterator)  # bare-ok: a stub fact: from freestyle.chainingiterators
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(QuantitativeInvisibilityUP1D(0), predicates.QuantitativeInvisibilityUP1D)  # bare-ok: a stub fact: from freestyle.predicates
 features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure | assert_type(_freestyle.getCurrentScene(), Scene)  # bare-ok: a stub fact: its functions keep their types too
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(keyconfigs.active, KeyConfig)  # bare-ok: a stub fact: falls back to the default key configuration
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tracking_objects.active, MovieTrackingObject)  # bare-ok: a stub fact: active_object_index is clamped to the objects
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(material.node_tree, NodeTree)  # bare-ok: a stub fact: every material has a node tree since 5.0
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(world.node_tree, NodeTree)  # bare-ok: a stub fact: every world has a node tree since 5.0
 features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, edge: Interface1D) -> bool:
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, first: Interface1D, second: Interface1D) -> bool:

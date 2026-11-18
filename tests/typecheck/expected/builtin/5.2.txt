@@ -39,6 +39,8 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
+features/api_types/api_never_none/check_api_never_none.py | import-not-found | MovieTrackingObjects, MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink,
+features/api_types/api_never_none/check_api_never_none.py | import-not-found | from idprop.types import IDPropertyUIManager
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(camera.dof, CameraDOFSettings)  # bare-ok: a stub fact: the struct is a member of Camera
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.view_settings, ColorManagedViewSettings)  # bare-ok: a stub fact: the struct is a member of Scene
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.eevee, SceneEEVEE)  # bare-ok: a stub fact: the struct is a member of Scene
@@ -46,6 +48,33 @@ features/api_types/api_never_none/check_api_never_none.py | type-assertion-failu
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tool_settings.image_paint, ImagePaint)  # bare-ok: a stub fact: the struct is a member of ToolSettings
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(context.preferences, Preferences)  # bare-ok: a stub fact: always the global preferences
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(context.window_manager, WindowManager)  # bare-ok: a stub fact: the window manager exists whenever Python runs
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(xr.viewfinder, XrViewfinderState)  # bare-ok: a stub fact: null only when there is no XR session state
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(keyconfigs.active, KeyConfig)  # bare-ok: a stub fact: falls back to the default key configuration
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(keyconfigs.default, KeyConfig)  # bare-ok: a stub fact: the window manager always has one
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(keyconfigs.addon, KeyConfig)  # bare-ok: a stub fact: the window manager always has one
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(keyconfigs.user, KeyConfig)  # bare-ok: a stub fact: the window manager always has one
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(link.from_node, Node)  # bare-ok: a stub fact: a link always has both ends
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(link.to_node, Node)  # bare-ok: a stub fact: a link always has both ends
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(link.from_socket, NodeSocket)  # bare-ok: a stub fact: a link always has both ends
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(link.to_socket, NodeSocket)  # bare-ok: a stub fact: a link always has both ends
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(internal_link.from_socket, NodeSocket)  # bare-ok: a stub fact: a link always has both ends
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(internal_link.to_socket, NodeSocket)  # bare-ok: a stub fact: a link always has both ends
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(bone.color, BoneColor)  # bare-ok: a stub fact: the struct is a member of Bone
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(pose_bone.color, BoneColor)  # bare-ok: a stub fact: the struct is a member of PoseBone
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(edit_bone.color, BoneColor)  # bare-ok: a stub fact: the struct is a member of EditBone
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tracking.reconstruction, MovieTrackingReconstruction)  # bare-ok: a stub fact: the camera object's, which can't be removed
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tracking_object.reconstruction, MovieTrackingReconstruction)  # bare-ok: a stub fact: the struct is a member of MovieTrackingObject
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(tracking_objects.active, MovieTrackingObject)  # bare-ok: a stub fact: active_object_index is clamped to the objects
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(space.region_3d, RegionView3D)  # bare-ok: a stub fact: the main region of the space
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(asset.metadata, AssetMetaData)  # bare-ok: a stub fact: every asset has metadata
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(depsgraph.scene, Scene)  # bare-ok: a stub fact: a depsgraph is built for a scene
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(depsgraph.scene_eval, Scene)  # bare-ok: a stub fact: a depsgraph is built for a scene
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(depsgraph.view_layer, ViewLayer)  # bare-ok: a stub fact: a depsgraph is built for a view layer
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(depsgraph.view_layer_eval, ViewLayer)  # bare-ok: a stub fact: a depsgraph is built for a view layer
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(instance.object, Object)  # bare-ok: a stub fact: every instance is of an object
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(update.id, ID)  # bare-ok: a stub fact: every update is of an ID
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(material.node_tree, NodeTree)  # bare-ok: a stub fact: every material has a node tree since 5.0
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(world.node_tree, NodeTree)  # bare-ok: a stub fact: every world has a node tree since 5.0
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | header.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ui_list.draw_filter(None, layout)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context

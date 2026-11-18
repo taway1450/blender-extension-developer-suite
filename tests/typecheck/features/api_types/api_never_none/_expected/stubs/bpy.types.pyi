@@ -1,5 +1,10 @@
 """Reference stub delta: pointers to structs embedded by value, the context's preferences and window manager, and the
-callback parameters Blender always fills."""
+callback parameters Blender always fills, the pointers and function results Blender always sets."""
+
+from typing import Literal
+
+from idprop.types import IDPropertyUIManager
+
 
 class Camera:
     dof: CameraDOFSettings
@@ -51,3 +56,79 @@ class AssetShelf:
     def asset_poll(cls, asset: AssetRepresentation) -> bool: ...
     @classmethod
     def draw_context_menu(cls, context: Context, asset: AssetRepresentation, layout: UILayout) -> None: ...
+
+class XrSessionState:
+    viewfinder: XrViewfinderState
+
+class WindowManager:
+    xr_session_state: XrSessionState | None
+
+class KeyConfigurations:
+    active: KeyConfig
+    default: KeyConfig
+    addon: KeyConfig
+    user: KeyConfig
+
+class NodeLink:
+    from_node: Node
+    to_node: Node
+    from_socket: NodeSocket
+    to_socket: NodeSocket
+
+class NodeInternalLink:
+    from_socket: NodeSocket
+    to_socket: NodeSocket
+
+class Bone:
+    color: BoneColor
+
+class PoseBone:
+    color: BoneColor
+
+class EditBone:
+    color: BoneColor
+
+class MovieTracking:
+    reconstruction: MovieTrackingReconstruction
+
+class MovieTrackingObject:
+    reconstruction: MovieTrackingReconstruction
+
+class MovieTrackingObjects:
+    active: MovieTrackingObject
+
+class SpaceView3D:
+    region_3d: RegionView3D
+
+class AssetRepresentation:
+    metadata: AssetMetaData
+
+class Depsgraph:
+    scene: Scene
+    scene_eval: Scene
+    view_layer: ViewLayer
+    view_layer_eval: ViewLayer
+
+class DepsgraphObjectInstance:
+    object: Object
+    instance_object: Object | None
+    parent: Object | None
+
+class DepsgraphUpdate:
+    id: ID
+
+class Material:
+    node_tree: NodeTree
+
+class World:
+    node_tree: NodeTree
+
+class BlendDataNodeTrees:
+    def new(self, name: str, type: Literal['GeometryNodeTree', 'CompositorNodeTree', 'ShaderNodeTree', 'TextureNodeTree']) -> NodeTree: ...
+
+class AssetLibraryCollection:
+    @classmethod
+    def new(cls, *, name: str = '', directory: str = '', remote_url: str = '', extension_id: str = '') -> UserAssetLibrary: ...
+
+class bpy_struct:
+    def id_properties_ui(self, key: str, /) -> IDPropertyUIManager: ...
