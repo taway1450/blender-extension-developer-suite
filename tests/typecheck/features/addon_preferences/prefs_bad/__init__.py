@@ -1,6 +1,8 @@
 """Feature test: blender-preferences-idname. Blender finds an addon's preferences by bl_idname; these classes
 register (checked in Blender 5.4) but are never the addon's preferences: a wrong literal, __name__ in a submodule,
-no bl_idname, and a second class for the same addon (it silently replaces the first)."""
+no bl_idname, the first component of an extension's module name, and a second class for the same addon (it silently
+replaces the first). check:load imports the addon as the top-level module `prefs_bad`, not under `bl_ext`, so there
+the first component is the addon's name and that class replaces the second; only an installed extension shows it."""
 
 import bpy
 from bpy.props import IntProperty
@@ -31,5 +33,6 @@ class PREFS_BAD_Second(AddonPreferences):
     other: IntProperty()
 
 
-classes = (PREFS_BAD_Wrong, PREFS_BAD_Missing, PREFS_BAD_First, PREFS_BAD_Second, submodule.PREFS_BAD_Submodule)
+classes = (PREFS_BAD_Wrong, PREFS_BAD_Missing, PREFS_BAD_First, PREFS_BAD_Second, submodule.PREFS_BAD_Submodule,
+           submodule.PREFS_BAD_FirstComponent)
 register, unregister = bpy.utils.register_classes_factory(classes)

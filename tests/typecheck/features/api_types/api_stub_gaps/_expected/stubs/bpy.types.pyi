@@ -1,4 +1,4 @@
-"""Reference stub delta: the thick-wrapped version arrays are tuples, every struct has bl_rna,
+"""Reference stub delta: the thick-wrapped version arrays are tuples, every struct has bl_rna and rna_type,
 Operator.description may return None, a bpy.data collection takes a (name, library) key, the context store members Blender's UI sets, libraries.load and temp_data
 are context managers, the render engine's update callbacks take positional arguments, a dynamic enum is a str and
 Gizmo.target_set_value takes a value."""
@@ -9,6 +9,7 @@ from typing import Any, overload
 
 class bpy_struct:
     bl_rna: Struct
+    rna_type: Struct
 
 class BlendData:
     version: tuple[int, int, int]

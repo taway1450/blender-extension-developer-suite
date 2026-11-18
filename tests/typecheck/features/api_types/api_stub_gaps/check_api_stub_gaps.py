@@ -1,9 +1,10 @@
 """Facts introspection alone left out of the stubs: class bases and Python __init__, iteration and context-manager
 protocols, the Vector and Quaternion operators, the version tuples, bl_rna, module members outside __all__ or not plain
 constants, the private module members Blender's own scripts read, a callback that may return None, BMesh links of one
-element type, bpy.data's (name, library) key, the context store members Blender's UI sets, the context managers,
-positional callbacks, dynamic enums, two documented returns and Freestyle's undocumented members and generators. These
-are stub facts.
+element type, bpy.data's (name, library) key, the context store members Blender's UI sets, the context managers, the
+item and slice assignment and buffer protocol of the math types, rna_type, the sequences a BMesh operator's element
+buffer takes, positional callbacks, dynamic enums, two documented returns and Freestyle's undocumented members and
+generators. These are stub facts.
 The overrides of Freestyle's methods and of the render engine's update callbacks are in __init__.py: an incompatible
 override would be an unexpected diagnostic there."""
 
@@ -15,6 +16,7 @@ from types import MappingProxyType
 from typing import Any, Literal, TypeAlias, assert_type
 
 import blf
+import bmesh
 import bpy
 import gpu
 import imbuf
@@ -83,6 +85,18 @@ def math_protocols(vector: Vector, other: Vector, quaternion: Quaternion) -> Non
     assert_type(-quaternion, Quaternion)  # bare-ok: a stub fact: a quaternion negates
 
 
+def math_item_assignment(vector: Vector, other: Vector, quaternion: Quaternion, matrix: Matrix) -> None:
+    vector[:] = 1.0, 2.0, 3.0  # a stub fact: a slice takes any sequence of floats
+    vector[:] = other  # a stub fact: a slice takes another vector
+    vector[0:2] = other[:2]  # a stub fact: a slice takes a tuple of floats
+    quaternion[:] = 1.0, 0.0, 0.0, 0.0  # a stub fact: so does a quaternion's
+    matrix[0] = 1.0, 0.0, 0.0, 0.0  # a stub fact: a matrix row takes a sequence of floats
+    matrix[0][0:3] = 0.0, 1.0, 2.0  # a stub fact: a matrix row is a Vector, whose slice takes floats
+    assert_type(memoryview(vector), memoryview)  # bare-ok: a stub fact: a Vector is a buffer
+    assert_type(memoryview(quaternion), memoryview)  # bare-ok: a stub fact: a Quaternion is a buffer
+    assert_type(memoryview(matrix), memoryview)  # bare-ok: a stub fact: a Matrix is a buffer
+
+
 def gpu_context_managers(offscreen: GPUOffScreen, font_id: int, ibuf: ImBuf) -> None:
     with gpu.matrix.push_pop():  # a stub fact: the matrix stack is a context manager
         pass
@@ -99,9 +113,19 @@ def versions(data: BlendData, preferences: Preferences, library: Library) -> Non
     assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
 
 
-def bl_rna(ob: Object) -> None:
+def bl_rna(ob: Object, node: Node, data: BlendData) -> None:
     assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
     assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
+    assert_type(ob.rna_type, Struct)  # bare-ok: a stub fact: every RNA struct has the rna_type property
+    assert_type(node.rna_type, Struct)  # bare-ok: a stub fact: a node's too
+    assert_type(data.rna_type, Struct)  # bare-ok: a stub fact: and bpy.data's
+
+
+def bmesh_operator_buffers(bm: BMesh, face: BMFace) -> None:
+    bmesh.ops.triangulate(bm, faces=bm.faces)  # a stub fact: an element buffer takes the mesh's sequence of its type
+    bmesh.ops.dissolve_verts(bm, verts=face.verts)  # a stub fact: or an element sequence of its type
+    bmesh.ops.dissolve_verts(bm, verts=bm.verts[:])  # a stub fact: or a list of its elements
+    bmesh.ops.delete(bm, geom=bm.verts[:] + bm.edges[:])  # a stub fact: or a list of some of the element types it takes
 
 
 def module_members() -> None:
