@@ -1,12 +1,13 @@
-"""Draw the ``bl_ui`` panels and menus that raised in a rare state, in that state (run by scripts/probe_ui_draw.py,
-#148).
+"""Draw the panels and menus that raised in a rare state, in that state, and run the glTF and Freestyle code that
+did (run by scripts/probe_ui_draw.py, #148, #149).
 
 Usage (inside Blender):
   blender --background --factory-startup --python probe_ui_draw.py -- <output json>
 
-Each check builds its state from factory startup and calls the class's ``draw`` (or ``draw_header``) with:
+Each check builds its state from factory startup and calls the class's ``draw`` (or ``draw_header``; the #149
+checks below say what they run) with the stand-ins of ``_stub_ui.py``:
 
-- a ``self`` that reads the registered class and has a recording ``layout``. Like Blender's ``UILayout``, the
+- a ``self`` that reads the registered class and has a stub ``layout``. Like Blender's ``UILayout``, the
   layout raises ``TypeError`` when an RNA pointer argument (``prop()``'s ``data``, ``prop_search()``'s
   ``search_data``, ``template_list()``'s data, ...) is None, and ``AttributeError`` when a Blender struct has no
   property of the given name;

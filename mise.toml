@@ -411,7 +411,7 @@ arg "<version>" help="Name of a blender:build build (e.g. main) or Blender versi
 run = 'uv run scripts/probe_node_menus.py {{usage.version}}'
 
 [tasks."probe:ui-draw"]
-description = "Draw the bl_ui panels and menus that raised in a rare state (no brush, pinned Properties editor, ...) in that state in background Blender (#148)"
+description = "Draw the panels and menus that raised in a rare state (no brush, pinned Properties editor, ...) in that state in background Blender, with the glTF and Freestyle checks (#148, #149)"
 usage = '''
 arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
 '''
