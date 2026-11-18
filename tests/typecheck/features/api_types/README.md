@@ -46,13 +46,25 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   `'VIEW_3D'` a `SpaceView3D`. Blender's fork probes them when it writes the API docs (`sphinx_doc_gen_type_tags.py`
   makes an instance of each tag value) and each subclass declares its tag: `SubsurfModifier.type:
   Literal['SUBSURF']` (modifiers, shader effects, constraints, F-Curve modifiers, lights, light probes, textures,
-  attributes by `data_type`, strips and their modifiers, spaces, RNA properties); built-in node trees, nodes and
-  sockets declare their `bl_idname`, sockets their `type` (many socket classes share `'VALUE'`).
+  attributes by `data_type`, strips and their modifiers, spaces, RNA properties, node tree interface items by
+  `item_type`, boid rules, line style modifiers, viewer path elements, project variables); built-in node trees, nodes
+  and sockets declare their `bl_idname`, nodes their legacy `type` (`ShaderNodeMath` and `TextureNodeMath` share
+  `'MATH'`), sockets their `type` (many socket classes share `'VALUE'`). A value every subclass below an
+  intermediate class shares is declared there (`NodeTreeInterfaceSocket.item_type: Literal['SOCKET']`), and a tag
+  each subclass defines itself is declared on the base too (`LineStyleColorModifier.type`). Only the startup file's
+  spreadsheet gives viewer path elements, so only `IDViewerPathElem` declares its `type`.
+- **A refined base without a tag is one of its subclasses:** a `GreasePencilTreeNode` is a `GreasePencilLayer` or a
+  `GreasePencilLayerGroup` (`rna_GreasePencilTreeNode_refine`), so `root_nodes`, `children`, `next_node` and
+  `prev_node` give the union. `Curve` has no tag either: only `curves.new()`'s `type` names its subclass, so the
+  stubs give `BlendDataCurves.new` an overload per curve type (`'FONT'` → `TextCurve`, `'SURFACE'` →
+  `SurfaceCurve`, `'CURVE'` → `Curve`).
 - **Some tags decide another attribute's type** without a refined struct: an object of type `'MESH'` has a `Mesh`
   as its data (`'FONT'` a `TextCurve`, `'SURFACE'` a `SurfaceCurve`, `'EMPTY'` no data or the `Image` it
-  displays), a fluid modifier of type `'DOMAIN'` has domain settings and no flow or effector settings. The stubs
+  displays; `'ARMATURE'` a pose or None until the depsgraph builds it, every other type no pose), a fluid modifier of type `'DOMAIN'` has domain settings and no flow or effector settings. The stubs
   declare a private tag view per value, `_Object_MESH(Object)` with `type: Literal['MESH']` and `data: Mesh`, and
   `_FluidModifier_DOMAIN` etc.
+- **The only spreadsheet table ID is a geometry table ID:** `SpreadsheetTableID.type` has the one value
+  `'GEOMETRY'`, so `SpreadsheetTable.id` is a `SpreadsheetTableIDGeometry`.
 - **The only action strip is a keyframe strip:** `ActionStrip.type` has the one value `'KEYFRAME'`, so the items of
   `ActionLayer.strips` and `ActionStrips.new()` are `ActionKeyframeStrip`.
 - **Introspection misses some facts** (Blender's fork adds them in `sphinx_doc_gen.py`):
@@ -102,7 +114,7 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 | Addon | Variant |
 | --- | --- |
 | `api_never_none` | embedded and DNA pointers, pointers and function results Blender always sets, the context's preferences and window manager; unannotated callback overrides of `Menu`, `Header`, `UIList`, `RenderEngine`, `KeyingSetInfo` and `AssetShelf`, and their callers |
-| `api_type_tags` | the Type tag of refined subclasses (value form), the tag views of `Object` and `FluidModifier` (sibling form), action strips |
+| `api_type_tags` | the Type tag of refined subclasses (value form): `Node.type`, interface `item_type`, boid rules, line style modifiers (the tag on the base), spreadsheet table IDs, viewer path elements, project variables; the tag views of `Object` (`data`, `pose`) and `FluidModifier` (sibling form); a Grease Pencil layer tree node as a layer or a layer group; the `BlendDataCurves.new` overloads; action strips |
 | `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value` |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
 | `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |

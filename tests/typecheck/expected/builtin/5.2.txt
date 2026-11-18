@@ -204,7 +204,16 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | blender-imprecise-enum
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | blender-imprecise-enum-value | assert_type(bpy.ops.grease_pencil.set_material(slot=idname), Result)  # bare-ok: a stub fact: the material slots come from a callback
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.utils.keyconfig_set(path), bool)  # bare-ok: a stub fact: whether the key configuration loaded
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | too-many-positional-arguments | assert_type(gizmo.target_set_value("offset", 1.0), None)  # bare-ok: a stub fact: the value parameter is documented
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _FluidModifier_DOMAIN, _Object_EMPTY, _Object_FONT, _Object_MESH, _Object_SURFACE)
+features/api_types/api_type_tags/__init__.py | invalid-argument-type | items = (interface.new_panel("Panel"), interface.new_socket("Value", socket_type="NodeSocketFloat"))
+features/api_types/api_type_tags/__init__.py | missing-union-attribute | items = (interface.new_panel("Panel"), interface.new_socket("Value", socket_type="NodeSocketFloat"))
+features/api_types/api_type_tags/__init__.py | missing-attribute | if space.type == 'SPREADSHEET' for table in space.tables if table.id is not None
+features/api_types/api_type_tags/__init__.py | missing-attribute | if space.type == 'SPREADSHEET' for elem in space.viewer_path.path
+features/api_types/api_type_tags/__init__.py | missing-attribute | if bpy.data.project is None:
+features/api_types/api_type_tags/__init__.py | missing-attribute | bpy.ops.project.new(directory=directory)
+features/api_types/api_type_tags/__init__.py | missing-attribute | project = bpy.data.project
+features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | PointLight, Pose, ProjectVariableInteger, ShaderFxBlur, ShaderNodeMath, SpaceProperties,
+features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | TextCurve, TextureNodeMath, _FluidModifier_DOMAIN, _Object_ARMATURE, _Object_EMPTY, _Object_FONT,
+features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _Object_MESH, _Object_SURFACE)
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(md.type, Literal['SUBSURF'])  # bare-ok: a stub fact: a SUBSURF modifier is a SubsurfModifier
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(gp_md.type, Literal['GREASE_PENCIL_OPACITY'])  # bare-ok: a stub fact: Grease Pencil modifiers too
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(con.type, Literal['COPY_LOCATION'])  # bare-ok: a stub fact: constraints
@@ -223,6 +232,23 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(socket.bl_idname, Literal['NodeSocketFloat'])  # bare-ok: a stub fact: a built-in socket's bl_idname
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(socket.type, Literal['VALUE'])  # bare-ok: a stub fact: a float socket's type
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(factor.type, Literal['VALUE'])  # bare-ok: a stub fact: socket subclasses share a type
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(node.type, Literal['MATH'])  # bare-ok: a stub fact: a built-in node's legacy type
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(texture.type, Literal['MATH'])  # bare-ok: a stub fact: node classes share a legacy type
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(group.type, Literal['GROUP'])  # bare-ok: a stub fact: every group node's legacy type is GROUP
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(panel.item_type, Literal['PANEL'])  # bare-ok: a stub fact: node tree interface items
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(socket.item_type, Literal['SOCKET'])  # bare-ok: a stub fact: every interface socket is a SOCKET
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(rule.type, Literal['GOAL'])  # bare-ok: a stub fact: boid rules
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(color.type, Literal['ALONG_STROKE'])  # bare-ok: a stub fact: line style color modifiers
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(alpha.type, Literal['NOISE'])  # bare-ok: a stub fact: line style alpha modifiers
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(thickness.type, Literal['CALLIGRAPHY'])  # bare-ok: a stub fact: line style thickness modifiers
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(geometry.type, Literal['SAMPLING'])  # bare-ok: a stub fact: line style geometry modifiers
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(elem.type, Literal['ID'])  # bare-ok: a stub fact: viewer path elements
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(variable.type, Literal['INTEGER'])  # bare-ok: a stub fact: project variables
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(table.id, SpreadsheetTableIDGeometry | None)  # bare-ok: a stub fact: the only table ID type
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(grease_pencil.root_nodes[0], GreasePencilLayer | GreasePencilLayerGroup)  # bare-ok: a stub fact: a tree node is a layer or a group
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.next_node, GreasePencilLayer | GreasePencilLayerGroup | None)  # bare-ok: a stub fact: a tree node is a layer or a group
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(curves.new("Text", 'FONT'), TextCurve)  # bare-ok: a stub fact: the curve type names the subclass
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(curves.new("Surface", type='SURFACE'), SurfaceCurve)  # bare-ok: a stub fact: the curve type names the subclass
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.type, Literal['MESH'])  # bare-ok: a stub fact: the tag view of a MESH object
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.data, Mesh)  # bare-ok: a stub fact: a MESH object's data is a Mesh, never None
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(font.data, TextCurve)  # bare-ok: a stub fact: a text object's curve is refined again
@@ -231,6 +257,8 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(armature.pose, Pose | None)  # bare-ok: a stub fact: an armature's pose, None until it is built
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.pose, None)  # bare-ok: a stub fact: only an armature object has a pose
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips.new(), ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips[0], ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(strip, ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
@@ -935,6 +963,7 @@ features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | node.operation = 'MULTIPLY'
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(other, ShaderNodeMath)
+features/type_narrowing/narrow_values/__init__.py | import-not-found | Pose, ProjectVariable, ProjectVariableInteger, SequenceEditor, ShaderNodeMath, SpotLight,
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | levels = max(levels, md.levels)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, MultiresModifier)  # elif: the earlier tag is ruled out
@@ -953,6 +982,19 @@ features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | ass
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return light.shadow_soft_size
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return node.operation
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath | TextureNodeMath)  # the legacy type: several node classes share it
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return node.operation #2
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(item, NodeTreeInterfacePanel)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return len(item.interface_items)
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(item, NodeTreeInterfaceSocket)  # every interface socket class shares SOCKET
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(rule, BoidRuleGoal)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return rule.object
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | if modifier.type == 'DISTANCE_FROM_OBJECT':
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(modifier, LineStyleColorModifier_DistanceFromObject)  # the base states the tag of its subclasses
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return modifier.target
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(elem, IDViewerPathElem)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return elem.id
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(ob.pose, None)  # only an armature object has a pose
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)  # a match on the tag
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return f"Subdivision {md.levels}"
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(socket, NodeSocketString | NodeSocketStringFilePath)  # several socket classes share a type

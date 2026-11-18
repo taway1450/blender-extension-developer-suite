@@ -1,8 +1,8 @@
-"""Reference stub delta: the Type tag of each refined subclass, the tag views of Object and FluidModifier, and the
-keyframe strips of an action layer."""
+"""Reference stub delta: the Type tag of each refined subclass, the tag views of Object and FluidModifier, the
+keyframe strips of an action layer, the two kinds of layer tree node and the curve types of curves.new()."""
 
 from collections.abc import Iterator
-from typing import Literal
+from typing import Literal, overload
 
 class SubsurfModifier:
     type: Literal['SUBSURF']
@@ -48,6 +48,57 @@ class SpaceProperties:
 
 class ShaderNodeMath:
     bl_idname: Literal['ShaderNodeMath']
+    type: Literal['MATH']
+
+class TextureNodeMath:
+    type: Literal['MATH']
+
+class GeometryNodeGroup:
+    type: Literal['GROUP']
+
+class NodeTreeInterfacePanel:
+    item_type: Literal['PANEL']
+
+class NodeTreeInterfaceSocket:
+    item_type: Literal['SOCKET']
+
+class BoidRuleGoal:
+    type: Literal['GOAL']
+
+class LineStyleColorModifier_AlongStroke:
+    type: Literal['ALONG_STROKE']
+
+class LineStyleAlphaModifier_Noise:
+    type: Literal['NOISE']
+
+class LineStyleThicknessModifier_Calligraphy:
+    type: Literal['CALLIGRAPHY']
+
+class LineStyleGeometryModifier_Sampling:
+    type: Literal['SAMPLING']
+
+class IDViewerPathElem:
+    type: Literal['ID']
+
+class ProjectVariableInteger:
+    type: Literal['INTEGER']
+
+class SpreadsheetTable:
+    id: SpreadsheetTableIDGeometry | None
+
+class GreasePencil:
+    root_nodes: bpy_prop_collection[GreasePencilLayer | GreasePencilLayerGroup]
+
+class GreasePencilTreeNode:
+    next_node: GreasePencilLayer | GreasePencilLayerGroup | None
+
+class BlendDataCurves:
+    @overload
+    def new(self, name: str, type: Literal['CURVE']) -> Curve: ...
+    @overload
+    def new(self, name: str, type: Literal['SURFACE']) -> SurfaceCurve: ...
+    @overload
+    def new(self, name: str, type: Literal['FONT']) -> TextCurve: ...
 
 class NodeSocketFloat:
     bl_idname: Literal['NodeSocketFloat']
@@ -60,6 +111,12 @@ class NodeSocketFloatFactor:
 class _Object_MESH(Object):
     type: Literal['MESH']
     data: Mesh
+    pose: None
+
+class _Object_ARMATURE(Object):
+    type: Literal['ARMATURE']
+    data: Armature
+    pose: Pose | None
 
 class _Object_FONT(Object):
     type: Literal['FONT']

@@ -135,6 +135,21 @@ CASES = [
     ),
     pytest.param(
         diagnostic(
+            "invalid-assignment",
+            "Object of type `int` is not assignable to attribute `ui_shortcut` on type `(CompositorNodeViewer & "
+            "~AlwaysFalsy) | (GeometryNodeViewer & ~AlwaysFalsy) | (TextureNodeViewer & ~AlwaysFalsy) | "
+            "(Unknown & ~AlwaysFalsy)`",
+            "viewer_node.ui_shortcut = self.viewer_index",
+            path="scripts/startup/bl_operators/node.py",
+            cls="NODE_OT_viewer_shortcut_set",
+            bases="Operator",
+            function="execute",
+        ),
+        "correlated-union",
+        id="debt-correlated-union-truthy-members",
+    ),
+    pytest.param(
+        diagnostic(
             "invalid-argument-type",
             "Argument to bound method `UILayout.prop` is incorrect: Expected `bpy_struct`, found "
             "`PoseBone | EditBone | None | Bone`",

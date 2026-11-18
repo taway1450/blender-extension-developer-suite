@@ -57,3 +57,68 @@ reason = "a built-in node's or socket's bl_idname is its RNA identifier"
 code = "addon.node('ShaderNodeTree', 'ShaderNodeMix', 'inputs', 0)"
 expect = "ShaderNodeMix ShaderNodeMix NodeSocketFloatFactor NodeSocketFloatFactor VALUE"
 reason = "socket subclasses share a type: a factor socket's type is VALUE"
+
+[[probe]]
+code = "addon.node_type('ShaderNodeTree', 'ShaderNodeMath')"
+expect = "ShaderNodeMath MATH"
+reason = "a built-in node's type is its legacy type identifier"
+
+[[probe]]
+code = "addon.node_type('TextureNodeTree', 'TextureNodeMath')"
+expect = "TextureNodeMath MATH"
+reason = "several node classes share a legacy type"
+
+[[probe]]
+code = "addon.interface_items()"
+expect = "NodeTreeInterfacePanel PANEL NodeTreeInterfaceSocketFloat SOCKET"
+reason = "an interface item is refined by its item_type, a socket again by its socket type"
+
+[[probe]]
+code = "addon.boid_rule('GOAL')"
+expect = "BoidRuleGoal GOAL"
+reason = "a boid rule is refined to the subclass its type names"
+
+[[probe]]
+code = "addon.boid_rule('SEPARATE')"
+expect = "BoidRule SEPARATE"
+reason = "a rule type without settings has no subclass"
+
+[[probe]]
+code = "addon.linestyle_modifier('color_modifiers', 'ALONG_STROKE')"
+expect = "LineStyleColorModifier_AlongStroke ALONG_STROKE"
+reason = "a line style modifier is refined to the subclass its type names"
+
+[[probe]]
+code = "addon.linestyle_modifier('geometry_modifiers', 'SAMPLING')"
+expect = "LineStyleGeometryModifier_Sampling SAMPLING"
+reason = "a line style modifier is refined to the subclass its type names"
+
+[[probe]]
+code = "addon.spreadsheet_tables()"
+expect = "SpreadsheetTableIDGeometry GEOMETRY"
+reason = "the only spreadsheet table ID is a geometry table ID"
+
+[[probe]]
+code = "addon.viewer_path_elems()"
+expect = "IDViewerPathElem ID"
+reason = "a viewer path element is refined to the subclass its type names"
+
+[[probe]]
+code = "addon.project_variables(__import__('tempfile').mkdtemp())"
+expect = "ProjectVariableString STRING ProjectVariableInteger INTEGER ProjectVariableFloat FLOAT"
+reason = "a project variable is refined to the subclass its type names"
+
+[[probe]]
+code = "addon.layer_tree()"
+expect = "GreasePencilLayer GreasePencilLayerGroup"
+reason = "a layer tree node is a layer or a layer group"
+
+[[probe]]
+code = "addon.object_pose()"
+expect = "NoneType Pose NoneType"
+reason = "an armature object has a pose once it is built, any other object none"
+
+[[probe]]
+code = "' '.join(addon.new_curve(curve_type) for curve_type in ('CURVE', 'SURFACE', 'FONT'))"
+expect = "Curve SurfaceCurve TextCurve"
+reason = "the curve type of curves.new() names the subclass"

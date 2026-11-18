@@ -8,8 +8,12 @@
 - **Refined subclasses:** Blender gives a struct the subclass its tag names (`rna_Modifier_refine`, the
   `rna_*_refine` switches), and the tag is read-only. A modifier of type `'SUBSURF'` is always a `SubsurfModifier`,
   a node whose `bl_idname` is `'ShaderNodeMath'` a `ShaderNodeMath`. Several socket classes share one `type`
-  (`'STRING'`: `NodeSocketString`, `NodeSocketStringFilePath`).
-- **Sibling pointers:** an object's `type` fixes the type of its `data` (`'MESH'` → `Mesh`, `'FONT'` → `TextCurve`),
+  (`'STRING'`: `NodeSocketString`, `NodeSocketStringFilePath`), and several node classes one legacy `type`
+  (`'MATH'`: `ShaderNodeMath`, `TextureNodeMath`). Interface items (`item_type`), boid rules, line style
+  modifiers, viewer path elements and project variables are refined by their tags too; every interface socket class
+  shares `'SOCKET'`, and a line style modifier base (`LineStyleColorModifier`) has the `type` each subclass defines.
+- **Sibling pointers:** an object's `type` fixes the type of its `data` (`'MESH'` → `Mesh`, `'FONT'` → `TextCurve`)
+  and of its `pose` (`'ARMATURE'` → `Pose | None`, None until the depsgraph builds it; any other type → `None`),
   and a fluid modifier's `fluid_type` which of its three settings pointers is set (`'DOMAIN'` → `domain_settings`).
 - **An area's type:** an area's first space is the space of its type (`ED_area_newspace` puts the new space first,
   and `Area.type` is that space's `spacetype`), so `area.type == 'VIEW_3D'` makes `area.spaces.active` a
@@ -46,7 +50,7 @@ derived from a built-in one (`ShaderNodeCustomGroup`) has its own `bl_idname`.
 
 | Addon | Variant |
 | --- | --- |
-| `narrow_values` | modifier in a loop over `ob.modifiers`, constraint, strip, light, node `bl_idname`, socket `type` (many-to-one); `elif`, `!=` with an early return, `in {...}`, `not in (...)`, `match`; not narrowed: an add-on's own node |
+| `narrow_values` | modifier in a loop over `ob.modifiers`, constraint, strip, light, node `bl_idname`, node `type` and socket `type` (many-to-one), interface `item_type` (a shared value on an intermediate class), boid rule, line style modifier (the tag on its base), viewer path element, project variable, an object's `pose`; `elif`, `!=` with an early return, `in {...}`, `not in (...)`, `match`; not narrowed: an add-on's own node |
 | `narrow_constructors` | `constraints.new` (positional, `type=`), `lights.new` (a literal, a conditional of two), `attributes.new`, `nodes.new` (`type=`, positional), `gizmos.new(MyGizmo.bl_idname)` in a GizmoGroup's `setup`; not narrowed: a `str` argument, an unknown `bl_idname`, a C gizmo type |
 | `narrow_area_type` | `area.spaces.active` after `==` in a loop, `in {...}` in an `elif`, `!=` with `continue`, `and` in a generator, a list comprehension; not narrowed: the `else` branch, `area` rebound after the test, a function that writes `area.type` or `area.ui_type` |
 | `narrow_views` | `ob.data` after `ob.type == 'MESH'`, after a call, after `!= 'FONT'` with an early return, in a comprehension; `match`; Fluid `domain_settings`; not narrowed: `data = ob.data` before the test |

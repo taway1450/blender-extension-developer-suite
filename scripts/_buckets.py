@@ -571,7 +571,9 @@ def correlated_union(d: Diagnostic) -> bool:
         else r"found `([^`]*)`$"
     )
     for type_ in re.findall(pattern, d.msg):
-        members = [m for m in union_members(type_) if m != "Unknown"]
+        # ty prints a member narrowed by a truthiness check as `(Node & ~AlwaysFalsy)`.
+        members = [re.sub(r"^\((.*) & ~AlwaysFalsy\)$", r"\1", m) for m in union_members(type_)]
+        members = [m for m in members if m != "Unknown"]
         if len(members) > 1 and all(
             BLENDER_TYPE.match(m) and m != "None" and not PYTHON_TYPE.match(m) for m in members
         ):

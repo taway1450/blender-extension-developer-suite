@@ -60,7 +60,9 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.libraries.load(path, link=True) as (data_from, data_to):
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.temp_data() as temp:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(temp, BlendData)  # bare-ok: a stub fact: entering temp_data gives a temporary BlendData
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _FluidModifier_DOMAIN, _Object_EMPTY, _Object_FONT, _Object_MESH, _Object_SURFACE)
+features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | TextCurve, TextureNodeMath, _FluidModifier_DOMAIN, _Object_ARMATURE, _Object_EMPTY, _Object_FONT,
+features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _Object_MESH, _Object_SURFACE)
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(grease_pencil.root_nodes[0], GreasePencilLayer | GreasePencilLayerGroup)  # bare-ok: a stub fact: a tree node is a layer or a group
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.type, Literal['MESH'])  # bare-ok: a stub fact: the tag view of a MESH object
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.data, Mesh)  # bare-ok: a stub fact: a MESH object's data is a Mesh, never None
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(font.data, TextCurve)  # bare-ok: a stub fact: a text object's curve is refined again
@@ -69,6 +71,8 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(armature.pose, Pose | None)  # bare-ok: a stub fact: an armature's pose, None until it is built
+features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.pose, None)  # bare-ok: a stub fact: only an armature object has a pose
 features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
@@ -98,6 +102,7 @@ features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | li
 features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return light
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SunLight | SpotLight)
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(attribute, FloatAttribute)
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(ob.pose, None)  # only an armature object has a pose
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
 features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return len(ob.data.vertices)
