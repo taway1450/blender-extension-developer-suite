@@ -153,6 +153,15 @@ def font_image_binding():
     return type(binding).__name__
 
 
+def entered_font_image_binding():
+    """What entering a font's image binding gives. The matrix stack and an off-screen binding need a GPU context,
+    which background Blender has not; their __enter__ returns None too (gpu_py_matrix.cc, gpu_py_offscreen.cc)."""
+    import blf
+    import imbuf
+
+    with blf.bind_imbuf(0, imbuf.new((4, 4))) as entered:
+        return repr(entered)
+
 def module_members():
     """The class names of the module members the stubs left out."""
     import imbuf

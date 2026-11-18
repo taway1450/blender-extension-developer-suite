@@ -83,6 +83,16 @@ A member of `bpy.types.Context` that Blender always fills when it calls a given 
 A property of a Blender instance whose value names the subclass that instance, or one of its pointers, really is: `Modifier.type` (`'SUBSURF'` is a `SubsurfModifier`), `Object.type` (`'MESH'` makes `Object.data` a `Mesh`), `Node.bl_idname`.
 _Avoid_: discriminator, kind
 
+**Value form**:
+A Type tag that names the subclass of its own instance: `md.type == 'SUBSURF'` makes `md` a `SubsurfModifier`. Each refined subclass declares its tag value in the stubs (`type: Literal['SUBSURF']`).
+
+**Sibling form**:
+A Type tag that decides the type of a sibling pointer on the same instance, with no subclass of its own: `ob.type == 'MESH'` makes `ob.data` a `Mesh`, `fluid.fluid_type == 'DOMAIN'` makes `fluid.domain_settings` non-None. The stubs state it with a Tag view.
+
+**Tag view**:
+A private class in the stubs, one per value of a sibling-form Type tag, that states what the value implies for the instance's other members: `class _Object_MESH(Object)` with `type: Literal['MESH']` and `data: Mesh`. It exists only in the stubs; Blender has no such class.
+_Avoid_: fake subclass
+
 **Refined base**:
 A `bpy.types` class whose instances Blender always hands out as one of its subclasses, picked from the instance's own data (`Modifier`, `Light`, `Node`, `Curve`). Most refined bases have a Type tag that names the subclass. `Curve` has none: only the constructor argument names it (`curves.new(type='FONT')` gives a `TextCurve`).
 

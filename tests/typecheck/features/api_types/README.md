@@ -77,8 +77,10 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
     (`ibuf.with_buffer()`) gives a `memoryview`, and an item of `Matrix.row` / `Matrix.col` is a `Vector`;
   - a `Vector` is a sequence of floats and compares by length, a `Quaternion` negates, and the matrix stack
     (`gpu.matrix.push_pop()`), an off-screen binding (`offscreen.bind()`) and a font's image binding
-    (`blf.bind_imbuf()`) are context managers. Entering any of these three gives None at runtime, though the API
-    docs and both stub sets say it gives the context itself, so no marker reads the entered value;
+    (`blf.bind_imbuf()`) are context managers. Entering any of these three gives None (their C `__enter__` returns
+    `Py_RETURN_NONE`; probed for the font binding, the GPU ones need a GPU context background Blender lacks). The
+    reference stubs and fake-bpy-module say None; Blender's own stubs say the context itself (the generic
+    `__enter__` of `sphinx_doc_gen.py`), so no marker reads the entered value;
   - `BlendData.version`, `Library.version` and `Preferences.version` are `PROP_THICK_WRAP` int arrays, which read as
     a `tuple`, so they compare with tuples;
   - every struct has `bl_rna` (set on each class, so it is not in `bpy_struct.__dict__`);
@@ -133,8 +135,8 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the declared
 tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the C modules (a named
 exception in spec #75). fake-bpy-module also misses the stub-generator gaps it does not read from the docstrings
-(`BMElemSeq` attributes, the two context managers, the positional Freestyle methods; named
-exceptions in spec #95). The Freestyle gaps fail on 5.2,
+(`BMElemSeq` attributes, `libraries.load()` and `temp_data()` as context managers, the positional Freestyle
+methods; named exceptions in spec #95). The Freestyle gaps fail on 5.2,
 whose stubs give Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
 `__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated

@@ -54,6 +54,11 @@ expect = "BLFImBufContext"
 reason = "a font's image binding is a context manager"
 
 [[probe]]
+code = "addon.entered_font_image_binding()"
+expect = "None"
+reason = "entering a font's image binding gives None, not the binding"
+
+[[probe]]
 code = "' '.join(type(v).__name__ for v in (bpy.data.version, bpy.context.preferences.version))"
 expect = "tuple tuple"
 reason = "the thick-wrapped version arrays are tuples"
