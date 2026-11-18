@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender ee0c7a7765
+# check:blender main, fake-bpy-module stubs, Blender 57335f4004
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -96,7 +96,7 @@ operator-call                   typing-debt           -              8         0
 unresolved-import               typing-debt           -             64         0         0         0        25        89
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
-untyped-python                  typing-debt           -            929         0         1         0         0       930
+untyped-python                  typing-debt           -            794         0         1         0         0       795
 private-member                  typing-debt           -             13         0         0         0        13        26
 build-option-gap                typing-debt           -              0         0         0         0         0         0
 general-typing                  typing-debt           -            536         8        11         4       311       870
@@ -112,9 +112,9 @@ assumption                                                         380       574
 implied-narrowing                                                 1085         0         4         8        12      1109
 imprecise-annotation                                                 6         0         0         0        11        17
 typechecker-fix                                                   1044         0        45        15       171      1275
-typing-debt                                                       3635       137       116        51      1564      5503
+typing-debt                                                       3500       137       116        51      1564      5368
 unsorted                                                             1         0         0         0      1272      1273
-errors                                                            4676       168       162        66      2953      8025
+errors                                                            4541       168       162        66      2953      7890
 warnings                                                          1475       543        29        12       811      2870
 
 rule                                       error warning
@@ -144,8 +144,8 @@ incompatible-method-override                 132       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1409       0
-invalid-assignment                           598       0
+invalid-argument-type                       1372       0
+invalid-assignment                           543       0
 invalid-base                                   2       0
 invalid-context-manager                       82       0
 invalid-exception-caught                       1       0
@@ -156,10 +156,10 @@ invalid-implicit-return-in-function-with-stub-body      32       0
 invalid-parameter-default                      3       0
 invalid-super-argument                         1       0
 invalid-type-form                              8       0
-lost-keyword-for-regular-parameter            91       0
+lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                             189       0
-missing-attribute                           1669       0
+missing-attribute                           1635       0
 missing-union-attribute                     2581       0
 no-matching-overload                          48       0
 not-callable                                  20       0

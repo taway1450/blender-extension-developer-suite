@@ -386,6 +386,16 @@ arg "<version>" help="Name of a blender:build build (e.g. main) or Blender versi
 '''
 run = 'uv run scripts/probe_freestyle.py {{usage.version}}'
 
+[tasks."probe:gltf-rigify"]
+description = "Run glTF's import, export and round-trip tests and generate Rigify's metarigs and rig samples in background Blender (#137)"
+usage = '''
+arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
+flag "--only <part>" help="Run only one part" {
+  choices "gltf" "rigify"
+}
+'''
+run = 'uv run scripts/probe_gltf_rigify.py {{usage.version}} {% if usage.only %}--only {{usage.only}}{% endif %}'
+
 [tasks."probe:never-none"]
 description = "Probe which RNA pointers and returns Blender leaves None, in edge states and over tests/files (#109, research)"
 usage = '''
