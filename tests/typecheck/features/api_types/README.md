@@ -75,6 +75,10 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
     Python class has its Python `__init__` (a dataclass such as `bpy_extras.anim_utils.BakeOptions` included);
   - BMesh sequences (`bm.verts`, `bm.select_history`, ...) iterate over their elements, entering an ImBuf buffer
     (`ibuf.with_buffer()`) gives a `memoryview`, and an item of `Matrix.row` / `Matrix.col` is a `Vector`;
+  - a `Vector` is a sequence of floats and compares by length, a `Quaternion` negates, and the matrix stack
+    (`gpu.matrix.push_pop()`), an off-screen binding (`offscreen.bind()`) and a font's image binding
+    (`blf.bind_imbuf()`) are context managers. Entering any of these three gives None at runtime, though the API
+    docs and both stub sets say it gives the context itself, so no marker reads the entered value;
   - `BlendData.version`, `Library.version` and `Preferences.version` are `PROP_THICK_WRAP` int arrays, which read as
     a `tuple`, so they compare with tuples;
   - every struct has `bl_rna` (set on each class, so it is not in `bpy_struct.__dict__`);
@@ -122,14 +126,14 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 | --- | --- |
 | `api_never_none` | embedded and DNA pointers, pointers and function results Blender always sets, the context's preferences and window manager; unannotated callback overrides of `Menu`, `Header`, `UIList`, `RenderEngine`, `KeyingSetInfo` and `AssetShelf`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form): `Node.type`, interface `item_type`, boid rules, line style modifiers (the tag on the base), spreadsheet table IDs, viewer path elements, project variables; the tag views of `Object` (`data`, `pose`) and `FluidModifier` (sibling form); a Grease Pencil layer tree node as a layer or a layer group; the `BlendDataCurves.new` overloads; action strips |
-| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value`; Freestyle's unary function `__call__`, `Noise`, `BoundingBox`, generators and `Operators.create` |
+| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, `Vector` / `Quaternion` operators, the GPU and BLF context managers, version tuples, `bl_rna`, module members, `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value`; Freestyle's unary function `__call__`, `Noise`, `BoundingBox`, generators and `Operators.create` |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
 | `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |
 
 Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the declared
 tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views and the C modules (named
 exceptions in spec #75). fake-bpy-module also misses the stub-generator gaps it does not read from the docstrings
-(`BMElemSeq` attributes, the `(name, None)` key, the two context managers, the positional Freestyle methods; named
+(`BMElemSeq` attributes, the two context managers, the positional Freestyle methods; named
 exceptions in spec #95). The Freestyle gaps fail on 5.2 and on fake-bpy-module,
 which gives Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
 `__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are

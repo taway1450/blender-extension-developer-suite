@@ -44,6 +44,16 @@ expect = "Vector Vector"
 reason = "a matrix column or row is a Vector"
 
 [[probe]]
+code = "addon.math_protocols()"
+expect = "True Quaternion"
+reason = "vectors compare by length, and a quaternion negates"
+
+[[probe]]
+code = "addon.font_image_binding()"
+expect = "BLFImBufContext"
+reason = "a font's image binding is a context manager"
+
+[[probe]]
 code = "' '.join(type(v).__name__ for v in (bpy.data.version, bpy.context.preferences.version))"
 expect = "tuple tuple"
 reason = "the thick-wrapped version arrays are tuples"

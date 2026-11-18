@@ -1,19 +1,21 @@
 """Facts introspection alone left out of the stubs: class bases and Python __init__, iteration and context-manager
-protocols, the version tuples, bl_rna, module members outside __all__ or not plain constants, a callback that may
-return None, BMesh links of one element type, bpy.data's (name, library) key, the context store members Blender's UI
-sets, the context managers, positional callbacks, dynamic enums, two documented returns and Freestyle's undocumented
-members and generators. These are stub facts.
+protocols, the Vector and Quaternion operators, the version tuples, bl_rna, module members outside __all__ or not plain
+constants, a callback that may return None, BMesh links of one element type, bpy.data's (name, library) key, the
+context store members Blender's UI sets, the context managers, positional callbacks, dynamic enums, two documented
+returns and Freestyle's undocumented members and generators. These are stub facts.
 The overrides of Freestyle's methods and of the render engine's update callbacks are in __init__.py: an incompatible
 override would be an unexpected diagnostic there."""
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import AbstractContextManager
 from types import MappingProxyType
 from typing import Any, Literal, TypeAlias, assert_type
 
+import blf
 import bpy
+import gpu
 import imbuf
 from bmesh.types import BMEdge, BMElemSeq, BMesh, BMFace, BMLoop, BMVert
 from bpy.types import (AssetShelf, BlendData, Camera, Constraint, Context, FreestyleModuleSettings, Gizmo, ID, KeyMap,
@@ -27,8 +29,9 @@ from freestyle.shaders import ConstantThicknessShader, SamplingShader
 from freestyle.types import (Interface0DIterator, Interface1D, Noise, Operators, Stroke, StrokeVertex,
                              UnaryFunction0DDouble, UnaryFunction1DDouble, UnaryPredicate1D, ViewEdge)
 from freestyle.utils import BoundingBox, get_strokes, iter_distance_from_camera, iter_t2d_along_stroke, pairwise, stroke_normal
+from gpu.types import GPUOffScreen
 from imbuf.types import ImBuf, ImBufFileType
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 from . import API_STUB_GAPS_OT_describe, bake_options
 
@@ -41,6 +44,10 @@ def as_predicate(predicate: UnaryPredicate1D) -> UnaryPredicate1D:
 
 def as_function(function: UnaryFunction1DDouble) -> UnaryFunction1DDouble:
     return function
+
+
+def as_floats(values: Sequence[float]) -> Sequence[float]:
+    return values
 
 
 def classes(edge: ViewEdge, iterator: pyChainSilhouetteGenericIterator, options: BakeOptions) -> None:
@@ -66,6 +73,22 @@ def protocols(bm: BMesh, ibuf: ImBuf, matrix: Matrix) -> None:
     assert_type(matrix.col[0], Vector)  # bare-ok: a stub fact: a matrix column is a Vector
     for row in matrix.row:
         assert_type(row, Vector)  # bare-ok: a stub fact: a matrix row is a Vector
+
+
+def math_protocols(vector: Vector, other: Vector, quaternion: Quaternion) -> None:
+    assert_type(as_floats(vector), Sequence[float])  # bare-ok: a stub fact: a Vector is a sequence of floats
+    assert_type(vector < other, bool)  # bare-ok: a stub fact: vectors compare by length
+    assert_type(vector >= other, bool)  # bare-ok: a stub fact: vectors compare by length
+    assert_type(-quaternion, Quaternion)  # bare-ok: a stub fact: a quaternion negates
+
+
+def gpu_context_managers(offscreen: GPUOffScreen, font_id: int, ibuf: ImBuf) -> None:
+    with gpu.matrix.push_pop():  # a stub fact: the matrix stack is a context manager
+        pass
+    with offscreen.bind():  # a stub fact: an off-screen binding is a context manager
+        pass
+    with blf.bind_imbuf(font_id, ibuf):  # a stub fact: a font's image binding is a context manager
+        pass
 
 
 def versions(data: BlendData, preferences: Preferences, library: Library) -> None:

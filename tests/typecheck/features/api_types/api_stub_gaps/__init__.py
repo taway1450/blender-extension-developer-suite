@@ -135,6 +135,24 @@ def matrix_rows():
     return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 
 
+def math_protocols():
+    """Whether a shorter vector compares less, and the class name of a negated quaternion."""
+    from mathutils import Quaternion, Vector
+
+    return f"{Vector((1.0, 0.0, 0.0)) < Vector((0.0, 2.0, 0.0))} {type(-Quaternion()).__name__}"
+
+
+def font_image_binding():
+    """The class name of a font's image binding, entered and left."""
+    import blf
+    import imbuf
+
+    binding = blf.bind_imbuf(0, imbuf.new((4, 4)))
+    with binding:
+        pass
+    return type(binding).__name__
+
+
 def module_members():
     """The class names of the module members the stubs left out."""
     import imbuf

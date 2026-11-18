@@ -87,7 +87,6 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.render(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ksi.iterator(context, None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | shelf.asset_poll(None)  # ty: ignore[invalid-argument-type]
-features/api_types/api_setters/check_api_setters.py | invalid-argument-type | assert_type(as_floats(material.diffuse_color), Sequence[float])  # bare-ok: a stub fact: an array is a Sequence
 features/api_types/api_stub_gaps/__init__.py | invalid-explicit-return | return None
 features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_script_node(self, node):
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(node, Node | None)
@@ -102,10 +101,6 @@ features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-paramete
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | return None if iter.is_end else iter.object
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def shade(self, s: Stroke) -> None:
 features/api_types/api_stub_gaps/__init__.py | unknown-argument | return BakeOptions(only_selected=True, do_pose=True, do_object=False, do_visual_keying=False, do_constraint_clear=False, do_parents_clear=False, do_clean=True, do_location=True, do_rotation=True, do_scale=True, do_bbone=True, do_custom_props=False)
-features/api_types/api_stub_gaps/__init__.py | invalid-argument-type | return bpy.data.objects["api_stub_gaps_lookup", None] == ob
-features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with imbuf.new((4, 4)).with_buffer() as buf:
-features/api_types/api_stub_gaps/__init__.py | no-matching-overload | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
-features/api_types/api_stub_gaps/__init__.py | not-subscriptable | return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | values = (bpy.utils.system_resource('SCRIPTS'), bpy.utils.is_path_builtin(""), bpy.path.extensions_image,
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | next(iter(bpy.path.extensions_image)), imbuf.file_types, next(iter(imbuf.file_types)),
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | next(iter(imbuf.file_types.values())))
@@ -120,12 +115,6 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | as
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with ibuf.with_buffer() as buf:
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(buf, memoryview)  # bare-ok: a stub fact: entering an ImBuf buffer gives a memoryview
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-subscriptable | assert_type(matrix.col[0], Vector)  # bare-ok: a stub fact: a matrix column is a Vector
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(matrix.col[0], Vector)  # bare-ok: a stub fact: a matrix column is a Vector
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for row in matrix.row:
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(row, Vector)  # bare-ok: a stub fact: a matrix row is a Vector
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(preferences.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(library.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
@@ -148,10 +137,6 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(vert.link_faces[0], BMFace)  # bare-ok: a stub fact: an item of a vertex's link_faces is a BMFace
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.verts[1], BMVert)  # bare-ok: a stub fact: an item of an edge's verts is a BMVert
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(linked, BMLoop)  # bare-ok: a stub fact: a loop's link_loops iterates over loops
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(data.objects[name, None], Object)  # bare-ok: a stub fact: a local object by its (name, None) key
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.objects[name, None], Object)  # bare-ok: a stub fact: a local object by its (name, None) key
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(data.materials[name, library], Material)  # bare-ok: a stub fact: a linked material by its library path
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.materials[name, library], Material)  # bare-ok: a stub fact: a linked material by its library path
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.constraint, Constraint | None)  # bare-ok: a stub fact: set by the constraint panels' layouts
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.constraint, Constraint | None)  # bare-ok: a stub fact: set by the constraint panels' layouts
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(context.keymap, KeyMap | None)  # bare-ok: a stub fact: set by the keymap editor

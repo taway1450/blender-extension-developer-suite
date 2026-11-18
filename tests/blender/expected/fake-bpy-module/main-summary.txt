@@ -41,12 +41,12 @@ temp-override-member            implied-narrowing     -              0         0
 imprecise-operator-return       imprecise-annotation  S4             0         0         0         0         0         0
 imprecise-enum-value            imprecise-annotation  S4             3         0         0         0        11        14
 imprecise-callback-parameter    imprecise-annotation  S4             3         0         0         0         0         3
-fake-bpy-python-module          typechecker-fix       -              0         0         1         0         0         1
+fake-bpy-python-module          typechecker-fix       -              0         0         0         0         0         0
 fake-bpy-type-alias             typechecker-fix       -              0         0         0         0         0         0
 fake-bpy-nullable               typechecker-fix       -              0         0         0         0         0         0
-fake-bpy-lib-key                typechecker-fix       -             25         0         0         0         3        28
+fake-bpy-lib-key                typechecker-fix       -              0         0         0         0         0         0
 fake-bpy-node-sockets           typechecker-fix       -            120         0         0         0        27       147
-fake-bpy-protocol               typechecker-fix       -             21         0        13        13        49        96
+fake-bpy-protocol               typechecker-fix       -              0         0         0         0         1         1
 stub-none-mismatch              typechecker-fix       -              2         0         0         0         0         2
 context-never-none              typechecker-fix       S1             0         0         0         0         0         0
 callback-never-none             typechecker-fix       S1             2         0         1         0         2         5
@@ -59,7 +59,7 @@ dynamic-enum                    typechecker-fix       S2             6         0
 stub-context-manager            typechecker-fix       S2             5         0         5         0         9        19
 stub-docstring                  typechecker-fix       S2             1         0         0         0         0         1
 stub-signature-gap              typechecker-fix       S2            13         0         3         0         6        22
-mathutils-protocol-stub         typechecker-fix       S2            44         0        21         0        31        96
+mathutils-protocol-stub         typechecker-fix       S2             8         0        13         1        13        35
 callback-positional             typechecker-fix       S2             0         0         0         1         0         1
 registered-class-in-bpy-types   typechecker-fix       S2             2         0         0         0         0         2
 item-type-tag-narrowing         typechecker-fix       S2             0         0         0         0         0         0
@@ -76,11 +76,11 @@ modifiers-new                   typing-debt           -              0         0
 helper-checks-none              typing-debt           -              9         0         0         0         0         9
 layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
 cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
-mixin-self                      typing-debt           -            134         0         3         0       199       336
+mixin-self                      typing-debt           -            134         0         3         0       198       335
 type-enum-sub-pointer           typing-debt           -            420        63         2         0        96       581
-python-optional                 typing-debt           -            209         0         7         3       101       320
+python-optional                 typing-debt           -            210         0         7         3       101       321
 ui-draw-pointer                 typing-debt           -            450         0         5         0         0       455
-object-data-untagged            typing-debt           -             69         0         2         6        75       152
+object-data-untagged            typing-debt           -             71         0         2         6        75       154
 editor-context-member           typing-debt           -             40         0         0        15         0        55
 script-context-member           typing-debt           -              0         0        46         3         0        49
 base-class-subtype              typing-debt           -            107        54         2         8        61       232
@@ -96,25 +96,25 @@ operator-call                   typing-debt           -              8         0
 unresolved-import               typing-debt           -             59         0         0         0        25        84
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
-untyped-python                  typing-debt           -            615         0         1         0         0       616
+untyped-python                  typing-debt           -            606         0         1         0         0       607
 private-member                  typing-debt           -             13         0         0         0         0        13
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            247         8         7         4       261       527
+general-typing                  typing-debt           -            247         8         7         4       263       529
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
-unchecked-pointer               unsorted              -              1         0         0         0       693       694
+unchecked-pointer               unsorted              -              1         0         0         0       697       698
 stub-gap                        unsorted              -              0         0         0         0        42        42
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -              0         0         0         0       275       275
+unsorted                        unsorted              -              0         0         0         0       276       276
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         5         5
 assumption                                                         414       574        26         4       729      1747
 implied-narrowing                                                 1095         0         4         8        12      1119
 imprecise-annotation                                                 6         0         0         0        11        17
-typechecker-fix                                                    287         0        44        14       138       483
-typing-debt                                                       2690       137       110        51      1448      4436
-unsorted                                                             1         0         0         0      1024      1025
-errors                                                            3025       168       155        65      2559      5972
+typechecker-fix                                                    205         0        22         2        69       298
+typing-debt                                                       2684       137       110        51      1449      4431
+unsorted                                                             1         0         0         0      1029      1030
+errors                                                            2937       168       133        53      2496      5787
 warnings                                                          1468       543        29        12       808      2860
 
 rule                                       error warning
@@ -144,13 +144,13 @@ incompatible-method-override                  27       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1141       0
-invalid-assignment                           538       0
+invalid-argument-type                       1024       0
+invalid-assignment                           546       0
 invalid-base                                   2       0
-invalid-context-manager                       70       0
+invalid-context-manager                       21       0
 invalid-explicit-return                       26       0
 invalid-generic-class                          1       0
-invalid-implicit-return                        4       0
+invalid-implicit-return                        5       0
 invalid-implicit-return-in-function-with-stub-body      32       0
 invalid-parameter-default                      3       0
 invalid-super-argument                         1       0
@@ -158,17 +158,17 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1082       0
-missing-union-attribute                     2281       0
+missing-attribute                           1075       0
+missing-union-attribute                     2284       0
 no-matching-overload                          43       0
 not-callable                                  19       0
-not-iterable                                  68       0
-not-subscriptable                            254       0
+not-iterable                                  66       0
+not-subscriptable                            243       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      10
-too-many-positional-arguments                  7       0
+too-many-positional-arguments                  6       0
 unknown-argument                              15       0
 unresolved-global                              0      37
 unresolved-reference                          65       0
-unsupported-operator                          71       0
+unsupported-operator                          61       0
 unused-type-ignore-comment                     0      40
