@@ -14,8 +14,9 @@ Blender typechecker spec), so ``S6`` and ``C5`` are both Assumption slices, of t
 ``CAUSES`` is a first-match table over a diagnostic's rule, message, the source line it points at (read from the
 worktree ty just checked, so message and line always belong together), its path and its enclosing class and
 function (``Scope``). Each cause names the slice that addresses it. The patterns come from the spec's slices and
-the research on the ``research/*`` branches (``blender-true-problems``, ``false-positive-fixes``,
-``candidate-assumptions``, ``imprecise-patterns``, ``silent-assumptions``, ``stub-gaps``, ``check-blender-setup``).
+the research for #88 (true problems), #92 (false-positive fixes), #90 (candidate Assumptions), #91 (Imprecise
+patterns), #89 (silent assumptions), #71 (stub gaps) and #73 (check:blender setup); the notes still useful are in
+``docs/research/``.
 The causes of the Imprecise annotations, Implied narrowings and Assumptions (S4-S6) are their dedicated rules
 (``blender-narrowed-by-poll``, ...): an error of the same shape is code the rule did not accept.
 ``area(path)`` names the part of the source tree a path is in.
@@ -151,7 +152,7 @@ SETTINGS_POINTER = re.compile(
 )
 # Sub-pointers that exist for one value of a type or mode enum, or a flag, read without a check: an armature's
 # `Object.pose`, a Grease Pencil material's `grease_pencil`, a paint mode's `tool_settings.<mode>`, the `node_tree`
-# of a material using nodes or of a group node (research `candidate-assumptions`, "not covered"), the `properties`
+# of a material using nodes or of a group node (research for #90, "not covered"), the `properties`
 # of a geometry-nodes modifier with a node group.
 SUB_POINTER = re.compile(
     r"\b(?:Pose|MaterialGPencilStyle|VertexPaint|Sculpt|ImagePaint|UvSculpt|CurvesSculpt|ParticleEdit|Gp\w*Paint"
@@ -160,7 +161,7 @@ SUB_POINTER = re.compile(
 )
 # Functions and classes of Python code that is untyped as a whole (glTF's dicts and numpy, rigify's
 # `IdPropSequence` / `TypedObject`, Freestyle's functors, `_bl_i18n_utils`, `bl_app_override`): typing debt, out of
-# scope (research `blender-true-problems`, "Ruled out").
+# scope (research for #88, "Ruled out").
 UNTYPED_PACKAGES = (
     "scripts/addons_core/io_scene_gltf2/",
     "scripts/addons_core/rigify/",
@@ -173,7 +174,7 @@ NUMPY = re.compile(r"\bndarray\b|\bnumpy\.")
 # Optional settings Blender's stubs lack because the Blender that generated them was built without the feature.
 BUILD_OPTION_TYPE = re.compile(r"`FFmpegSettings`|`Literal\[\"FFMPEG\"\]` is not assignable")
 # Blender's code that reads a pointer its poll() does not check, or that has no poll() (research
-# `blender-true-problems`, cause 4): (path, enclosing class or "", enclosing function or "", text on the line).
+# for #88, cause 4): (path, enclosing class or "", enclosing function or "", text on the line).
 UNCHECKED_POINTER_BUGS = [
     ("scripts/addons_core/viewport_vr_preview/operators.py",
      "VIEW3D_OT_vr_location_scouting_active_camera_to_capture", "", ""),
@@ -706,7 +707,7 @@ def in_addon(d: Diagnostic) -> bool:
 def ui_draw_pointer(d: Diagnostic) -> bool:
     """A nullable read in the draw callback of a Panel, Menu, Header or UIList: Blender draws it only where its
     pointers exist (its poll, its editor or mode, or the panel's own logic), which ty does not follow (research
-    ``blender-true-problems``, "Ruled out": the UI's draw code is guarded by construction)."""
+    for #88, "Ruled out": the UI's draw code is guarded by construction)."""
     return nullable(d) and (
         (
             root(d.scope) in UI_ROOTS
@@ -1152,7 +1153,7 @@ CAUSES = [
     Cause("object-data-untagged", "typing-debt", "", object_data),
     # The window, screen, area, region, space and workspace of the editor an operator's `invoke` / `modal` (or a
     # gizmo's `exit`) runs in: those run interactively only, so the members exist (research
-    # `blender-true-problems`, "Ruled out": None only in exotic states). Not covered by an Assumption.
+    # for #88, "Ruled out": None only in exotic states). Not covered by an Assumption.
     Cause("editor-context-member", "typing-debt", "", any_of(lambda d: OTHER_CONTEXT_TYPE.search(d.msg) is not None
           and d.scope.function in INTERACTIVE_CALLBACKS, editor_member_outside_execute)),
     # A doc example or template reading the context it documents (`bpy.context.object` with an active object),
