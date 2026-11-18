@@ -39,7 +39,7 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
-features/api_types/api_never_none/check_api_never_none.py | import-not-found | MovieTrackingObjects, MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink,
+features/api_types/api_never_none/check_api_never_none.py | import-not-found | MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink, NodeSocket, NodeTree, Object,
 features/api_types/api_never_none/check_api_never_none.py | import-not-found | from idprop.types import IDPropertyUIManager
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(camera.dof, CameraDOFSettings)  # bare-ok: a stub fact: the struct is a member of Camera
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.view_settings, ColorManagedViewSettings)  # bare-ok: a stub fact: the struct is a member of Scene
@@ -951,10 +951,10 @@ features/properties/props_rna/check_props_rna.py | missing-attribute | assert_ty
 features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(obj.bl_rna.properties["material_slots"], CollectionProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(obj.bl_rna.properties["parent"], PointerProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(obj.bl_rna.properties["parent"], PointerProperty)  # oracle-skip: typed by the key
-features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a name Object lacks keeps Property
-features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a name Object lacks keeps Property
-features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
-features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: fake-bpy-module types bl_rna `Struct | None` and Blender 5.2's stubs lack it  # bare-ok: a key that is not a literal keeps Property
+features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: Blender 5.2's stubs lack bl_rna  # bare-ok: a name Object lacks keeps Property
+features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(obj.bl_rna.properties["no_such_property"], Property)  # oracle-skip: Blender 5.2's stubs lack bl_rna  # bare-ok: a name Object lacks keeps Property
+features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: Blender 5.2's stubs lack bl_rna  # bare-ok: a key that is not a literal keeps Property
+features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(obj.bl_rna.properties[key], Property)  # oracle-skip: Blender 5.2's stubs lack bl_rna  # bare-ok: a key that is not a literal keeps Property
 features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(settings.bl_rna.properties["count"], IntProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | type-assertion-failure | assert_type(settings.bl_rna.properties["count"], IntProperty)  # oracle-skip: typed by the key
 features/properties/props_rna/check_props_rna.py | missing-attribute | assert_type(PROPS_RNA_Settings.bl_rna.properties["flags"], EnumProperty)  # oracle-skip: typed by the key

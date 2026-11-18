@@ -18,6 +18,8 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   clamps `MovieTracking.active_object_index` to the objects), `SpaceView3D.region_3d`, `AssetRepresentation.metadata`,
   `Depsgraph.scene` / `scene_eval` / `view_layer` / `view_layer_eval`, `DepsgraphObjectInstance.object`,
   `DepsgraphUpdate.id`, and `Material.node_tree` / `World.node_tree` (every material and world has one since 5.0).
+  `RenderViews.active` is never None either (a scene always has a render view; upstream RNA flags it), and an
+  active index (`active_texture_index`) is an `int` like any other index, not a pointer.
   `bpy.data.node_groups.new()` raises for an unknown type and `AssetLibraryCollection.new()` for an error report
   instead of returning None, and `id_properties_ui()` raises for every failure. Blender's fork flags them
   `PROP_NEVER_NULL` (`id_properties_ui` by its docstring). `XrSessionState` itself and
@@ -128,9 +130,7 @@ Only the stubs of Blender main built from the fork state these facts (both gener
 tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views and the C modules (named
 exceptions in spec #75). fake-bpy-module also misses the stub-generator gaps it does not read from the docstrings
 (`BMElemSeq` attributes, the `(name, None)` key, the two context managers, the positional Freestyle methods; named
-exceptions in spec #95). fake-bpy-module keeps `| None` on a writable never-None pointer (`KeyConfigurations.active`,
-`MovieTrackingObjects.active`), and its own mod file retypes `Material.node_tree` / `World.node_tree` as
-`ShaderNodeTree | None` (named exceptions in spec #132). The Freestyle gaps fail on 5.2 and on fake-bpy-module,
+exceptions in spec #95). The Freestyle gaps fail on 5.2 and on fake-bpy-module,
 which gives Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
 `__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated

@@ -19,7 +19,7 @@ assumed-internal-operator       assumption            C5            20         0
 assumed-editor-member           assumption            C5            17         0         2         0         0        19
 assumed-preset-context          assumption            C5             0       268         0         0         0       268
 assumed-added-object            assumption            C5             6         0         0         0        77        83
-assumed-subclass-member         assumption            C7            73         0         0         0       154       227
+assumed-subclass-member         assumption            C7            76         0         0         0       154       230
 assumed-preferences             assumption            S6             4         0         0         0         0         4
 preset-context-member           assumption            -              0        31         0         0         0        31
 added-object                    assumption            -              0         0         0         0         0         0
@@ -28,10 +28,10 @@ internal-operator               assumption            -              6         0
 ui-callback-editor-member       assumption            -              1         0         2         0         0         3
 narrowed-by-menu-prefix         implied-narrowing     S5           100         0         0         0         0       100
 narrowed-by-popover             implied-narrowing     S5            30         0         0         0         0        30
-narrowed-by-poll                implied-narrowing     S5           880         0         2         6         0       888
+narrowed-by-poll                implied-narrowing     S5           878         0         2         6         0       886
 narrowed-by-bl-context          implied-narrowing     C6            11         0         2         2         0        15
 bl-context-implies-member       implied-narrowing     -              3         0         0         0         0         3
-narrowed-by-poll-helper         implied-narrowing     -             38         0         0         0         0        38
+narrowed-by-poll-helper         implied-narrowing     -             37         0         0         0         0        37
 narrowed-by-parent-panel        implied-narrowing     -              5         0         0         0         0         5
 narrowed-by-poll-alias          implied-narrowing     -              6         0         0         0         0         6
 narrowed-by-mode                implied-narrowing     -              1         0         0         0         0         1
@@ -43,7 +43,7 @@ imprecise-enum-value            imprecise-annotation  S4             3         0
 imprecise-callback-parameter    imprecise-annotation  S4             3         0         0         0         0         3
 fake-bpy-python-module          typechecker-fix       -              0         0         1         0         0         1
 fake-bpy-type-alias             typechecker-fix       -              0         0         0         0         0         0
-fake-bpy-nullable               typechecker-fix       -             83         0         0         0        21       104
+fake-bpy-nullable               typechecker-fix       -              0         0         0         0         0         0
 fake-bpy-lib-key                typechecker-fix       -             25         0         0         0         3        28
 fake-bpy-node-sockets           typechecker-fix       -            120         0         0         0        27       147
 fake-bpy-protocol               typechecker-fix       -             21         0        13        13        49        96
@@ -68,7 +68,7 @@ file-registered-property        typechecker-fix       S3             4         0
 bl-rna-property                 typechecker-fix       S3             0         0         0         0         0         0
 type-call-bases                 typechecker-fix       S3             0         0         0         0         0         0
 filter-items-tuple              typechecker-fix       S3             1         0         0         0         0         1
-rna-never-none                  typechecker-fix       S1            11         0         0         0         8        19
+rna-never-none                  typechecker-fix       S1             0         0         0         0         0         0
 reload-idiom                    typing-debt           -             25         0         0         0         0        25
 runtime-name                    typing-debt           -              0         0         0         0        34        34
 correlated-union                typing-debt           -            148         0        20         0       337       505
@@ -77,16 +77,16 @@ helper-checks-none              typing-debt           -              9         0
 layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
 cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
 mixin-self                      typing-debt           -            134         0         3         0       199       336
-type-enum-sub-pointer           typing-debt           -            458        63         3         0       146       670
-python-optional                 typing-debt           -            225         0         7         3       101       336
-ui-draw-pointer                 typing-debt           -            460         0         5         0         0       465
+type-enum-sub-pointer           typing-debt           -            420        63         2         0        96       581
+python-optional                 typing-debt           -            209         0         7         3       101       320
+ui-draw-pointer                 typing-debt           -            450         0         5         0         0       455
 object-data-untagged            typing-debt           -             69         0         2         6        75       152
 editor-context-member           typing-debt           -             40         0         0        15         0        55
-script-context-member           typing-debt           -              0         0        47         3         0        50
+script-context-member           typing-debt           -              0         0        46         3         0        49
 base-class-subtype              typing-debt           -            107        54         2         8        61       232
 set-by-ui-button                typing-debt           -             10         0         0         0         0        10
 window-context-in-execute       typing-debt           -             19         0         0         0        19        38
-set-by-preceding-call           typing-debt           -             10         0         1         5        80        96
+set-by-preceding-call           typing-debt           -             10         0         1         5        79        95
 rarely-none-member              typing-debt           -             13         0         0         0         4        17
 correlated-condition            typing-debt           -             12         0         0         0         0        12
 none-excluded-by-arguments      typing-debt           -             10         0         3         0        68        81
@@ -96,7 +96,7 @@ operator-call                   typing-debt           -              8         0
 unresolved-import               typing-debt           -             59         0         0         0        25        84
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
-untyped-python                  typing-debt           -            619         0         1         0         0       620
+untyped-python                  typing-debt           -            615         0         1         0         0       616
 private-member                  typing-debt           -             13         0         0         0         0        13
 build-option-gap                typing-debt           -              0         0         0         0         0         0
 general-typing                  typing-debt           -            247         8         7         4       261       527
@@ -108,14 +108,14 @@ unsorted                        unsorted              -              0         0
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         5         5
-assumption                                                         411       574        26         4       729      1744
-implied-narrowing                                                 1098         0         4         8        12      1122
+assumption                                                         414       574        26         4       729      1747
+implied-narrowing                                                 1095         0         4         8        12      1119
 imprecise-annotation                                                 6         0         0         0        11        17
-typechecker-fix                                                    381         0        44        14       167       606
-typing-debt                                                       2758       137       112        51      1499      4557
+typechecker-fix                                                    287         0        44        14       138       483
+typing-debt                                                       2690       137       110        51      1448      4436
 unsorted                                                             1         0         0         0      1024      1025
-errors                                                            3188       168       157        65      2639      6217
-warnings                                                          1467       543        29        12       808      2859
+errors                                                            3025       168       155        65      2559      5972
+warnings                                                          1468       543        29        12       808      2860
 
 rule                                       error warning
 blender-assumed-added-object                   0      83
@@ -127,14 +127,14 @@ blender-assumed-list-item                      0      97
 blender-assumed-preferences                    0       1
 blender-assumed-preset-context                 0     268
 blender-assumed-registration                   0      75
-blender-assumed-subclass-member                0     227
+blender-assumed-subclass-member                0     230
 blender-imprecise-callback-parameter           0       3
 blender-imprecise-enum-value                   0      14
 blender-invalid-operator-property              1       0
 blender-invalid-property                       3       0
 blender-narrowed-by-bl-context                 0      15
 blender-narrowed-by-menu-prefix                0     100
-blender-narrowed-by-poll                       0     888
+blender-narrowed-by-poll                       0     886
 blender-narrowed-by-popover                    0      30
 blender-unsupported-property-target            0       1
 deprecated                                     0      15
@@ -144,8 +144,8 @@ incompatible-method-override                  27       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1167       0
-invalid-assignment                           544       0
+invalid-argument-type                       1141       0
+invalid-assignment                           538       0
 invalid-base                                   2       0
 invalid-context-manager                       70       0
 invalid-explicit-return                       26       0
@@ -159,7 +159,7 @@ lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
 missing-attribute                           1082       0
-missing-union-attribute                     2481       0
+missing-union-attribute                     2281       0
 no-matching-overload                          43       0
 not-callable                                  19       0
 not-iterable                                  68       0
@@ -170,5 +170,5 @@ too-many-positional-arguments                  7       0
 unknown-argument                              15       0
 unresolved-global                              0      37
 unresolved-reference                          65       0
-unsupported-operator                          84       0
+unsupported-operator                          71       0
 unused-type-ignore-comment                     0      40

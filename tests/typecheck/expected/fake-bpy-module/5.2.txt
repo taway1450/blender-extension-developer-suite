@@ -34,7 +34,7 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
-features/api_types/api_never_none/check_api_never_none.py | import-not-found | MovieTrackingObjects, MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink,
+features/api_types/api_never_none/check_api_never_none.py | import-not-found | MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink, NodeSocket, NodeTree, Object,
 features/api_types/api_never_none/check_api_never_none.py | import-not-found | from idprop.types import IDPropertyUIManager
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(camera.dof, CameraDOFSettings)  # bare-ok: a stub fact: the struct is a member of Camera
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.view_settings, ColorManagedViewSettings)  # bare-ok: a stub fact: the struct is a member of Scene

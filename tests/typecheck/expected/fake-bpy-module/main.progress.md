@@ -8,7 +8,7 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | --- | --- | --- | --- | --- | --- |
 | addon_discovery | 17/17 | 8/8 | 3/3 | - | 0 |
 | addon_preferences | 11/11 | 6/6 | 10/10 | 3/3 | 0 |
-| api_types | 25/25 | 6/6 | 144/189 | 3/3 | 24 |
+| api_types | 25/25 | 6/6 | 152/191 | 3/3 | 24 |
 | assumptions | 10/10 | 66/66 | 14/14 | - | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
 | context_members | 49/49 | - | 15/15 | - | 0 |
@@ -18,9 +18,9 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | operator_calls | 28/28 | 33/33 | 4/4 | 5/5 | 0 |
 | operator_properties | 54/54 | 13/13 | 11/11 | 5/5 | 0 |
 | pointer_aliases | 7/7 | 5/5 | 4/4 | 1/1 | 0 |
-| properties | 423/433 | 102/102 | 8/10 | 9/9 | 0 |
+| properties | 433/433 | 102/102 | 10/10 | 9/9 | 0 |
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 43/43 | 11/11 | 9/9 | 3/3 | 0 |
 | registration_checks | 8/8 | 38/38 | 10/10 | - | 0 |
 | type_narrowing | 26/39 | 1/1 | 10/10 | - | 8 |
-| **total** | 955/978 | 455/464 | 299/346 | 47/47 | 32 |
+| **total** | 965/978 | 455/464 | 309/348 | 47/47 | 32 |

@@ -9,12 +9,12 @@ from typing import assert_type
 from bpy.types import (ID, AnimData, AssetLibraryCollection, AssetMetaData, AssetRepresentation, AssetShelf,
                        BlendDataMeshes, BlendDataNodeTrees, BlendDataObjects, Bone, BoneColor, Camera,
                        CameraDOFSettings, ColorManagedViewSettings, Context, Depsgraph, DepsgraphObjectInstance,
-                       DepsgraphUpdate, EditBone, FFmpegSettings, Header, ImagePaint, KeyConfig,
-                       KeyConfigurations, KeyingSetInfo, Material, Menu, Mesh, MovieTracking, MovieTrackingObject,
-                       MovieTrackingObjects, MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink,
-                       NodeSocket, NodeTree, Object, Pose, PoseBone, Preferences, RegionView3D, RenderEngine,
-                       RenderSettings, Scene, SceneEEVEE, Sculpt, SpaceView3D, ToolSettings, UILayout, UIList,
-                       UserAssetLibrary, ViewLayer, WindowManager, World, XrSessionState, XrViewfinderState)
+                       DepsgraphUpdate, EditBone, FFmpegSettings, Header, ImagePaint, KeyConfig, KeyConfigurations,
+                       KeyingSetInfo, Material, Menu, Mesh, MovieTracking, MovieTrackingObject, MovieTrackingObjects,
+                       MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink, NodeSocket, NodeTree, Object,
+                       ParticleSettings, Pose, PoseBone, Preferences, RegionView3D, RenderEngine, RenderSettings,
+                       RenderViews, Scene, SceneEEVEE, SceneRenderView, Sculpt, SpaceView3D, ToolSettings, UILayout,
+                       UIList, UserAssetLibrary, ViewLayer, WindowManager, World, XrSessionState, XrViewfinderState)
 from idprop.types import IDPropertyUIManager
 
 from . import API_NEVER_NONE_AST_shelf, API_NEVER_NONE_Engine, API_NEVER_NONE_KSI_keying_set, API_NEVER_NONE_MT_menu
@@ -71,6 +71,11 @@ def always_set(xr: XrSessionState, keyconfigs: KeyConfigurations, link: NodeLink
     assert_type(update.id, ID)  # bare-ok: a stub fact: every update is of an ID
     assert_type(material.node_tree, NodeTree)  # bare-ok: a stub fact: every material has a node tree since 5.0
     assert_type(world.node_tree, NodeTree)  # bare-ok: a stub fact: every world has a node tree since 5.0
+
+
+def active_members(views: RenderViews, particles: ParticleSettings) -> None:
+    assert_type(views.active, SceneRenderView)  # bare-ok: a stub fact: a scene always has a render view
+    assert_type(particles.active_texture_index, int)  # bare-ok: a stub fact: an index, not a pointer
 
 
 def stay_nullable(wm: WindowManager, instance: DepsgraphObjectInstance) -> None:
