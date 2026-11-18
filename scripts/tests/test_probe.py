@@ -155,4 +155,3 @@ def test_table_counts_synthetic_states_and_sums_the_corpus_per_member():
 
 def rec(member, state, none, total):
     return {"member": member, "state": state, "none": none, "total": total, "note": ""}
-
