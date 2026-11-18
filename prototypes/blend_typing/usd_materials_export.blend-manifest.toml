@@ -1,0 +1,199 @@
+# PROTOTYPE blend manifest, written by prototypes/blend_typing/extract_manifest.py
+file = "usd_materials_export.blend"
+blender_version = 403
+parse_seconds = 0.0550
+
+[ids]
+collections = ["Collection"]
+images = ["Render Result", "test_grid_<UDIM>.png", "test_normal.exr", "test_normal_invertY.exr"]
+materials = ["Clip_With_LessThanInvert", "Clip_With_Round", "Dots Stroke", "Material", "NormalMap", "NormalMap_Scale_Bias", "Transforms"]
+meshes = ["Cube", "Cube1", "Cube2", "Plane", "Plane1", "Plane2"]
+objects = ["Cube", "Cube1", "Cube2", "Plane", "Plane1", "Plane2"]
+scenes = ["Scene"]
+worlds = ["World"]
+
+[objects."Cube"]
+type = "MESH"
+data_class = "Mesh"
+data = "Cube"
+modifiers = []
+
+[objects."Cube1"]
+type = "MESH"
+data_class = "Mesh"
+data = "Cube1"
+modifiers = []
+
+[objects."Cube2"]
+type = "MESH"
+data_class = "Mesh"
+data = "Cube2"
+modifiers = []
+
+[objects."Plane"]
+type = "MESH"
+data_class = "Mesh"
+data = "Plane"
+modifiers = []
+
+[objects."Plane1"]
+type = "MESH"
+data_class = "Mesh"
+data = "Plane1"
+modifiers = []
+
+[objects."Plane2"]
+type = "MESH"
+data_class = "Mesh"
+data = "Plane2"
+modifiers = []
+
+[materials."Clip_With_LessThanInvert".node_tree.nodes."Image Texture"]
+class = "ShaderNodeTexImage"
+inputs = [["Vector", "NodeSocketVector"]]
+outputs = [["Color", "NodeSocketColor"], ["Alpha", "NodeSocketFloat"]]
+
+[materials."Clip_With_LessThanInvert".node_tree.nodes."Principled BSDF"]
+class = "ShaderNodeBsdfPrincipled"
+inputs = [["Base Color", "NodeSocketColor"], ["Metallic", "NodeSocketFloatFactor"], ["Roughness", "NodeSocketFloatFactor"], ["IOR", "NodeSocketFloat"], ["Alpha", "NodeSocketFloatFactor"], ["Normal", "NodeSocketVector"], ["Weight", "NodeSocketFloat"], ["Diffuse Roughness", "NodeSocketFloatFactor"], ["Subsurface Weight", "NodeSocketFloatFactor"], ["Subsurface Radius", "NodeSocketVector"], ["Subsurface Scale", "NodeSocketFloatDistance"], ["Subsurface IOR", "NodeSocketFloatFactor"], ["Subsurface Anisotropy", "NodeSocketFloatFactor"], ["Specular IOR Level", "NodeSocketFloatFactor"], ["Specular Tint", "NodeSocketColor"], ["Anisotropic", "NodeSocketFloatFactor"], ["Anisotropic Rotation", "NodeSocketFloatFactor"], ["Tangent", "NodeSocketVector"], ["Transmission Weight", "NodeSocketFloatFactor"], ["Coat Weight", "NodeSocketFloatFactor"], ["Coat Roughness", "NodeSocketFloatFactor"], ["Coat IOR", "NodeSocketFloat"], ["Coat Tint", "NodeSocketColor"], ["Coat Normal", "NodeSocketVector"], ["Sheen Weight", "NodeSocketFloatFactor"], ["Sheen Roughness", "NodeSocketFloatFactor"], ["Sheen Tint", "NodeSocketColor"], ["Emission Color", "NodeSocketColor"], ["Emission Strength", "NodeSocketFloat"], ["Thin Film Thickness", "NodeSocketFloatWavelength"], ["Thin Film IOR", "NodeSocketFloat"]]
+outputs = [["BSDF", "NodeSocketShader"]]
+
+[materials."Clip_With_LessThanInvert".node_tree.nodes."UV Map"]
+class = "ShaderNodeUVMap"
+inputs = []
+outputs = [["UV", "NodeSocketVector"]]
+
+[materials."Clip_With_LessThanInvert".node_tree.nodes."Material Output"]
+class = "ShaderNodeOutputMaterial"
+inputs = [["Surface", "NodeSocketShader"], ["Volume", "NodeSocketShader"], ["Displacement", "NodeSocketVector"], ["Thickness", "NodeSocketFloat"]]
+outputs = []
+
+[materials."Clip_With_LessThanInvert".node_tree.nodes."Math"]
+class = "ShaderNodeMath"
+inputs = [["Value", "NodeSocketFloat"], ["Value", "NodeSocketFloat"], ["Value", "NodeSocketFloat"]]
+outputs = [["Value", "NodeSocketFloat"]]
+
+[materials."Clip_With_LessThanInvert".node_tree.nodes."Math.001"]
+class = "ShaderNodeMath"
+inputs = [["Value", "NodeSocketFloat"], ["Value", "NodeSocketFloat"], ["Value", "NodeSocketFloat"]]
+outputs = [["Value", "NodeSocketFloat"]]
+
+[materials."Clip_With_Round".node_tree.nodes."Image Texture"]
+class = "ShaderNodeTexImage"
+inputs = [["Vector", "NodeSocketVector"]]
+outputs = [["Color", "NodeSocketColor"], ["Alpha", "NodeSocketFloat"]]
+
+[materials."Clip_With_Round".node_tree.nodes."Principled BSDF"]
+class = "ShaderNodeBsdfPrincipled"
+inputs = [["Base Color", "NodeSocketColor"], ["Metallic", "NodeSocketFloatFactor"], ["Roughness", "NodeSocketFloatFactor"], ["IOR", "NodeSocketFloat"], ["Alpha", "NodeSocketFloatFactor"], ["Normal", "NodeSocketVector"], ["Weight", "NodeSocketFloat"], ["Diffuse Roughness", "NodeSocketFloatFactor"], ["Subsurface Weight", "NodeSocketFloatFactor"], ["Subsurface Radius", "NodeSocketVector"], ["Subsurface Scale", "NodeSocketFloatDistance"], ["Subsurface IOR", "NodeSocketFloatFactor"], ["Subsurface Anisotropy", "NodeSocketFloatFactor"], ["Specular IOR Level", "NodeSocketFloatFactor"], ["Specular Tint", "NodeSocketColor"], ["Anisotropic", "NodeSocketFloatFactor"], ["Anisotropic Rotation", "NodeSocketFloatFactor"], ["Tangent", "NodeSocketVector"], ["Transmission Weight", "NodeSocketFloatFactor"], ["Coat Weight", "NodeSocketFloatFactor"], ["Coat Roughness", "NodeSocketFloatFactor"], ["Coat IOR", "NodeSocketFloat"], ["Coat Tint", "NodeSocketColor"], ["Coat Normal", "NodeSocketVector"], ["Sheen Weight", "NodeSocketFloatFactor"], ["Sheen Roughness", "NodeSocketFloatFactor"], ["Sheen Tint", "NodeSocketColor"], ["Emission Color", "NodeSocketColor"], ["Emission Strength", "NodeSocketFloat"], ["Thin Film Thickness", "NodeSocketFloatWavelength"], ["Thin Film IOR", "NodeSocketFloat"]]
+outputs = [["BSDF", "NodeSocketShader"]]
+
+[materials."Clip_With_Round".node_tree.nodes."UV Map"]
+class = "ShaderNodeUVMap"
+inputs = []
+outputs = [["UV", "NodeSocketVector"]]
+
+[materials."Clip_With_Round".node_tree.nodes."Material Output"]
+class = "ShaderNodeOutputMaterial"
+inputs = [["Surface", "NodeSocketShader"], ["Volume", "NodeSocketShader"], ["Displacement", "NodeSocketVector"], ["Thickness", "NodeSocketFloat"]]
+outputs = []
+
+[materials."Clip_With_Round".node_tree.nodes."Math"]
+class = "ShaderNodeMath"
+inputs = [["Value", "NodeSocketFloat"], ["Value", "NodeSocketFloat"], ["Value", "NodeSocketFloat"]]
+outputs = [["Value", "NodeSocketFloat"]]
+
+[materials."Material".node_tree.nodes."Image Texture"]
+class = "ShaderNodeTexImage"
+inputs = [["Vector", "NodeSocketVector"]]
+outputs = [["Color", "NodeSocketColor"], ["Alpha", "NodeSocketFloat"]]
+
+[materials."Material".node_tree.nodes."Principled BSDF"]
+class = "ShaderNodeBsdfPrincipled"
+inputs = [["Base Color", "NodeSocketColor"], ["Metallic", "NodeSocketFloatFactor"], ["Roughness", "NodeSocketFloatFactor"], ["IOR", "NodeSocketFloat"], ["Alpha", "NodeSocketFloatFactor"], ["Normal", "NodeSocketVector"], ["Weight", "NodeSocketFloat"], ["Diffuse Roughness", "NodeSocketFloatFactor"], ["Subsurface Weight", "NodeSocketFloatFactor"], ["Subsurface Radius", "NodeSocketVector"], ["Subsurface Scale", "NodeSocketFloatDistance"], ["Subsurface IOR", "NodeSocketFloatFactor"], ["Subsurface Anisotropy", "NodeSocketFloatFactor"], ["Specular IOR Level", "NodeSocketFloatFactor"], ["Specular Tint", "NodeSocketColor"], ["Anisotropic", "NodeSocketFloatFactor"], ["Anisotropic Rotation", "NodeSocketFloatFactor"], ["Tangent", "NodeSocketVector"], ["Transmission Weight", "NodeSocketFloatFactor"], ["Coat Weight", "NodeSocketFloatFactor"], ["Coat Roughness", "NodeSocketFloatFactor"], ["Coat IOR", "NodeSocketFloat"], ["Coat Tint", "NodeSocketColor"], ["Coat Normal", "NodeSocketVector"], ["Sheen Weight", "NodeSocketFloatFactor"], ["Sheen Roughness", "NodeSocketFloatFactor"], ["Sheen Tint", "NodeSocketColor"], ["Emission Color", "NodeSocketColor"], ["Emission Strength", "NodeSocketFloat"], ["Thin Film Thickness", "NodeSocketFloatWavelength"], ["Thin Film IOR", "NodeSocketFloat"]]
+outputs = [["BSDF", "NodeSocketShader"]]
+
+[materials."Material".node_tree.nodes."UV Map"]
+class = "ShaderNodeUVMap"
+inputs = []
+outputs = [["UV", "NodeSocketVector"]]
+
+[materials."Material".node_tree.nodes."Material Output"]
+class = "ShaderNodeOutputMaterial"
+inputs = [["Surface", "NodeSocketShader"], ["Volume", "NodeSocketShader"], ["Displacement", "NodeSocketVector"], ["Thickness", "NodeSocketFloat"]]
+outputs = []
+
+[materials."NormalMap".node_tree.nodes."Principled BSDF"]
+class = "ShaderNodeBsdfPrincipled"
+inputs = [["Base Color", "NodeSocketColor"], ["Metallic", "NodeSocketFloatFactor"], ["Roughness", "NodeSocketFloatFactor"], ["IOR", "NodeSocketFloat"], ["Alpha", "NodeSocketFloatFactor"], ["Normal", "NodeSocketVector"], ["Weight", "NodeSocketFloat"], ["Diffuse Roughness", "NodeSocketFloatFactor"], ["Subsurface Weight", "NodeSocketFloatFactor"], ["Subsurface Radius", "NodeSocketVector"], ["Subsurface Scale", "NodeSocketFloatDistance"], ["Subsurface IOR", "NodeSocketFloatFactor"], ["Subsurface Anisotropy", "NodeSocketFloatFactor"], ["Specular IOR Level", "NodeSocketFloatFactor"], ["Specular Tint", "NodeSocketColor"], ["Anisotropic", "NodeSocketFloatFactor"], ["Anisotropic Rotation", "NodeSocketFloatFactor"], ["Tangent", "NodeSocketVector"], ["Transmission Weight", "NodeSocketFloatFactor"], ["Coat Weight", "NodeSocketFloatFactor"], ["Coat Roughness", "NodeSocketFloatFactor"], ["Coat IOR", "NodeSocketFloat"], ["Coat Tint", "NodeSocketColor"], ["Coat Normal", "NodeSocketVector"], ["Sheen Weight", "NodeSocketFloatFactor"], ["Sheen Roughness", "NodeSocketFloatFactor"], ["Sheen Tint", "NodeSocketColor"], ["Emission Color", "NodeSocketColor"], ["Emission Strength", "NodeSocketFloat"], ["Thin Film Thickness", "NodeSocketFloatWavelength"], ["Thin Film IOR", "NodeSocketFloat"]]
+outputs = [["BSDF", "NodeSocketShader"]]
+
+[materials."NormalMap".node_tree.nodes."Material Output"]
+class = "ShaderNodeOutputMaterial"
+inputs = [["Surface", "NodeSocketShader"], ["Volume", "NodeSocketShader"], ["Displacement", "NodeSocketVector"], ["Thickness", "NodeSocketFloat"]]
+outputs = []
+
+[materials."NormalMap".node_tree.nodes."Normal Map"]
+class = "ShaderNodeNormalMap"
+inputs = [["Strength", "NodeSocketFloat"], ["Color", "NodeSocketColor"]]
+outputs = [["Normal", "NodeSocketVector"]]
+
+[materials."NormalMap".node_tree.nodes."Image Texture"]
+class = "ShaderNodeTexImage"
+inputs = [["Vector", "NodeSocketVector"]]
+outputs = [["Color", "NodeSocketColor"], ["Alpha", "NodeSocketFloat"]]
+
+[materials."NormalMap_Scale_Bias".node_tree.nodes."Principled BSDF"]
+class = "ShaderNodeBsdfPrincipled"
+inputs = [["Base Color", "NodeSocketColor"], ["Metallic", "NodeSocketFloatFactor"], ["Roughness", "NodeSocketFloatFactor"], ["IOR", "NodeSocketFloat"], ["Alpha", "NodeSocketFloatFactor"], ["Normal", "NodeSocketVector"], ["Weight", "NodeSocketFloat"], ["Diffuse Roughness", "NodeSocketFloatFactor"], ["Subsurface Weight", "NodeSocketFloatFactor"], ["Subsurface Radius", "NodeSocketVector"], ["Subsurface Scale", "NodeSocketFloatDistance"], ["Subsurface IOR", "NodeSocketFloatFactor"], ["Subsurface Anisotropy", "NodeSocketFloatFactor"], ["Specular IOR Level", "NodeSocketFloatFactor"], ["Specular Tint", "NodeSocketColor"], ["Anisotropic", "NodeSocketFloatFactor"], ["Anisotropic Rotation", "NodeSocketFloatFactor"], ["Tangent", "NodeSocketVector"], ["Transmission Weight", "NodeSocketFloatFactor"], ["Coat Weight", "NodeSocketFloatFactor"], ["Coat Roughness", "NodeSocketFloatFactor"], ["Coat IOR", "NodeSocketFloat"], ["Coat Tint", "NodeSocketColor"], ["Coat Normal", "NodeSocketVector"], ["Sheen Weight", "NodeSocketFloatFactor"], ["Sheen Roughness", "NodeSocketFloatFactor"], ["Sheen Tint", "NodeSocketColor"], ["Emission Color", "NodeSocketColor"], ["Emission Strength", "NodeSocketFloat"], ["Thin Film Thickness", "NodeSocketFloatWavelength"], ["Thin Film IOR", "NodeSocketFloat"]]
+outputs = [["BSDF", "NodeSocketShader"]]
+
+[materials."NormalMap_Scale_Bias".node_tree.nodes."Material Output"]
+class = "ShaderNodeOutputMaterial"
+inputs = [["Surface", "NodeSocketShader"], ["Volume", "NodeSocketShader"], ["Displacement", "NodeSocketVector"], ["Thickness", "NodeSocketFloat"]]
+outputs = []
+
+[materials."NormalMap_Scale_Bias".node_tree.nodes."Normal Map"]
+class = "ShaderNodeNormalMap"
+inputs = [["Strength", "NodeSocketFloat"], ["Color", "NodeSocketColor"]]
+outputs = [["Normal", "NodeSocketVector"]]
+
+[materials."NormalMap_Scale_Bias".node_tree.nodes."Image Texture"]
+class = "ShaderNodeTexImage"
+inputs = [["Vector", "NodeSocketVector"]]
+outputs = [["Color", "NodeSocketColor"], ["Alpha", "NodeSocketFloat"]]
+
+[materials."NormalMap_Scale_Bias".node_tree.nodes."Vector Math"]
+class = "ShaderNodeVectorMath"
+inputs = [["Vector", "NodeSocketVector"], ["Vector", "NodeSocketVector"], ["Vector", "NodeSocketVector"], ["Scale", "NodeSocketFloat"]]
+outputs = [["Vector", "NodeSocketVector"], ["Value", "NodeSocketFloat"]]
+
+[materials."NormalMap_Scale_Bias".node_tree.nodes."Vector Math.001"]
+class = "ShaderNodeVectorMath"
+inputs = [["Vector", "NodeSocketVector"], ["Vector", "NodeSocketVector"], ["Vector", "NodeSocketVector"], ["Scale", "NodeSocketFloat"]]
+outputs = [["Vector", "NodeSocketVector"], ["Value", "NodeSocketFloat"]]
+
+[materials."Transforms".node_tree.nodes."Principled BSDF"]
+class = "ShaderNodeBsdfPrincipled"
+inputs = [["Base Color", "NodeSocketColor"], ["Metallic", "NodeSocketFloatFactor"], ["Roughness", "NodeSocketFloatFactor"], ["IOR", "NodeSocketFloat"], ["Alpha", "NodeSocketFloatFactor"], ["Normal", "NodeSocketVector"], ["Weight", "NodeSocketFloat"], ["Diffuse Roughness", "NodeSocketFloatFactor"], ["Subsurface Weight", "NodeSocketFloatFactor"], ["Subsurface Radius", "NodeSocketVector"], ["Subsurface Scale", "NodeSocketFloatDistance"], ["Subsurface IOR", "NodeSocketFloatFactor"], ["Subsurface Anisotropy", "NodeSocketFloatFactor"], ["Specular IOR Level", "NodeSocketFloatFactor"], ["Specular Tint", "NodeSocketColor"], ["Anisotropic", "NodeSocketFloatFactor"], ["Anisotropic Rotation", "NodeSocketFloatFactor"], ["Tangent", "NodeSocketVector"], ["Transmission Weight", "NodeSocketFloatFactor"], ["Coat Weight", "NodeSocketFloatFactor"], ["Coat Roughness", "NodeSocketFloatFactor"], ["Coat IOR", "NodeSocketFloat"], ["Coat Tint", "NodeSocketColor"], ["Coat Normal", "NodeSocketVector"], ["Sheen Weight", "NodeSocketFloatFactor"], ["Sheen Roughness", "NodeSocketFloatFactor"], ["Sheen Tint", "NodeSocketColor"], ["Emission Color", "NodeSocketColor"], ["Emission Strength", "NodeSocketFloat"], ["Thin Film Thickness", "NodeSocketFloatWavelength"], ["Thin Film IOR", "NodeSocketFloat"]]
+outputs = [["BSDF", "NodeSocketShader"]]
+
+[materials."Transforms".node_tree.nodes."Material Output"]
+class = "ShaderNodeOutputMaterial"
+inputs = [["Surface", "NodeSocketShader"], ["Volume", "NodeSocketShader"], ["Displacement", "NodeSocketVector"], ["Thickness", "NodeSocketFloat"]]
+outputs = []
+
+[materials."Transforms".node_tree.nodes."Image Texture"]
+class = "ShaderNodeTexImage"
+inputs = [["Vector", "NodeSocketVector"]]
+outputs = [["Color", "NodeSocketColor"], ["Alpha", "NodeSocketFloat"]]
+
+[materials."Transforms".node_tree.nodes."Mapping"]
+class = "ShaderNodeMapping"
+inputs = [["Vector", "NodeSocketVector"], ["Location", "NodeSocketVectorTranslation"], ["Rotation", "NodeSocketVectorEuler"], ["Scale", "NodeSocketVectorXYZ"]]
+outputs = [["Vector", "NodeSocketVector"]]
+
+[materials."Transforms".node_tree.nodes."Texture Coordinate"]
+class = "ShaderNodeTexCoord"
+inputs = []
+outputs = [["Generated", "NodeSocketVector"], ["Normal", "NodeSocketVector"], ["UV", "NodeSocketVector"], ["Object", "NodeSocketVector"], ["Camera", "NodeSocketVector"], ["Window", "NodeSocketVector"], ["Reflection", "NodeSocketVector"]]
