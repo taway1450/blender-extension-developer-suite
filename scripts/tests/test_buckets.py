@@ -1165,6 +1165,21 @@ CASES = [
         "registered-class-in-bpy-types",
         id="registered-class-in-bpy-types",
     ),
+    # fake-bpy-module declares the registered class, so the site shows up one step further: its method, borrowed as
+    # another operator's callback, takes that class as its unannotated first parameter.
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument is incorrect: Expected `Iterable[tuple[str, str, str] | None] | ((EXTENSIONS_OT_package_install_files, "
+            "Context | None, /) -> Iterable[tuple[str, str, str] | None])`, found `def _target_path_items(_self, "
+            "context) -> Unknown`",
+            "items=bpy.types.PREFERENCES_OT_addon_install._target_path_items,",
+            path="scripts/addons_core/bl_pkg/bl_extension_ops.py",
+            cls="EXTENSIONS_OT_package_install_files",
+        ),
+        "registered-class-in-bpy-types",
+        id="registered-class-method-borrowed-as-callback",
+    ),
     pytest.param(
         diagnostic(
             "invalid-argument-type",

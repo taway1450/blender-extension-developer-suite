@@ -361,7 +361,12 @@ STUB_SIGNATURE = re.compile(
     r"|attribute `rect` on type `RenderPass`|Expected `bpy_struct`, found `(?:LayerObjects|KeyingSets\w*)`"
     r"|with key of type `BMLayerItem`|attribute `uv` on type `float`|has no attribute `rna_type`"
 )
-REGISTERED_CLASS = re.compile(r"Module `bpy\.types` has no member `\w+_(?:OT|MT|PT)_\w+`|^Class `\w+_(?:MT|OT|PT)_\w+`")
+# A registered class read through `bpy.types`: the builtin stubs lack it, and with fake-bpy-module, which declares it,
+# its method borrowed as another operator's callback takes the class as its unannotated first parameter.
+REGISTERED_CLASS = re.compile(
+    r"Module `bpy\.types` has no member `\w+_(?:OT|MT|PT)_\w+`|^Class `\w+_(?:MT|OT|PT)_\w+`"
+    r"|\(\w+_OT_\w+, Context \| None, /\) -> [^`]*`, found `def \w+\(_?self,"
+)
 # Plain Python typing: a record kept in a list or dict, a builtin or stdlib call, a deliberate monkeypatch, an
 # attribute set at runtime, a `hasattr` narrowing, a class-body helper call, an override of a Python method.
 GENERAL_TYPING = re.compile(
