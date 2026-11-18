@@ -221,6 +221,10 @@ CORRELATED_SITES = [
     ("scripts/startup/bl_operators/sequencer.py", "SequencerCrossfadeSounds", "execute", "sequence_editor"),
     ("scripts/startup/bl_operators/sequencer.py", "SequencerSplitMulticam", "execute", ""),
 ]
+# A struct's owner read through a collection of them (``objects = list({pose_bone.id_data for ...})``).
+ID_DATA_SITES = [
+    ("scripts/startup/bl_operators/anim.py", "NLA_OT_bake", "execute", "obj.animation_data"),
+]
 # The None test lives in a helper without a TypeGuard, or in the only caller.
 HELPER_CHECKS_SITES = [
     ("scripts/addons_core/pose_library/operators.py", "POSELIB_OT_paste_asset", "poll", ""),
@@ -552,6 +556,33 @@ def unchecked_pointer_bug(d: Diagnostic) -> bool:
     return nullable(d) and any(
         path == p and (not c or d.scope.cls == c) and (not f or d.scope.function == f) and t in d.text
         for p, c, f, t in UNCHECKED_POINTER_BUGS
+    )
+
+
+def object_data(d: Diagnostic) -> bool:
+    """Whether the ``ID | None`` (or ``ID``) the message names is ``Object.data``, read with no Type tag test: the
+    receiver of the missing or assigned attribute is a ``.data`` read or a local set from one (``me = obj.data``,
+    then ``me.polygons``), and so is a value or argument of that type. Not ``id_data`` (the owner of a struct),
+    ``animation_data``, nor the ``data`` an ``ID`` itself lacks: those are ``base-class-subtype``."""
+    if re.search(r"`ID( \| None)?`", d.msg) is None:
+        return False
+    attribute = missing_attribute(d.msg) or next(iter(re.findall(r"to attribute `(\w+)` on type `ID\b", d.msg)), None)
+    if attribute is None:
+        return reads_from(d, r"\.data\b")
+    receivers = re.findall(rf"((?<![.\w])[A-Za-z_](?:[\w.]|\[[^\]]*\]|\(\))*)\.{attribute}\b", d.text)
+    return any(
+        receiver.endswith(".data")
+        or (receiver.isidentifier() and any(rhs.strip().endswith(".data") for rhs in assignments(d, receiver)[:1]))
+        for receiver in receivers
+    )
+
+
+def id_data_owner(d: Diagnostic) -> bool:
+    """Whether the ``ID`` the message names is a struct's owner, ``bpy_struct.id_data``, which the stubs type as the
+    base ``ID`` (fake-bpy-module: ``ID | None``) though the struct decides it (a pose bone's is its armature
+    object)."""
+    return re.search(r"`ID( \| None)?`", d.msg) is not None and (
+        reads_from(d, r"\.id_data\b") or in_sites(ID_DATA_SITES)(d)
     )
 
 
@@ -1118,8 +1149,7 @@ CAUSES = [
     # rule did not accept the read.
     Cause("preset-context-member", "assumption", "", lambda d: nullable(d) and in_presets(d)),
     Cause("ui-draw-pointer", "typing-debt", "", outside_tests(ui_draw_pointer)),
-    Cause("object-data-untagged", "typing-debt", "", lambda d: re.search(r"`ID( \| None)?`", d.msg) is not None
-          and ("data" in d.text or reads_from(d, r"\.data\b"))),
+    Cause("object-data-untagged", "typing-debt", "", object_data),
     # The window, screen, area, region, space and workspace of the editor an operator's `invoke` / `modal` (or a
     # gizmo's `exit`) runs in: those run interactively only, so the members exist (research
     # `blender-true-problems`, "Ruled out": None only in exotic states). Not covered by an Assumption.
@@ -1135,7 +1165,7 @@ CAUSES = [
     Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule in MISSING_ATTRIBUTE_RULES
           and BASE_CLASS.search(d.msg) is not None) or (d.rule == "invalid-assignment"
           and base_class_target(d.msg.partition(" on type ")[2]))
-          or "Object of type `Node | None` has no attribute" in d.msg
+          or "Object of type `Node | None` has no attribute" in d.msg or id_data_owner(d)
           or re.search(r"found `list\[tuple\[ID(?: \| None)?,", d.msg) is not None),
     # A panel's `bl_context`: the bl-context Implied narrowing, where its rule did not accept the read.
     Cause("bl-context-implies-member", "implied-narrowing", "", bl_context_member),

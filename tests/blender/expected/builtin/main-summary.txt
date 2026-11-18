@@ -31,7 +31,7 @@ narrowed-by-popover             implied-narrowing     S5            30         0
 narrowed-by-poll                implied-narrowing     S5           850         0         2         6         0       858
 narrowed-by-bl-context          implied-narrowing     C6            11         0         2         2         0        15
 bl-context-implies-member       implied-narrowing     -              3         0         0         0         0         3
-narrowed-by-poll-helper         implied-narrowing     -             27         0         0         0         0        27
+narrowed-by-poll-helper         implied-narrowing     -             28         0         0         0         0        28
 narrowed-by-parent-panel        implied-narrowing     -              5         0         0         0         0         5
 narrowed-by-poll-alias          implied-narrowing     -              5         0         0         0         0         5
 narrowed-by-mode                implied-narrowing     -              1         0         0         0         0         1
@@ -80,10 +80,10 @@ mixin-self                      typing-debt           -             59         0
 type-enum-sub-pointer           typing-debt           -            254        63         1         0        90       408
 python-optional                 typing-debt           -            206         0         3         1        97       307
 ui-draw-pointer                 typing-debt           -            497         0         6         0         0       503
-object-data-untagged            typing-debt           -             55         0        23         4       371       453
+object-data-untagged            typing-debt           -             29         0        22         4       310       365
 editor-context-member           typing-debt           -             32         0         0        15         0        47
 script-context-member           typing-debt           -              0         0        43         3         0        46
-base-class-subtype              typing-debt           -             93        54         4         8        87       246
+base-class-subtype              typing-debt           -            117        54         5         8       135       319
 set-by-ui-button                typing-debt           -             10         0         0         0         0        10
 window-context-in-execute       typing-debt           -             19         0         0         0        19        38
 set-by-preceding-call           typing-debt           -             10         0         1         5        73        89
@@ -96,24 +96,24 @@ operator-call                   typing-debt           -              7         0
 unresolved-import               typing-debt           -             31         0         0         0        10        41
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              3         0         0         0         0         3
-untyped-python                  typing-debt           -            444         0         0         2         0       446
+untyped-python                  typing-debt           -            445         0         0         2         0       447
 private-member                  typing-debt           -             12         0         0         0         0        12
 build-option-gap                typing-debt           -              0         0         0         0         0         0
 general-typing                  typing-debt           -            234         0        10         4       262       510
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
-unchecked-pointer               unsorted              -              1         0         0         0       669       670
+unchecked-pointer               unsorted              -              1         0         0         0       681       682
 stub-gap                        unsorted              -              0         0         0         0        40        40
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -              0         0         0         0       247       247
+unsorted                        unsorted              -              0         0         0         0       248       248
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         5         5
 assumption                                                         393       574        26         4       675      1672
-implied-narrowing                                                 1056         0         4         8        13      1081
+implied-narrowing                                                 1057         0         4         8        13      1082
 imprecise-annotation                                                 3         0         0         0        11        14
 typechecker-fix                                                     50         0        31         7        38       126
-typing-debt                                                       2153       129       107        49      1384      3822
-unsorted                                                             1         0         0         0       970       971
+typing-debt                                                       2152       129       107        49      1371      3808
+unsorted                                                             1         0         0         0       983       984
 errors                                                            2240       160       139        56      2342      4937
 warnings                                                          1416       543        29        12       754      2754
 

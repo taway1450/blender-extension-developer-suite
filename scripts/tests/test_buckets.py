@@ -798,6 +798,74 @@ CASES = [
     pytest.param(
         diagnostic(
             "missing-attribute",
+            "Object of type `ID` has no attribute `animation_data`",
+            "adt = animated_id.animation_data",
+            path="scripts/startup/bl_operators/anim.py",
+            cls="ANIM_OT_slot_new_for_id",
+            function="execute",
+        ),
+        "base-class-subtype",
+        id="debt-base-class-animation-data-is-not-object-data",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Object of type `ID` has no attribute `data`",
+            "arm = self.id_data.data",
+            path="scripts/addons_core/rigify/__init__.py",
+            cls="RigifyBoneCollectionReference",
+            function="_name_set",
+        ),
+        "base-class-subtype",
+        id="debt-base-class-id-data-owner",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-assignment",
+            "Object of type `ID` is not assignable to attribute `arm_object` of type `Object`",
+            "self.arm_object = pose_bone.id_data",
+            path="scripts/startup/bl_operators/copy_global_transform.py",
+            cls="TransformableBone",
+            function="__init__",
+        ),
+        "base-class-subtype",
+        id="debt-base-class-id-data-owner-assigned",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Object of type `ID | None` has no attribute `animation_data`",
+            "adt = con.id_data.animation_data",
+            path="scripts/addons_core/rigify/utils/mechanism.py",
+            function="move_constraint",
+        ),
+        "base-class-subtype",
+        id="debt-base-class-id-data-owner-fake-bpy",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Object of type `ID | None` has no attribute `animation_data`",
+            '[(obj, getattr(obj.animation_data, "action", None)) for obj in objects]',
+            path="scripts/startup/bl_operators/anim.py",
+            cls="NLA_OT_bake",
+            function="execute",
+        ),
+        "base-class-subtype",
+        id="debt-base-class-id-data-owner-through-a-list",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-union-attribute",
+            "Attribute `users` is not defined on `None` in union `ID | None`",
+            'Light_us = bpy.data.objects["Light"].data.users',
+        ),
+        "object-data-untagged",
+        id="debt-object-data-subscripted-receiver",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
             "Module `bpy.ops.wm` has no member `exit_blender`",
             "bpy.ops.wm.exit_blender()",
         ),
