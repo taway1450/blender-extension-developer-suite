@@ -440,6 +440,7 @@ FAKE_BPY_TYPE_ALIAS = re.compile(
     r"\b_bpy_types\.Context\b|Expected `type\[Panel \| UIList \| Menu \| \.\.\. omitted \d+ types\]`"
     r"|^Object of type `<class 'UI_UL_list'>[^`]*` has no attribute `is_registered`"
     r"|^Too many positional arguments to bound method `\w+_OT_\w+\.\w+`"
+    r"|found `bound method \w+_OT_\w+\.\w+\("
 )
 # fake-bpy-module types as Optional what RNA never leaves None: `bl_rna`, `RenderViews.active`, and an int property
 # (`active_*_index`, read as a collection key or updated in place). Its collections take a key `int | str |

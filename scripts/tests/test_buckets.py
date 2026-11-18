@@ -1933,6 +1933,19 @@ CASES = [
         "fake-bpy-python-module",
         id="regrouped-fake-bpy-none-return-cached",
     ),
+    # fake-bpy-module's `bpy.types` declares a registered class as an instance, so its method reads as bound.
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument is incorrect: Expected `Iterable[tuple[str, str, str] | None]`, found `bound method "
+            "PREFERENCES_OT_addon_install._target_path_items(context) -> Unknown`",
+            "items=bpy.types.PREFERENCES_OT_addon_install._target_path_items,",
+            path="scripts/addons_core/bl_pkg/bl_extension_ops.py",
+            cls="EXTENSIONS_OT_package_install_files",
+        ),
+        "fake-bpy-type-alias",
+        id="fake-bpy-registered-class-method-bound",
+    ),
     # Unsorted
     pytest.param(
         diagnostic("not-iterable", "Object of type `ImBufBuffer` is not iterable", "for p in buf:"),
