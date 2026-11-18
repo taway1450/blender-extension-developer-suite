@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender 38d1df8a1b
+# check:blender main, fake-bpy-module stubs, Blender 613e3dcb8a
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -71,15 +71,15 @@ filter-items-tuple              typechecker-fix       S3             1         0
 rna-never-none                  typechecker-fix       S1             0         0         0         0         0         0
 reload-idiom                    typing-debt           -             25         0         0         0         0        25
 runtime-name                    typing-debt           -              0         0         0         0        34        34
-correlated-union                typing-debt           -            110         0        19         0       337       466
+correlated-union                typing-debt           -            109         0        19         0       337       465
 modifiers-new                   typing-debt           -              0         0         0         0        35        35
 helper-checks-none              typing-debt           -              9         0         0         0         0         9
 layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
 cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
 mixin-self                      typing-debt           -            121         0         3         0       198       322
-type-enum-sub-pointer           typing-debt           -            254        63         2         0        96       415
+type-enum-sub-pointer           typing-debt           -            253        63         2         0        96       414
 python-optional                 typing-debt           -            210         0         7         3       101       321
-ui-draw-pointer                 typing-debt           -            434         0         5         0         0       439
+ui-draw-pointer                 typing-debt           -            363         0         5         0         0       368
 object-data-untagged            typing-debt           -             20         0         2         4        65        91
 editor-context-member           typing-debt           -             40         0         0        15         0        55
 script-context-member           typing-debt           -              0         0        46         3         0        49
@@ -112,9 +112,9 @@ assumption                                                         424       574
 implied-narrowing                                                 1054         0         4         8        12      1078
 imprecise-annotation                                                 6         0         0         0        11        17
 typechecker-fix                                                     89         0        22         2        42       155
-typing-debt                                                       2275       137       109        49      1444      4014
+typing-debt                                                       2202       137       109        49      1444      3941
 unsorted                                                             1         0         0         0      1034      1035
-errors                                                            2404       168       132        51      2469      5224
+errors                                                            2331       168       132        51      2469      5151
 warnings                                                          1445       543        29        12       808      2837
 
 rule                                       error warning
@@ -144,7 +144,7 @@ incompatible-method-override                  27       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                        831       0
+invalid-argument-type                        805       0
 invalid-assignment                           540       0
 invalid-base                                   2       0
 invalid-context-manager                       21       0
@@ -159,7 +159,7 @@ lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
 missing-attribute                            995       0
-missing-union-attribute                     2148       0
+missing-union-attribute                     2101       0
 no-matching-overload                          43       0
 not-callable                                  14       0
 not-iterable                                  66       0

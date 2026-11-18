@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender 38d1df8a1b
+# check:blender main, builtin stubs, Blender 613e3dcb8a
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -77,9 +77,9 @@ helper-checks-none              typing-debt           -              9         0
 layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
 cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
 mixin-self                      typing-debt           -             59         0         3         0       195       257
-type-enum-sub-pointer           typing-debt           -            254        63         1         0        90       408
+type-enum-sub-pointer           typing-debt           -            253        63         1         0        90       407
 python-optional                 typing-debt           -            206         0         3         1        97       307
-ui-draw-pointer                 typing-debt           -            497         0         6         0         0       503
+ui-draw-pointer                 typing-debt           -            425         0         6         0         0       431
 object-data-untagged            typing-debt           -             29         0        22         4       310       365
 editor-context-member           typing-debt           -             32         0         0        15         0        47
 script-context-member           typing-debt           -              0         0        43         3         0        46
@@ -112,9 +112,9 @@ assumption                                                         393       574
 implied-narrowing                                                 1057         0         4         8        13      1082
 imprecise-annotation                                                 3         0         0         0        11        14
 typechecker-fix                                                     50         0        31         7        38       126
-typing-debt                                                       2152       129       107        49      1371      3808
+typing-debt                                                       2079       129       107        49      1371      3735
 unsorted                                                             1         0         0         0       983       984
-errors                                                            2240       160       139        56      2342      4937
+errors                                                            2167       160       139        56      2342      4864
 warnings                                                          1416       543        29        12       754      2754
 
 rule                                       error warning
@@ -143,7 +143,7 @@ incompatible-method-override                  23       0
 incompatible-mutable-override                  5       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                        861       0
+invalid-argument-type                        835       0
 invalid-assignment                           539       0
 invalid-base                                   2       0
 invalid-context-manager                        2       0
@@ -157,8 +157,8 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            43       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1330       0
-missing-union-attribute                     1665       0
+missing-attribute                           1329       0
+missing-union-attribute                     1619       0
 no-matching-overload                          37       0
 not-callable                                  14       0
 not-iterable                                  34       0
