@@ -51,9 +51,7 @@ def blender_cmd(blender: Path, *args: str | Path) -> list[str]:
 def corpus(source: Path, limit: int | None) -> list[str]:
     root = source / "tests" / "files"
     paths = sorted(
-        str(p)
-        for p in root.rglob("*.blend")
-        if "invalid_blendfiles" not in p.parts and p.stat().st_size > 1024
+        str(p) for p in root.rglob("*.blend") if "invalid_blendfiles" not in p.parts and p.stat().st_size > 1024
     )
     return paths[:limit] if limit else paths
 
@@ -109,7 +107,9 @@ def main() -> int:
     work.mkdir(parents=True, exist_ok=True)
 
     log("Probing the synthetic edge states")
-    proc = subprocess.run(blender_cmd(blender, "synthetic", out / "synthetic.json", work), capture_output=True, text=True)
+    proc = subprocess.run(
+        blender_cmd(blender, "synthetic", out / "synthetic.json", work), capture_output=True, text=True
+    )
     if proc.returncode:
         log(f"Synthetic probe failed:\n{proc.stdout[-3000:]}\n{proc.stderr[-3000:]}")
     synthetic = json.loads((out / "synthetic.json").read_text(encoding="utf-8"))
@@ -122,7 +122,9 @@ def main() -> int:
     errors = [f for f in files if f["error"]]
 
     text = table(synthetic, [f for f in files if not f["error"]])
-    text += f"\n{len(files) - len(errors)} files probed, {len(errors)} failed to open, {len(crashed)} crashed Blender.\n"
+    text += (
+        f"\n{len(files) - len(errors)} files probed, {len(errors)} failed to open, {len(crashed)} crashed Blender.\n"
+    )
     (out / "table.md").write_text(text, encoding="utf-8")
     log(f"Wrote {out / 'table.md'}")
     return 0

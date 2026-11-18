@@ -32,7 +32,7 @@ def count(member: str, state: str, values, note: str = "") -> None:
 
 
 def outcome(fn) -> str:
-    """"value", "None" or "raises <Error>" for calling ``fn``."""
+    """ "value", "None" or "raises <Error>" for calling ``fn``."""
     try:
         return "None" if fn() is None else "value"
     except Exception as e:
@@ -74,15 +74,16 @@ def probe_loaded(state: str) -> None:
     kc = wm.keyconfigs
     for name in ("active", "default", "addon", "user"):
         count(f"KeyConfigurations.{name}", state, [getattr(kc, name)])
-    count("WindowManager.xr_session_state", state, [wm.xr_session_state], "XrSessionState.viewfinder is read through it")
+    count(
+        "WindowManager.xr_session_state", state, [wm.xr_session_state], "XrSessionState.viewfinder is read through it"
+    )
 
     count("Material.node_tree", state, [m.node_tree for m in bpy.data.materials])
     count("World.node_tree", state, [w.node_tree for w in bpy.data.worlds])
 
     links, internal = [], []
     for tree in node_trees():
-        for link in tree.links:
-            links.append(link)
+        links.extend(tree.links)
         for node in tree.nodes:
             internal.extend(node.internal_links)
     for end in ("from_node", "to_node", "from_socket", "to_socket"):
@@ -157,7 +158,9 @@ def probe_node_tree_new() -> None:
         bl_icon = "NODETREE"
 
     bpy.utils.register_class(ProbeCustomTree)
-    call("BlendDataNodeTrees.new", "custom registered type", lambda: bpy.data.node_groups.new("probe", "ProbeCustomTree"))
+    call(
+        "BlendDataNodeTrees.new", "custom registered type", lambda: bpy.data.node_groups.new("probe", "ProbeCustomTree")
+    )
     bpy.utils.unregister_class(ProbeCustomTree)
     call(
         "BlendDataNodeTrees.new",
@@ -222,7 +225,9 @@ def probe_animation_data_create() -> None:
         type_name = type(id_).__name__
         (nullable if result == "None" else never).append(type_name)
         record("ID.animation_data_create", f"on {type_name} (bpy.data.{collection})", int(result == "None"), 1, result)
-    record("ID.animation_data_create", "summary: None for", len(nullable), len(nullable) + len(never), ", ".join(nullable))
+    record(
+        "ID.animation_data_create", "summary: None for", len(nullable), len(nullable) + len(never), ", ".join(nullable)
+    )
 
 
 def probe_id_properties_ui() -> None:
@@ -237,7 +242,11 @@ def probe_id_properties_ui() -> None:
     obj["group"] = {"a": 1}
     call("bpy_struct.id_properties_ui", "group-valued key", lambda: obj.id_properties_ui("group"))
     scene = bpy.context.scene
-    call("bpy_struct.id_properties_ui", "non-ID struct without idprops (SceneRender)", lambda: scene.render.id_properties_ui("x"))
+    call(
+        "bpy_struct.id_properties_ui",
+        "non-ID struct without idprops (SceneRender)",
+        lambda: scene.render.id_properties_ui("x"),
+    )
     arm = bpy.data.armatures.new("probe_arm")
     arm_obj = bpy.data.objects.new("probe_arm", arm)
     scene.collection.objects.link(arm_obj)
@@ -398,13 +407,23 @@ def probe_returns() -> None:
     empty = bpy.data.objects.new("probe_empty", None)
     call("Object.to_mesh", "empty", lambda: empty.to_mesh())
     call("BlendDataMeshes.new_from_object", "empty", lambda: bpy.data.meshes.new_from_object(empty))
-    call("BlendDataMeshes.new_from_object", "non-mother metaball", lambda: bpy.data.meshes.new_from_object(child.evaluated_get(depsgraph)))
+    call(
+        "BlendDataMeshes.new_from_object",
+        "non-mother metaball",
+        lambda: bpy.data.meshes.new_from_object(child.evaluated_get(depsgraph)),
+    )
     call("BlendDataObjects.new", "data is a Material", lambda: bpy.data.objects.new("x", bpy.data.materials.new("m")))
     call("ObjectModifiers.new", "SUBSURF on an empty", lambda: empty.modifiers.new("m", "SUBSURF"))
-    call("ObjectModifiers.new", "SUBSURF on a mesh", lambda: bpy.data.objects.new("o", bpy.data.meshes.new("m")).modifiers.new("m", "SUBSURF"))
+    call(
+        "ObjectModifiers.new",
+        "SUBSURF on a mesh",
+        lambda: bpy.data.objects.new("o", bpy.data.meshes.new("m")).modifiers.new("m", "SUBSURF"),
+    )
     prefs = bpy.context.preferences.filepaths.asset_libraries
     call("AssetLibraryCollection.new", "local, empty directory", lambda: prefs.new(name="probe", directory=""))
-    call("AssetLibraryCollection.new", "extension_id without remote_url", lambda: prefs.new(name="p2", extension_id="x"))
+    call(
+        "AssetLibraryCollection.new", "extension_id without remote_url", lambda: prefs.new(name="p2", extension_id="x")
+    )
 
 
 def synthetic(output: str, work: str) -> None:
@@ -422,7 +441,10 @@ def synthetic(output: str, work: str) -> None:
         ("read_homefile", lambda: (bpy.ops.wm.read_homefile(), probe_loaded("after wm.read_homefile()"))),
         (
             "read_factory_settings empty",
-            lambda: (bpy.ops.wm.read_factory_settings(use_empty=True), probe_loaded("after read_factory_settings(use_empty=True)")),
+            lambda: (
+                bpy.ops.wm.read_factory_settings(use_empty=True),
+                probe_loaded("after read_factory_settings(use_empty=True)"),
+            ),
         ),
         (
             "read_homefile empty",
