@@ -57,7 +57,6 @@ derived from a built-in one (`ShaderNodeCustomGroup`) has its own `bl_idname`.
 
 The narrowing markers are in the add-ons' `__init__.py` (the reference stubs cannot express narrowing); the
 guards in `check_*.py` hold without the checker (`bare-ok`). `narrow_area_type` has no `check_*.py`: its markers are all in `__init__.py`. Only Blender main's stubs declare the
-Type tags: 5.2 fails every narrowing marker, and fake-bpy-module leaves out the tag views, so it fails the sibling form. Both are
-named exceptions in spec #75. fake-bpy-module also spells the constructor parameters as literals (with `| None`), not
+Type tags: 5.2 fails every narrowing marker, a named exception in spec #75. fake-bpy-module also spells the constructor parameters as literals (with `| None`), not
 as the tag's alias, so `constraints.new`, `lights.new` and `attributes.new` are not narrowed there: a named exception
 in spec #123.

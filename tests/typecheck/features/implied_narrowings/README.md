@@ -82,6 +82,4 @@ The `blender-*` markers need the checker; the upstream ones and the `| None` mar
 
 **Named exceptions:** only Blender main's builtin stubs type the dynamic context members (`context.object`,
 `active_node`, ...) `X | None`; 5.2's stubs type them non-None and its callbacks' `context` parameter `Context |
-None`, so the poll and `bl_context` markers (`nar_poll`, `nar_poll_reach`, `nar_mode`, `nar_bl_context`) fail on 5.2. fake-bpy-module has no Type tag
-views, so the markers that a Type tag narrows (`nar_poll`'s `active_object.data` as `Mesh` and `object.data` as
-`Light`, `nar_mode`'s and `nar_bl_context`'s `object.data` as `Mesh`) fail with it.
+None`, so the poll and `bl_context` markers (`nar_poll`, `nar_poll_reach`, `nar_mode`, `nar_bl_context`) fail on 5.2.

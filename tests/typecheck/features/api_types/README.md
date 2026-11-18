@@ -131,11 +131,11 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 | `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |
 
 Only the stubs of Blender main built from the fork state these facts (both generators read the RNA flag and the declared
-tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the private tag views and the C modules (named
-exceptions in spec #75). fake-bpy-module also misses the stub-generator gaps it does not read from the docstrings
+tags); 5.2's stubs fail these markers, and fake-bpy-module leaves out the C modules (a named
+exception in spec #75). fake-bpy-module also misses the stub-generator gaps it does not read from the docstrings
 (`BMElemSeq` attributes, the two context managers, the positional Freestyle methods; named
-exceptions in spec #95). The Freestyle gaps fail on 5.2 and on fake-bpy-module,
-which gives Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
+exceptions in spec #95). The Freestyle gaps fail on 5.2,
+whose stubs give Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
 `__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
 `description`) need the checker's inheritance typing.

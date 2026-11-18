@@ -15,15 +15,8 @@ features/api_types/api_c_modules/check_api_c_modules.py | type-assertion-failure
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, edge: Interface1D) -> bool:
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
-features/api_types/api_stub_gaps/__init__.py | missing-attribute | return None if iter.is_end else iter.object
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def shade(self, s: Stroke) -> None:
 features/api_types/api_stub_gaps/__init__.py | invalid-context-manager | with bpy.data.temp_data() as data:
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_predicate(QuantitativeInvisibilityUP1D(0)), UnaryPredicate1D)  # bare-ok: a stub fact: a C predicate's base
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(as_function(pyDensityAnisotropyF1D(4)), UnaryFunction1DDouble)  # bare-ok: a stub fact: a Python class's base and __init__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
@@ -39,31 +32,6 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.libraries.load(path, link=True) as (data_from, data_to):
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.temp_data() as temp:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(temp, BlendData)  # bare-ok: a stub fact: entering temp_data gives a temporary BlendData
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(Operators.create(TrueUP1D(), shaders), None)  # bare-ok: a stub fact: a list of any shader types
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-callable | assert_type(pyDensityAnisotropyF1D(4)(inter), float)  # bare-ok: a stub fact: a Python function calls through its base
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(pyDensityAnisotropyF1D(4)(inter), float)  # bare-ok: a stub fact: a Python function calls through its base
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | TextCurve, TextureNodeMath, _FluidModifier_DOMAIN, _Object_ARMATURE, _Object_EMPTY, _Object_FONT,
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _Object_MESH, _Object_SURFACE)
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(grease_pencil.root_nodes[0], GreasePencilLayer | GreasePencilLayerGroup)  # bare-ok: a stub fact: a tree node is a layer or a group
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.type, Literal['MESH'])  # bare-ok: a stub fact: the tag view of a MESH object
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.data, Mesh)  # bare-ok: a stub fact: a MESH object's data is a Mesh, never None
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(font.data, TextCurve)  # bare-ok: a stub fact: a text object's curve is refined again
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(surface.data, SurfaceCurve)  # bare-ok: a stub fact: a surface object's curve is refined again
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(empty.data, Image | None)  # bare-ok: a stub fact: an empty has no data, or the image it displays
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.fluid_type, Literal['DOMAIN'])  # bare-ok: a stub fact: the tag view of a fluid domain
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.domain_settings, FluidDomainSettings)  # bare-ok: a stub fact: a domain has domain settings
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(domain.flow_settings, None)  # bare-ok: a stub fact: and no flow settings
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(armature.pose, Pose | None)  # bare-ok: a stub fact: an armature's pose, None until it is built
-features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(mesh.pose, None)  # bare-ok: a stub fact: only an armature object has a pose
-features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
-features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
-features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_mode/__init__.py | missing-union-attribute | context.object.data.name  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_mode/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll] #2
-features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.active_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
-features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.object.data, Light)  # ty: ignore[blender-narrowed-by-poll]
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | con.target = target
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(track, TrackToConstraint)
@@ -72,16 +40,3 @@ features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | li
 features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return light
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SunLight | SpotLight)
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(attribute, FloatAttribute)
-features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(ob.pose, None)  # only an armature object has a pose
-features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
-features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
-features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return len(ob.data.vertices)
-features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, TextCurve)  # the curve of a text object is refined again
-features/type_narrowing/narrow_views/__init__.py | missing-attribute | return ob.data.body
-features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(meshes, list[Mesh])  # the test in a comprehension
-features/type_narrowing/narrow_views/__init__.py | invalid-explicit-return | return meshes
-features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a match on the tag
-features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return ob.data.name
-features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(md.domain_settings, FluidDomainSettings)
-features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return md.domain_settings.resolution_max
-features/type_narrowing/narrow_views/check_narrow_views.py | type-assertion-failure | assert_type(ob.data, Mesh)  # oracle-skip: narrowing by a Type tag needs the checker

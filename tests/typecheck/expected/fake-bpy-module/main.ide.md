@@ -152,7 +152,7 @@ Object
 Pose
 ```
 ---
-Current pose for armatures (readonly)
+(readonly)
 ````
 
 ## features/implied_narrowings/nar_menu_prefix/ide_nar_menu_prefix.py | ^hover-contains "SpaceClipEditor" @17 | context.space_data
@@ -178,7 +178,7 @@ Sculpt
 Pose
 ```
 ---
-Current pose for armatures (readonly)
+(readonly)
 ````
 
 ## features/implied_narrowings/nar_poll/ide_nar_poll.py | ^hover @17 | context.object
