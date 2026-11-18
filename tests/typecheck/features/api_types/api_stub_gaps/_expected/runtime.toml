@@ -79,6 +79,11 @@ expect = "str bool frozenset str mappingproxy str ImBufFileType"
 reason = "the public module members the stubs left out"
 
 [[probe]]
+code = "' '.join(type(getattr(bpy.app.handlers, name)).__name__ for name in ('_extension_repos_update_pre', '_extension_repos_update_post', '_extension_repos_sync', '_extension_repos_files_clear')) + ' ' + str(callable(bpy.utils._sys_path_ensure_append))"
+expect = "list list list list True"
+reason = "the private module members Blender's own scripts read"
+
+[[probe]]
 code = "addon.bmesh_links()"
 expect = "BMVert BMEdge BMLoop BMLoop"
 reason = "a BMElemSeq holds the element type its attribute names"

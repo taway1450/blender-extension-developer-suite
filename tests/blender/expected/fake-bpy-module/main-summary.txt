@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender 5ccfa29ef3
+# check:blender main, fake-bpy-module stubs, Blender e0d4051dae
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -69,7 +69,7 @@ bl-rna-property                 typechecker-fix       S3             0         0
 type-call-bases                 typechecker-fix       S3             0         0         0         0         0         0
 filter-items-tuple              typechecker-fix       S3             1         0         0         0         0         1
 rna-never-none                  typechecker-fix       S1             0         0         0         0         0         0
-reload-idiom                    typing-debt           -             25         0         0         0         0        25
+reload-idiom                    typing-debt           -              1         0         0         0         0         1
 runtime-name                    typing-debt           -              0         0         0         0        34        34
 correlated-union                typing-debt           -            109         0        19         0       337       465
 modifiers-new                   typing-debt           -              0         0         0         0        35        35
@@ -93,18 +93,18 @@ none-excluded-by-arguments      typing-debt           -             10         0
 operator-without-poll           typing-debt           -              7         0         0         0         0         7
 runtime-operator-idname         typing-debt           -              2         0         0         0         0         2
 operator-call                   typing-debt           -              8         0        11         7        42        68
-unresolved-import               typing-debt           -             59         0         0         0        25        84
+unresolved-import               typing-debt           -             57         0         0         0        25        82
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
 untyped-python                  typing-debt           -            462         0         1         0         0       463
-private-member                  typing-debt           -             13         0         0         0         0        13
+private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            247         8         7         4       263       529
+general-typing                  typing-debt           -            251         8         7         4       263       533
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
 unchecked-pointer               unsorted              -              1         0         0         0       701       702
-stub-gap                        unsorted              -              0         0         0         0        42        42
+stub-gap                        unsorted              -              1         0         0         0        56        57
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -              0         0         0         0       277       277
+unsorted                        unsorted              -              1         0         0         0       277       278
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         5         5
@@ -112,9 +112,9 @@ assumption                                                         431       574
 implied-narrowing                                                 1051         0         4         8        12      1075
 imprecise-annotation                                                 6         0         0         0        11        17
 typechecker-fix                                                     89         0        22         2        42       155
-typing-debt                                                       2194       137       109        49      1444      3933
-unsorted                                                             1         0         0         0      1034      1035
-errors                                                            2323       168       132        51      2469      5143
+typing-debt                                                       2159       137       109        49      1444      3898
+unsorted                                                             3         0         0         0      1048      1051
+errors                                                            2290       168       132        51      2483      5124
 warnings                                                          1449       543        29        12       808      2841
 
 rule                                       error warning
@@ -138,14 +138,14 @@ blender-narrowed-by-poll                       0     850
 blender-narrowed-by-popover                    0      30
 blender-unsupported-property-target            0       1
 deprecated                                     0      15
-import-not-found                              80       0
+import-not-found                              78       0
 incompatible-attribute-override               29       0
 incompatible-method-override                  27       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
 invalid-argument-type                        804       0
-invalid-assignment                           540       0
+invalid-assignment                           541       0
 invalid-base                                   2       0
 invalid-context-manager                       21       0
 invalid-explicit-return                       26       0
@@ -158,7 +158,7 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                            987       0
+missing-attribute                            993       0
 missing-union-attribute                     2102       0
 no-matching-overload                          43       0
 not-callable                                  14       0
@@ -169,6 +169,6 @@ redundant-condition                            0      10
 too-many-positional-arguments                  6       0
 unknown-argument                              15       0
 unresolved-global                              0      37
-unresolved-reference                          65       0
+unresolved-reference                          41       0
 unsupported-operator                          61       0
 unused-type-ignore-comment                     0      40

@@ -1,5 +1,5 @@
 """Reference stub delta: public functions of bpy.utils that are not in its __all__, and keyconfig_set returns whether
-it loaded the key configuration."""
+it loaded the key configuration, and the private _sys_path_ensure_append addon_utils uses."""
 
 from collections.abc import Callable
 from typing import Literal
@@ -30,3 +30,4 @@ def keyconfig_set(
     ]
     | None = None,
 ) -> bool: ...
+def _sys_path_ensure_append(path: str) -> None: ...

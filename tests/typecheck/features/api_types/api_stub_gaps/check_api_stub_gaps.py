@@ -1,14 +1,15 @@
 """Facts introspection alone left out of the stubs: class bases and Python __init__, iteration and context-manager
 protocols, the Vector and Quaternion operators, the version tuples, bl_rna, module members outside __all__ or not plain
-constants, a callback that may return None, BMesh links of one element type, bpy.data's (name, library) key, the
-context store members Blender's UI sets, the context managers, positional callbacks, dynamic enums, two documented
-returns and Freestyle's undocumented members and generators. These are stub facts.
+constants, the private module members Blender's own scripts read, a callback that may return None, BMesh links of one
+element type, bpy.data's (name, library) key, the context store members Blender's UI sets, the context managers,
+positional callbacks, dynamic enums, two documented returns and Freestyle's undocumented members and generators. These
+are stub facts.
 The overrides of Freestyle's methods and of the render engine's update callbacks are in __init__.py: an incompatible
 override would be an unexpected diagnostic there."""
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import AbstractContextManager
 from types import MappingProxyType
 from typing import Any, Literal, TypeAlias, assert_type
@@ -108,6 +109,15 @@ def module_members() -> None:
     assert_type(bpy.utils.is_path_builtin(""), bool)  # bare-ok: a stub fact: public, though not in __all__
     assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
     assert_type(imbuf.file_types, MappingProxyType[str, ImBufFileType])  # bare-ok: a stub fact: a read-only dict
+
+
+def private_module_members() -> None:
+    # Private members Blender's own scripts read (addon_utils, the Extensions add-on), which the API docs leave out.
+    assert_type(bpy.app.handlers._extension_repos_update_pre, list[Callable[..., None]])  # bare-ok: a stub fact: a private handler list
+    assert_type(bpy.app.handlers._extension_repos_update_post, list[Callable[..., None]])  # bare-ok: a stub fact: a private handler list
+    assert_type(bpy.app.handlers._extension_repos_sync, list[Callable[..., None]])  # bare-ok: a stub fact: a private handler list
+    assert_type(bpy.app.handlers._extension_repos_files_clear, list[Callable[..., None]])  # bare-ok: a stub fact: a private handler list
+    assert_type(bpy.utils._sys_path_ensure_append(""), None)  # bare-ok: a stub fact: a private function
 
 
 def description(context: Context, properties: OperatorProperties) -> None:

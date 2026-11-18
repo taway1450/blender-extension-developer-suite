@@ -12,6 +12,7 @@ registered property an attribute of its class. Classes that are never registered
 | `reg_submodule_factory` | `register_submodule_factory(__name__, [...])` with a module and a subpackage |
 | `reg_delegation` | helper functions, nested helpers, `module.register()`, loops over modules and functions, a static method |
 | `reg_imports` | the `importlib.reload` pattern, a renamed `register`, a star import, an imported class, a nested package, an import inside `register()` |
+| `reg_reload` | names the reload guard reads (`if "bpy" in locals():`, `if "x" not in locals(): ... else:`): a global bound later in the module, or in a package a submodule imported only inside `register()`; a package that imports its submodules with `__import__(name=__name__, fromlist=_modules)`, as `bl_ui` does |
 | `reg_autoload` | an `auto_load` module that finds classes at runtime: every Blender class of the add-on counts as registered (reported once, `blender-assumed-complete-registration`), and the properties a `PropertyGroup.register()` classmethod assigns exist |
 | `reg_foreign` | `register_class` over a dict's `.values()`, which the checker cannot follow to a class: it gives up, and every Blender class counts as registered (reported once, `blender-assumed-complete-registration`) |
 | `reg_conditional` | version checks, `try`, `hasattr`, environment variables: conditionally registered classes count, each use reported under `blender-assumed-registration` (a `try` body always runs) |

@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender 5ccfa29ef3
+# check:blender main, builtin stubs, Blender e0d4051dae
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -69,7 +69,7 @@ bl-rna-property                 typechecker-fix       S3             0         0
 type-call-bases                 typechecker-fix       S3             0         0         0         0         0         0
 filter-items-tuple              typechecker-fix       S3             1         0         0         0         0         1
 rna-never-none                  typechecker-fix       S1             0         0         0         0         0         0
-reload-idiom                    typing-debt           -             25         0         0         0         0        25
+reload-idiom                    typing-debt           -              1         0         0         0         0         1
 runtime-name                    typing-debt           -              0         0         0         0        34        34
 correlated-union                typing-debt           -             55         0         0         0         4        59
 modifiers-new                   typing-debt           -              0         0         0         0        35        35
@@ -97,14 +97,14 @@ unresolved-import               typing-debt           -             31         0
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              3         0         0         0         0         3
 untyped-python                  typing-debt           -            447         0         0         2         0       449
-private-member                  typing-debt           -             12         0         0         0         0        12
+private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            234         0        10         4       262       510
+general-typing                  typing-debt           -            238         0        10         4       262       514
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
 unchecked-pointer               unsorted              -              1         0         0         0       681       682
-stub-gap                        unsorted              -              0         0         0         0        40        40
+stub-gap                        unsorted              -              1         0         0         0        54        55
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -              0         0         0         0       248       248
+unsorted                        unsorted              -              1         0         0         0       248       249
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         5         5
@@ -112,9 +112,9 @@ assumption                                                         400       574
 implied-narrowing                                                 1054         0         4         8        13      1079
 imprecise-annotation                                                 3         0         0         0        11        14
 typechecker-fix                                                     50         0        31         7        38       126
-typing-debt                                                       2071       129       107        49      1371      3727
-unsorted                                                             1         0         0         0       983       984
-errors                                                            2159       160       139        56      2342      4856
+typing-debt                                                       2039       129       107        49      1371      3695
+unsorted                                                             3         0         0         0       997      1000
+errors                                                            2129       160       139        56      2356      4840
 warnings                                                          1420       543        29        12       754      2758
 
 rule                                       error warning
@@ -144,7 +144,7 @@ incompatible-mutable-override                  5       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
 invalid-argument-type                        834       0
-invalid-assignment                           539       0
+invalid-assignment                           540       0
 invalid-base                                   2       0
 invalid-context-manager                        2       0
 invalid-explicit-return                       26       0
@@ -157,7 +157,7 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            43       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1321       0
+missing-attribute                           1328       0
 missing-union-attribute                     1620       0
 no-matching-overload                          37       0
 not-callable                                  14       0
@@ -168,6 +168,6 @@ redundant-condition                            0      10
 too-many-positional-arguments                  6       0
 unknown-argument                               5       0
 unresolved-global                              0      37
-unresolved-reference                          65       0
+unresolved-reference                          41       0
 unsupported-operator                          57       0
 unused-type-ignore-comment                     0      40

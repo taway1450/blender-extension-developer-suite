@@ -60,11 +60,20 @@ What `unresolved-import` keeps (builtin 41, 31 shipped) are real gaps: Blender's
 (`_bl_i18n_utils`, `io_scene_fbx/encode_bin.py`), and CPython's `_sha1` / `_sha2` / `_md5`.
 
 **Not changed by the setup:** the reload idiom (25) and the private members (12). No check setting reaches
-them without hiding real errors in the same files: ty's only per-file lever is a rule's level. The reload
-idiom needs the ty fork's reload guard to cover a package's submodules imported inside functions (Cycles,
-the importers), the `if "x" not in locals(): … else: reload` form (Pose Library) and modules in no add-on
-(`bl_ui`, `bl_operators`). The private members (`bpy.app.handlers._extension_repos_*`,
-`bpy.utils._sys_path_ensure_append`) are left out of the generated stubs, which is stub-generator work.
+them without hiding real errors in the same files: ty's only per-file lever is a rule's level. #150 removed both
+outside the check setup. The ty fork's reload guard now covers a package's submodules imported inside functions
+(Cycles, the importers), the `if "x" not in locals(): … else: reload` form (Pose Library), modules in no add-on
+(`bl_ui`, `bl_operators`, `space_toolsystem_common`) and the submodules `__import__(name=__name__, fromlist=_modules)`
+binds (`bl_ui`'s `register()`). The private members (`bpy.app.handlers._extension_repos_*`,
+`bpy.utils._sys_path_ensure_append`, and with fake-bpy-module `aud._sound_from_pointer`) are now in both stub sets:
+the API docs leave them out, so both stub generators add them by hand.
+
+What #150 leaves, in both stub sets: one reload-idiom diagnostic, `io_scene_fbx/__init__.py:28`, which reloads
+`export_fbx`, a module the add-on no longer has (dead code: `"export_fbx" in locals()` is never true). Typing the
+handler lists also shows 4 general-typing reads of `fn_override.fn_orig` in `bl_pkg`'s monkeypatch uninstall, an
+attribute Blender sets on a function at runtime. The same baseline update also records drift from rebuilding Blender
+at `typecheck-fixes` (stub-gap +15, unsorted +1): a builtin run with the fork and stubs from before #150 gives the
+same moves. fake-bpy-module's unresolved-import −2 was not traced.
 
 ## Accepted leftovers
 

@@ -88,9 +88,12 @@ Each holds in every case found, or fails only in code that no type rule could ju
   `Context | None` because Blender passes None off-screen. Sound by construction.
 - **Override typing** (H3/H4): parameters take the parent's type by position; Blender calls by position with exactly
   those types. `bool_result` callbacks accept anything because Blender applies `bool()` (`ty_blender/src/callbacks.rs`).
-- **Reload guard** (`ty_blender/src/reload_guard.rs`): names in `if "bpy" in locals():` take the module's global
-  type; on a reload the module dict still holds them. Fails only when a hot reload adds a name the old module never
-  bound.
+- **Reload guard** (`ty_blender/src/reload_guard.rs`): names in `if "bpy" in locals():` (or the `else` of
+  `if "x" not in locals():`) take the module's global type, or in a package's `__init__` its submodule of that name;
+  on a reload the module dict still holds them, and importing a submodule anywhere bound it in the package. Holds for
+  any reloaded module, an add-on or Blender's `bl_ui`. Fails only when a hot reload adds a name the old module never
+  bound. A package's `__import__(name=__name__, fromlist=_modules)` binds the submodules the list's literals name,
+  `append`s under an `if` included.
 - **The `__main__` arm never runs** (`ty_blender/src/script_guard.rs`): an add-on is imported as a module.
 - **Conditional idnames** (B4, #85): `"a" if c else "b"` refines to the union only when every arm is known, checks every
   arm, and reports a property one arm lacks. Sound.
