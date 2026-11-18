@@ -6,9 +6,10 @@ from typing import Literal, TypeVar, assert_type
 
 import bpy
 from bpy.types import (Area, Bone, Camera, Collection, Context, EditBone, Image, Material, NodeSocketFloat, Object,
-                       PoseBone, Scene, ShaderNodeMath, Strip, ViewLayer, WindowManager, bpy_prop_collection_idprop)
+                       PoseBone, Scene, ShaderNodeMath, Strip, ViewLayer, WindowManager, World,
+                       bpy_prop_collection_idprop)
 
-from . import PROPS_REGISTERED_Item
+from . import PROPS_REGISTERED_Item, PROPS_REGISTERED_WorldSettings
 
 SceneT = TypeVar("SceneT", bound=Scene)
 SceneOrObjectT = TypeVar("SceneOrObjectT", Scene, Object)
@@ -94,3 +95,9 @@ def through_data(context: Context) -> None:
     assert_type(bpy.data.objects["Cube"].reg_float, float)
     if context.scene is not None:
         assert_type(context.scene.reg_int, int)
+
+
+def on_world(world: World) -> None:
+    # Registered by the register() classmethod Blender calls, on the class the registered subclass names.
+    assert_type(world.reg_host_settings, PROPS_REGISTERED_WorldSettings)
+    assert_type(world.reg_host_settings.level, int)  # oracle-skip: stock ty reads the annotation as the IntProperty call

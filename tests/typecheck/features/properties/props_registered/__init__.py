@@ -15,6 +15,27 @@ class PROPS_REGISTERED_Item(PropertyGroup):
     label: StringProperty()
 
 
+class PROPS_REGISTERED_HostSettings(PropertyGroup):
+    """Registers itself on the class a subclass names, as Hydra Storm does: Blender calls the registered class's
+    register() classmethod, so `cls` is the subclass and `cls.owner` its owner."""
+
+    owner: type[bpy.types.ID]  # set by each subclass
+
+    @classmethod
+    def register(cls):
+        # Statically `cls.owner` is any ID class, which declares no such attribute.
+        cls.owner.reg_host_settings = PointerProperty(type=cls)  # ty: ignore[missing-attribute]
+
+    @classmethod
+    def unregister(cls):
+        del cls.owner.reg_host_settings  # ty: ignore[missing-attribute]
+
+
+class PROPS_REGISTERED_WorldSettings(PROPS_REGISTERED_HostSettings):
+    owner = bpy.types.World
+    level: IntProperty()
+
+
 DYNAMIC = {"dyn_a": IntProperty(), "dyn_b": FloatProperty()}
 
 # Registered when the module is imported, not in register(): still a property of Camera.
@@ -23,6 +44,7 @@ bpy.types.Camera.reg_module_level = IntProperty()
 
 def register():
     bpy.utils.register_class(PROPS_REGISTERED_Item)
+    bpy.utils.register_class(PROPS_REGISTERED_WorldSettings)
     bpy.types.Scene.reg_int = IntProperty()
     bpy.types.Scene.reg_mode = EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
     bpy.types.Scene.reg_group = PointerProperty(type=PROPS_REGISTERED_Item)
@@ -73,4 +95,5 @@ def unregister():
                       (bpy.types.Window, "reg_window"), (bpy.types.Preferences, "reg_preferences"),
                       (bpy.types.SpaceView3D, "reg_space"), (bpy.types.Context, "reg_context")]:
         delattr(cls, name)
+    bpy.utils.unregister_class(PROPS_REGISTERED_WorldSettings)
     bpy.utils.unregister_class(PROPS_REGISTERED_Item)

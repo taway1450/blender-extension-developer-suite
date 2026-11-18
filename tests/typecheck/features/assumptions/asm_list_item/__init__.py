@@ -3,14 +3,15 @@ pointers, which a list of an add-on's collection never has. An unannotated `item
 unannotated override) is taken as not None and its reads are reported under blender-assumed-list-item; a read only
 tested for truth or None is not. Where the add-on draws the list with `template_list("<list>", ..., dataptr,
 "propname")` (in any of its modules, here panels.py), Blender passes `item` from that collection, so it is typed as
-the collection's element type, the union of them when the list shows several collections. The assert_type calls
-are no-ops at runtime."""
+the collection's element type, the union of them when the list shows several collections. It passes `dataptr` as
+`data` to draw_item and filter_items, so `data` is typed as `dataptr`, likewise. The assert_type calls are no-ops at
+runtime."""
 
 from typing import assert_type
 
 import bpy
 from bpy.props import CollectionProperty, IntProperty, StringProperty
-from bpy.types import MaterialSlot, PropertyGroup, UIList, VertexGroup, bpy_struct
+from bpy.types import MaterialSlot, Object, PropertyGroup, Scene, UIList, VertexGroup, bpy_struct
 
 from . import panels
 
@@ -45,13 +46,19 @@ class ASM_LIST_ITEM_UL_derived(AsmListItemBase):
 class ASM_LIST_ITEM_UL_sourced(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         assert_type(item, ASM_LIST_ITEM_Entry)  # ty: ignore[blender-assumed-list-item]
+        assert_type(data, Scene)
         layout.label(text=item.label)  # ty: ignore[blender-assumed-list-item]
         layout.label(text=item.lable)  # ty: ignore[blender-assumed-list-item, missing-attribute]
+
+    def filter_items(self, context, data, propname):
+        assert_type(data, Scene)
+        return [], []
 
 
 class ASM_LIST_ITEM_UL_slots(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         assert_type(item, MaterialSlot)  # ty: ignore[blender-assumed-list-item]
+        assert_type(data, Object)
         slot = item  # ty: ignore[blender-assumed-list-item]
         if slot.material:
             layout.prop(slot.material, "name", text="", emboss=False)
@@ -60,12 +67,14 @@ class ASM_LIST_ITEM_UL_slots(UIList):
 class ASM_LIST_ITEM_UL_two_sources(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         assert_type(item, ASM_LIST_ITEM_Entry | VertexGroup)  # ty: ignore[blender-assumed-list-item]
+        assert_type(data, Scene | Object)
         layout.label(text=item.name)  # ty: ignore[blender-assumed-list-item]
 
 
 class ASM_LIST_ITEM_UL_unknown_source(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item]
+        assert_type(data, bpy_struct)  # bare-ok: no call with a typed `dataptr` names the list
 
 
 class ASM_LIST_ITEM_UL_annotated(UIList):

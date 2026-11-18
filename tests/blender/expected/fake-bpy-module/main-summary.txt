@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender 784231af35
+# check:blender main, fake-bpy-module stubs, Blender 71b11d84c8
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -19,7 +19,7 @@ assumed-internal-operator       assumption            C5            20         0
 assumed-editor-member           assumption            C5            17         0         2         0         0        19
 assumed-preset-context          assumption            C5             0       268         0         0         0       268
 assumed-added-object            assumption            C5             6         0         0         0        77        83
-assumed-subclass-member         assumption            C7            81         0         0         0       154       235
+assumed-subclass-member         assumption            C7            81         0         0         0       152       233
 assumed-preferences             assumption            S6             1         0         0         0         0         1
 preset-context-member           assumption            -              0        31         0         0         0        31
 added-object                    assumption            -              0         0         0         0         0         0
@@ -71,19 +71,19 @@ filter-items-tuple              typechecker-fix       S3             1         0
 rna-never-none                  typechecker-fix       S1             0         0         0         0         0         0
 reload-idiom                    typing-debt           -              0         0         0         0         0         0
 runtime-name                    typing-debt           -              0         0         0         0        34        34
-correlated-union                typing-debt           -            109         0        19         0       337       465
+correlated-union                typing-debt           -            111         0        19         0       337       467
 modifiers-new                   typing-debt           -              0         0         0         0        35        35
 helper-checks-none              typing-debt           -              9         0         0         0         0         9
 layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
-cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
+cross-file-registered-property  typing-debt           -              5        12         0         0        12        29
 mixin-self                      typing-debt           -            121         0         3         0       198       322
-type-enum-sub-pointer           typing-debt           -            253        63         2         0        96       414
-python-optional                 typing-debt           -            210         0         4         3        99       316
-ui-draw-pointer                 typing-debt           -            362         0         5         0         0       367
+type-enum-sub-pointer           typing-debt           -            254        63         2         0        96       415
+python-optional                 typing-debt           -            210         0         4         3        97       314
+ui-draw-pointer                 typing-debt           -            360         0         5         0         0       365
 object-data-untagged            typing-debt           -             12         0         2         4        64        82
 editor-context-member           typing-debt           -             40         0         0        15         0        55
 script-context-member           typing-debt           -              0         0        43         3         0        46
-base-class-subtype              typing-debt           -            128        54         2         8        66       258
+base-class-subtype              typing-debt           -            105         0         2         8        22       137
 set-by-ui-button                typing-debt           -             10         0         0         0         0        10
 window-context-in-execute       typing-debt           -             19         0         0         0        19        38
 set-by-preceding-call           typing-debt           -             10         0         1         5        80        96
@@ -93,29 +93,29 @@ none-excluded-by-arguments      typing-debt           -             10         0
 operator-without-poll           typing-debt           -              7         0         0         0         0         7
 runtime-operator-idname         typing-debt           -              2         0         0         0         0         2
 operator-call                   typing-debt           -              8         0        11         7        42        68
-unresolved-import               typing-debt           -             60         0         0         0        25        85
+unresolved-import               typing-debt           -             60         0         0         0        24        84
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
 untyped-python                  typing-debt           -            457         0         1         0         0       458
 private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            251         8         7         4       263       533
+general-typing                  typing-debt           -            227         8         7         4       189       435
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
-unchecked-pointer               unsorted              -              1         0         0         0       690       691
+unchecked-pointer               unsorted              -              1         0         0         0       560       561
 stub-gap                        unsorted              -              0         0         0         0        42        42
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -              0         0         0         0       279       279
+unsorted                        unsorted              -              0         0         0         0       284       284
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         0         0
-assumption                                                         433       574        26         4       729      1766
+assumption                                                         433       574        26         4       727      1764
 implied-narrowing                                                 1051         0         4         8        12      1075
 imprecise-annotation                                                 3         0         0         0         0         3
 typechecker-fix                                                     69         0         8         1        23       101
-typing-debt                                                       2156       137       103        49      1442      3887
-unsorted                                                             1         0         0         0      1025      1026
-errors                                                            2262       168       112        50      2434      5026
-warnings                                                          1451       543        29        12       797      2832
+typing-debt                                                       2104        83       103        49      1321      3660
+unsorted                                                             1         0         0         0       900       901
+errors                                                            2210       114       112        50      2225      4711
+warnings                                                          1451       543        29        12       758      2793
 
 rule                                       error warning
 blender-assumed-added-object                   0      83
@@ -127,7 +127,7 @@ blender-assumed-list-item                      0      96
 blender-assumed-preferences                    0       1
 blender-assumed-preset-context                 0     268
 blender-assumed-registration                   0      93
-blender-assumed-subclass-member                0     235
+blender-assumed-subclass-member                0     233
 blender-imprecise-callback-parameter           0       3
 blender-invalid-operator-property              1       0
 blender-invalid-property                       3       0
@@ -137,37 +137,36 @@ blender-narrowed-by-poll                       0     850
 blender-narrowed-by-popover                    0      30
 blender-unsupported-property-target            0       1
 deprecated                                     0      15
-import-not-found                              81       0
+import-not-found                              80       0
 incompatible-attribute-override               29       0
 incompatible-method-override                  26       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                        762       0
-invalid-assignment                           529       0
+invalid-argument-type                        755       0
+invalid-assignment                           528       0
 invalid-base                                   2       0
 invalid-context-manager                       21       0
 invalid-explicit-return                       26       0
 invalid-generic-class                          1       0
 invalid-implicit-return                        4       0
-invalid-implicit-return-in-function-with-stub-body      32       0
+invalid-implicit-return-in-function-with-stub-body       4       0
 invalid-parameter-default                      3       0
 invalid-super-argument                         1       0
 invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                            970       0
-missing-union-attribute                     2085       0
+missing-attribute                            843       0
+missing-union-attribute                     1965       0
 no-matching-overload                          43       0
 not-callable                                  14       0
-not-iterable                                  66       0
-not-subscriptable                            100       0
+not-iterable                                  64       0
+not-subscriptable                             70       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      10
 too-many-positional-arguments                  6       0
 unknown-argument                              15       0
-unresolved-global                              0      37
 unresolved-reference                          36       0
-unsupported-operator                          61       0
+unsupported-operator                          62       0
 unused-type-ignore-comment                     0      40

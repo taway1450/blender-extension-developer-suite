@@ -46,10 +46,12 @@ from _target import Target, add_target_arguments
 from download_blender import BLENDER_BIN_DIR
 from generate_stubs import results_name
 
-# Paths (relative to the Blender source root) left out of the check: libraries, and the dead 2.7x test scripts.
+# Paths (relative to the Blender source root) left out of the check: libraries, the dead 2.7x test scripts, and the
+# type hints of gdb's API, written as `.py` modules with `pass` bodies rather than as stubs.
 EXCLUDED = [
     "lib/",
     "extern/",
+    "tools/debug/gdb/gdb/",
     "tests/python/view_layer/",
     "tests/python/bl_mesh_modifiers.py",
     "tests/python/rna_array.py",

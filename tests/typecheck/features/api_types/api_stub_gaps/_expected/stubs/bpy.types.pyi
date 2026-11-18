@@ -1,4 +1,4 @@
-"""Reference stub delta: the thick-wrapped version arrays are tuples, every struct has bl_rna and rna_type,
+"""Reference stub delta: a struct's id_data is the ID that owns it, the thick-wrapped version arrays are tuples, every struct has bl_rna and rna_type,
 Operator.description may return None, a bpy.data collection takes a (name, library) key, the context store members Blender's UI sets, libraries.load and temp_data
 are context managers, the render engine's update callbacks take positional arguments, a dynamic enum is a str and
 Gizmo.target_set_value takes a value. A string argument without PROP_NEVER_NULL takes None, an AnyType argument a
@@ -80,3 +80,21 @@ class Library:
 class Operator:
     @classmethod
     def description(cls, context: Context, properties: OperatorProperties) -> str | None: ...
+
+class Node:
+    id_data: NodeTree
+
+class PoseBone:
+    id_data: Object
+
+class Modifier:
+    id_data: Object
+
+class MeshVertex:
+    id_data: Mesh
+
+class AttributeGroupMesh:
+    id_data: Mesh
+
+class Strip:
+    id_data: Scene

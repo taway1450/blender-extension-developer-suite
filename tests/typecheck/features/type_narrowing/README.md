@@ -54,6 +54,7 @@ derived from a built-in one (`ShaderNodeCustomGroup`) has its own `bl_idname`.
 | `narrow_constructors` | `constraints.new` (positional, `type=`), `lights.new` (a literal, a conditional of two), `attributes.new`, `nodes.new` (`type=`, positional), `gizmos.new(MyGizmo.bl_idname)` in a GizmoGroup's `setup`; not narrowed: a `str` argument, an unknown `bl_idname`, a C gizmo type |
 | `narrow_area_type` | `area.spaces.active` after `==` in a loop, `in {...}` in an `elif`, `!=` with `continue`, `and` in a generator, a list comprehension; not narrowed: the `else` branch, `area` rebound after the test, a function that writes `area.type` or `area.ui_type` |
 | `narrow_views` | `ob.data` after `ob.type == 'MESH'`, after a call, after `!= 'FONT'` with an early return, in a comprehension; `match`; Fluid `domain_settings`; not narrowed: `data = ob.data` before the test |
+| `narrow_assertions` | `self.assertIsNotNone(x)` (a name, an attribute, with a message) and `self.assertTrue(x)` narrow like `assert`; not narrowed: another test case's assertion, an assertion inside an expression |
 
 The narrowing markers are in the add-ons' `__init__.py` (the reference stubs cannot express narrowing); the
 guards in `check_*.py` hold without the checker (`bare-ok`). `narrow_area_type` has no `check_*.py`: its markers are all in `__init__.py`. Only Blender main's stubs declare the

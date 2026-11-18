@@ -19,18 +19,22 @@ Effort: S is an hour or two, M a day, L several days.
 
 | # | Opportunity | Kind | Clears | Effort | Cause |
 |---|---|---|---:|---|---|
-| 1 | Exclude `tools/debug/gdb/gdb/` (gdb's API stubs written as `.py`) from `check:blender` | config | 28 | S | general-typing |
+| 1 | ~~Exclude `tools/debug/gdb/gdb/` (gdb's API stubs written as `.py`) from `check:blender`~~ done in `scripts/check_blender.py` | config | 28 | S | general-typing |
 | 2 | ~~`ID.evaluated_get(depsgraph)` returns the receiver's type (`Self`)~~ done in Blender `784231af35` | (b) | 26-57 | S | base-class-subtype |
-| 3 | A preset in `presets/sequencer/text_style/` takes `context.active_strip` as `TextStrip` | (a) | 54 | S | base-class-subtype |
-| 4 | Tests: `args = None` module globals declared `args: argparse.Namespace` | (c) 29 files | 69 | S | unchecked-pointer |
-| 5 | `self.assertIsNotNone(x)` / `self.assertTrue(x)` narrow `x` like `assert x` | (a), upstream | 62 | M | unchecked-pointer |
-| 6 | `global x` with no module-level binding: add `x = <default>` | (c) 17 files | 37 | S | general-typing |
-| 7 | Instance attributes initialised to `None`: annotate them (`import_svg`, `bl_usd_import_test`) | (c) 2 files | 31 | S | general-typing |
-| 8 | `bl_constraints.py` reads constraints by name: `assert isinstance` per test | (c) 1 file | 45 | M | base-class-subtype |
-| 9 | Registered properties visible across the modules of one Add-on | (a) | 19 (+35 in `cross-file-registered-property`) | M | untyped-python |
-| 10 | `id_data` typed by owner (`Node`/`NodeSocket` → `NodeTree`, `PoseBone` → `Object`, `AttributeGroupMesh` → `Mesh`) | (b) | ~17 | M | base-class-subtype |
-| 11 | `UIList.draw_item`'s `data` typed from `template_list` (C8 types `item` only) | (a) | ~7 | M | base-class-subtype |
-| 12 | Socket types per built-in node (`principled.inputs["Base Color"]` is `NodeSocketColor`) | (b) | ~30 | L | base-class-subtype |
+| 3 | ~~A preset in `presets/sequencer/text_style/` takes `context.active_strip` as `TextStrip`~~ done in ty-blender | (a) | 54 | S | base-class-subtype |
+| 4 | ~~Tests: `args = None` module globals declared `args: argparse.Namespace`~~ done in Blender | (c) 29 files | 69 | S | unchecked-pointer |
+| 5 | ~~`self.assertIsNotNone(x)` / `self.assertTrue(x)` narrow `x` like `assert x`~~ done in ty-blender (any `self.` receiver) | (a), upstream | 62 | M | unchecked-pointer |
+| 6 | ~~`global x` with no module-level binding: declare `x: T` at module level~~ done in Blender | (c) 17 files | 37 | S | general-typing |
+| 7 | ~~Instance attributes initialised to `None`: annotate them (`import_svg`, `bl_usd_import_test`)~~ done in Blender | (c) 2 files | 31 | S | general-typing |
+| 8 | ~~`bl_constraints.py` reads constraints by name: `assert isinstance` per test~~ done in Blender | (c) 1 file | 45 | M | base-class-subtype |
+| 9 | ~~Registered properties visible across the modules of one Add-on~~ done; also a base class registering on `cls.owner` (Hydra). Left: cycles presets (12) and rigify's `selection_sets` (2), which another add-on registers | (a) | 19 (+35 in `cross-file-registered-property`) | M | untyped-python |
+| 10 | ~~`id_data` typed by owner (`Node`/`NodeSocket` → `NodeTree`, `PoseBone` → `Object`, `AttributeGroupMesh` → `Mesh`)~~ done in both stub generators, for structs every pointer to which carries that owner (not `Bone`, `ShapeKey`, `ParticleSystem`) | (b) | ~17 | M | base-class-subtype |
+| 11 | ~~`UIList.draw_item`'s `data` typed from `template_list` (C8 types `item` only)~~ done in ty-blender, `filter_items` too | (a) | ~7 | M | base-class-subtype |
+| 12 | Socket types per built-in node (`principled.inputs["Base Color"]` is `NodeSocketColor`): deferred, it needs each node's socket declarations exported from C | (b) | ~30 | L | base-class-subtype |
+
+With rows 1–11 done, `check:blender main` with the builtin stubs is down from 7536 to 7102 diagnostics (Blender
+`71b11d84c8`). A few readings narrowed by these fixes show a diagnostic further on that was masked before (5 more in
+`unsorted`, 2 in `correlated-union`).
 
 Two decisions change more than any fix, and are not fixes:
 

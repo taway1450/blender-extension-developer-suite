@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from props_registered import PROPS_REGISTERED_Item
+from props_registered import PROPS_REGISTERED_Item, PROPS_REGISTERED_WorldSettings
 
 class ID:
     reg_id: int
@@ -60,3 +60,6 @@ class ViewLayer:
 
 class Strip:
     reg_strip: int
+
+class World:
+    reg_host_settings: PROPS_REGISTERED_WorldSettings

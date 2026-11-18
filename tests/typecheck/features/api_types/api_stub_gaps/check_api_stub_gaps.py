@@ -4,8 +4,8 @@ constants, the private module members Blender's own scripts read, a callback tha
 element type, bpy.data's (name, library) key, the context store members Blender's UI sets, the context managers, the
 item and slice assignment and buffer protocol of the math types, rna_type, the sequences a BMesh operator's element
 buffer takes, the argument types of C functions and RNA functions, the type ID.copy returns, BMesh layer access,
-context.property, positional callbacks, dynamic enums, read-only attributes, two documented returns and Freestyle's
-undocumented members and generators. These are stub facts.
+context.property, positional callbacks, dynamic enums, read-only attributes, the ID id_data is from, two documented
+returns and Freestyle's undocumented members and generators. These are stub facts.
 The overrides of Freestyle's methods, the render engine's update callbacks and a gizmo's draw_select are in __init__.py:
 an incompatible override would be an unexpected diagnostic there."""
 
@@ -23,9 +23,10 @@ import gpu
 import imbuf
 from bmesh.types import BMEdge, BMElemSeq, BMesh, BMFace, BMLayerItem, BMLoop, BMVert
 from bpy.types import (Area, AssetShelf, BlendData, Camera, Constraint, Context, Depsgraph, FreestyleModuleSettings,
-                       Gizmo, ID, KeyMap, Library, Material, Mesh, Node, NodeTreeInterface, NodeTreeInterfaceSocket,
-                       Object, Operator, OperatorProperties, Preferences, PropertyGroup, RenderEngine, Scene, Struct,
-                       UILayout, ViewLayer, WorkSpaceTool, bpy_struct)
+                       Gizmo, ID, KeyMap, Library, Material, Mesh, MeshVertex, Modifier, Node, NodeTree,
+                       NodeTreeInterface, NodeTreeInterfaceSocket, Object, Operator, OperatorProperties, PoseBone,
+                       Preferences, PropertyGroup, RenderEngine, Scene, Strip, Struct, UILayout, ViewLayer, WorkSpaceTool,
+                       bpy_struct)
 from bpy_extras.anim_utils import BakeOptions
 from freestyle.chainingiterators import pyChainSilhouetteGenericIterator
 from freestyle.functions import pyDensityAnisotropyF1D
@@ -152,6 +153,15 @@ def bl_rna(ob: Object, node: Node, data: BlendData, group: PropertyGroup) -> Non
     assert_type(data.rna_type, Struct)  # bare-ok: a stub fact: and bpy.data's
     ob.rna_type = node.rna_type  # ty: ignore[invalid-assignment]  # a stub fact: a read-only attribute can't be assigned
     group.name = "renamed"  # a stub fact: a property group's name is an ID property, which can be set
+
+
+def id_data_owner(node: Node, pose_bone: PoseBone, modifier: Modifier, vertex: MeshVertex, strip: Strip) -> None:
+    assert_type(node.id_data, NodeTree)  # bare-ok: a stub fact: a node's ID is its node tree
+    assert_type(pose_bone.id_data, Object)  # bare-ok: a stub fact: a pose bone's is its armature object
+    assert_type(modifier.id_data, Object)  # bare-ok: a stub fact: a modifier's is its object
+    assert_type(vertex.id_data, Mesh)  # bare-ok: a stub fact: a mesh element's is its mesh
+    assert_type(vertex.id_data.attributes.id_data, Mesh)  # bare-ok: a stub fact: and its attributes'
+    assert_type(strip.id_data, Scene)  # bare-ok: a stub fact: a strip's is its scene
 
 
 def bmesh_operator_buffers(bm: BMesh, face: BMFace) -> None:
