@@ -29,20 +29,33 @@ import types
 
 import bpy
 
-MODULES = ("node_add_menu", "node_add_menu_geometry", "node_add_menu_shader", "node_add_menu_compositor",
-           "node_add_menu_texture")
+MODULES = (
+    "node_add_menu",
+    "node_add_menu_geometry",
+    "node_add_menu_shader",
+    "node_add_menu_compositor",
+    "node_add_menu_texture",
+)
 
 # Per module: the node tree type and the space variants its menus read.
 VARIANTS = {
     "node_add_menu": ("GeometryNodeTree", [{"node_tree_sub_type": "MODIFIER"}]),
-    "node_add_menu_geometry": ("GeometryNodeTree", [{"node_tree_sub_type": "MODIFIER"}, {"node_tree_sub_type": "TOOL"}]),
-    "node_add_menu_shader": ("ShaderNodeTree", [
-        {"shader_type": shader_type, "id_from": id_from, "engine": engine}
-        for engine in ("BLENDER_EEVEE", "CYCLES")
-        for shader_type, id_from in (("OBJECT", None), ("OBJECT", "LIGHT"), ("WORLD", None), ("LINESTYLE", None))
-    ]),
-    "node_add_menu_compositor": ("CompositorNodeTree", [{"node_tree_sub_type": "SCENE"},
-                                                        {"node_tree_sub_type": "SEQUENCER"}]),
+    "node_add_menu_geometry": (
+        "GeometryNodeTree",
+        [{"node_tree_sub_type": "MODIFIER"}, {"node_tree_sub_type": "TOOL"}],
+    ),
+    "node_add_menu_shader": (
+        "ShaderNodeTree",
+        [
+            {"shader_type": shader_type, "id_from": id_from, "engine": engine}
+            for engine in ("BLENDER_EEVEE", "CYCLES")
+            for shader_type, id_from in (("OBJECT", None), ("OBJECT", "LIGHT"), ("WORLD", None), ("LINESTYLE", None))
+        ],
+    ),
+    "node_add_menu_compositor": (
+        "CompositorNodeTree",
+        [{"node_tree_sub_type": "SCENE"}, {"node_tree_sub_type": "SEQUENCER"}],
+    ),
     "node_add_menu_texture": ("TextureNodeTree", [{}]),
 }
 
@@ -153,20 +166,24 @@ def node_trees(tree_type: str) -> bpy.types.NodeTree:
 
 
 def light_object() -> bpy.types.Object:
-    return bpy.data.objects.new("Probe light", bpy.data.lights.new("Probe light", 'POINT'))
+    return bpy.data.objects.new("Probe light", bpy.data.lights.new("Probe light", "POINT"))
 
 
 def entry_json(entry: list) -> list:
     if entry[0] != "operator":
         return entry
     props = entry[3]._values
-    return entry[:3] + [{k: repr(v) if not isinstance(v, StubCollection) else [vars(i) for i in v.items]
-                         for k, v in sorted(props.items())}]
+    return entry[:3] + [
+        {
+            k: repr(v) if not isinstance(v, StubCollection) else [vars(i) for i in v.items]
+            for k, v in sorted(props.items())
+        }
+    ]
 
 
 def draw(cls: type, variant: dict, tree: bpy.types.NodeTree, light: bpy.types.Object) -> dict:
     space = types.SimpleNamespace(
-        type='NODE_EDITOR',
+        type="NODE_EDITOR",
         tree_type=tree.bl_idname,
         edit_tree=tree,
         node_tree=tree,

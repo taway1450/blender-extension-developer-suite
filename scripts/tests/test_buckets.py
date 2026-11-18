@@ -279,6 +279,26 @@ CASES = [
     ),
     pytest.param(
         diagnostic(
+            "missing-union-attribute",
+            "Attribute `modifiers` is not defined on `None` in union `TypedObject[Curve] | None`",
+            "hook = self.spline_obj.modifiers.new(ctrl, 'HOOK')",
+            path="scripts/addons_core/rigify/rigs/limbs/spline_tentacle.py",
+        ),
+        "untyped-python",
+        id="debt-modifiers-new-receiver",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Object of type `NodesModifierProperties | None` has no attribute `inputs`",
+            "radius_modifier.properties.inputs.Input_3.value = self.radius",
+            path="scripts/startup/bl_operators/object_quick_effects.py",
+        ),
+        "type-enum-sub-pointer",
+        id="debt-nodes-modifier-properties",
+    ),
+    pytest.param(
+        diagnostic(
             "missing-attribute",
             "Object of type `BMEdge` has no attribute `vert`",
             "for l in v.link_loops: l.vert",

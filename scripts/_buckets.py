@@ -111,6 +111,8 @@ class Cause:
 
 # --- facts read off a diagnostic -------------------------------------------------------------------------------
 
+MODIFIERS_NEW = r"\.modifiers\.new\("
+NULLABLE_MODIFIER = re.compile(r"`(?:\w*Modifier \| None|None \| \w*Modifier)`")
 NULLABLE = re.compile(r"\| None`|`None \||in union `[^`]*(?<!~)None|found `[^`]*\| None`")
 STRING_LITERAL = re.compile(r"""['"]""")
 CONTEXT = r"\b(?:context|ctx|C|_context)\."
@@ -149,9 +151,11 @@ SETTINGS_POINTER = re.compile(
 )
 # Sub-pointers that exist for one value of a type or mode enum, or a flag, read without a check: an armature's
 # `Object.pose`, a Grease Pencil material's `grease_pencil`, a paint mode's `tool_settings.<mode>`, the `node_tree`
-# of a material using nodes or of a group node (research `candidate-assumptions`, "not covered").
+# of a material using nodes or of a group node (research `candidate-assumptions`, "not covered"), the `properties`
+# of a geometry-nodes modifier with a node group.
 SUB_POINTER = re.compile(
-    r"\b(?:Pose|MaterialGPencilStyle|VertexPaint|Sculpt|ImagePaint|UvSculpt|CurvesSculpt|ParticleEdit|Gp\w*Paint)"
+    r"\b(?:Pose|MaterialGPencilStyle|VertexPaint|Sculpt|ImagePaint|UvSculpt|CurvesSculpt|ParticleEdit|Gp\w*Paint"
+    r"|NodesModifierProperties)"
     r" \| None`"
 )
 # Functions and classes of Python code that is untyped as a whole (glTF's dicts and numpy, rigify's
@@ -198,6 +202,7 @@ NARROWED_IN_CALLER_SITES = [
 # A pointer implied by another check: a sibling enum or flag, the pointer the poll checks (`context.constraint` for
 # its owner), a structural invariant, or the same pointer checked through an alias.
 CORRELATED_SITES = [
+    ("scripts/addons_core/io_scene_fbx/import_fbx.py", "FbxImportHelperNode", "link_hierarchy", "arm.name"),
     (
         "scripts/addons_core/node_wrangler/operators/align_selected.py",
         "NODE_OT_align_selected",
@@ -1042,8 +1047,10 @@ CAUSES = [
     Cause("context-never-none", "typechecker-fix", "S1", lambda d: NEVER_NONE_CONTEXT_TYPE.search(d.msg) is not None),
     Cause("callback-never-none", "typechecker-fix", "S1", callback_never_none),
     # ObjectModifiers.new() really returns None when the modifier cannot be added (only a warning report), so an
-    # unchecked result is typing debt, not a typechecker fix.
-    Cause("modifiers-new", "typing-debt", "", lambda d: nullable(d) and reads_from(d, r"\.modifiers\.new\(")),
+    # unchecked result is typing debt, not a typechecker fix. Only the modifier itself counts: a nullable receiver
+    # on the same line (`self.spline_obj.modifiers.new(...)`) is not the result.
+    Cause("modifiers-new", "typing-debt", "", lambda d: NULLABLE_MODIFIER.search(d.msg) is not None
+          and reads_from(d, MODIFIERS_NEW)),
     Cause("helper-checks-none", "typing-debt", "", lambda d: "`SpaceAssetInfo.is_asset_browser`" in d.msg
           or (nullable(d) and in_sites(HELPER_CHECKS_SITES)(d))),
     Cause("bmesh-elem-seq", "typechecker-fix", "S2", lambda d: "`BMEdge`" in d.msg and "loop" in d.text),

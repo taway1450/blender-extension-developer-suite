@@ -396,6 +396,13 @@ flag "--only <part>" help="Run only one part" {
 '''
 run = 'uv run scripts/probe_gltf_rigify.py {{usage.version}} {% if usage.only %}--only {{usage.only}}{% endif %}'
 
+[tasks."probe:modifiers-new"]
+description = "Check in background Blender that the quick-effects operators and the FBX importer handle a modifier modifiers.new() rejects (#139)"
+usage = '''
+arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
+'''
+run = 'uv run scripts/probe_modifiers_new.py {{usage.version}}'
+
 [tasks."probe:node-menus"]
 description = "Draw every node-add and node-swap menu on a stub layout in background Blender, and list what changed since the last run (#138)"
 usage = '''

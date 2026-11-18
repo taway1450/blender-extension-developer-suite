@@ -63,8 +63,11 @@ def main() -> int:
         changed = changed_menus(json.loads(previous_path.read_text(encoding="utf-8")), results)
         log(f"Since the previous run: {len(changed)} draws changed" + "".join(f"\n  {key}" for key in changed))
     problems = [f"{key} failed:\n{r['error']}" for key, r in results.items() if not r["ok"]]
-    problems += [f"{menu} is drawn in no variant (its poll rejects them all)" for menu in sorted(menus)
-                 if not any(results[key].get("poll") for key in results if key.partition(" [")[0] == menu)]
+    problems += [
+        f"{menu} is drawn in no variant (its poll rejects them all)"
+        for menu in sorted(menus)
+        if not any(results[key].get("poll") for key in results if key.partition(" [")[0] == menu)
+    ]
     if problems:
         raise StepError("node menu probe failed:\n" + "\n".join(problems))
     log("every node-add and node-swap menu drew")
