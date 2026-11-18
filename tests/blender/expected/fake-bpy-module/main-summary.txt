@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender 57335f4004
+# check:blender main, fake-bpy-module stubs, Blender c9239b17fc
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -42,7 +42,7 @@ imprecise-operator-return       imprecise-annotation  S4             0         0
 imprecise-enum-value            imprecise-annotation  S4             3         0         0         0        11        14
 imprecise-callback-parameter    imprecise-annotation  S4             3         0         0         0         0         3
 fake-bpy-python-module          typechecker-fix       -            636         0         1         0         4       641
-fake-bpy-type-alias             typechecker-fix       -             11         0         0         1         0        12
+fake-bpy-type-alias             typechecker-fix       -             11         0         0         0         0        11
 fake-bpy-nullable               typechecker-fix       -             82         0         0         0        21       103
 fake-bpy-lib-key                typechecker-fix       -             25         0         0         0         3        28
 fake-bpy-node-sockets           typechecker-fix       -            120         0         0         0        27       147
@@ -76,7 +76,7 @@ modifiers-new                   typing-debt           -             48         0
 helper-checks-none              typing-debt           -              9         0         0         0         0         9
 layout-in-operator-helper       typing-debt           -             38         0         0         0         0        38
 cross-file-registered-property  typing-debt           -             11        12         0         0        12        35
-mixin-self                      typing-debt           -            411         0         3         0       200       614
+mixin-self                      typing-debt           -            241         0         3         0       200       444
 type-enum-sub-pointer           typing-debt           -            427        63         3         0       146       639
 python-optional                 typing-debt           -            227         0         7         3       101       338
 ui-draw-pointer                 typing-debt           -            456         0         5         0         0       461
@@ -111,10 +111,10 @@ blender-fix                                                          0         0
 assumption                                                         380       574        26         4       729      1713
 implied-narrowing                                                 1085         0         4         8        12      1109
 imprecise-annotation                                                 6         0         0         0        11        17
-typechecker-fix                                                   1044         0        45        15       171      1275
-typing-debt                                                       3500       137       116        51      1564      5368
+typechecker-fix                                                   1044         0        45        14       171      1274
+typing-debt                                                       3330       137       116        51      1564      5198
 unsorted                                                             1         0         0         0      1272      1273
-errors                                                            4541       168       162        66      2953      7890
+errors                                                            4371       168       162        65      2953      7719
 warnings                                                          1475       543        29        12       811      2870
 
 rule                                       error warning
@@ -144,7 +144,7 @@ incompatible-method-override                 132       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1372       0
+invalid-argument-type                       1371       0
 invalid-assignment                           543       0
 invalid-base                                   2       0
 invalid-context-manager                       82       0
@@ -159,7 +159,7 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                             189       0
-missing-attribute                           1635       0
+missing-attribute                           1465       0
 missing-union-attribute                     2581       0
 no-matching-overload                          48       0
 not-callable                                  20       0
