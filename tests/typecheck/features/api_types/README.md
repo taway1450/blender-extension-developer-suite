@@ -132,6 +132,6 @@ exceptions in spec #95). fake-bpy-module keeps `| None` on a writable never-None
 `MovieTrackingObjects.active`), and its own mod file retypes `Material.node_tree` / `World.node_tree` as
 `ShaderNodeTree | None` (named exceptions in spec #132). The Freestyle gaps fail on 5.2 and on fake-bpy-module,
 which gives Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
-`__call__`) and drops an `Iterator[...]` `:rtype:` (named exceptions in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
+`__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
 `description`) need the checker's inheritance typing.
