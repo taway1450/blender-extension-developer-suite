@@ -26,7 +26,7 @@ H2 (`scripts/startup`) and H3 (add-ons and the rest) fill in `decision` and `rea
 - `class_context`: the class's `bl_context`, `bl_parent_id`, `bl_space_type` and `bl_region_type`.
 - `nearby_check`: the nearest condition before the line, in the same function, that names what the line reads.
   It is found by text and is a hint only.
-- `decision`, `reason`: empty, for H2 and H3.
+- `decision`, `reason`: `bug`, `gap` or `debt`, and why (the mechanism or reason first), filled in by H2 and H3.
 
 ## Rows
 
@@ -211,3 +211,22 @@ Follow-up notes; no checker code changed.
   `type` read stays `object-data-untagged`, since ty does not narrow `Object.data` from `camera.type != 'CAMERA'` in
   an `or`.
 - **Done area.** `unsorted` stays at 0 with both stub sets.
+
+## Review fixes
+
+- **Missed bug.** The tool header's Grease Pencil Vertex Paint settings
+  (`_draw_tool_settings_context_mode.VERTEX_GREASE_PENCIL`) read the brush type with no brush, unlike the other
+  modes. `5ccfa29ef3e` returns first without a brush. ty reported nothing there, since the helper's `context` has
+  no annotation, so the site is in no table row and no bucket moves. `probe:ui-draw` now runs every paint mode's
+  tool header settings without a brush (8 checks); only Vertex Paint raised before the fix.
+- **Grease Pencil vertex color.** The four `TOPBAR_PT_grease_pencil_vertex_color` rows stay `gap`
+  (`narrowed-by-poll-in-caller`). Their reason now names the callers, which all return first without a brush,
+  Vertex Paint since the fix.
+- **Strip source.** `properties_strip.py:607` and `:612` stay `debt` (`none-excluded-by-arguments`), with a
+  corrected reason. `strip_elem_from_frame()` returns None when the strip's content range is empty
+  (`give_frame_index()` gives −1), but an image strip's never is: `StripElements.pop()` refuses the last
+  element, and retiming keeps the last key at least a frame after the first.
+- **Probes.** `probe:ui-draw` and `probe:node-menus` share their stand-ins in `scripts/blender/_stub_ui.py`, and
+  the node-menu layout now also rejects None RNA pointers. Both probes pass, with no node-menu entry changed.
+- `check:blender main` with both stub sets: only the Blender commit in the baselines' header changes. `unsorted`
+  stays at 0 in the done area.
