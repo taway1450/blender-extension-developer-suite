@@ -17,7 +17,9 @@ reachable that way). A check fails when the draw raises. The states:
 
 - ``no-brush``: a paint mode whose paint settings have no brush, as after the active brush is deleted (the Outliner's
   Blender File view) or its asset library is missing. The probe enters the mode on the default cube or a new Grease
-  Pencil object and removes the brush data-block, which clears the paint settings' brush.
+  Pencil object and removes the brush data-block, which clears the paint settings' brush. Besides the panels, each
+  mode's tool settings in the tool header (``_draw_tool_settings_context_mode``, which is no class) run with a tool
+  that uses brushes.
 - ``pinned``: a Properties editor pinned to an ID, which leaves the members outside the pinned path None. Pinning
   in the Particles tab pins the particle settings (no ``particle_system``, no ``object``); pinning an object data
   tab pins the data (no ``object``); pinning in the Bone tab pins the armature (no ``object``), while
@@ -227,6 +229,19 @@ NO_BRUSH = (
     ("VERTEX_GREASE_PENCIL", "gpencil_vertex_paint", ("VIEW3D_PT_greasepencil_vertex_paint_context_menu",)),
 )
 
+# The header's tool settings (`VIEW3D_HT_tool_header`) per mode: object mode, paint settings, helper (named after
+# `context.mode`).
+NO_BRUSH_TOOL_SETTINGS = (
+    ("SCULPT", "sculpt", "SCULPT"),
+    ("VERTEX_PAINT", "vertex_paint", "PAINT_VERTEX"),
+    ("WEIGHT_PAINT", "weight_paint", "PAINT_WEIGHT"),
+    ("TEXTURE_PAINT", "image_paint", "PAINT_TEXTURE"),
+    ("PAINT_GREASE_PENCIL", "gpencil_paint", "PAINT_GREASE_PENCIL"),
+    ("SCULPT_GREASE_PENCIL", "gpencil_sculpt_paint", "SCULPT_GREASE_PENCIL"),
+    ("WEIGHT_GREASE_PENCIL", "gpencil_weight_paint", "WEIGHT_GREASE_PENCIL"),
+    ("VERTEX_GREASE_PENCIL", "gpencil_vertex_paint", "VERTEX_GREASE_PENCIL"),
+)
+
 
 def check_no_brush(results: dict) -> None:
     for mode, paint_attr, names in NO_BRUSH:
@@ -236,6 +251,16 @@ def check_no_brush(results: dict) -> None:
                 return draw(name, no_brush_context(mode, paint_attr))
 
             check(results, f"no-brush {mode}: {name}.draw", run)
+    for mode, paint_attr, helper in NO_BRUSH_TOOL_SETTINGS:
+
+        def tool_settings(mode=mode, paint_attr=paint_attr, helper=helper):
+            context = no_brush_context(mode, paint_attr)
+            from bl_ui.space_view3d import _draw_tool_settings_context_mode
+
+            tool = types.SimpleNamespace(use_brushes=True, idname="builtin.brush")
+            return getattr(_draw_tool_settings_context_mode, helper)(context, StubLayout(), tool)
+
+        check(results, f"no-brush {mode}: _draw_tool_settings_context_mode.{helper}", tool_settings)
 
 
 # ---------------------------------------------------------------------------------------------------------------
