@@ -143,3 +143,71 @@ Follow-up notes; no checker code changed.
 `check:blender main`, done area, shipped: `ui-draw-pointer` 503 → 431 (builtin) and 439 → 368 (fake-bpy-module).
 With fake-bpy-module, `correlated-union` and `type-enum-sub-pointer` lose one site each. With builtin, only
 `type-enum-sub-pointer` loses one. The `unsorted` cause stays at 0.
+
+## H3: add-ons, examples, templates and the rest
+
+All 72 remaining rows have a decision: 10 `bug`, 24 `gap`, 38 `debt`. Every row of the table now has one. The 72
+rows are 23 `ui-draw-pointer` and 49 `object-data-untagged`.
+
+### Bugs
+
+Each fix is one commit on `typecheck-fixes`, touching only Python. `mise run probe:ui-draw main` has three new
+checks, one per state. All three failed on `613e3dcb8a6` and pass after the fixes.
+
+| commit | state | code | rows |
+|---|---|---|---:|
+| `0ff5ad1bf59` | an action deleted after the glTF exporter's action filter list was filled: its item's pointer is None | `SCENE_UL_gltf2_filter_action` draws a placeholder, and its name filter and sort skip the item | 1 |
+| `23d4e3fea59` | an active object with materials that is not a mesh (a curve, a text, Grease Pencil), reached from the operator search | the three glTF material variant operators' polls require a mesh, as their panel's does | 8 |
+| `459a9c81334` | the scene camera is not a camera object (an empty has no data) during a Freestyle render in the parameter editor mode | the thickness shaders treat it as perspective, as the render does | 1 |
+
+The probe checks are `deleted-filter-action` (draws the list item and runs `filter_items`), `non-mesh-variant` (runs
+each operator whose poll accepts a curve) and `non-camera-scene-camera` (renders with Cycles and records whether
+`parameter_editor.process()` raises).
+
+### Gaps
+
+Follow-up notes; no checker code changed.
+
+| mechanism | rows |
+|---|---:|
+| narrowed-by-poll-in-caller: Rigify's `parameters_ui`, list, menu and `INTERNAL` operator are reached only from a panel or menu that checks the metarig | 6 |
+| narrowed-by-poll-helper: the poll calls `is_valid_metarig()`, from another module, which checks `context.object` | 5 |
+| operator-idname-in-file: `layout.operator()` names an operator class the same file registers; only the stubs' operators resolve | 5 |
+| narrowed-by-parent-panel: Cycles' Light Group panel, whose parent `OBJECT_PT_shading` checks the object | 4 |
+| narrowed-by-poll-alias: Node Wrangler's poll checks `node_tree`, the draw reads `edit_tree` | 2 |
+| context-mode: Rigify's Sample dialog, whose poll checks `context.mode == 'EDIT_ARMATURE'` | 1 |
+| self-return: `ID.evaluated_get()` returns its receiver's type; Blender's own stubs give the base `ID` | 1 |
+
+### Debt
+
+| reason | rows |
+|---|---:|
+| documented-assumption: a doc example or template names its object, or states the active object is a mesh or armature | 24 |
+| correlated-condition: Rigify's old widgets are the meshes it made; the previews camera is the temporary one when objects are given | 6 |
+| object-data-untagged: the object was just made with this data type (the VR capture camera, `text_add()`) | 5 |
+| template-list-stub: the collection wrapper given as active data (`VertexGroups`, `BoneCollections`) | 2 |
+| type-name-test: `type(x).__name__ == "Mesh"` | 1 |
+
+### Move
+
+`check:blender main`, done area, shipped. These are the counts the baselines record for both generators.
+
+| cause | builtin | fake-bpy-module |
+|---|---:|---:|
+| `ui-draw-pointer` | 431 → 430 | 368 → 367 |
+| `object-data-untagged` | 29 → 21 | 20 → 12 |
+| `assumed-registration` (warning) | 85 → 93 | 85 → 93 |
+| `narrowed-by-poll` (warning) | 850 → 847 | 845 → 842 |
+| `assumed-list-item` (warning) | 90 → 89 | 90 → 89 |
+| `rarely-none-member` | 13 → 12 | 13 → 12 |
+| `untyped-python` | 445 → 447 | 460 → 462 |
+| errors, all areas | 4864 → 4856 | 5151 → 5143 |
+
+- **glTF variant operators.** Their polls now check the object's type, so ty narrows `execute` through the poll. The
+  8 `object-data-untagged` errors give way to `assumed-registration` warnings for the add-on's `Mesh` properties,
+  which `register()` adds only on a branch.
+- **Freestyle.** The thickness shaders now read the camera through a local variable. Its None reads leave
+  `rarely-none-member`, which matches `.camera.` in the Freestyle sources, for `untyped-python`. The data's
+  `type` read stays `object-data-untagged`, since ty does not narrow `Object.data` from `camera.type != 'CAMERA'` in
+  an `or`.
+- **Done area.** `unsorted` stays at 0 with both stub sets.
