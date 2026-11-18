@@ -7,7 +7,7 @@ Background Blender has no node editor, so each menu ``bl_ui`` registers from ``n
 ``generate_menu`` class, which mixes ``AddNodeMenu`` / ``SwapNodeMenu`` with a template such as the texture ones) is
 drawn by calling its ``draw`` with:
 
-- a ``self`` that reads the registered class and has a recording ``layout``;
+- a ``self`` that reads the registered class and has a recording ``layout`` (the stand-ins are in ``_stub_ui.py``);
 - a context whose ``space_data`` is a node editor showing a node tree of the menu's kind, in each variant the menus
   check (geometry modifier / tool, shader object / light / world / line style under EEVEE and Cycles, compositor
   scene / sequencer, texture); every other member comes from ``bpy.context``.
@@ -21,7 +21,6 @@ its result (``ok``, ``poll``, the entries drawn or the error); the driver reads 
 from __future__ import annotations
 
 import importlib
-import inspect
 import os
 import sys
 import types
@@ -30,6 +29,7 @@ import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _recorder import failure, script_args, write_results
+from _stub_ui import Context, ProbeError, StandIn, StubLayout
 
 MODULES = (
     "node_add_menu",
@@ -62,11 +62,7 @@ VARIANTS = {
 }
 
 
-class ProbeError(Exception):
-    pass
-
-
-class StubProperties:
+class OperatorProperties:
     """An operator's properties: only the operator's own properties can be read or set."""
 
     def __init__(self, idname: str, names: set[str]) -> None:
@@ -108,14 +104,18 @@ def operator_properties(idname: str) -> set[str]:
     return {prop.identifier for prop in rna.properties if prop.identifier != "rna_type"}
 
 
-class StubLayout:
+class RecordingLayout(StubLayout):
     """Records what a menu draws; sub-layouts (column, row, ...) record into the same list."""
 
     def __init__(self, entries: list) -> None:
+        super().__init__()
         self._entries = entries
 
+    def sub_layout(self) -> RecordingLayout:
+        return RecordingLayout(self._entries)
+
     def operator(self, idname, *, text=None, **_kwargs):
-        props = StubProperties(idname, operator_properties(idname))
+        props = OperatorProperties(idname, operator_properties(idname))
         self._entries.append(["operator", idname, text, props])
         return props
 
@@ -132,32 +132,6 @@ class StubLayout:
 
     def separator(self, **_kwargs):
         pass
-
-    def __getattr__(self, _name):
-        return lambda *_args, **_kwargs: StubLayout(self._entries)
-
-
-class MenuSelf:
-    """Stands in for the menu instance Blender passes to ``draw``."""
-
-    def __init__(self, cls: type, layout: StubLayout) -> None:
-        object.__setattr__(self, "_cls", cls)
-        object.__setattr__(self, "layout", layout)
-
-    def __getattr__(self, name: str):
-        value = getattr(self._cls, name)
-        if isinstance(inspect.getattr_static(self._cls, name), types.FunctionType):
-            return types.MethodType(value, self)
-        return value
-
-
-class Context:
-    def __init__(self, space: types.SimpleNamespace, engine: str | None) -> None:
-        self.space_data = space
-        self.engine = engine or bpy.context.engine
-
-    def __getattr__(self, name: str):
-        return getattr(bpy.context, name)
 
 
 def node_trees(tree_type: str) -> bpy.types.NodeTree:
@@ -193,11 +167,11 @@ def draw(cls: type, variant: dict, tree: bpy.types.NodeTree, light: bpy.types.Ob
         node_tree_sub_type=variant.get("node_tree_sub_type", "SCENE"),
         id_from=light if variant.get("id_from") == "LIGHT" else None,
     )
-    context = Context(space, variant.get("engine"))
+    context = Context(space_data=space, engine=variant.get("engine") or bpy.context.engine)
     if not cls.poll(context):
         return {"ok": True, "poll": False}
     entries: list = []
-    cls.draw(MenuSelf(cls, StubLayout(entries)), context)
+    cls.draw(StandIn(cls, RecordingLayout(entries)), context)
     return {"ok": True, "poll": True, "entries": [entry_json(e) for e in entries]}
 
 

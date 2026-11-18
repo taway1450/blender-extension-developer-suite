@@ -18,7 +18,7 @@ reachable that way). A check fails when the draw raises. The states:
 - ``no-brush``: a paint mode whose paint settings have no brush, as after the active brush is deleted (the Outliner's
   Blender File view) or its asset library is missing. The probe enters the mode on the default cube or a new Grease
   Pencil object and removes the brush data-block, which clears the paint settings' brush. Besides the panels, each
-  mode's tool settings in the tool header (``_draw_tool_settings_context_mode``, which is no class) run with a tool
+  mode's tool settings in the tool header (``_draw_tool_settings_context_mode``, not a registered class) run with a tool
   that uses brushes.
 - ``pinned``: a Properties editor pinned to an ID, which leaves the members outside the pinned path None. Pinning
   in the Particles tab pins the particle settings (no ``particle_system``, no ``object``); pinning an object data
@@ -45,7 +45,6 @@ it.
 
 from __future__ import annotations
 
-import inspect
 import os
 import sys
 import traceback
@@ -56,114 +55,7 @@ import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _recorder import check, script_args, write_results
-
-# The UILayout methods that take an RNA pointer (positionally first, or by keyword), as Blender's
-# `PROP_NEVER_NULL` parameters: None raises TypeError.
-POINTER_ARGS = {
-    "prop": ("data",),
-    "prop_enum": ("data",),
-    "prop_menu_enum": ("data",),
-    "prop_with_popover": ("data",),
-    "prop_with_menu": ("data",),
-    "props_enum": ("data",),
-    "prop_search": ("data", "search_data"),
-    "template_ID": ("data",),
-    "template_any_ID": ("data",),
-    "template_search": ("data", "search_data"),
-    "template_color_picker": ("data",),
-    "template_curveprofile": ("data",),
-    "template_list": ("dataptr", "active_dataptr"),
-}
-
-# Positional parameter names of the methods above (template_list takes two names first).
-POSITIONAL = {
-    "prop_search": ("data", "property", "search_data"),
-    "template_search": ("data", "property", "search_data"),
-    "template_list": ("listtype_name", "list_id", "dataptr", "propname", "active_dataptr"),
-}
-
-
-class ProbeError(Exception):
-    pass
-
-
-class StubProperties:
-    """An operator's properties: anything can be set."""
-
-    def __getattr__(self, name: str):
-        return None
-
-
-def check_pointers(method: str, args: tuple, kwargs: dict) -> None:
-    names = POSITIONAL.get(method, ("data", "property"))
-    bound = dict(zip(names, args))
-    bound.update(kwargs)
-    for param in POINTER_ARGS[method]:
-        if param in bound and bound[param] is None:
-            raise TypeError(f"UILayout.{method}(): {param!r} does not support a 'None' assignment")
-    data, prop = bound.get("data"), bound.get("property")
-    if isinstance(data, bpy.types.bpy_struct) and isinstance(prop, str) and not hasattr(data, prop):
-        raise AttributeError(f"UILayout.{method}(): property {prop!r} not found in {type(data).__name__}")
-
-
-class StubLayout:
-    """Records nothing; checks the pointer arguments of the methods that take one."""
-
-    def __init__(self) -> None:
-        object.__setattr__(self, "_attrs", {"operator_context": "INVOKE_DEFAULT", "property_split_factor": 0.4})
-
-    def operator(self, *_args, **_kwargs):
-        return StubProperties()
-
-    def panel(self, *_args, **_kwargs):
-        return StubLayout(), StubLayout()
-
-    def panel_prop(self, *_args, **_kwargs):
-        return StubLayout(), StubLayout()
-
-    def __getattr__(self, name: str):
-        if name in self._attrs:
-            return self._attrs[name]
-
-        def method(*args, **kwargs):
-            if name in POINTER_ARGS:
-                check_pointers(name, args, kwargs)
-            return StubLayout()
-
-        return method
-
-    def __setattr__(self, name: str, value) -> None:
-        self._attrs[name] = value
-
-
-class StandIn:
-    """Stands in for the panel or menu instance Blender passes to ``draw``."""
-
-    def __init__(self, cls: type) -> None:
-        object.__setattr__(self, "_cls", cls)
-        object.__setattr__(self, "_attrs", {"layout": StubLayout(), "is_popover": False})
-
-    def __getattr__(self, name: str):
-        if name in self._attrs:
-            return self._attrs[name]
-        value = getattr(self._cls, name)
-        if isinstance(inspect.getattr_static(self._cls, name), types.FunctionType):
-            return types.MethodType(value, self)
-        return value
-
-    def __setattr__(self, name: str, value) -> None:
-        self._attrs[name] = value
-
-
-class Context:
-    def __init__(self, **members) -> None:
-        self._members = members
-
-    def __getattr__(self, name: str):
-        members = self.__dict__["_members"]
-        if name in members:
-            return members[name]
-        return getattr(bpy.context, name)
+from _stub_ui import Context, ProbeError, StandIn, StubLayout
 
 
 def draw(name: str, context: Context, function: str = "draw") -> str:
