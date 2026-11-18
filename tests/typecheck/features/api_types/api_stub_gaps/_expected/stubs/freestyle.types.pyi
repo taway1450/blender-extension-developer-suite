@@ -1,5 +1,10 @@
-"""Reference stub delta: Freestyle C classes have their bases, and Freestyle calls the overridable methods with
-positional arguments."""
+"""Reference stub delta: Freestyle C classes have their bases, Freestyle calls the overridable methods with
+positional arguments, the unary function bases and Noise document their members, and Operators.create takes a list
+of any shader types."""
+
+from typing import TypeVar
+
+_StrokeShaderT = TypeVar('_StrokeShaderT', bound=StrokeShader)
 
 class ViewEdge(Interface1D): ...
 class ViewEdgeIterator(Iterator): ...
@@ -14,3 +19,17 @@ class BinaryPredicate1D:
 
 class StrokeShader:
     def shade(self, stroke: Stroke, /) -> None: ...
+
+class UnaryFunction0DDouble(UnaryFunction0D):
+    def __call__(self, it: Interface0DIterator, /) -> float: ...
+
+class UnaryFunction1DDouble(UnaryFunction1D):
+    def __call__(self, inter: Interface1D, /) -> float: ...
+
+class Noise:
+    def rand(self, seed: int = 0) -> float: ...
+    def turbulence_smooth(self, v: float, oct: int = 8) -> float: ...
+
+class Operators:
+    @staticmethod
+    def create(pred: UnaryPredicate1D, shaders: list[_StrokeShaderT]) -> None: ...

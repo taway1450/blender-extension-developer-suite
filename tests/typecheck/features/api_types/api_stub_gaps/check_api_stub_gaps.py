@@ -1,12 +1,14 @@
 """Facts introspection alone left out of the stubs: class bases and Python __init__, iteration and context-manager
 protocols, the version tuples, bl_rna, module members outside __all__ or not plain constants, a callback that may
 return None, BMesh links of one element type, bpy.data's (name, library) key, the context store members Blender's UI
-sets, the context managers, positional callbacks, dynamic enums and two documented returns. These are stub facts.
+sets, the context managers, positional callbacks, dynamic enums, two documented returns and Freestyle's undocumented
+members and generators. These are stub facts.
 The overrides of Freestyle's methods and of the render engine's update callbacks are in __init__.py: an incompatible
 override would be an unexpected diagnostic there."""
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import AbstractContextManager
 from types import MappingProxyType
 from typing import Any, Literal, TypeAlias, assert_type
@@ -20,8 +22,11 @@ from bpy.types import (AssetShelf, BlendData, Camera, Constraint, Context, Frees
 from bpy_extras.anim_utils import BakeOptions
 from freestyle.chainingiterators import pyChainSilhouetteGenericIterator
 from freestyle.functions import pyDensityAnisotropyF1D
-from freestyle.predicates import QuantitativeInvisibilityUP1D
-from freestyle.types import UnaryFunction1DDouble, UnaryPredicate1D, ViewEdge
+from freestyle.predicates import QuantitativeInvisibilityUP1D, TrueUP1D
+from freestyle.shaders import ConstantThicknessShader, SamplingShader
+from freestyle.types import (Interface0DIterator, Interface1D, Noise, Operators, Stroke, StrokeVertex,
+                             UnaryFunction0DDouble, UnaryFunction1DDouble, UnaryPredicate1D, ViewEdge)
+from freestyle.utils import BoundingBox, get_strokes, iter_distance_from_camera, iter_t2d_along_stroke, pairwise, stroke_normal
 from imbuf.types import ImBuf, ImBufFileType
 from mathutils import Matrix, Vector
 
@@ -134,3 +139,27 @@ def dynamic_enums(interface: NodeTreeInterface, idname: str) -> None:
 def documented_returns(gizmo: Gizmo, path: str) -> None:
     assert_type(bpy.utils.keyconfig_set(path), bool)  # bare-ok: a stub fact: whether the key configuration loaded
     assert_type(gizmo.target_set_value("offset", 1.0), None)  # bare-ok: a stub fact: the value parameter is documented
+
+
+def freestyle_shaders() -> None:
+    shaders = [ConstantThicknessShader(2), SamplingShader(5.0)]
+    assert_type(Operators.create(TrueUP1D(), shaders), None)  # bare-ok: a stub fact: a list of any shader types
+    Operators.create(TrueUP1D(), (SamplingShader(5.0),))  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: the C code requires a list
+
+
+def freestyle_members(it: Interface0DIterator, inter: Interface1D, function_0d: UnaryFunction0DDouble,
+                      function_1d: UnaryFunction1DDouble, noise: Noise, box: BoundingBox) -> None:
+    assert_type(function_0d(it), float)  # bare-ok: a stub fact: a unary function base is callable
+    assert_type(function_1d(inter), float)  # bare-ok: a stub fact: a unary function base is callable
+    assert_type(pyDensityAnisotropyF1D(4)(inter), float)  # bare-ok: a stub fact: a Python function calls through its base
+    assert_type(noise.rand(), float)  # bare-ok: a stub fact: documented in C since the fork
+    assert_type(noise.turbulence_smooth(0.5, 2), float)  # bare-ok: a stub fact: documented in C since the fork
+    assert_type(box.corners, tuple[Vector, Vector])  # bare-ok: a stub fact: an attribute set in __init__
+
+
+def freestyle_generators(stroke: Stroke, points: list[Vector]) -> None:
+    assert_type(pairwise(points), Iterator[tuple[Any, Any]])  # bare-ok: a stub fact: a generator, not None
+    assert_type(iter_t2d_along_stroke(stroke), Iterator[float])  # bare-ok: a stub fact: a generator, not None
+    assert_type(iter_distance_from_camera(stroke, 0.0, 1.0, 1.0), Iterator[tuple[StrokeVertex, float]])  # bare-ok: a stub fact: a generator, not None
+    assert_type(stroke_normal(stroke), Iterator[Vector])  # bare-ok: a stub fact: a generator, not None
+    assert_type(get_strokes(), tuple[Stroke, ...])  # bare-ok: a stub fact: the strokes, not None

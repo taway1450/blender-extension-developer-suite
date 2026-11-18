@@ -60,6 +60,13 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.libraries.load(path, link=True) as (data_from, data_to):
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.temp_data() as temp:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(temp, BlendData)  # bare-ok: a stub fact: entering temp_data gives a temporary BlendData
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(Operators.create(TrueUP1D(), shaders), None)  # bare-ok: a stub fact: a list of any shader types
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-callable | assert_type(pyDensityAnisotropyF1D(4)(inter), float)  # bare-ok: a stub fact: a Python function calls through its base
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(pyDensityAnisotropyF1D(4)(inter), float)  # bare-ok: a stub fact: a Python function calls through its base
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(pairwise(points), Iterator[tuple[Any, Any]])  # bare-ok: a stub fact: a generator, not None
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iter_t2d_along_stroke(stroke), Iterator[float])  # bare-ok: a stub fact: a generator, not None
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iter_distance_from_camera(stroke, 0.0, 1.0, 1.0), Iterator[tuple[StrokeVertex, float]])  # bare-ok: a stub fact: a generator, not None
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(stroke_normal(stroke), Iterator[Vector])  # bare-ok: a stub fact: a generator, not None
 features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | TextCurve, TextureNodeMath, _FluidModifier_DOMAIN, _Object_ARMATURE, _Object_EMPTY, _Object_FONT,
 features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _Object_MESH, _Object_SURFACE)
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(grease_pencil.root_nodes[0], GreasePencilLayer | GreasePencilLayerGroup)  # bare-ok: a stub fact: a tree node is a layer or a group

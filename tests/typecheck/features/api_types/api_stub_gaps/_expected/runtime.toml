@@ -87,3 +87,28 @@ reason = "libraries.load returns a context manager (entered in check_api_stub_ga
 code = "addon.API_STUB_GAPS_Engine.is_registered"
 expect = true
 reason = "an engine overriding the update callbacks with positional parameters registers (Blender checks the count)"
+
+[[probe]]
+code = "type(__import__('freestyle.types').types.Noise().rand(3)).__name__"
+expect = "float"
+reason = "Noise.rand gives a float"
+
+[[probe]]
+code = "type(__import__('freestyle.types').types.Noise().turbulence_smooth(0.5, 2)).__name__"
+expect = "float"
+reason = "Noise.turbulence_smooth gives a float"
+
+[[probe]]
+code = "__import__('freestyle.utils').utils.BoundingBox(__import__('mathutils').Vector((0, 0)), __import__('mathutils').Vector((1, 2))).corners[1].y"
+expect = 2.0
+reason = "a BoundingBox has its corners"
+
+[[probe]]
+code = "type(__import__('freestyle.utils').utils.pairwise((1, 2, 3))).__name__"
+expect = "zip"
+reason = "pairwise returns an iterator of pairs, not None"
+
+[[probe]]
+code = "callable(__import__('freestyle.types').types.UnaryFunction1DDouble())"
+expect = true
+reason = "a unary function base is callable (tp_call)"

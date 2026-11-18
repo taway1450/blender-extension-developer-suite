@@ -93,7 +93,12 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   - Freestyle calls an overridable `__call__` (predicates), `traverse` and `shade` with positional arguments, and
     Blender a render engine's `update_script_node` / `update_render_passes` / `update_custom_camera` with all their
     arguments positionally: the parameters are positional-only or required, so an override may rename them or drop
-    their defaults (Freestyle's `UnaryFunction*D` document no `__call__`, so there is nothing to override);
+    their defaults;
+  - Freestyle's undocumented members reach the stubs once documented: the `UnaryFunction0D*` / `UnaryFunction1D*`
+    bases' `__call__` (so a Python function such as `pyDensityAnisotropyF1D` is callable), `Noise.rand` /
+    `turbulence_smooth` and `BoundingBox`'s attributes (`corners`); the `freestyle.utils` generators say what they
+    yield (the stub generator writes `-> None` without an `:rtype:`), and `Operators.create` takes a list of any
+    shader types (`list[_StrokeShaderT]`, bound to `StrokeShader`: the C code requires a `list`, which is invariant);
   - a dynamic enum whose items come from a callback (`NodeTreeInterface.new_socket(socket_type=...)`,
     `GREASE_PENCIL_OT_set_material.slot`) lists only the `'DEFAULT'` placeholder, so it is a `str`;
   - `bpy.utils.keyconfig_set` returns whether it loaded the key configuration, and `Gizmo.target_set_value` takes a
@@ -115,7 +120,7 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 | --- | --- |
 | `api_never_none` | embedded and DNA pointers, pointers and function results Blender always sets, the context's preferences and window manager; unannotated callback overrides of `Menu`, `Header`, `UIList`, `RenderEngine`, `KeyingSetInfo` and `AssetShelf`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form): `Node.type`, interface `item_type`, boid rules, line style modifiers (the tag on the base), spreadsheet table IDs, viewer path elements, project variables; the tag views of `Object` (`data`, `pose`) and `FluidModifier` (sibling form); a Grease Pencil layer tree node as a layer or a layer group; the `BlendDataCurves.new` overloads; action strips |
-| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value` |
+| `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, version tuples, `bl_rna`, module members, `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value`; Freestyle's unary function `__call__`, `Noise`, `BoundingBox`, generators and `Operators.create` |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
 | `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |
 
@@ -125,6 +130,8 @@ exceptions in spec #75). fake-bpy-module also misses the stub-generator gaps it 
 (`BMElemSeq` attributes, the `(name, None)` key, the two context managers, the positional Freestyle methods; named
 exceptions in spec #95). fake-bpy-module keeps `| None` on a writable never-None pointer (`KeyConfigurations.active`,
 `MovieTrackingObjects.active`), and its own mod file retypes `Material.node_tree` / `World.node_tree` as
-`ShaderNodeTree | None` (named exceptions in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
+`ShaderNodeTree | None` (named exceptions in spec #132). The Freestyle gaps fail on 5.2 and on fake-bpy-module,
+which gives Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
+`__call__`) and drops an `Iterator[...]` `:rtype:` (named exceptions in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
 `description`) need the checker's inheritance typing.

@@ -379,6 +379,13 @@ uv run scripts/report_flags.py {{usage.version}}
 {%- if usage.force %} --force{% endif %}
 '''
 
+[tasks."probe:freestyle"]
+description = "Render with Freestyle in background Blender: a style module and the parameter editor run, seeded colours repeat (#136)"
+usage = '''
+arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
+'''
+run = 'uv run scripts/probe_freestyle.py {{usage.version}}'
+
 [tasks."probe:never-none"]
 description = "Probe which RNA pointers and returns Blender leaves None, in edge states and over tests/files (#109, research)"
 usage = '''

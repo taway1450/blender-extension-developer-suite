@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender b0d575ff9d
+# check:blender main, fake-bpy-module stubs, Blender ee0c7a7765
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -42,7 +42,7 @@ imprecise-operator-return       imprecise-annotation  S4             0         0
 imprecise-enum-value            imprecise-annotation  S4             3         0         0         0        11        14
 imprecise-callback-parameter    imprecise-annotation  S4             3         0         0         0         0         3
 fake-bpy-python-module          typechecker-fix       -            636         0         1         0         4       641
-fake-bpy-type-alias             typechecker-fix       -             11         0         0         0         0        11
+fake-bpy-type-alias             typechecker-fix       -             11         0         0         1         0        12
 fake-bpy-nullable               typechecker-fix       -             82         0         0         0        21       103
 fake-bpy-lib-key                typechecker-fix       -             25         0         0         0         3        28
 fake-bpy-node-sockets           typechecker-fix       -            120         0         0         0        27       147
@@ -53,7 +53,7 @@ callback-never-none             typechecker-fix       S1            12         0
 bmesh-elem-seq                  typechecker-fix       S2             0         0         0         0         0         0
 blend-data-lib-key              typechecker-fix       S2             0         0         0         0         0         0
 context-store-member            typechecker-fix       S2             0         0         0         0         0         0
-freestyle-positional            typechecker-fix       S2            35         0         0         0         0        35
+freestyle-positional            typechecker-fix       S2            41         0         0         0         0        41
 render-engine-positional        typechecker-fix       S2             0         0         0         0         0         0
 dynamic-enum                    typechecker-fix       S2             6         0         0         0         6        12
 stub-context-manager            typechecker-fix       S2             5         0         5         0         9        19
@@ -96,7 +96,7 @@ operator-call                   typing-debt           -              8         0
 unresolved-import               typing-debt           -             64         0         0         0        25        89
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              0         0         0         0         0         0
-untyped-python                  typing-debt           -            978         0         1         0         0       979
+untyped-python                  typing-debt           -            929         0         1         0         0       930
 private-member                  typing-debt           -             13         0         0         0        13        26
 build-option-gap                typing-debt           -              0         0         0         0         0         0
 general-typing                  typing-debt           -            536         8        11         4       311       870
@@ -111,10 +111,10 @@ blender-fix                                                          0         0
 assumption                                                         380       574        26         4       729      1713
 implied-narrowing                                                 1085         0         4         8        12      1109
 imprecise-annotation                                                 6         0         0         0        11        17
-typechecker-fix                                                   1038         0        45        14       171      1268
-typing-debt                                                       3684       137       116        51      1564      5552
+typechecker-fix                                                   1044         0        45        15       171      1275
+typing-debt                                                       3635       137       116        51      1564      5503
 unsorted                                                             1         0         0         0      1272      1273
-errors                                                            4719       168       162        65      2953      8067
+errors                                                            4676       168       162        66      2953      8025
 warnings                                                          1475       543        29        12       811      2870
 
 rule                                       error warning
@@ -144,8 +144,8 @@ incompatible-method-override                 132       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                       1447       0
-invalid-assignment                           600       0
+invalid-argument-type                       1409       0
+invalid-assignment                           598       0
 invalid-base                                   2       0
 invalid-context-manager                       82       0
 invalid-exception-caught                       1       0
@@ -156,11 +156,11 @@ invalid-implicit-return-in-function-with-stub-body      32       0
 invalid-parameter-default                      3       0
 invalid-super-argument                         1       0
 invalid-type-form                              8       0
-lost-keyword-for-regular-parameter            85       0
+lost-keyword-for-regular-parameter            91       0
 mismatched-type-name                           0       1
 missing-argument                             189       0
-missing-attribute                           1673       0
-missing-union-attribute                     2585       0
+missing-attribute                           1669       0
+missing-union-attribute                     2581       0
 no-matching-overload                          48       0
 not-callable                                  20       0
 not-iterable                                 127       0

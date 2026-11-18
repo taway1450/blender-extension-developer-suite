@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender b0d575ff9d
+# check:blender main, builtin stubs, Blender ee0c7a7765
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -96,7 +96,7 @@ operator-call                   typing-debt           -              7         0
 unresolved-import               typing-debt           -             31         0         0         0        10        41
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              3         0         0         0         0         3
-untyped-python                  typing-debt           -            649         0         0         2         0       651
+untyped-python                  typing-debt           -            578         0         0         2         0       580
 private-member                  typing-debt           -             12         0         0         0         0        12
 build-option-gap                typing-debt           -              0         0         0         0         0         0
 general-typing                  typing-debt           -            234         0        10         4       262       510
@@ -112,9 +112,9 @@ assumption                                                         393       574
 implied-narrowing                                                 1056         0         4         8        13      1081
 imprecise-annotation                                                 3         0         0         0        11        14
 typechecker-fix                                                     50         0        31         7        38       126
-typing-debt                                                       2582       129       107        49      1384      4251
+typing-debt                                                       2511       129       107        49      1384      4180
 unsorted                                                             1         0         0         0       970       971
-errors                                                            2669       160       139        56      2342      5366
+errors                                                            2598       160       139        56      2342      5295
 warnings                                                          1416       543        29        12       754      2754
 
 rule                                       error warning
@@ -143,8 +143,8 @@ incompatible-method-override                  23       0
 incompatible-mutable-override                  5       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                        943       0
-invalid-assignment                           611       0
+invalid-argument-type                        898       0
+invalid-assignment                           609       0
 invalid-base                                   2       0
 invalid-context-manager                        2       0
 invalid-explicit-return                       26       0
@@ -157,11 +157,11 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            52       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1545       0
-missing-union-attribute                     1700       0
+missing-attribute                           1541       0
+missing-union-attribute                     1696       0
 no-matching-overload                          37       0
-not-callable                                  19       0
-not-iterable                                  45       0
+not-callable                                  14       0
+not-iterable                                  34       0
 not-subscriptable                             89       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      10
