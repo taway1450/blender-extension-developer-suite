@@ -399,6 +399,8 @@ MONKEYPATCH = re.compile(r"^\s*(?:_bpy|pydoc(?:\.Helper)?)\.\w+ = ")
 OBJECT_DATA_UNION = re.compile(
     r"`Armature \| (Camera \| Curve \| \.\.\. omitted 11|[^`]*\.\.\. omitted \d+) union elements`"
 )
+# The base `ID` (or `ID | None`): the type of `Object.data` and of `bpy_struct.id_data`.
+ID_TYPE = re.compile(r"`ID( \| None)?`")
 # fake-bpy-module writes stubs for Blender's own Python modules by inspecting them at runtime, and those come before the
 # source on the search path. They lose module constants, dataclass and instance attributes, `__init__`, base
 # classes (an exception class, a protocol), return annotations (`-> None`) and the context managers of functions
@@ -564,7 +566,7 @@ def object_data(d: Diagnostic) -> bool:
     receiver of the missing or assigned attribute is a ``.data`` read or a local set from one (``me = obj.data``,
     then ``me.polygons``), and so is a value or argument of that type. Not ``id_data`` (the owner of a struct),
     ``animation_data``, nor the ``data`` an ``ID`` itself lacks: those are ``base-class-subtype``."""
-    if re.search(r"`ID( \| None)?`", d.msg) is None:
+    if ID_TYPE.search(d.msg) is None:
         return False
     attribute = missing_attribute(d.msg) or next(iter(re.findall(r"to attribute `(\w+)` on type `ID\b", d.msg)), None)
     if attribute is None:
@@ -581,9 +583,7 @@ def id_data_owner(d: Diagnostic) -> bool:
     """Whether the ``ID`` the message names is a struct's owner, ``bpy_struct.id_data``, which the stubs type as the
     base ``ID`` (fake-bpy-module: ``ID | None``) though the struct decides it (a pose bone's is its armature
     object)."""
-    return re.search(r"`ID( \| None)?`", d.msg) is not None and (
-        reads_from(d, r"\.id_data\b") or in_sites(ID_DATA_SITES)(d)
-    )
+    return ID_TYPE.search(d.msg) is not None and (reads_from(d, r"\.id_data\b") or in_sites(ID_DATA_SITES)(d))
 
 
 def python_types_only(d: Diagnostic) -> bool:
