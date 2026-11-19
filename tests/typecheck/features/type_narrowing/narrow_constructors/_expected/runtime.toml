@@ -17,3 +17,18 @@ reason = "attributes.new refines the new attribute by its data type"
 code = "type(bpy.data.node_groups.new('narrow_constructors', 'ShaderNodeTree').nodes.new(type='ShaderNodeMath')).__name__"
 expect = "ShaderNodeMath"
 reason = "nodes.new gives the node class its bl_idname names"
+
+[[probe]]
+code = "type(bpy.data.node_groups.new('narrow_constructors', 'NarrowConstructorsTree')).__name__"
+expect = "NarrowConstructorsTree"
+reason = "node_groups.new gives the add-on's tree class its bl_idname names"
+
+[[probe]]
+code = "(lambda tree: type(tree.nodes.new('NarrowConstructorsNode').outputs['Own']).__name__)(bpy.data.node_groups.new('narrow_constructors', 'NarrowConstructorsTree'))"
+expect = "NarrowConstructorsSocket"
+reason = "outputs.new gives the add-on's socket class its bl_idname names"
+
+[[probe]]
+code = "(lambda tree: type(tree.nodes.new('NarrowConstructorsNode').inputs['Value']).__name__)(bpy.data.node_groups.new('narrow_constructors', 'NarrowConstructorsTree'))"
+expect = "NodeSocketFloat"
+reason = "inputs.new gives the socket class its bl_idname names"

@@ -99,7 +99,7 @@ unexported-function             typing-debt           -              3         0
 untyped-python                  typing-debt           -            450         0         0         2         0       452
 private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            214         0         7         4       187       412
+general-typing                  typing-debt           -            213         0         7         4       183       407
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
 unchecked-pointer               unsorted              -              1         0         0         0       547       548
 stub-gap                        unsorted              -              0         0         0         0        40        40
@@ -112,9 +112,9 @@ assumption                                                         402       574
 implied-narrowing                                                 1054         0         4         8        13      1079
 imprecise-annotation                                                 0         0         0         0         0         0
 typechecker-fix                                                     23         0         3         1         5        32
-typing-debt                                                       1944        75       100        49      1252      3420
+typing-debt                                                       1943        75       100        49      1248      3415
 unsorted                                                             1         0         0         0       849       850
-errors                                                            2017       106       104        50      2088      4365
+errors                                                            2016       106       104        50      2084      4360
 warnings                                                          1422       543        29        12       701      2707
 
 rule                                       error warning
@@ -156,7 +156,7 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            43       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1121       0
+missing-attribute                           1116       0
 missing-union-attribute                     1523       0
 no-matching-overload                          33       0
 not-callable                                  14       0

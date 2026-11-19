@@ -9,7 +9,8 @@ from typing import assert_type
 from bpy.types import (ID, AnimData, AssetLibraryCollection, AssetMetaData, AssetRepresentation, AssetShelf,
                        BlendDataMeshes, BlendDataNodeTrees, BlendDataObjects, Bone, BoneColor, Camera,
                        CameraDOFSettings, ColorManagedViewSettings, Context, Depsgraph, DepsgraphObjectInstance,
-                       DepsgraphUpdate, EditBone, FFmpegSettings, Header, ImagePaint, KeyConfig, KeyConfigurations,
+                       DepsgraphUpdate, EditBone, FFmpegSettings, GeometryNodeTree, Header, ImagePaint, KeyConfig,
+                       KeyConfigurations,
                        KeyingSetInfo, Material, Menu, Mesh, MovieTracking, MovieTrackingObject, MovieTrackingObjects,
                        MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink, NodeSocket, NodeTree, Object,
                        ParticleSettings, Pose, PoseBone, Preferences, RegionView3D, RenderEngine, RenderSettings,
@@ -86,7 +87,8 @@ def stay_nullable(wm: WindowManager, instance: DepsgraphObjectInstance) -> None:
 
 def always_returned(node_groups: BlendDataNodeTrees, libraries: AssetLibraryCollection, objects: BlendDataObjects,
                     meshes: BlendDataMeshes, ob: Object, depsgraph: Depsgraph) -> None:
-    assert_type(node_groups.new("Tree", "GeometryNodeTree"), NodeTree)  # bare-ok: a stub fact: an unknown type raises
+    # A stub fact (an unknown type raises), and the constructor narrowing, which a stub cannot state.
+    assert_type(node_groups.new("Tree", "GeometryNodeTree"), GeometryNodeTree)  # oracle-skip: narrowed by ty-blender
     assert_type(libraries.new(), UserAssetLibrary)  # bare-ok: a stub fact: a failure raises
     assert_type(objects.new("Object", None), Object)  # bare-ok: a stub fact: a failure raises
     assert_type(meshes.new_from_object(ob), Mesh)  # bare-ok: a stub fact: a failure raises
