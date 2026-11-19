@@ -23,7 +23,7 @@ Effort: S is an hour or two, M a day, L several days.
 | 2 | ~~`ID.evaluated_get(depsgraph)` returns the receiver's type (`Self`)~~ done in Blender `784231af35` | (b) | 26-57 | S | base-class-subtype |
 | 3 | ~~A preset in `presets/sequencer/text_style/` takes `context.active_strip` as `TextStrip`~~ done in ty-blender | (a) | 54 | S | base-class-subtype |
 | 4 | ~~Tests: `args = None` module globals declared `args: argparse.Namespace`~~ done in Blender | (c) 29 files | 69 | S | unchecked-pointer |
-| 5 | ~~`self.assertIsNotNone(x)` / `self.assertTrue(x)` narrow `x` like `assert x`~~ done in ty-blender (any `self.` receiver) | (a), upstream | 62 | M | unchecked-pointer |
+| 5 | ~~`self.assertIsNotNone(x)` / `self.assertTrue(x)` narrow `x` like `assert x`~~ done in ty-blender (a `unittest.TestCase`'s `self`), with `assertFalse`, `assertIsNone` and `assertIsInstance` | (a), upstream | 62 | M | unchecked-pointer |
 | 6 | ~~`global x` with no module-level binding: declare `x: T` at module level~~ done in Blender | (c) 17 files | 37 | S | general-typing |
 | 7 | ~~Instance attributes initialised to `None`: annotate them (`import_svg`, `bl_usd_import_test`)~~ done in Blender | (c) 2 files | 31 | S | general-typing |
 | 8 | ~~`bl_constraints.py` reads constraints by name: `assert isinstance` per test~~ done in Blender | (c) 1 file | 45 | M | base-class-subtype |

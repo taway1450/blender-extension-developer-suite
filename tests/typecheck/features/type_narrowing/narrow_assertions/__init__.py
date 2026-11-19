@@ -1,13 +1,14 @@
 """Feature test: a test case's assertion stops the test when it fails, as an assert statement does, so the code after
-`self.assertIsNotNone(x)` reads `x` as not None, and after `self.assertTrue(x)` as truthy. Blender's tests read the
+`self.assertIsNotNone(x)` reads `x` as not None, after `self.assertTrue(x)` as truthy, after `self.assertFalse(x)` as
+falsy, after `self.assertIsNone(x)` as None and after `self.assertIsInstance(x, T)` as a `T`. Blender's tests read the
 data they just loaded or made this way. The narrowing holds for the rest of the block, as after an assert statement.
 The TestCase is never run: the assert_type calls are checked statically."""
 
 import unittest
-from typing import assert_type
+from typing import Literal, assert_type
 
 import bpy
-from bpy.types import Object
+from bpy.types import ChildOfConstraint, Constraint, CopyLocationConstraint, Object
 
 
 class NarrowAssertionsTest(unittest.TestCase):
@@ -31,6 +32,28 @@ class NarrowAssertionsTest(unittest.TestCase):
         ob = bpy.data.objects.get("Cube")
         self.assertIsNotNone(ob, "the test file has a cube")
         assert_type(ob, Object)
+
+    def test_is_instance(self) -> None:
+        con = bpy.data.objects["Cube"].constraints["Child Of"]
+        assert_type(con, Constraint)  # bare-ok: before the assertion
+        self.assertIsInstance(con, ChildOfConstraint)
+        assert_type(con, ChildOfConstraint)
+        con.inverse_matrix.identity()
+
+    def test_is_instance_tuple(self) -> None:
+        con = bpy.data.objects["Cube"].constraints[0]
+        self.assertIsInstance(con, (ChildOfConstraint, CopyLocationConstraint), "a parent or location constraint")
+        assert_type(con, ChildOfConstraint | CopyLocationConstraint)
+
+    def test_is_none(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertIsNone(ob)
+        assert_type(ob, None)
+
+    def test_false(self) -> None:
+        ob = bpy.data.objects["Cube"]
+        self.assertFalse(ob.hide_render)
+        assert_type(ob.hide_render, Literal[False])  # as after `assert not ob.hide_render`
 
     def test_other_receiver(self) -> None:
         other = unittest.TestCase()
