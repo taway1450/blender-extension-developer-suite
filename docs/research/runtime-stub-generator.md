@@ -508,3 +508,50 @@ module. So:
   run.
 - The delta manifest schema: one file per add-on, or merged into the blend manifest of
   `blend-file-typing.md` §6?
+
+## 7. Status (2026-11-19): `--generator runtime`
+
+The prototype (formerly `prototypes/runtime_stubs/`, built on introspection alone) answered the viability
+question and has been removed. The product generator is the fork's `doc/python_api/runtime_stub_gen.py`
+(branch `typecheck-fixes`), run by `mise run stubs:generate <version> --generator runtime`. Instead of a
+front end of its own, it runs the doc pipeline inside the running Blender: `sphinx_doc_gen` writes the rst of
+that state and `sphinx_stub_gen` (split into `collect_modules` / `render_stubs` / `write_stubs`) parses and
+renders it in the same process, with docutils from `.cache/runtime-stubs-site`. So the stubs get every table
+the prototype missed, for free: node socket views, `bmesh.ops` types, slot operand types, `RNA_PROPERTY_TYPES`,
+`RNA_SELF_RETURNS` and the keyword-only RNA parameters.
+
+On top of the rst, what only the running Blender has:
+
+- **Startup classes.** A class a Python module registers in `bpy.types` and the rst writes bare (menus, panels,
+  headers) is re-exported from its module with all its members (1,578 on `main`, the S10 gap). A class the
+  module makes at runtime (`type(...)` in `bl_ui.node_add_menu`) is not a module attribute, so it stays bare.
+- **Python source** of the modules the stubs don't render (`bl_ui`, `bl_operators`, the hidden-core add-ons
+  `bl_pkg` / `io_anim_bvh`, and in add-on mode the add-on): copied as `.py`. `check:blender` checks Blender's own
+  scripts, so it reads a mirror without those copies (`.cache/bpy-stubs-runtime-rendered`), or the copies would
+  shadow the checked files.
+- **Add-on mode** (`--addon`, the probe only): properties typed by the add-on's structs, idprop collections,
+  `delta.json`, and `.blend` overlays.
+
+**Provenance (§4.7, item 3).** A first Blender run at factory startup saves preferences with every add-on
+disabled into a user resources folder of the generator's own (`.cache/bpy-stubs-runtime-user/<version>`). The
+generation run loads those preferences, so the factory add-ons (Cycles, glTF, pose library) register nothing
+before the stubs are written: their panels, `Scene.cycles`, `bpy.ops.export_scene.gltf` and the dynamic enum
+items they fill (`IO_FH_gltf2`) stay out. They are enabled afterwards, and what they register goes to
+`.cache/bpy-stubs-runtime-work/<version>/default_addons.json` (122 structs, 16 operators, 14 members). Blender
+5.x keeps `addon_utils._addons_hidden_core` (`bl_pkg`, `io_*` importers) enabled regardless, so those are core
+facts. Disabling add-ons in the same process is not an option: their classes keep a freed `bl_rna`, and
+`_rna_info`'s `__subclasses__` walk crashes on it.
+
+**Measured on `main`** (Blender 5.4 alpha, 66f10cc53b), 45 s in Blender (14 s of rst):
+
+- against builtin on the same build: 26,967 members the same, 1 typed differently; only builtin has the three
+  factory add-ons' 106 classes and 15 members;
+- `check:stubs`: the same 229 `.pyi` diagnostics as builtin;
+- `check:features` and `check:ide`: identical to the builtin baselines
+  (`tests/typecheck/expected/runtime/` was seeded from them);
+- `check:blender`: the builtin summary plus 6 uses of the factory add-ons' operators in Blender's own tests
+  (`bpy.ops.cycles`, `export_scene.gltf`), which is item 3 working as intended. The checker reading
+  `default_addons.json` as an assumption is R5.
+
+Still open: R3's comparison of the delta with `check:load` probes and the Add-on index, extensions in add-on mode,
+the delta's enum / keymap / handler changes, and the error a partially registered add-on logs.

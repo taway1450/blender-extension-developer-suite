@@ -149,3 +149,28 @@ def test_node_socket_views_replace_fake_bpy_module_generator(tmp_path):
     assert not generate_stubs.blender_declares_node_sockets(tmp_path)
     (tmp_path / "bpy.types._ShaderNodeMath_inputs.rst").write_text("")
     assert generate_stubs.blender_declares_node_sockets(tmp_path)
+
+
+def test_all_generators_leave_out_runtime(tmp_path):
+    (tmp_path / generate_stubs.BUILTIN_STUB_GEN).parent.mkdir(parents=True)
+    (tmp_path / generate_stubs.BUILTIN_STUB_GEN).write_text("", encoding="utf-8")
+    (tmp_path / generate_stubs.RUNTIME_STUB_GEN).write_text("", encoding="utf-8")
+
+    assert generate_stubs.resolve_generators("main", tmp_path, generate_stubs.ALL) == [
+        generate_stubs.FAKE_BPY,
+        generate_stubs.BUILTIN,
+    ]
+    assert generate_stubs.resolve_generators("main", tmp_path, generate_stubs.RUNTIME) == [generate_stubs.RUNTIME]
+
+
+def test_runtime_revision_covers_the_whole_python_api_folder(repo):
+    (repo / "doc" / "python_api").mkdir(parents=True)
+    (repo / "doc" / "python_api" / "sphinx_doc_gen.py").write_text("print(1)\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-q", "-m", "docs")
+    clean = generate_stubs.generator_revision(generate_stubs.RUNTIME, repo)
+
+    (repo / "doc" / "python_api" / "sphinx_doc_gen.py").write_text("print(2)\n")
+
+    assert generate_stubs.generator_revision(generate_stubs.RUNTIME, repo) != clean
+    assert generate_stubs.generator_revision(generate_stubs.BUILTIN, repo) == clean

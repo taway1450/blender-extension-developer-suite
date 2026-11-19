@@ -1,16 +1,15 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Run the runtime stub generator prototype (``prototypes/runtime_stubs/``) and compare its stubs with the other two
-generators'.
+"""Compare the runtime stub generator's stubs (the fork's ``doc/python_api/runtime_stub_gen.py``) with the other two
+generators', and run its add-on mode on example add-ons.
 
-- **General mode**: background Blender at factory startup writes ``general/stubs/`` (rendered ``.pyi`` plus the
-  Python source of the script folders) and ``general/facts.json``. ``summary.md`` compares the stubs with the
-  builtin and fake-bpy-module stubs of the same version: modules, classes and members each has alone, and the
-  members of a class both have whose annotation differs.
+- **General mode**: the ``runtime`` stubs of ``stubs:generate`` (generated if needed). ``summary.md`` compares them
+  with the builtin and fake-bpy-module stubs of the same version: modules, classes and members each has alone, and
+  the members of a class both have whose annotation differs.
 - **Add-on mode**, for each example add-on: Blender enables the add-on, writes the delta it made to RNA and
-  ``bpy.ops`` (``addons/<name>/delta.json``), a merged package with the add-on's registrations, and a manifest per
-  ``.blend`` under the add-on (``addons/<name>/blend/``).
+  ``bpy.ops`` (``addons/<name>/work/delta.json``), a merged package with the add-on's registrations
+  (``addons/<name>/stubs/``), and a manifest and an overlay stub per ``.blend`` under the add-on.
 
 Everything goes to ``.cache/runtime-stubs/<version>/``; nothing in the repo is written. The builtin and
 fake-bpy-module stubs must have been generated (``mise run stubs:generate <version>``).
@@ -24,22 +23,30 @@ from __future__ import annotations
 import ast
 import json
 import shutil
+import subprocess
 from collections import Counter
 from pathlib import Path
 
 from _common import REPO_ROOT, StepError, log, main_wrapper
-from _probe import probe_dir, probe_parser, run_blender
-from generate_stubs import BUILTIN, FAKE_BPY, STUBS_DIRS, ensure_worktree, find_blender
+from _probe import probe_dir, probe_parser
+from generate_stubs import (
+    BUILTIN,
+    FAKE_BPY,
+    RUNTIME,
+    RUNTIME_WORK_DIR,
+    STUBS_DIRS,
+    ensure_worktree,
+    find_blender,
+    generate_stubs,
+    runtime_generator_command,
+)
 
-PROTOTYPE = REPO_ROOT / "prototypes" / "runtime_stubs" / "runtime_stub_gen.py"
 EXAMPLE_ADDONS = (
     REPO_ROOT / "prototypes" / "blend_typing" / "examples" / "asset_pack",
     REPO_ROOT / "prototypes" / "blend_typing" / "examples" / "scene_template",
     REPO_ROOT / "tests" / "typecheck" / "features" / "operator_calls" / "opcall_basic",
     REPO_ROOT / "tests" / "typecheck" / "features" / "properties" / "props_registered",
 )
-# Blender options: no auto-run of scripts in the .blend files the add-on mode opens.
-OPTIONS = ("-Y",)
 SAMPLES = 12
 
 
@@ -179,45 +186,73 @@ def compare(runtime: dict, other: dict, other_name: str) -> list[str]:
     return lines
 
 
-def run_generator(blender: Path, source: Path, out: Path, addon: Path | None = None) -> dict:
+def run_addon_mode(version: str, blender: Path, source: Path, addon: Path, out: Path) -> dict:
+    """Run the generator with the add-on folder ``addon`` enabled into ``out`` (``stubs/``, ``work/``); its facts."""
     if out.exists():
-        shutil.rmtree(out)  # no facts, deltas or manifests left from an earlier run
+        shutil.rmtree(out)  # no stubs, deltas or manifests left from an earlier run
     out.mkdir(parents=True)
-    args: list[str | Path] = ["--source", source, "--output", out]
-    if addon is not None:
-        args += ["--addon", addon]
-    code, output = run_blender(blender, PROTOTYPE, *args, log_path=out / "blender.log", options=OPTIONS)
-    if code or not (out / "facts.json").exists():
+    command, env = runtime_generator_command(version, blender, source, out / "stubs", out / "work", addon)
+    proc = subprocess.run(command, capture_output=True, text=True, env={**env, "PYTHONUTF8": "1"})
+    output = proc.stdout + proc.stderr
+    (out / "blender.log").write_text(output, encoding="utf-8")
+    facts = out / "work" / "facts.json"
+    if proc.returncode or not facts.exists():
         raise StepError(f"runtime_stub_gen.py failed (see {out / 'blender.log'}):\n{output[-3000:]}")
-    return json.loads((out / "facts.json").read_text(encoding="utf-8"))
+    return json.loads(facts.read_text(encoding="utf-8"))
 
 
 def addon_section(name: str, out: Path, facts: dict) -> list[str]:
-    delta = json.loads((out / "delta.json").read_text(encoding="utf-8"))
+    delta = json.loads((out / "work" / "delta.json").read_text(encoding="utf-8"))
     lines = [f"### {name}", ""]
     lines.append(
-        f"- Delta: {len(delta['structs'])} new structs, {sum(len(v) for v in delta['properties'].values())} new "
-        f"members on {len(delta['properties'])} existing structs, {len(delta['operators'])} operators, "
+        f"- Delta: {len(delta['structs'])} new structs, {sum(len(v) for v in delta['members'].values())} new "
+        f"members on {len(delta['members'])} existing structs, {len(delta['operators'])} operators, "
         f"{len(delta['modules'])} modules."
     )
     for struct, info in sorted(delta["structs"].items())[:SAMPLES]:
         lines.append(f"  - struct `{struct}` ({info['base']}, {info['module']})")
-    for struct, members in sorted(delta["properties"].items())[:SAMPLES]:
+    for struct, members in sorted(delta["members"].items())[:SAMPLES]:
         lines.append(f"  - `{struct}` gains {', '.join(f'`{m}`' for m in members)}")
     for op in delta["operators"][:SAMPLES]:
         lines.append(f"  - operator `{op}`")
-    for blend in sorted((out / "blend").glob("*.json")):
-        manifest = json.loads(blend.read_text(encoding="utf-8"))
+    lines.append(
+        f"- Properties typed by a struct of the add-on: "
+        f"{', '.join(f'`{p}`' for p in facts['typed_addon_properties']) or 'none'}."
+    )
+    for manifest_path in sorted((out / "work" / "blend").glob("*.json")):
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         counts = ", ".join(f"{len(entry['items'])} {kind}" for kind, entry in sorted(manifest["data"].items()))
-        overlay = out / "stubs" / delta["package"] / "_blend" / f"{Path(manifest['file']).stem}.pyi"
+        overlay = out / "stubs" / delta["package"] / "_blend" / f"{manifest_path.stem}.pyi"
         tree = ast.parse(overlay.read_text(encoding="utf-8"))
         classes = sum(isinstance(node, ast.ClassDef) for node in tree.body)
         lines.append(
             f"- `{manifest['file']}` ({manifest['seconds']} s): {counts}; overlay "
             f"`{overlay.relative_to(out).as_posix()}` with {classes} classes"
         )
-    lines.append(f"- Render errors: {len(facts['render_errors'])}; total {facts['seconds_total']} s.")
+    lines.append(f"- Type reference errors: {len(facts['type_ref_errors'])}; total {facts['seconds_total']} s.")
     return lines + [""]
+
+
+def general_section(facts: dict, default_addons: dict) -> list[str]:
+    return [
+        "## General mode",
+        "",
+        (
+            f"- {facts['seconds_total']} s in Blender ({facts['seconds_rst']} s writing rst with `sphinx_doc_gen`), "
+            f"{facts['rendered_modules']} rendered modules, {facts['copied_python_files']} Python files copied, "
+            f"{len(facts['reexported_classes'])} classes of Python modules re-exported from their modules."
+        ),
+        (
+            f"- Factory add-ons left out (the others are always enabled): {', '.join(default_addons['addons'])}. "
+            f"They register "
+            f"{len(default_addons['structs'])} structs, {len(default_addons['operators'])} operators and "
+            f"{sum(len(v) for v in default_addons['members'].values())} members of built-in structs "
+            f"({', '.join(f'`{k}.{m}`' for k, v in default_addons['members'].items() for m in v)})."
+        ),
+        f"- Type reference errors: {len(facts['type_ref_errors'])}",
+        *[f"  - {e}" for e in facts["type_ref_errors"][:SAMPLES]],
+        "",
+    ]
 
 
 def main() -> int:
@@ -228,28 +263,14 @@ def main() -> int:
     blender = find_blender(args.version, args.blender)
     source = ensure_worktree(args.version)
 
-    log("Runtime stubs, general mode (factory startup)")
-    facts = run_generator(blender, source, out / "general")
-    runtime = read_stubs(out / "general" / "stubs")
-    summary = [f"# Runtime stub generator prototype, Blender {facts['blender']} ({facts['build_hash'][:10]})", ""]
-    summary += [
-        "## General mode",
-        "",
-        (
-            f"- {facts['seconds_total']} s in Blender ({facts['seconds_rna']} s for RNA: `BuildRNAInfo` and the Type-tag probe), "
-            f"{len(facts['modules'])} rendered modules, {facts['copied_python_files']} Python files copied, "
-            f"{facts['startup_reexports']} startup classes re-exported from their modules."
-        ),
-        f"- Default add-ons enabled at factory startup: {', '.join(facts['default_addons_enabled']) or 'none'}.",
-        (
-            f"- Default add-on classes left out: {len(facts['default_addon_classes'])}; their properties on built-in "
-            f"structs left out: {', '.join(f'`{p}`' for p in facts['default_addon_properties']) or 'none'}."
-        ),
-        f"- Render errors: {len(facts['render_errors'])}",
-        *[f"  - {e}" for e in facts["render_errors"][:SAMPLES]],
-        f"- Modules that failed to import: {', '.join(facts['import_failed']) or 'none'}",
-        "",
-    ]
+    log("Runtime stubs, general mode")
+    runtime_stubs = generate_stubs(args.version, generator=RUNTIME, blender=blender, source=source)
+    work = RUNTIME_WORK_DIR / args.version
+    facts = json.loads((work / "facts.json").read_text(encoding="utf-8"))
+    default_addons = json.loads((work / "default_addons.json").read_text(encoding="utf-8"))
+    runtime = read_stubs(runtime_stubs)
+    summary = [f"# Runtime stub generator, Blender {facts['blender']} ({facts['build_hash'][:10]})", ""]
+    summary += general_section(facts, default_addons)
     for generator in (BUILTIN, FAKE_BPY):
         stubs = STUBS_DIRS[generator] / args.version
         if not stubs.is_dir():
@@ -261,7 +282,7 @@ def main() -> int:
     for addon in args.addon or EXAMPLE_ADDONS:
         log(f"Runtime stubs, add-on mode: {addon.name}")
         addon_out = out / "addons" / addon.name
-        addon_facts = run_generator(blender, source, addon_out, addon.resolve())
+        addon_facts = run_addon_mode(args.version, blender, source, addon.resolve(), addon_out)
         summary += addon_section(addon.name, addon_out, addon_facts)
 
     (out / "summary.md").write_text("\n".join(summary) + "\n", encoding="utf-8")

@@ -60,8 +60,8 @@ usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
@@ -82,8 +82,8 @@ flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: d
 flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 flag "--update" help="Record the bucket summary in tests/blender/expected/<generator>/main-summary.txt (main only) instead of comparing"
@@ -107,8 +107,8 @@ flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: d
 }
 flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 '''
 run = '''
@@ -129,8 +129,8 @@ flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: d
 }
 flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 '''
 run = '''
@@ -147,8 +147,8 @@ usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/ (default: all)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 '''
 run = '''
@@ -188,8 +188,8 @@ flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: d
 }
 flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 '''
 run = '''
@@ -210,8 +210,8 @@ flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: d
 flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
@@ -245,8 +245,8 @@ arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blende
 flag "--ruff <path>" help="Use this ruff binary (e.g. from ruff:build) instead of stock ruff"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
@@ -310,8 +310,8 @@ arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blende
 flag "--ruff <path>" help="Use this ruff binary (e.g. from ruff:build) instead of stock ruff"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
@@ -367,8 +367,8 @@ usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 flag "--ref <ref>" help="Blender git ref to check out instead of blender-vX.Y-release / the build name"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
-flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+) or all (both where available)" {
-  choices "fake-bpy-module" "builtin" "all"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
 }
 flag "--force" help="Recreate the source worktree and regenerate the stubs"
 '''
@@ -413,7 +413,7 @@ flag "--update-overlays" help="Write the overlays from B into the example add-on
 run = 'uv run scripts/probe_blend_typing.py {{usage.version}} {% if usage.make %}--make{% endif %} {% if usage.update_overlays %}--update-overlays{% endif %}'
 
 [tasks."probe:runtime-stubs"]
-description = "Run the runtime stub generator prototype (prototypes/runtime_stubs/): stubs from a running Blender at factory startup, compared with the builtin and fake-bpy-module stubs, and each example add-on's runtime delta and .blend content"
+description = "Compare the runtime stubs (stubs:generate --generator runtime) with the builtin and fake-bpy-module stubs, and run the runtime generator on each example add-on: its delta, merged stubs and .blend overlays"
 usage = '''
 arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
 flag "--addon <path>" var=#true help="An add-on folder to run add-on mode on (default: the example add-ons)"

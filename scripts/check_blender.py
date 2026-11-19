@@ -36,16 +36,17 @@ import collections
 import difflib
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
 
 from _buckets import read_diagnostics, samples, summary
-from _common import CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper
+from _common import CACHE_DIR, COMPLETE_MARKER, REPO_ROOT, StepError, git_output, log, main_wrapper
 from _target import Target, add_target_arguments
 from download_blender import BLENDER_BIN_DIR
-from generate_stubs import results_name
+from generate_stubs import RUNTIME, results_name
 
 # Paths (relative to the Blender source root) left out of the check: libraries; the dead 2.7x scripts (tests and the
 # Cycles XML exporter, which still use `tessfaces` and `register_module`); and the gdb extension with the type hints of
@@ -143,6 +144,8 @@ BLENDER_SITE_PACKAGES = [
 # imports them as, and their folder in the Blender source: the checker reads what they register (`scene.cycles`).
 BLENDER_SOURCE_PACKAGES = {"cycles": "intern/cycles/blender/addon"}
 BLENDER_SITE_DIR = CACHE_DIR / "blender-site"
+# The runtime stubs without the Python source they copy from Blender's script folders, per version.
+RUNTIME_RENDERED_DIR = CACHE_DIR / "bpy-stubs-runtime-rendered"
 # The recorded bucket summaries, per stub generator; only BASELINE_VERSION has one.
 EXPECTED_DIR = REPO_ROOT / "tests" / "blender" / "expected"
 BASELINE_VERSION = "main"
@@ -200,9 +203,29 @@ def unlink(link: Path) -> None:
         link.rmdir()  # a junction is removed like a directory, without touching its target
 
 
+def rendered_runtime_stubs(version: str, stubs: Path) -> Path:
+    """The runtime stubs ``stubs`` without the ``.py`` files the generator copies beside them: they are Blender's own
+    scripts, which this check reads from the source, and as stubs they come first on the search path and would
+    shadow the files checked. Kept in RUNTIME_RENDERED_DIR/<version>, refreshed when the stubs' marker changes."""
+    rendered = RUNTIME_RENDERED_DIR / version
+    marker = (stubs / COMPLETE_MARKER).read_text(encoding="utf-8")
+    if (rendered / COMPLETE_MARKER).exists() and (rendered / COMPLETE_MARKER).read_text(encoding="utf-8") == marker:
+        return rendered
+    shutil.rmtree(rendered, ignore_errors=True)
+    shutil.copytree(stubs, rendered, ignore=lambda folder, names: [name for name in names if name.endswith(".py")])
+    # A folder that held only copies (`bpy_extras/wm_utils/`) would be an empty namespace package.
+    for folder in sorted((path for path in rendered.rglob("*") if path.is_dir()), key=lambda p: -len(p.parts)):
+        if not any(folder.iterdir()):
+            folder.rmdir()
+    (rendered / COMPLETE_MARKER).write_text(marker, encoding="utf-8")
+    return rendered
+
+
 def run_ty(target: Target, generator: str, site: Path | None) -> Path:
     assert target.binary is not None
     source, stubs, python_version = target.source, target.stubs[generator], target.python_version
+    if generator == RUNTIME:
+        stubs = rendered_runtime_stubs(target.version, stubs)
     results = CACHE_DIR / "ty-results" / results_name(target.version, generator)
 
     cmd: list[str | Path] = [
