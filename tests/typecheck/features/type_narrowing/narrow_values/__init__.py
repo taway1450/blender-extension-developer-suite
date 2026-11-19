@@ -162,11 +162,29 @@ class NarrowValuesOtherNode(Node):
     bl_label = "Narrow Values Other"
 
 
+class NarrowValuesSharedNode(Node):
+    """Shares its bl_idname with the next class: the one registered last replaces the other in Blender."""
+
+    bl_idname = 'NarrowValuesShared'
+    bl_label = "Narrow Values Shared"
+
+
+class NarrowValuesSharedNodeToo(Node):
+    bl_idname = 'NarrowValuesShared'
+    bl_label = "Narrow Values Shared Too"
+
+
 def register():
     bpy.utils.register_class(NarrowValuesNode)
     bpy.utils.register_class(NarrowValuesOtherNode)
+    bpy.utils.register_class(NarrowValuesSharedNode)
+    bpy.utils.register_class(NarrowValuesSharedNodeToo)
 
 
 def unregister():
+    # Registering NarrowValuesSharedNodeToo replaced NarrowValuesSharedNode.
+    for cls in (NarrowValuesSharedNodeToo, NarrowValuesSharedNode):
+        if cls.is_registered:
+            bpy.utils.unregister_class(cls)
     bpy.utils.unregister_class(NarrowValuesOtherNode)
     bpy.utils.unregister_class(NarrowValuesNode)

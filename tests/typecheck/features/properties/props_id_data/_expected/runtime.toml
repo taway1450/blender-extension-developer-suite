@@ -28,3 +28,4 @@ code = "(lambda ob: ob.id_data is ob)(bpy.data.objects.new('probe', None))"
 expect = true
 reason = "a data-block is its own id_data"
 
+

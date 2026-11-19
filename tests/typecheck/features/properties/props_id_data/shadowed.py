@@ -1,5 +1,5 @@
-"""A group named like the `bpy.types` class it shadows, as rigify's `ActionSlot` is: in `register()`, `Text` may be
-either class."""
+"""A group named like the `bpy.types` class it shadows, as rigify's `ActionSlot` is: `register()` runs once the module
+has rebound `Text` to the group, so its `type=Text` is the group."""
 
 import bpy
 from bpy.props import CollectionProperty, IntProperty

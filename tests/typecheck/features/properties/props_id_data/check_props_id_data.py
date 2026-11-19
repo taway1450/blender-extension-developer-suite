@@ -36,5 +36,5 @@ def data_blocks(obj: Object, scene: Scene, armature: Armature, data_block: ID) -
 
 
 def shadowed(text: ShadowedText) -> None:
-    # `type=Text` in register() reads both the imported bpy.types.Text and the group that shadows it.
+    # In register(), `Text` is the group: the module rebinds the imported bpy.types.Text before it runs.
     assert_type(text.id_data, Curve)

@@ -14,6 +14,8 @@ def own_node(node: Node) -> None:
         assert_type(node, NarrowValuesNode)  # oracle-skip: a narrowing, which a stub cannot state
     if node.bl_idname in ('NarrowValuesNode', 'NarrowValuesOtherNode', 'ShaderNodeMath'):
         assert_type(node, NarrowValuesNode | NarrowValuesOtherNode | ShaderNodeMath)  # oracle-skip: a narrowing
+    if node.bl_idname == 'NarrowValuesShared':
+        assert_type(node, Node)  # bare-ok: two registered classes have this bl_idname
     if node.bl_idname == 'NarrowValuesMissingNode':
         assert_type(node, Node)  # bare-ok: no class has this bl_idname
     if node.bl_idname != 'NarrowValuesNode':
