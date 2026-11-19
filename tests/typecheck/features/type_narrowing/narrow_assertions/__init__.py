@@ -45,6 +45,18 @@ class NarrowAssertionsTest(unittest.TestCase):
         del checks
 
 
+class NotATestCase:
+    """A class with its own `assertIsNotNone`: nothing says it stops when the value is None."""
+
+    def assertIsNotNone(self, value: object) -> None:
+        print(value)
+
+    def check(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertIsNotNone(ob)
+        assert_type(ob, Object | None)  # not a TestCase: its assertion may return
+
+
 def register():
     pass
 
