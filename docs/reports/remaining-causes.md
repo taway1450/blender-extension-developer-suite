@@ -71,16 +71,16 @@ Ranked by kind, then by what it clears. **Now** is implemented with this report;
 |---|---|---:|---|---|
 | R1 | A mixin whose users all derive from `unittest.TestCase` types `self` as the mixin and `TestCase`, as the mixin rule does for `bpy.types` users | 140 | S-M | now |
 | R2 | A dotted `bl_context` (`.mesh_edit`, `.sculpt_mode`, `.grease_pencil_paint`, `.posemode`, ...) gives its mode's facts, as the plain form does; `.paint_common` the intersection, `.objectmode` nothing | 69 | S | now |
-| R3 | `type(X) is T` / `type(X) in {A, B}` as a poll conjunct: `X` is not None (and is `T`) | 55 | S | now |
+| R3 | `type(X) is T` / `type(X) in {A, B}` as a poll conjunct: `X` is not None (and is `T`) | 55 | S | now: not None only; the class from `type(X)` is left to the rule's next step |
 | R4 | `window`, `screen`, `workspace` are Guaranteed in the draw callbacks of a Panel, Menu, Header or UIList | 27 | S | now |
 | R5 | A file in no add-on knows the operators it registers, at any scope (`bpy.ops.x.y()`, `layout.operator("x.y")`) | 35 | S-M | now |
 | R6 | `assertNotEqual(x, None)` narrows like `assertIsNotNone(x)` | 17 | S | now |
-| R7 | Pointer aliases: `particle_system` ⇒ `object`, `active_strip` ⇒ `sequencer_scene`, `tool_settings` is `scene.tool_settings`, `active_pose_bone` ⇒ `active_object` | 16 | S | now |
+| R7 | Pointer aliases: `particle_system` ⇒ `object`, `active_strip` ⇒ `sequencer_scene`, `tool_settings` is `scene.tool_settings`, `active_pose_bone` ⇒ `active_object` | 16 | S | now: the first two; the last two are not aliases (the sequencer gives the sequencer scene's tool settings, a hidden object leaves `active_object` `None`) |
 | R8 | `poll` found past a `bpy.types` base on a mixin listed after it (`class X(Operator, NWBase)`) | 4+ | S | now |
-| R9 | `self.layout` is `UILayout` in a function given to `Menu.append` / `prepend` (or whose `self` is annotated `Menu`, `Panel` or `Header`) | 15 | S | now |
+| R9 | `self.layout` is `UILayout` in a function given to `Menu.append` / `prepend` (or whose `self` is annotated `Menu`, `Panel` or `Header`) | 15 | S | now: the annotated `self`; a function passed to `append` stays later (needs the call site) |
 | R10 | `bpy.data.objects.new(name, data)` is the Type tag view of `data`'s type (`Camera` gives `_Object_CAMERA`, `None` gives `_Object_EMPTY`) | 7 | S | now |
 | R11 | Type tag narrowing on a union of refined bases (narrow each member) | 6 | S | now |
-| R12 | `NodeTreeInterface.new_socket(socket_type="NodeSocketX")` is `NodeTreeInterfaceSocketX` | 4 | S | now |
+| R12 | `NodeTreeInterface.new_socket(socket_type="NodeSocketX")` is `NodeTreeInterfaceSocketX` | 4 | S | now: the call swaps an unsupported type, but the `socket_type` enum rejects one first |
 | R13 | A Registered property written through an intersection receiver (`X & ~AlwaysFalsy` after `if x:`) | 6 | S | now |
 | R14 | Added-object type: after `mesh.primitive_*_add()`, `object.add(type=...)`, `light_add(type=...)`, `context.object` is the tag view of the new type (part of `blender-assumed-added-object`) | ~102 (+23 subclass reads) | M | later: needs an operator-to-type table and the `view_layer.objects.active` alias; next slice |
 | R15 | A Grease Pencil material preset sees `object.active_material.grease_pencil` set (a path form of the preset table); fluid presets see a domain | 63 | S-M | later: pairs with the (c) fix of the preset generator, which writes to the wrong material |
@@ -100,7 +100,7 @@ Ranked by kind, then by what it clears. **Now** is implemented with this report;
 |---|---|---:|---|---|
 | S1 | `animation_data_create()` returns `AnimData` on every ID type with an `animation_data` property (`ID` keeps `\| None`) | 33 | S-M | now |
 | S2 | gpu `Buffer` has the buffer protocol and `__iter__`; `GPUStorageBuf(data)` and `.update()` take any buffer; the `dimensions` setter takes `int \| Sequence[int]`; `GPUFrameBuffer.bind()` is a context manager | 24 | S | now |
-| S3 | `PROP_NEVER_NULL`: strip `transform` / `crop`, `AreaSpaces.active`, Graph and NLA `dopesheet`, `RenderEngine.view_draw`'s `context` | 16 | S | now |
+| S3 | `PROP_NEVER_NULL`: strip `transform` / `crop`, `AreaSpaces.active`, Graph and NLA `dopesheet`, `RenderEngine.view_draw`'s `context` | 16 | S | now, but `view_draw`'s `context` (a callback parameter, not a pointer property) stays |
 | S4 | `bpy_prop_collection.items() -> list[tuple[str, _T]]`, `values() -> list[_T]` | 13 | S | now |
 | S5 | `ShapeKey.data` items are `ShapeKeyPoint \| ShapeKeyCurvePoint \| ShapeKeyBezierPoint` | 8 | S | now |
 | S6 | `bpy_prop_array.foreach_get` / `foreach_set` take a buffer; `Vector.cross` takes any sequence | 10 | S | now |

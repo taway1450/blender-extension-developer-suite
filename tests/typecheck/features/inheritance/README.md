@@ -75,9 +75,9 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
 | `inh_registered_base` | `blender-registered-base`: an operator, panel, menu, UI list and node registered together with a subclass, in both orders; a `PropertyGroup` chain (no error). Its probes confirm which classes break |
 | `inh_inherited_idname` | `blender-duplicate-registration` and `blender-registered-base`: a child without its own `bl_idname` replaces the parent (unregister fails) |
 | `inh_mixins` | mixins before and after the base, a mixin of a mixin, untyped plain mixins, a Blender-based intermediate base; `blender-mixin-order` for `Operator.as_keywords`, `Menu.append` and `Node.poll`. Its probes confirm which method wins |
-| `inh_mixin_self` | `self` in mixins whose users are in another module: a Panel mixin's draw helper reads `self.layout` and `self.bl_label`, an Operator mixin `self.report`; a mixin used by a Panel and a Menu (drawn) and one used by a Panel and an Operator (`layout` may be `None`); a Panel mixin calling `self.report` and a mixin with no user (`missing-attribute`). `ide_inh_mixin_self.py`: hover and completion on `self` in a mixin |
+| `inh_mixin_self` | `self` in mixins whose users are in another module: a Panel mixin's draw helper reads `self.layout` and `self.bl_label`, an Operator mixin `self.report`; a mixin used by a Panel and a Menu (drawn) and one used by a Panel and an Operator (`layout` may be `None`); a mixin used by two `unittest.TestCase` subclasses (its `assertIsNotNone` resolves and narrows); a Panel mixin calling `self.report` and a mixin with no user (`missing-attribute`). `ide_inh_mixin_self.py`: hover and completion on `self` in a mixin |
 | `inh_bases` | `blender-invalid-base` for two Blender bases; in `check_inh_bases.py` unregistrable bases (the stubs already reject them: `invalid-argument-type`), an `ABC` mixin (`conflicting-metaclass`) and a `__slots__` mixin (`instance-layout-conflict`), reported on that class only, not on its subclasses |
-| `inh_overrides` | every Operator callback, Panel, Menu, Header, UIList, NodeTree, NodeSocket and Node callbacks without annotations; renamed, partly annotated, `*args`, keyword-only and `**kwargs` variants; `draw_item` with 7 and 10 parameters; a callback behind a decorator other than `classmethod` / `staticmethod` (not checked); in `check_inh_overrides.py`, `self.layout` in a `draw` with a renamed `self` and through `layout = self.layout`, in helper methods of a Panel, Menu and Header, and in an Operator helper and another panel's `layout` (may be `None`) |
+| `inh_overrides` | every Operator callback, Panel, Menu, Header, UIList, NodeTree, NodeSocket and Node callbacks without annotations; renamed, partly annotated, `*args`, keyword-only and `**kwargs` variants; `draw_item` with 7 and 10 parameters; a callback behind a decorator other than `classmethod` / `staticmethod` (not checked); in `check_inh_overrides.py`, `self.layout` in a `draw` with a renamed `self` and through `layout = self.layout`, in helper methods of a Panel, Menu and Header, in module-level functions whose first parameter is annotated `Menu`, `Panel` or a Header subclass, and in an Operator helper or a function taking an `Operator` and another panel's `layout` (may be `None`) |
 | `inh_override_types` | incompatible annotations (`incompatible-method-override`), compatible ones (no error), unannotated returns Blender cannot convert (`invalid-explicit-return`, `invalid-implicit-return` without a return), `poll` returning any value; a set of fewer result names or a `frozenset` for `execute` / `invoke` / `modal`, a result name that does not exist (`incompatible-method-override`); `UIList.filter_items` returning two lists |
 | `generated/inh_invalid_*` | `blender-invalid-override` and `blender-missing-callback`: one add-on per class Blender rejects (18 cases: wrong parameter counts, `poll`/`description` not a classmethod, a classmethod `execute`, `draw_item` with 6 or 11 parameters, `draw`/`draw_header` with an extra parameter, `Panel`/`Menu`/`Header`/`NodeSocket` without `draw`), from `scripts/feature_generators/inheritance.py`. Each fails at register with the error its `runtime.toml` names |
 
@@ -99,14 +99,18 @@ but none of these rules; mixins appear only in examples (`bpy.types.Panel`, `bpy
   module of the add-on (for a file in no add-on, such as Blender's `bl_ui`, in its folder). In Blender `self` is
   always one of them. Only what every user's Blender class has resolves, so a Panel mixin's `self.report` stays
   `missing-attribute`, and a mixin with no user keeps its bare type (its users may be in another add-on or made at
-  runtime). A mixin method is a draw callback when it is one for every user. This is silent: no rule reports it.
+  runtime). A mixin method is a draw callback when it is one for every user. A test mixin is typed the same way: a
+  user that derives from `unittest.TestCase` (and has no `bpy.types` class) counts with `TestCase` as its class, so
+  a mixin of test cases has their assertions. This is silent: no rule reports it.
 - Where Blender rejects an override, `blender-invalid-override` replaces ty's own `incompatible-method-override`
   (fewer or more positional parameters, a missing classmethod or a wrong one). The renamed parameters and the short
   `draw_item` that ty reports as `incompatible-method-override` are no error. A `def` with any other decorator than
   `classmethod` / `staticmethod` is neither checked nor typed: Blender gets what the decorator returns.
 - `self.layout` (the method's first parameter, whatever its name) is `UILayout` in every instance method of a
   Panel, Menu or Header, the draw callbacks and the helpers they call on `self` alike: Python only ever sees an
-  instance of these classes while Blender draws it (`poll` is a classmethod). In an Operator only `draw` gets it;
+  instance of these classes while Blender draws it (`poll` is a classmethod). So does a module-level function whose
+  first parameter is annotated with such a class (`def menu_func(self: Menu, context)`, given to `Menu.append`).
+  In an Operator only `draw` gets it;
   an Operator helper and another instance's `layout` keep the stubs' `UILayout | None`.
 - `blender-missing-callback` on the class line of a registered `Panel`, `Menu`, `Header` or `NodeSocket` without
   `draw`.

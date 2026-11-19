@@ -20,6 +20,13 @@ while a pointer no alias covers keeps its stub type. An area's type, which names
   The one gap: `Brush.use_paint_grease_pencil` / `use_vertex_grease_pencil` (`rna_brush.cc`) set a Grease Pencil bit
   on `ob_mode` without allocating the settings, so a brush loaded without them (not one made in Python) can be given a
   Grease Pencil mode by a script.
+- **Context pointers set together** (`screen_context.cc`, `buttons_context.cc`): `context.particle_system` is provided
+  by the Properties editor only, from a context path through an object (`buttons_context_path_particle`), so
+  `context.object` is set; `context.active_strip` is the active strip of `CTX_data_sequencer_scene`
+  (`screen_ctx_active_strip`), so `context.sequencer_scene` is set. Not aliases: `active_pose_bone` and
+  `active_object` (the 3D viewport leaves `active_object` `None` for a hidden object in object mode,
+  `view3d_context.cc`, while the pose bone may be of the armature that deforms it), and `tool_settings` and
+  `scene.tool_settings` (the sequencer gives the sequencer scene's).
 
 ## What the checker does
 
@@ -33,6 +40,7 @@ while a pointer no alias covers keeps its stub type. An area's type, which names
 | Addon | Variant |
 | --- | --- |
 | `ptr_node_editor` | Node Wrangler's `nw_check` (`node_tree`) and `nw_check_active` (`active_node`) in a helper, read as `edit_tree` and `edit_tree.nodes.active` in `execute`; the reverse direction in a Panel; errors: `edit_tree` does not imply `node_tree`, `node_tree` no active node |
+| `ptr_context` | `context.object` after a poll on `particle_system`, `context.sequencer_scene` after one on `active_strip`; guard: `active_object` after a poll on `active_pose_bone` |
 | `ptr_brush` | `gpencil_paint.brush` after a poll, `gpencil_weight_paint` / `gpencil_vertex_paint` after the draw's own test; guard: a sculpt brush |
 
 The narrowing markers are `oracle-skip`: the reference stubs cannot express a narrowing. **Named exceptions:** on 5.2

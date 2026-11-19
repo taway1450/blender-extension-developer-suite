@@ -1,5 +1,5 @@
 """Feature test: a test case's assertion stops the test when it fails, as an assert statement does, so the code after
-`self.assertIsNotNone(x)` reads `x` as not None, after `self.assertTrue(x)` as truthy, after `self.assertFalse(x)` as
+`self.assertIsNotNone(x)` (or `self.assertNotEqual(x, None)`) reads `x` as not None, after `self.assertTrue(x)` as truthy, after `self.assertFalse(x)` as
 falsy, after `self.assertIsNone(x)` as None and after `self.assertIsInstance(x, T)` as a `T`. Blender's tests read the
 data they just loaded or made this way. The narrowing holds for the rest of the block, as after an assert statement.
 The TestCase is never run: the assert_type calls are checked statically."""
@@ -17,6 +17,21 @@ class NarrowAssertionsTest(unittest.TestCase):
         self.assertIsNotNone(ob)
         assert_type(ob, Object)
         self.assertEqual(ob.name, "Cube")
+
+    def test_not_equal_none(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertNotEqual(ob, None)
+        assert_type(ob, Object)
+
+    def test_none_not_equal(self) -> None:
+        ob = bpy.data.objects["Cube"]
+        self.assertNotEqual(None, ob.animation_data, "the cube is animated")
+        assert_type(ob.animation_data, bpy.types.AnimData)
+
+    def test_not_equal_other(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertNotEqual(ob, bpy.data.objects.get("Sphere"))
+        assert_type(ob, Object | None)  # bare-ok: only a comparison with None says it is set
 
     def test_true(self) -> None:
         ob = bpy.data.objects.get("Cube")

@@ -17,6 +17,9 @@
   the editor's `Space` subclass (`'VIEW_3D'` gives `SpaceView3D`; `'TOPBAR'`, `'STATUSBAR'` and `'EMPTY'` have none
   and give `Space`). The subclass is the one whose Type tag (`SpaceView3D.type: Literal['VIEW_3D']`) names it.
   `GizmoGroup.setup_keymap` runs when the key map is set up, outside any editor, and gets nothing of this.
+- **Drawn inside a window:** Blender draws a Panel, Menu, Header or UIList only in a window's screen, so `window`,
+  `screen` and `workspace` are set in their draw callbacks (`draw`, `draw_header`, `draw_header_preset`, `draw_item`,
+  `draw_filter`). An operator may run in background mode, with no window.
 - **`temp_override`:** `Context.temp_override(**members)` puts the members passed in front of the context's own until
   the `with` block ends (`bpy_rna_context.cc`), in any function.
 - **No editor:** a Menu (`wm.call_menu` from any editor), a UIList (drawn in any layout), an Operator (run from
@@ -41,7 +44,7 @@ editor, but that was not confirmed.
 
 | Addon | Variant |
 | --- | --- |
-| `ctx_members` | the six members in `Panel.poll` / `draw`, `Operator.execute`, `Menu.draw`, `UIList.draw_item`; `bpy.context`, a renamed parameter, an alias, a comprehension; `blend_data` still `\| None` in a nested `def`, a helper and at module level |
+| `ctx_members` | the six members in `Panel.poll` / `draw`, `Operator.execute`, `Menu.draw`, `UIList.draw_item`; `window`, `screen` and `workspace` in `Panel.draw` / `draw_header`, `Menu.draw`, `UIList.draw_item`, `Header.draw` (still `\| None` in `Operator.execute`); `bpy.context`, a renamed parameter, an alias, a comprehension; `blend_data` still `\| None` in a nested `def`, a helper and at module level |
 | `ctx_spaces` | `space_data` / `area` / `region` in a `VIEW_3D` Panel, a Panel whose base sets `bl_space_type`, `PROPERTIES` and `TOPBAR` Headers, a GizmoGroup; still `\| None` in a Menu, a UIList and an Operator |
 | `ctx_temp_override` | `bpy.context` in a function, `context` in `execute`, a typed `Context` parameter; guards: a member not passed, a read after the block, a read after `context` is rebound in the block |
 

@@ -86,3 +86,21 @@ class INH_OVERRIDES_OT_check_layout(Operator):  # ty: ignore[blender-unregistere
 
     def _draw_config(self) -> None:
         assert_type(self.layout, UILayout | None)  # bare-ok: an Operator's helper may run outside draw, where its layout is None
+
+
+def check_menu_func(self: Menu, context: Context) -> None:  # a function given to `Menu.append`
+    assert_type(self.layout, UILayout)  # oracle-skip: a Menu instance exists only while Blender draws it
+    layout = self.layout
+    assert_type(layout, UILayout)  # oracle-skip: a Menu instance exists only while Blender draws it
+
+
+def check_panel_func(panel: Panel, context: Context) -> None:  # a function given to `Panel.prepend`
+    assert_type(panel.layout, UILayout)  # oracle-skip: a Panel instance exists only while Blender draws it
+
+
+def check_header_func(self: INH_OVERRIDES_HT_check_layout, context: Context) -> None:
+    assert_type(self.layout, UILayout)  # oracle-skip: a Header instance exists only while Blender draws it
+
+
+def check_operator_func(self: Operator, context: Context) -> None:
+    assert_type(self.layout, UILayout | None)  # bare-ok: an Operator instance exists outside draw too

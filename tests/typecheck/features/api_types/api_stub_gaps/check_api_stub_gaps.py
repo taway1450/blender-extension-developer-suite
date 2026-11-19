@@ -5,12 +5,16 @@ element type, bpy.data's (name, library) key, the context store members Blender'
 item and slice assignment and buffer protocol of the math types, rna_type, the sequences a BMesh operator's element
 buffer takes, the argument types of C functions and RNA functions, the type ID.copy returns, BMesh layer access,
 context.property, positional callbacks, dynamic enums, read-only attributes, the ID id_data is from, two documented
-returns and Freestyle's undocumented members and generators. These are stub facts.
+returns and Freestyle's undocumented members and generators, the AnimData animation_data_create always gives an ID
+type that has one, the gpu buffer protocols, the pointers Blender always allocates, the typed items and values of a
+collection, a shape key's points, refined bases and the members every subclass declares, and the argument types
+docstrings left too narrow. These are stub facts.
 The overrides of Freestyle's methods, the render engine's update callbacks and a gizmo's draw_select are in __init__.py:
 an incompatible override would be an unexpected diagnostic there."""
 
 from __future__ import annotations
 
+import array
 from collections.abc import Callable, Iterator, Sequence
 from contextlib import AbstractContextManager
 from types import MappingProxyType
@@ -22,11 +26,16 @@ import bpy
 import gpu
 import imbuf
 from bmesh.types import BMEdge, BMElemSeq, BMesh, BMFace, BMLayerItem, BMLoop, BMVert
-from bpy.types import (Area, AssetShelf, BlendData, Camera, Constraint, Context, Depsgraph, FreestyleModuleSettings,
-                       Gizmo, ID, KeyMap, Library, Material, Mesh, MeshVertex, Modifier, Node, NodeTree,
-                       NodeTreeInterface, NodeTreeInterfaceSocket, Object, Operator, OperatorProperties, PoseBone,
-                       Preferences, PropertyGroup, RenderEngine, Scene, Strip, Struct, UILayout, ViewLayer, WorkSpaceTool,
-                       bpy_struct)
+from bpy.props import BoolVectorProperty, FloatVectorProperty, IntVectorProperty
+from bpy.types import (AnimData, Area, Armature, AssetShelf, Attribute, BlendData, BoneCollection, Camera,
+                       ColorManagedDisplaySettings, ColorManagedViewSettings, Constraint, Context, Curve, Depsgraph,
+                       DopeSheet, FreestyleModuleSettings, Gizmo, ID, Image, ImageStrip, Itasc, KeyMap, Library, Light,
+                       Material, Mesh, MeshVertex, Modifier, Node, NodeTree, NodeTreeInterface, NodeTreeInterfaceSocket,
+                       Object, Operator, OperatorProperties, Pose, PoseBone, Preferences, PropertyGroup, RenderEngine,
+                       Scene, ShapeKey, ShapeKeyBezierPoint, ShapeKeyCurvePoint, ShapeKeyPoint, Space, SpaceGraphEditor,
+                       SpaceNLA, Strip, StripCrop, StripTransform, Struct, UILayout, UserAssetLibrary, ViewLayer,
+                       WorkSpaceTool, bpy_prop_collection, bpy_struct)
+from bpy_extras.asset_utils import SpaceAssetInfo
 from bpy_extras.anim_utils import BakeOptions
 from freestyle.chainingiterators import pyChainSilhouetteGenericIterator
 from freestyle.functions import pyDensityAnisotropyF1D
@@ -35,13 +44,23 @@ from freestyle.shaders import ConstantThicknessShader, SamplingShader
 from freestyle.types import (Interface0DIterator, Interface1D, Noise, Operators, Stroke, StrokeVertex,
                              UnaryFunction0DDouble, UnaryFunction1DDouble, UnaryPredicate1D, ViewEdge)
 from freestyle.utils import BoundingBox, get_strokes, iter_distance_from_camera, iter_t2d_along_stroke, pairwise, stroke_normal
-from gpu.types import GPUOffScreen, GPUShader, GPUVertFormat
+from gpu.types import Buffer, GPUFrameBuffer, GPUOffScreen, GPUShader, GPUStorageBuf, GPUVertFormat
+from gpu_extras.batch import batch_for_shader
 from imbuf.types import ImBuf, ImBufFileType
 from mathutils import Matrix, Quaternion, Vector
 
 from . import API_STUB_GAPS_OT_describe, bake_options
 
 Result: TypeAlias = set[Literal["RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"]]
+AttributeData: TypeAlias = (
+    bpy_prop_collection[bpy.types.BoolAttributeValue] | bpy_prop_collection[bpy.types.ByteColorAttributeValue] |
+    bpy_prop_collection[bpy.types.ByteIntAttributeValue] | bpy_prop_collection[bpy.types.Float2AttributeValue] |
+    bpy_prop_collection[bpy.types.Float4AttributeValue] | bpy_prop_collection[bpy.types.Float4x4AttributeValue] |
+    bpy_prop_collection[bpy.types.FloatAttributeValue] | bpy_prop_collection[bpy.types.FloatColorAttributeValue] |
+    bpy_prop_collection[bpy.types.FloatVectorAttributeValue] | bpy_prop_collection[bpy.types.Int2AttributeValue] |
+    bpy_prop_collection[bpy.types.IntAttributeValue] | bpy_prop_collection[bpy.types.QuaternionAttributeValue] |
+    bpy_prop_collection[bpy.types.Short2AttributeValue] | bpy_prop_collection[bpy.types.StringAttributeValue]
+)
 
 
 def as_predicate(predicate: UnaryPredicate1D) -> UnaryPredicate1D:
@@ -263,3 +282,87 @@ def freestyle_generators(stroke: Stroke, points: list[Vector]) -> None:
     assert_type(iter_distance_from_camera(stroke, 0.0, 1.0, 1.0), Iterator[tuple[StrokeVertex, float]])  # bare-ok: a stub fact: a generator, not None
     assert_type(stroke_normal(stroke), Iterator[Vector])  # bare-ok: a stub fact: a generator, not None
     assert_type(get_strokes(), tuple[Stroke, ...])  # bare-ok: a stub fact: the strokes, not None
+
+
+def animation_data_create(ob: Object, material: Material, scene: Scene, id_: ID) -> None:
+    assert_type(ob.animation_data_create(), AnimData)  # bare-ok: a stub fact: an ID type with animation data always gets it
+    assert_type(material.animation_data_create(), AnimData)  # bare-ok: a stub fact: an ID type with animation data always gets it
+    assert_type(scene.animation_data_create(), AnimData)  # bare-ok: a stub fact: an ID type with animation data always gets it
+    assert_type(id_.animation_data_create(), AnimData | None)  # bare-ok: a stub fact: None for an ID type without animation data
+
+
+def gpu_buffers(buffer: Buffer, framebuffer: GPUFrameBuffer, storage: GPUStorageBuf, data: bytes,
+                values: array.array[float]) -> None:
+    assert_type(memoryview(buffer), memoryview)  # bare-ok: a stub fact: a gpu Buffer is a buffer
+    assert_type(bytes(buffer), bytes)  # bare-ok: a stub fact: so bytes() copies it
+    assert_type(list(buffer), list[Any])  # bare-ok: a stub fact: it iterates over its items (a value, or a row Buffer)
+    assert_type(gpu.types.GPUStorageBuf(data), GPUStorageBuf)  # bare-ok: a stub fact: a storage buffer takes any buffer
+    storage.update(values)  # a stub fact: and so does its update
+    buffer.dimensions = 16  # a stub fact: the dimensions take an int
+    buffer.dimensions = (4, 4)  # a stub fact: or a sequence of ints
+    assert_type(buffer.dimensions, list[int])  # bare-ok: a stub fact: and read as a list
+    with framebuffer.bind():  # a stub fact: a frame buffer binding is a context manager
+        pass
+    assert_type(framebuffer.bind(), AbstractContextManager[None])  # bare-ok: a stub fact: entering it gives None
+
+
+def always_allocated(strip: ImageStrip, area: Area, graph: SpaceGraphEditor, nla: SpaceNLA) -> None:
+    assert_type(strip.transform, StripTransform)  # bare-ok: a stub fact: allocated for every strip but a sound strip
+    assert_type(strip.crop, StripCrop)  # bare-ok: a stub fact: allocated for every strip but a sound strip
+    assert_type(area.spaces.active, Space)  # bare-ok: a stub fact: an area always has a space
+    assert_type(graph.dopesheet, DopeSheet)  # bare-ok: a stub fact: the Graph editor allocates it
+    assert_type(nla.dopesheet, DopeSheet)  # bare-ok: a stub fact: the NLA editor allocates it
+
+
+def collection_items(data: BlendData) -> None:
+    assert_type(data.objects.items(), list[tuple[str, Object]])  # bare-ok: a stub fact: (name, item) pairs
+    assert_type(data.objects.values(), list[Object])  # bare-ok: a stub fact: the items
+
+
+def shape_key_points(shape_key: ShapeKey) -> None:
+    assert_type(shape_key.data[0], ShapeKeyPoint | ShapeKeyCurvePoint | ShapeKeyBezierPoint)  # bare-ok: a stub fact: refined by the Key's owner
+
+
+def array_buffers(image: Image, values: array.array[float], vector: Vector) -> None:
+    image.pixels.foreach_get(values)  # a stub fact: an array fills a buffer
+    image.pixels.foreach_set(values)  # a stub fact: and reads one
+    assert_type(vector.cross((0.0, 0.0, 1.0)), Vector | float)  # bare-ok: a stub fact: cross takes any sequence of floats
+
+
+def refined_bases(pose: Pose, light: Light, library: UserAssetLibrary, attribute: Attribute,
+                  bone_collection: BoneCollection) -> None:
+    assert_type(pose.ik_param, Itasc | None)  # bare-ok: a stub fact: only the iTaSC solver has parameters
+    assert_type(light.shadow_maximum_resolution, float)  # bare-ok: a stub fact: every light type declares it
+    assert_type(library.path, str)  # bare-ok: a stub fact: both asset library types declare it
+    assert_type(attribute.data, AttributeData)  # bare-ok: a stub fact: every attribute type declares it, of its values
+    assert_type(bone_collection.id_data, Armature)  # bare-ok: a stub fact: a bone collection's ID is its armature
+
+
+def matrix_get(self: bpy_struct) -> tuple[tuple[float, float], tuple[float, float]]:
+    return (1.0, 0.0), (0.0, 1.0)
+
+
+def matrix_set(self: bpy_struct, value: tuple[Any, ...]) -> None:
+    pass
+
+
+def docstring_types(view_settings: ColorManagedViewSettings, display_settings: ColorManagedDisplaySettings,
+                    curve: Curve, data: BlendData, space: Space | None, shader: GPUShader,
+                    indices: array.array[int], vertices: list[tuple[float, float]]) -> None:
+    FloatVectorProperty(size=(2, 2), get=matrix_get, set=matrix_set)  # a stub fact: a nested sequence for a 2D size
+    IntVectorProperty(size=(2, 2), get=lambda self: ((1, 0), (0, 1)))  # a stub fact: a nested sequence for a 2D size
+    BoolVectorProperty(size=(2, 2), get=lambda self: ((True, False), (False, True)))  # a stub fact: and of bools
+    assert_type(view_settings.view_transform, str)  # bare-ok: a stub fact: the view transforms of the OCIO configuration
+    assert_type(view_settings.look, str)  # bare-ok: a stub fact: the looks of the OCIO configuration
+    assert_type(display_settings.display_device, str)  # bare-ok: a stub fact: the displays of the OCIO configuration
+    assert_type(curve.fill_mode, str)  # bare-ok: a stub fact: a 2D curve has other fill modes than a 3D one
+    assert_type(data.curves.bl_rna, Struct)  # bare-ok: a stub fact: a collection with functions has their struct's bl_rna
+    assert_type(data.curves.rna_type, Struct)  # bare-ok: a stub fact: and its rna_type
+    assert_type(isinstance(data.curves.new, bpy.types.bpy_func), bool)  # bare-ok: a stub fact: the class of an RNA function
+    assert_type(issubclass(bpy.types.bpy_struct_meta_idprop, type), bool)  # bare-ok: a stub fact: the metaclass of the classes with ID properties
+    assert_type(SpaceAssetInfo.is_asset_browser(space), bool)  # bare-ok: a stub fact: it tests for None
+    assert_type(bpy.path.ensure_ext(b"name", b".blend"), bytes)  # bare-ok: a stub fact: a bytes path gives bytes
+    assert_type(bpy.path.ensure_ext("name", ".blend"), str)  # bare-ok: a stub fact: and a str path a str
+    assert_type(bpy.types.UI_UL_list.filter_items_by_name("*", 1, data.objects), list[int])  # bare-ok: a stub fact: a collection's items
+    assert_type(bpy.types.UI_UL_list.sort_items_by_name(data.objects), list[int])  # bare-ok: a stub fact: a collection's items
+    batch_for_shader(shader, 'TRIS', {"pos": vertices}, indices=indices)  # a stub fact: the indices take a buffer

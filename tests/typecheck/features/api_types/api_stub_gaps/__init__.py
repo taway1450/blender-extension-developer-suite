@@ -186,5 +186,19 @@ def module_members():
     return " ".join(type(value).__name__ for value in values)
 
 
+def ik_params():
+    """The class name of a pose's IK parameters with the iTaSC solver, and the parameters with the legacy one."""
+    ob = bpy.data.objects.new("api_stub_gaps_ik", bpy.data.armatures.new("api_stub_gaps_ik"))
+    scene = bpy.data.scenes[0]
+    scene.collection.objects.link(ob)
+    scene.view_layers[0].update()
+    pose = ob.pose
+    assert pose is not None
+    pose.ik_solver = 'ITASC'
+    itasc = type(pose.ik_param).__name__
+    pose.ik_solver = 'LEGACY'
+    return f"{itasc} {pose.ik_param}"
+
+
 classes = (API_STUB_GAPS_OT_describe, API_STUB_GAPS_Engine, API_STUB_GAPS_GT_select)
 register, unregister = bpy.utils.register_classes_factory(classes)

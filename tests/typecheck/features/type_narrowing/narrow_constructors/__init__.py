@@ -3,16 +3,21 @@ refines the new struct like any other. `constraints.new('COPY_LOCATION')` gives 
 `lights.new(name, 'SPOT')` a SpotLight, `attributes.new(name, 'FLOAT', 'POINT')` a FloatAttribute: the parameter
 and the tag share an `rna_enum_*` alias. `nodes.new(type=...)` and `gizmos.new(...)` take a `bl_idname`, a
 built-in one or an add-on class's (`NarrowConstructorsGizmo.bl_idname`), and so do a node's `inputs.new(...)`
-and `outputs.new(...)` (a socket's) and `bpy.data.node_groups.new(name, ...)` (a tree's). A value no class
-declares, a non-literal argument and an add-on node's `bl_idname` read from no class keep the stub type. The
+and `outputs.new(...)` (a socket's) and `bpy.data.node_groups.new(name, ...)` (a tree's). A node tree interface's
+`new_socket(socket_type=...)` takes a socket's `bl_idname` and returns its interface socket
+(`NodeTreeInterfaceSocketFloat` for `NodeSocketFloat`); a socket type the tree does not support raises `TypeError`.
+`bpy.data.objects.new(name, data)` takes the object type from
+the data, so it returns that type's tag view (`_Object_CAMERA` for a camera, `_Object_EMPTY` for None). A value no
+class declares, a non-literal argument and an add-on node's `bl_idname` read from no class keep the stub type. The
 narrowing is silent. The assert_type calls are no-ops at runtime."""
 
-from typing import assert_type
+from typing import Literal, assert_type
 
 import bpy
-from bpy.types import (Constraint, CopyLocationConstraint, FloatAttribute, Gizmo, GizmoGroup, Light, Mesh, Node,
-                       NodeSocket, NodeSocketColor, NodeSocketFloat, NodeTree, Object, ShaderNodeMath, ShaderNodeTree,
-                       SpotLight, SunLight, TrackToConstraint)
+from bpy.types import (ID, Camera, Constraint, CopyLocationConstraint, FloatAttribute, Gizmo, GizmoGroup, Light, Mesh,
+                       Node, NodeSocket, NodeSocketColor, NodeSocketFloat, NodeTree, NodeTreeInterfaceSocket,
+                       NodeTreeInterfaceSocketFloat, Object, ShaderNodeMath, ShaderNodeTree, SpotLight, SunLight,
+                       TrackToConstraint)
 
 
 def follow(ob: Object, target: Object) -> None:
@@ -51,6 +56,26 @@ def math_node(tree: NodeTree) -> None:
     node.operation = 'MULTIPLY'
     other = tree.nodes.new('ShaderNodeMath')
     assert_type(other, ShaderNodeMath)
+
+
+def interface_sockets(tree: NodeTree) -> None:
+    socket = tree.interface.new_socket("Factor", in_out='INPUT', socket_type='NodeSocketFloat')
+    assert_type(socket, NodeTreeInterfaceSocketFloat)
+    socket.min_value = 0.0
+    unknown = tree.interface.new_socket("Own", socket_type='NarrowConstructorsUnknown')
+    assert_type(unknown, NodeTreeInterfaceSocket)  # bare-ok: no interface socket for this bl_idname
+
+
+def objects(camera: Camera, mesh: Mesh | None, data: ID) -> None:
+    ob = bpy.data.objects.new("Camera", camera)
+    assert_type(ob.data, Camera)
+    assert_type(ob.type, Literal['CAMERA'])
+    empty = bpy.data.objects.new("Empty", None)
+    assert_type(empty.type, Literal['EMPTY'])
+    maybe = bpy.data.objects.new("Mesh", mesh)
+    assert_type(maybe.type, Literal['MESH', 'EMPTY'])
+    other = bpy.data.objects.new("Other", data)
+    assert_type(other, Object)  # bare-ok: any ID names no object type
 
 
 def unknown_node(tree: NodeTree) -> None:

@@ -1,8 +1,12 @@
 """Reference stub delta: the matrix stack and an off-screen binding are context managers; entering them gives None.
-A vertex format's attr_add returns the attribute's index, and a shader's uniform_float takes a matrix."""
+A vertex format's attr_add returns the attribute's index, and a shader's uniform_float takes a matrix. A Buffer is a
+buffer and iterates over its items, its dimensions take an int or a sequence of ints, a storage buffer takes any buffer,
+and a frame buffer binding is a context manager."""
 
-from collections.abc import Sequence
-from typing import Literal
+import collections.abc
+import contextlib
+from collections.abc import Iterator, Sequence
+from typing import Any, Literal
 
 from mathutils import Matrix
 
@@ -19,3 +23,18 @@ class MatrixStackContext:
 class OffScreenStackContext:
     def __enter__(self) -> None: ...
     def __exit__(self, exc_type: type | None, exc_value: BaseException | None, traceback: BaseException | None, /) -> bool: ...
+
+class Buffer:
+    def __iter__(self) -> Iterator[Any]: ...
+    def __buffer__(self, flags: int, /) -> memoryview: ...
+    @property
+    def dimensions(self) -> list[int]: ...
+    @dimensions.setter
+    def dimensions(self, value: int | Sequence[int]) -> None: ...
+
+class GPUStorageBuf:
+    def __init__(self, data: collections.abc.Buffer) -> None: ...
+    def update(self, data: collections.abc.Buffer) -> None: ...
+
+class GPUFrameBuffer:
+    def bind(self) -> contextlib.AbstractContextManager[None]: ...

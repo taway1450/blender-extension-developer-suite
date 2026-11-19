@@ -33,6 +33,10 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.libraries.load(path, link=True) as (data_from, data_to):
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-context-manager | with data.temp_data() as temp:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(temp, BlendData)  # bare-ok: a stub fact: entering temp_data gives a temporary BlendData
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-assignment | buffer.dimensions = 16  # a stub fact: the dimensions take an int
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-assignment | buffer.dimensions = (4, 4)  # a stub fact: or a sequence of ints
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.types.UI_UL_list.filter_items_by_name("*", 1, data.objects), list[int])  # bare-ok: a stub fact: a collection's items
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.types.UI_UL_list.sort_items_by_name(data.objects), list[int])  # bare-ok: a stub fact: a collection's items
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | con.target = target
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(track, TrackToConstraint)

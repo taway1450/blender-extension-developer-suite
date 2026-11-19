@@ -34,6 +34,15 @@ def on_scene(scene: Scene) -> None:
     scene.reg_float  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
+def on_narrowed(scene: Scene) -> None:
+    """A write through an intersection: the scene after a truth test, or after hasattr."""
+    if scene:
+        scene.reg_int = 3  # `Scene & ~AlwaysFalsy`
+        scene.reg_int = "3"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the write above needs the checker
+    if hasattr(scene, "other_addon_value"):
+        scene.reg_int = 4  # `Scene & <Protocol with other_addon_value>`
+
+
 def on_ids(obj: Object, material: Material, camera: Camera, collection: Collection, image: Image) -> None:
     assert_type(obj.reg_float, float)
     assert_type(obj.reg_id, int)

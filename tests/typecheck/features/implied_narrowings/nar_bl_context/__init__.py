@@ -8,10 +8,13 @@ area.cc), before it calls the panel's poll; a sub-panel is drawn only inside its
   bone_constraint paths need an object (pinned or active), so context.object is set there; "data", "material" and
   "particle" also take pinned data, a material or particle settings without an object;
 - the 3D viewport's sidebar and toolbar draw the panels of the current mode (CTX_data_mode_string in context.cc), so
-  "mesh_edit" gives what context.mode == 'EDIT_MESH' does: an edit object of the mesh type.
-Not narrowed: the display-only contexts (".objectmode", ".mesh_edit", ...: the tool-settings groups the tool header
-also draws as popovers, where no context is checked), "objectmode" (no object needed), a mode context in an editor
-whose regions check none, and a panel the add-on opens as a popover.
+  "mesh_edit" gives what context.mode == 'EDIT_MESH' does: an edit object of the mesh type. The sidebar also passes
+  the dotted tool-settings group of the mode (ED_view3d_buttons_contexts in space_view3d.cc), and the tool header
+  draws each group as popovers only in its mode (VIEW3D_HT_tool_header), so ".mesh_edit" gives the same; a group of
+  several modes gives what they share (".paint_common": an active object; ".curve_edit": an edit object, a curve or
+  a surface).
+Not narrowed: ".objectmode" and "objectmode" (no object needed), a mode context in an editor whose regions check
+none, and a panel the add-on opens as a popover.
 
 Reported under blender-narrowed-by-bl-context. The assert_type calls in the bodies are no-ops at runtime."""
 
@@ -116,7 +119,40 @@ class NAR_BL_CONTEXT_PT_mesh_edit_tools(Panel):
     bl_context = ".mesh_edit"
 
     def draw(self, context):
-        self.layout.label(text=context.object.name)  # ty: ignore[missing-union-attribute]  # bare-ok: display-only context
+        assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+
+
+class NAR_BL_CONTEXT_PT_sculpt_tools(Panel):
+    bl_label = "Sculpt tools"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Tool"
+    bl_context = ".sculpt_mode"
+
+    def draw(self, context):
+        assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
+
+
+class NAR_BL_CONTEXT_PT_paint_common(Panel):
+    bl_label = "Paint common"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Tool"
+    bl_context = ".paint_common"
+
+    def draw(self, context):
+        self.layout.label(text=context.active_object.name)  # ty: ignore[blender-narrowed-by-bl-context]
+
+
+class NAR_BL_CONTEXT_PT_curve_edit(Panel):
+    bl_label = "Curve edit"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Tool"
+    bl_context = ".curve_edit"
+
+    def draw(self, context):
+        self.layout.label(text=context.edit_object.name)  # ty: ignore[blender-narrowed-by-bl-context]
 
 
 class NAR_BL_CONTEXT_PT_objectmode(Panel):
@@ -172,6 +208,9 @@ classes = (
     NAR_BL_CONTEXT_PT_posemode,
     NAR_BL_CONTEXT_PT_objectmode_tools,
     NAR_BL_CONTEXT_PT_mesh_edit_tools,
+    NAR_BL_CONTEXT_PT_sculpt_tools,
+    NAR_BL_CONTEXT_PT_paint_common,
+    NAR_BL_CONTEXT_PT_curve_edit,
     NAR_BL_CONTEXT_PT_objectmode,
     NAR_BL_CONTEXT_PT_image_mesh_edit,
     NAR_BL_CONTEXT_PT_popover,

@@ -4,7 +4,12 @@ are context managers, the render engine's update callbacks take positional argum
 Gizmo.target_set_value takes a value. A string argument without PROP_NEVER_NULL takes None, an AnyType argument a
 typed collection, foreach_get a list of ints or bools and libraries.write a set of one ID type; ID.copy and
 evaluated_get return the type they are called on, context.property is a (data, path, index) tuple and the render
-engine is a str."""
+engine is a str.
+animation_data_create gives an ID type with animation data its AnimData, the gpu buffers' protocols, the pointers Blender
+always allocates (a strip's transform and crop, an area's active space, the Graph and NLA editors' dope sheet), a
+collection's items and values, a shape key's points, the iTaSC parameters, the members every subclass of a refined base
+declares, a bone collection's armature, the enums the OCIO configuration or the curve dimensions fill, a collection
+struct's bl_rna and rna_type, the RNA function and ID property metaclass types, and UI_UL_list taking a collection."""
 
 import contextlib
 from collections.abc import Buffer, MutableSequence, Sequence
@@ -98,3 +103,85 @@ class AttributeGroupMesh:
 
 class Strip:
     id_data: Scene
+
+class bpy_prop_array:
+    def foreach_get(self, seq: MutableSequence[Any] | Buffer) -> None: ...
+    def foreach_set(self, seq: Sequence[Any] | Buffer) -> None: ...
+
+class Object:
+    def animation_data_create(self) -> AnimData: ...
+
+class Material:
+    def animation_data_create(self) -> AnimData: ...
+
+class Scene:
+    def animation_data_create(self) -> AnimData: ...
+
+class ImageStrip:
+    @property
+    def transform(self) -> StripTransform: ...
+    @property
+    def crop(self) -> StripCrop: ...
+
+class AreaSpaces:
+    @property
+    def active(self) -> Space: ...
+
+class SpaceGraphEditor:
+    @property
+    def dopesheet(self) -> DopeSheet: ...
+
+class SpaceNLA:
+    @property
+    def dopesheet(self) -> DopeSheet: ...
+
+class BlendDataObjects:
+    def items(self) -> list[tuple[str, Object]]: ...
+    def values(self) -> list[Object]: ...
+
+class ShapeKey:
+    @property
+    def data(self) -> bpy_prop_collection[ShapeKeyPoint | ShapeKeyCurvePoint | ShapeKeyBezierPoint]: ...
+
+class Pose:
+    @property
+    def ik_param(self) -> Itasc | None: ...
+
+class Light:
+    shadow_maximum_resolution: float
+
+class UserAssetLibrary:
+    path: str
+
+class Attribute:
+    @property
+    def data(self) -> bpy_prop_collection[BoolAttributeValue] | bpy_prop_collection[ByteColorAttributeValue] | bpy_prop_collection[ByteIntAttributeValue] | bpy_prop_collection[Float2AttributeValue] | bpy_prop_collection[Float4AttributeValue] | bpy_prop_collection[Float4x4AttributeValue] | bpy_prop_collection[FloatAttributeValue] | bpy_prop_collection[FloatColorAttributeValue] | bpy_prop_collection[FloatVectorAttributeValue] | bpy_prop_collection[Int2AttributeValue] | bpy_prop_collection[IntAttributeValue] | bpy_prop_collection[QuaternionAttributeValue] | bpy_prop_collection[Short2AttributeValue] | bpy_prop_collection[StringAttributeValue]: ...
+
+class BoneCollection:
+    id_data: Armature
+
+class ColorManagedViewSettings:
+    view_transform: str
+    look: str
+
+class ColorManagedDisplaySettings:
+    display_device: str
+
+class Curve:
+    fill_mode: str
+
+class BlendDataCurves:
+    bl_rna: Struct
+    @property
+    def rna_type(self) -> Struct: ...
+
+class bpy_func:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
+
+class bpy_struct_meta_idprop(type): ...
+
+class UI_UL_list:
+    @staticmethod
+    def filter_items_by_name(pattern: str, bitflag: int, items: Sequence[Any] | bpy_prop_collection, propname: str = 'name', flags: Sequence[int] | None = None, reverse: bool = False) -> list[int]: ...
+    @classmethod
+    def sort_items_by_name(cls, items: Sequence[Any] | bpy_prop_collection, propname: str = 'name') -> list[int]: ...

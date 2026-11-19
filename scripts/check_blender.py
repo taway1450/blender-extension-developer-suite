@@ -47,9 +47,10 @@ from _target import Target, add_target_arguments
 from download_blender import BLENDER_BIN_DIR
 from generate_stubs import results_name
 
-# Paths (relative to the Blender source root) left out of the check: libraries, the dead 2.7x scripts, and the gdb
-# extension with the type hints of gdb's API it imports, written as `.py` modules with `pass` bodies rather than as
-# stubs (every diagnostic there was about the hints, none about Blender).
+# Paths (relative to the Blender source root) left out of the check: libraries; the dead 2.7x scripts (tests and the
+# Cycles XML exporter, which still use `tessfaces` and `register_module`); and the gdb extension with the type hints of
+# gdb's API it imports, written as `.py` modules with `pass` bodies rather than as stubs (every diagnostic there was
+# about the hints, none about Blender).
 EXCLUDED = [
     "lib/",
     "extern/",

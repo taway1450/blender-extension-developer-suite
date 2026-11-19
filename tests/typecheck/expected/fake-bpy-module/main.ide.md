@@ -625,7 +625,7 @@ PASS
 SpaceView3D
 ```
 ---
-Space currently being displayed in this area (readonly)
+Space currently being displayed in this area (readonly, never None)
 ````
 
 ## features/type_narrowing/narrow_constructors/ide_narrow_constructors.py | ^hover @6 | con = ob.constraints.new('COPY_LOCATION')

@@ -22,7 +22,7 @@ def setup_spaces(screen: Screen) -> None:
         elif area.type in {"IMAGE_EDITOR", "CLIP_EDITOR"}:
             assert_type(area.spaces.active, SpaceImageEditor | SpaceClipEditor)  # oracle-skip: a Type tag
         else:
-            assert_type(area.spaces.active, Space | None)  # bare-ok: no test names the type here
+            assert_type(area.spaces.active, Space)  # bare-ok: no test names the type here
 
 
 def first_node_editor(screen: Screen):
@@ -38,19 +38,19 @@ def rebound(screen: Screen, other: Area) -> None:
     for area in screen.areas:
         if area.type == "VIEW_3D":
             area = other
-            assert_type(area.spaces.active, Space | None)  # bare-ok: `area` was rebound after the test
+            assert_type(area.spaces.active, Space)  # bare-ok: `area` was rebound after the test
 
 
 def switched(area: Area) -> None:
     if area.type == "VIEW_3D":
         area.type = "IMAGE_EDITOR"
-        assert_type(area.spaces.active, Space | None)  # bare-ok: the area's type was written after the test
+        assert_type(area.spaces.active, Space)  # bare-ok: the area's type was written after the test
 
 
 def switched_ui(area: Area) -> None:
     if area.type == "NODE_EDITOR":
         area.ui_type = "TextureNodeTree"
-        assert_type(area.spaces.active, Space | None)  # bare-ok: ui_type writes the area's type too
+        assert_type(area.spaces.active, Space)  # bare-ok: ui_type writes the area's type too
 
 
 class NARROW_AREA_OT_views(Operator):

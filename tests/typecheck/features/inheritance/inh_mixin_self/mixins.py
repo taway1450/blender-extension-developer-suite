@@ -4,12 +4,16 @@ types it as the mixin and the bpy.types classes of the users, silently: PanelMix
 members that every user's Blender class has resolve, so a Panel mixin calling report (an Operator method) stays an
 error. A mixin method is a draw callback (self.layout is never None) when it is one for every user.
 
+A mixin whose users all derive from unittest.TestCase is typed the same way: its self is a TestCase too, so the test
+case's assertions resolve and narrow.
+
 A mixin that no class of the add-on uses keeps its bare type: its users may be in another add-on, or made at
 runtime."""
 
 from typing import assert_type
 
-from bpy.types import UILayout
+import bpy
+from bpy.types import Object, UILayout
 
 
 class PanelMixin:
@@ -52,3 +56,13 @@ class SharedMixin:
 class UnusedMixin:
     def draw_common(self, context):
         self.layout.label(text="unused")  # ty: ignore[missing-attribute]  # bare-ok: no user, self stays the bare mixin
+
+
+class TestCaseMixin:
+    """Used by two unittest.TestCase subclasses: self is a TestCase too."""
+
+    def check_cube(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertIsNotNone(ob)
+        assert_type(ob, Object)
+        self.assertEqual(ob.name, "Cube")

@@ -32,3 +32,23 @@ reason = "outputs.new gives the add-on's socket class its bl_idname names"
 code = "(lambda tree: type(tree.nodes.new('NarrowConstructorsNode').inputs['Value']).__name__)(bpy.data.node_groups.new('narrow_constructors', 'NarrowConstructorsTree'))"
 expect = "NodeSocketFloat"
 reason = "inputs.new gives the socket class its bl_idname names"
+
+[[probe]]
+code = "type(bpy.data.node_groups.new('narrow_constructors', 'ShaderNodeTree').interface.new_socket('Factor', socket_type='NodeSocketFloat')).__name__"
+expect = "NodeTreeInterfaceSocketFloat"
+reason = "new_socket gives the interface socket of the socket type its bl_idname names"
+
+[[probe]]
+code = "bpy.data.node_groups.new('narrow_constructors', 'GeometryNodeTree').interface.new_socket('Shader', socket_type='NodeSocketShader')"
+expect = "raises"
+reason = "new_socket's socket_type lists only the types the tree supports, so its swap of an unsupported one is unreachable"
+
+[[probe]]
+code = "bpy.data.objects.new('narrow_constructors', bpy.data.cameras.new('narrow_constructors')).type"
+expect = "CAMERA"
+reason = "objects.new takes the object type from the data"
+
+[[probe]]
+code = "bpy.data.objects.new('narrow_constructors', None).type"
+expect = "EMPTY"
+reason = "objects.new without data makes an empty"

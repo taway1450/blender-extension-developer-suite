@@ -86,11 +86,11 @@ def stay_nullable(wm: WindowManager, instance: DepsgraphObjectInstance) -> None:
 
 
 def always_returned(node_groups: BlendDataNodeTrees, libraries: AssetLibraryCollection, objects: BlendDataObjects,
-                    meshes: BlendDataMeshes, ob: Object, depsgraph: Depsgraph) -> None:
+                    meshes: BlendDataMeshes, ob: Object, depsgraph: Depsgraph, data: ID | None) -> None:
     # A stub fact (an unknown type raises), and the constructor narrowing, which a stub cannot state.
     assert_type(node_groups.new("Tree", "GeometryNodeTree"), GeometryNodeTree)  # oracle-skip: narrowed by ty-blender
     assert_type(libraries.new(), UserAssetLibrary)  # bare-ok: a stub fact: a failure raises
-    assert_type(objects.new("Object", None), Object)  # bare-ok: a stub fact: a failure raises
+    assert_type(objects.new("Object", data), Object)  # bare-ok: a stub fact: a failure raises
     assert_type(meshes.new_from_object(ob), Mesh)  # bare-ok: a stub fact: a failure raises
     assert_type(ob.id_properties_ui("prop"), IDPropertyUIManager)  # bare-ok: a stub fact: a failure raises
 

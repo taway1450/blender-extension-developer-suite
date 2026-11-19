@@ -1,9 +1,11 @@
 """Feature test: self in mixin methods, typed by the mixin's users in another module (mixins.py)."""
 
+import unittest
+
 import bpy
 from bpy.types import Menu, Operator, Panel
 
-from .mixins import DrawnMixin, OperatorMixin, PanelMixin, SharedMixin
+from .mixins import DrawnMixin, OperatorMixin, PanelMixin, SharedMixin, TestCaseMixin
 
 
 class INH_MIXIN_SELF_PT_first(PanelMixin, Panel):
@@ -62,6 +64,18 @@ class INH_MIXIN_SELF_OT_shared(SharedMixin, Operator):
     def execute(self, context):
         self.draw_title(context)
         return {"FINISHED"}
+
+
+class CubeTest(TestCaseMixin, unittest.TestCase):
+    """Never run: it gives TestCaseMixin a user."""
+
+    def test_cube(self) -> None:
+        self.check_cube()
+
+
+class CubeAgainTest(TestCaseMixin, unittest.TestCase):
+    def test_cube(self) -> None:
+        self.check_cube()
 
 
 classes = (INH_MIXIN_SELF_PT_first, INH_MIXIN_SELF_PT_second, INH_MIXIN_SELF_OT_finish, INH_MIXIN_SELF_PT_drawn,

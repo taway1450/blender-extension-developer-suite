@@ -27,9 +27,12 @@ default), while a pointer nothing checked stays an error.
   (`buttons_context_compute` in `buttons_context.cc`): the `object`, `physics`, `constraint`, `modifier`, `shaderfx` and
   `bone_constraint` paths need an object, which is `context.object` there; `data`, `material` and `particle` also take
   pinned data, a material or particle settings without one. The 3D viewport's sidebar and toolbar pass the mode's
-  string (`CTX_data_mode_string` in `context.cc`), so `"mesh_edit"` is drawn only in mesh edit mode. Their dotted
-  contexts (`".objectmode"`, `".mesh_edit"`, `".paint_common"`) are display-only groups of tool settings that the tool
-  header also draws as popovers, where no context is checked; other editors check no mode.
+  string (`CTX_data_mode_string` in `context.cc`), so `"mesh_edit"` is drawn only in mesh edit mode. The sidebar also
+  passes the dotted tool-settings group of the mode (`ED_view3d_buttons_contexts` in `space_view3d.cc`), and the tool
+  header draws a group as popovers only in its mode (`VIEW3D_HT_tool_header`), so `".mesh_edit"` gives what
+  `"mesh_edit"` does; a group of several modes gives what they share (`".paint_common"`: an active object;
+  `".curve_edit"`: an edit object, of a curve or a surface); `".objectmode"` gives nothing. Other editors check no
+  mode.
 - **Popovers:** a Panel opened as a popover (`layout.popover`, `wm.call_panel`) is drawn with the area of the editor
   that opened it, whatever its `bl_space_type` says.
 
@@ -70,12 +73,12 @@ An ignored rule still narrows.
 
 | Addon | Variant |
 | --- | --- |
-| `nar_poll` | Panel conjuncts (`is not None`, truth, `isinstance`, `bool`, `bpy.context`, a sub-pointer, an alias), `draw_header`; early guards with a Type tag giving `ob.data`; a mixin poll, `super().poll`, `Base.poll` and helpers two calls deep giving `space_data` a subclass; a Menu poll reading `area.type`; a GizmoGroup; not reported: a tested read; errors: a pointer the poll did not check; guards: `modal`, `Operator.draw`, a class with no poll |
+| `nar_poll` | Panel conjuncts (`is not None`, truth, `isinstance`, `bool`, `type(X) is T`, `type(X) == T`, `type(X) in {T}`, `bpy.context`, a sub-pointer, an alias), `draw_header`; early guards with a Type tag giving `ob.data`; a mixin poll, a mixin's poll listed after `Operator` or `Menu` (which define none), `super().poll`, `Base.poll` and helpers two calls deep giving `space_data` a subclass; a Menu poll reading `area.type`; a GizmoGroup; not reported: a tested read; errors: a pointer the poll did not check; guards: `modal`, `Operator.draw`, a class with no poll |
 | `nar_poll_reach` | a sub-panel's `poll` and `draw`, a grandchild and a sub-panel in another module reading their parents' facts; the poll's own flow after a helper guard and through `and` (silent); `getattr` and walrus aliases; `XrSessionState.is_running`; `bool(a and b)`; a helper's `try` body; errors: a sub-panel also opened as a popover, a pointer no poll up the chain checked |
 | `nar_mode` | `context.mode` in a poll: `EDIT_MESH` (object, active and edit object as mesh objects), `SCULPT` (`tool_settings.sculpt`, also silently in the poll after a guard), `in {"PAINT_VERTEX", "PAINT_WEIGHT"}` (only what both give), `POSE` (`object.pose`); errors: `OBJECT` gives nothing |
 | `nar_menu_prefix` | `VIEW3D_`, `CLIP_` (`bl_idname`), `TIME_`, `TOPBAR_` menus in `draw` and `poll`; guards: a helper method, an add-on's own prefix |
 | `nar_popover` | a panel opened by `layout.popover` and one by `wm.call_panel`; silent: a panel drawn only in its region; `strictness` presets (`_expected/strictness.toml`) |
-| `nar_bl_context` | Properties `object` (through a mixin, in a poll, a sub-panel) and `physics` tabs; `mesh_edit` (sidebar) and `posemode` (toolbar); a poll's own check wins over `bl_context`; errors: the `data` tab, `".objectmode"`, `".mesh_edit"`, `"objectmode"`, a mode in the image editor, a panel opened as a popover, `active_object` in a Properties tab; `strictness` presets |
+| `nar_bl_context` | Properties `object` (through a mixin, in a poll, a sub-panel) and `physics` tabs; `mesh_edit` (sidebar) and `posemode` (toolbar); the dotted groups `".mesh_edit"`, `".sculpt_mode"`, `".paint_common"` (an active object) and `".curve_edit"` (an edit object); a poll's own check wins over `bl_context`; errors: the `data` tab, `".objectmode"`, `"objectmode"`, a mode in the image editor, a panel opened as a popover, `active_object` in a Properties tab; `strictness` presets |
 | `nar_config` | an `[[overrides]]` entry in `tests/typecheck/ty.toml`: the category at `error`, `blender-narrowed-by-menu-prefix` at `ignore` |
 
 The `blender-*` markers need the checker; the upstream ones and the `| None` markers are guards (`bare-ok`).

@@ -9,7 +9,8 @@ from typing import assert_type
 
 import bpy
 from bpy.types import (ID, ArrayModifier, BoidRule, BoidRuleGoal, ColorStrip, Constraint, CopyLocationConstraint,
-                       IDViewerPathElem, Light, LineStyleColorModifier, LineStyleColorModifier_DistanceFromObject,
+                       IDViewerPathElem, Light, LineStyleAlphaModifier, LineStyleAlphaModifier_DistanceFromObject,
+                       LineStyleColorModifier, LineStyleColorModifier_DistanceFromObject,
                        Modifier, MultiresModifier, Node, NodeSocket, NodeSocketString, NodeSocketStringFilePath,
                        NodeTreeInterfaceItem, NodeTreeInterfacePanel, NodeTreeInterfaceSocket, Object, PointLight,
                        Pose, ProjectVariable, ProjectVariableInteger, SequenceEditor, ShaderNodeMath, SpotLight,
@@ -107,6 +108,14 @@ def goal_object(rule: BoidRule) -> Object | None:
 def color_target(modifier: LineStyleColorModifier) -> Object | None:
     if modifier.type == 'DISTANCE_FROM_OBJECT':
         assert_type(modifier, LineStyleColorModifier_DistanceFromObject)  # the base states the tag of its subclasses
+        return modifier.target
+    return None
+
+
+def any_target(modifier: LineStyleColorModifier | LineStyleAlphaModifier) -> Object | None:
+    if modifier.type == 'DISTANCE_FROM_OBJECT':
+        # a union of refined bases: each member is narrowed
+        assert_type(modifier, LineStyleColorModifier_DistanceFromObject | LineStyleAlphaModifier_DistanceFromObject)
         return modifier.target
     return None
 
