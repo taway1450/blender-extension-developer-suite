@@ -1,0 +1,30 @@
+[[probe]]
+code = "type(bpy.data.armatures.new('probe').props_id_data_slots.add().id_data).__name__"
+expect = "Armature"
+reason = "a group in an Armature's registered collection has the armature as its id_data"
+
+[[probe]]
+code = "type(bpy.data.objects.new('probe', None).props_id_data_outer.inners.add().id_data).__name__"
+expect = "Object"
+reason = "a group nested in a group on Object has the Object as its id_data"
+
+[[probe]]
+code = "type(bpy.context.scene.props_id_data_outer.inner.id_data).__name__"
+expect = "Scene"
+reason = "a group nested in a group on Scene has the Scene as its id_data"
+
+[[probe]]
+code = "type(bpy.data.materials.new('probe').props_id_data_shared.id_data).__name__"
+expect = "Material"
+reason = "a group registered on Material and Scene: on a Material, the Material"
+
+[[probe]]
+code = "type(bpy.data.meshes.new('probe').props_id_data_derived.id_data).__name__"
+expect = "Mesh"
+reason = "a subclass registered on Mesh: the Mesh"
+
+[[probe]]
+code = "(lambda ob: ob.id_data is ob)(bpy.data.objects.new('probe', None))"
+expect = true
+reason = "a data-block is its own id_data"
+

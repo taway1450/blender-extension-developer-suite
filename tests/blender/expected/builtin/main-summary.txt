@@ -78,12 +78,12 @@ layout-in-operator-helper       typing-debt           -             38         0
 cross-file-registered-property  typing-debt           -              5        12         0         0        12        29
 mixin-self                      typing-debt           -             59         0         3         0       195       257
 type-enum-sub-pointer           typing-debt           -            254        63         1         0        93       411
-python-optional                 typing-debt           -            205         0         3         1        95       304
+python-optional                 typing-debt           -            206         0         3         1        95       305
 ui-draw-pointer                 typing-debt           -            403         0         5         0         0       408
 object-data-untagged            typing-debt           -             21         0        21         4       360       406
 editor-context-member           typing-debt           -             32         0         0        15         0        47
 script-context-member           typing-debt           -              0         0        43         3         0        46
-base-class-subtype              typing-debt           -             74         0         2         8        21       105
+base-class-subtype              typing-debt           -             70         0         2         8        21       101
 set-by-ui-button                typing-debt           -             10         0         0         0         0        10
 window-context-in-execute       typing-debt           -             19         0         0         0        19        38
 set-by-preceding-call           typing-debt           -             10         0         1         5        74        90
@@ -96,7 +96,7 @@ operator-call                   typing-debt           -              7         0
 unresolved-import               typing-debt           -             31         0         0         0         9        40
 deprecated-enum-value           typing-debt           -              5         0         0         0         0         5
 unexported-function             typing-debt           -              3         0         0         0         0         3
-untyped-python                  typing-debt           -            445         0         0         2         0       447
+untyped-python                  typing-debt           -            450         0         0         2         0       452
 private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
 general-typing                  typing-debt           -            214         0         7         4       187       412
@@ -112,9 +112,9 @@ assumption                                                         402       574
 implied-narrowing                                                 1054         0         4         8        13      1079
 imprecise-annotation                                                 0         0         0         0         0         0
 typechecker-fix                                                     23         0         3         1         5        32
-typing-debt                                                       1942        75       100        49      1252      3418
+typing-debt                                                       1944        75       100        49      1252      3420
 unsorted                                                             1         0         0         0       849       850
-errors                                                            2015       106       104        50      2088      4363
+errors                                                            2017       106       104        50      2088      4365
 warnings                                                          1422       543        29        12       701      2707
 
 rule                                       error warning
@@ -143,10 +143,10 @@ incompatible-mutable-override                  5       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
 invalid-argument-type                        738       0
-invalid-assignment                           534       0
+invalid-assignment                           535       0
 invalid-base                                   2       0
 invalid-context-manager                        2       0
-invalid-explicit-return                       25       0
+invalid-explicit-return                       28       0
 invalid-generic-class                          1       0
 invalid-implicit-return                        4       0
 invalid-implicit-return-in-function-with-stub-body       4       0
@@ -156,12 +156,12 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            43       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1125       0
-missing-union-attribute                     1522       0
+missing-attribute                           1121       0
+missing-union-attribute                     1523       0
 no-matching-overload                          33       0
 not-callable                                  14       0
 not-iterable                                  30       0
-not-subscriptable                             59       0
+not-subscriptable                             60       0
 possibly-missing-submodule                     0       4
 redundant-condition                            0      10
 too-many-positional-arguments                  6       0

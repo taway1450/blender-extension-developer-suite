@@ -24,11 +24,11 @@ class PROPS_REGISTERED_HostSettings(PropertyGroup):
     @classmethod
     def register(cls):
         # Statically `cls.owner` is any ID class, which declares no such attribute.
-        cls.owner.reg_host_settings = PointerProperty(type=cls)  # ty: ignore[missing-attribute]
+        cls.owner.reg_host_settings = PointerProperty(type=cls)  # ty: ignore[missing-attribute]  # bare-ok: cls.owner is any ID class
 
     @classmethod
     def unregister(cls):
-        del cls.owner.reg_host_settings  # ty: ignore[missing-attribute]
+        del cls.owner.reg_host_settings  # ty: ignore[missing-attribute]  # bare-ok: cls.owner is any ID class
 
 
 class PROPS_REGISTERED_WorldSettings(PROPS_REGISTERED_HostSettings):
