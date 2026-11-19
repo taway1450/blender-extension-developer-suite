@@ -65,6 +65,17 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   displays; `'ARMATURE'` a pose or None until the depsgraph builds it, every other type no pose), a fluid modifier of type `'DOMAIN'` has domain settings and no flow or effector settings. The stubs
   declare a private tag view per value, `_Object_MESH(Object)` with `type: Literal['MESH']` and `data: Mesh`, and
   `_FluidModifier_DOMAIN` etc.
+- **A built-in node declares its sockets** (`node_declare` in C, which introspection cannot read), and a key of its
+  `inputs` / `outputs` finds one (`rna_NodeInputs_lookup_string`): an available socket whose identifier is the key,
+  else one whose name is (Mix and Map Range by name only, `allow_identifier_lookup`); an integer indexes every
+  socket, available or not. Blender's fork probes it when it writes the API docs (`sphinx_doc_gen_node_sockets.py`
+  adds each built-in node in each state of its own enum and boolean properties) and the stubs give each node a
+  private class per side, `_ShaderNodeBsdfPrincipled_inputs(NodeInputs)`, whose `__getitem__` has an overload per
+  socket class (`Literal['Base Color', 0]` → `NodeSocketColor`), then the collection's own signatures for any other
+  key. A key whose socket changes with the node's state is the union (`mix.inputs["A"]` is a float, vector or color
+  socket). A node whose sockets are the user's has no such class: a group's, a script's, the items of a zone or a
+  switch (the sockets the node declares besides them keep theirs, by key only, as the items shift the indices).
+  fake-bpy-module's own generator, which reads the default state only, stands aside when Blender's docs state them.
 - **The only spreadsheet table ID is a geometry table ID:** `SpreadsheetTableID.type` has the one value
   `'GEOMETRY'`, so `SpreadsheetTable.id` is a `SpreadsheetTableIDGeometry`.
 - **The only action strip is a keyframe strip:** `ActionStrip.type` has the one value `'KEYFRAME'`, so the items of
@@ -129,6 +140,7 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
 | `api_never_none` | embedded and DNA pointers, pointers and function results Blender always sets, the context's preferences and window manager; unannotated callback overrides of `Menu`, `Header`, `UIList`, `RenderEngine`, `KeyingSetInfo` and `AssetShelf`, and their callers |
 | `api_type_tags` | the Type tag of refined subclasses (value form): `Node.type`, interface `item_type`, boid rules, line style modifiers (the tag on the base), spreadsheet table IDs, viewer path elements, project variables; the tag views of `Object` (`data`, `pose`) and `FluidModifier` (sibling form); a Grease Pencil layer tree node as a layer or a layer group; the `BlendDataCurves.new` overloads; action strips |
 | `api_stub_gaps` | class bases and Python `__init__`, iteration and context-manager protocols, `Vector` / `Quaternion` operators, the GPU and BLF context managers, version tuples, `bl_rna`, module members (also the private ones Blender's own scripts read), `Operator.description` returning None; the stub-generator gaps: `BMElemSeq[T]`, `bpy.data[name, lib]`, context store members, `libraries.load` / `temp_data`, positional Freestyle and render engine callbacks (overrides in `__init__.py`), dynamic enums, `keyconfig_set` / `target_set_value`; Freestyle's unary function `__call__`, `Noise`, `BoundingBox`, generators and `Operators.create` |
+| `api_node_sockets` | a built-in node's socket by name, identifier and index (shader, geometry and compositor nodes), the union over the node's states (Mix, Store Named Attribute), Mix's name-only lookup, an undeclared or non-literal key, a slice; a group's and a zone's item sockets stay `NodeSocket`; in `__init__.py` the node comes from `nodes.new` |
 | `api_setters` | sequences assigned to math and array properties and to an array slice, the read types (also in the editor's hover), wrong element types |
 | `api_c_modules` | the private C modules import, partially typed; `_freestyle`'s classes and functions are the `freestyle` ones |
 
@@ -138,6 +150,6 @@ exception in spec #75). fake-bpy-module also misses the stub-generator gaps it d
 (`BMElemSeq` attributes, `libraries.load()` and `temp_data()` as context managers, the positional Freestyle
 methods; named exceptions in spec #95). The Freestyle gaps fail on 5.2,
 whose stubs give Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
-`__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
+`__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_node_sockets`, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
 guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
 `description`) need the checker's inheritance typing.

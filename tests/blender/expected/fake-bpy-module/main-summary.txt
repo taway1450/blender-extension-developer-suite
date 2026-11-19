@@ -1,4 +1,4 @@
-# check:blender main, fake-bpy-module stubs, Blender 71b11d84c8
+# check:blender main, fake-bpy-module stubs, Blender 42f75d1b26
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -45,7 +45,7 @@ fake-bpy-python-module          typechecker-fix       -              0         0
 fake-bpy-type-alias             typechecker-fix       -              0         0         0         0         0         0
 fake-bpy-nullable               typechecker-fix       -              0         0         0         0         0         0
 fake-bpy-lib-key                typechecker-fix       -              0         0         0         0         0         0
-fake-bpy-node-sockets           typechecker-fix       -              4         0         0         0         0         4
+fake-bpy-node-sockets           typechecker-fix       -              1         0         0         0         0         1
 fake-bpy-protocol               typechecker-fix       -              0         0         0         0         1         1
 stub-none-mismatch              typechecker-fix       -              0         0         0         0         0         0
 context-never-none              typechecker-fix       S1             0         0         0         0         0         0
@@ -99,22 +99,22 @@ unexported-function             typing-debt           -              0         0
 untyped-python                  typing-debt           -            457         0         1         0         0       458
 private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            227         8         7         4       189       435
+general-typing                  typing-debt           -            227         8         7         4       193       439
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
 unchecked-pointer               unsorted              -              1         0         0         0       560       561
 stub-gap                        unsorted              -              0         0         0         0        42        42
 blender-rule                    unsorted              -              0         0         0         0         5         5
-unsorted                        unsorted              -              0         0         0         0       284       284
+unsorted                        unsorted              -              2         0         0         0       284       286
 
 group                                                          shipped   presets  examples templates     other     total
 blender-fix                                                          0         0         0         0         0         0
 assumption                                                         433       574        26         4       727      1764
 implied-narrowing                                                 1051         0         4         8        12      1075
 imprecise-annotation                                                 3         0         0         0         0         3
-typechecker-fix                                                     69         0         8         1        23       101
-typing-debt                                                       2104        83       103        49      1321      3660
-unsorted                                                             1         0         0         0       900       901
-errors                                                            2210       114       112        50      2225      4711
+typechecker-fix                                                     66         0         8         1        23        98
+typing-debt                                                       2104        83       103        49      1325      3664
+unsorted                                                             3         0         0         0       900       903
+errors                                                            2209       114       112        50      2229      4714
 warnings                                                          1451       543        29        12       758      2793
 
 rule                                       error warning
@@ -143,7 +143,7 @@ incompatible-method-override                  26       0
 incompatible-mutable-override                  4       0
 incompatible-property-override                 6       0
 index-out-of-bounds                            2       0
-invalid-argument-type                        755       0
+invalid-argument-type                        754       0
 invalid-assignment                           528       0
 invalid-base                                   2       0
 invalid-context-manager                       21       0
@@ -157,7 +157,7 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            82       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                            843       0
+missing-attribute                            847       0
 missing-union-attribute                     1965       0
 no-matching-overload                          43       0
 not-callable                                  14       0

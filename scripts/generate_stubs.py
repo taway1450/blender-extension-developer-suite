@@ -394,6 +394,13 @@ def generate_stubs(
     return stubs_dir
 
 
+def blender_declares_node_sockets(rst: Path) -> bool:
+    """Whether the rst docs state the socket each key of a built-in node gives (``bpy.types._ShaderNodeMath_inputs``,
+    written by Blender's fork over every state of the node). fake-bpy-module's own generator then stands aside: it
+    reads only a node's default state, and its classes would sit unused next to Blender's."""
+    return next(rst.glob("bpy.types._*_inputs.rst"), None) is not None
+
+
 def generate_fake_bpy_stubs(version: str, blender: Path, source: Path, rst: Path, stubs_dir: Path) -> None:
     # gen.py always reads generated mod files from this fixed location inside the submodule (gitignored).
     generated_mods = FAKE_BPY_SRC / "mods" / "generated_mods"
@@ -423,14 +430,15 @@ def generate_fake_bpy_stubs(version: str, blender: Path, source: Path, rst: Path
             "-f",
             "rst",
         )
-        run_blender_script(
-            blender,
-            gen_modfile / "gen_node_inputs_outputs_for_node_class.py",
-            "-o",
-            generated_mods / "gen_node_inputs_outputs_for_node_class",
-            "-f",
-            "rst",
-        )
+        if not blender_declares_node_sockets(rst):
+            run_blender_script(
+                blender,
+                gen_modfile / "gen_node_inputs_outputs_for_node_class.py",
+                "-o",
+                generated_mods / "gen_node_inputs_outputs_for_node_class",
+                "-f",
+                "rst",
+            )
         bgl_source = next(
             (
                 p

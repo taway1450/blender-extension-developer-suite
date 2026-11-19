@@ -30,7 +30,7 @@ Effort: S is an hour or two, M a day, L several days.
 | 9 | ~~Registered properties visible across the modules of one Add-on~~ done; also a base class registering on `cls.owner` (Hydra). Left: cycles presets (12) and rigify's `selection_sets` (2), which another add-on registers | (a) | 19 (+35 in `cross-file-registered-property`) | M | untyped-python |
 | 10 | ~~`id_data` typed by owner (`Node`/`NodeSocket` → `NodeTree`, `PoseBone` → `Object`, `AttributeGroupMesh` → `Mesh`)~~ done in both stub generators, for structs every pointer to which carries that owner (not `Bone`, `ShapeKey`, `ParticleSystem`) | (b) | ~17 | M | base-class-subtype |
 | 11 | ~~`UIList.draw_item`'s `data` typed from `template_list` (C8 types `item` only)~~ done in ty-blender, `filter_items` too | (a) | ~7 | M | base-class-subtype |
-| 12 | Socket types per built-in node (`principled.inputs["Base Color"]` is `NodeSocketColor`): deferred, it needs each node's socket declarations exported from C | (b) | ~30 | L | base-class-subtype |
+| 12 | ~~Socket types per built-in node (`principled.inputs["Base Color"]` is `NodeSocketColor`)~~ done in both stub generators: Blender's fork probes each node over its states while writing the docs (`sphinx_doc_gen_node_sockets.py`), by name, identifier and index; a group's and a zone's item sockets stay `NodeSocket` (feature `api_node_sockets`). Left: a node read back by name (`nodes["Background"]`) is a `Node` | (b) | ~30 | L | base-class-subtype |
 
 With rows 1–11 done, `check:blender main` with the builtin stubs is down from 7536 to 7102 diagnostics (Blender
 `71b11d84c8`). A few readings narrowed by these fixes show a diagnostic further on that was masked before (5 more in
@@ -160,7 +160,7 @@ What the cause holds: an attribute missing on a base class (`ID`, `Strip`, `Cons
 | `bpy.context.active_strip` in the 3 text-style presets (18 reads each) | 54 | (a): see below |
 | `owner.constraints['Child Of']` in `tests/python/bl_constraints.py` | 45 | (c): `assert isinstance(con, ChildOfConstraint)`, or (d) |
 | `bpy_struct`: `UIList.draw_item`'s `data` (21), `bl_rna.functions.items()` (13), other (4) | 38 | (a) for `data` (~7 have a `template_list` call); (d) for the rest |
-| `node.inputs["Name"].default_value`: the socket by name is `NodeSocket` | 30 | (b), L: per-node socket tables from the generator; dynamic sockets stay `NodeSocket` |
+| `node.inputs["Name"].default_value`: the socket by name is `NodeSocket` | 30 | ~~(b)~~ done (row 12) for a node typed by its class or `nodes.new`; a node read back by name stays a `Node` |
 | `id_data` owner: `node.id_data.nodes` (9), rigify `PropertyGroup.id_data` (8), FBX `attributes.id_data` (4) | 29 | (b) for structs with one owner type (~17); (d) for a PropertyGroup's owner |
 | Other `ID` reads (`animated_id`, `blender_mesh[i]`, function parameters typed `ID`) | 21 | (d) |
 | Small bases: Freestyle `FEdge` 8, `modifiers[...]` 8, template `gizmos.new()` 7, `IKParam` 4, others | 45 | (d) |

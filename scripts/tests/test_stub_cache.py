@@ -140,3 +140,12 @@ def test_fingerprint_of_a_release_is_its_version(tmp_path, monkeypatch):
     monkeypatch.setattr(generate_stubs, "blender_version_output", lambda blender: output)
     (tmp_path / "blender").write_text("")
     assert blender_fingerprint(tmp_path / "blender") == "Blender 5.2.0, build date: 2026-07-01, build hash: 1234abcd"
+
+
+def test_node_socket_views_replace_fake_bpy_module_generator(tmp_path):
+    """Blender's fork writes each built-in node's socket view; fake-bpy-module's own default-state one then stands
+    aside, so its classes don't sit unused next to Blender's."""
+    (tmp_path / "bpy.types.ShaderNodeMath.rst").write_text("")
+    assert not generate_stubs.blender_declares_node_sockets(tmp_path)
+    (tmp_path / "bpy.types._ShaderNodeMath_inputs.rst").write_text("")
+    assert generate_stubs.blender_declares_node_sockets(tmp_path)

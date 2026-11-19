@@ -1052,7 +1052,8 @@ CAUSES = [
     Cause("fake-bpy-lib-key", "typechecker-fix", "", lambda d: FAKE_BPY_LIB_KEY.search(d.msg) is not None),
     # fake-bpy-module types a node class's own sockets `_<Node>_NodeInputs | None`, indexed by the socket names
     # only, which a node typed by its constructor (`nodes.new('ShaderNodeBsdfPrincipled')`) or a Type tag test
-    # exposes at `node.inputs["Color"]` (and at an identifier such as `"Fac"`).
+    # exposes at `node.inputs["Color"]` (and at an identifier such as `"Fac"`). Only where Blender's docs don't
+    # state the sockets (a release): Blender's fork writes them, and fake-bpy-module's own generator stands aside.
     Cause("fake-bpy-node-sockets", "typechecker-fix", "", lambda d: re.search(r"\.(?:inputs|outputs)\[", d.text)
           is not None and ((d.rule == "not-subscriptable" and "`None`" in d.msg)
                            or FAKE_BPY_NODE_SOCKETS_KEY.search(d.msg) is not None)),
