@@ -151,15 +151,22 @@ def string_default(socket: NodeSocket) -> str:
 
 
 class NarrowValuesNode(Node):
-    """An add-on's own node: no stub class declares its bl_idname."""
+    """An add-on's own node: no stub class declares its bl_idname, the add-on's registered class does."""
 
     bl_idname = 'NarrowValuesNode'
     bl_label = "Narrow Values"
 
 
+class NarrowValuesOtherNode(Node):
+    bl_idname = 'NarrowValuesOtherNode'
+    bl_label = "Narrow Values Other"
+
+
 def register():
     bpy.utils.register_class(NarrowValuesNode)
+    bpy.utils.register_class(NarrowValuesOtherNode)
 
 
 def unregister():
+    bpy.utils.unregister_class(NarrowValuesOtherNode)
     bpy.utils.unregister_class(NarrowValuesNode)

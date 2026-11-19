@@ -1,0 +1,4 @@
+[[probe]]
+code = "type(bpy.data.node_groups.new('probe', 'GeometryNodeTree').nodes.new('NarrowValuesNode')).__name__"
+expect = "NarrowValuesNode"
+reason = "a node whose bl_idname is the add-on's is an instance of the add-on's registered class"
