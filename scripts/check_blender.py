@@ -47,16 +47,21 @@ from _target import Target, add_target_arguments
 from download_blender import BLENDER_BIN_DIR
 from generate_stubs import results_name
 
-# Paths (relative to the Blender source root) left out of the check: libraries, the dead 2.7x test scripts, and the
-# type hints of gdb's API, written as `.py` modules with `pass` bodies rather than as stubs.
+# Paths (relative to the Blender source root) left out of the check: libraries, the dead 2.7x scripts, and the gdb
+# extension with the type hints of gdb's API it imports, written as `.py` modules with `pass` bodies rather than as
+# stubs (every diagnostic there was about the hints, none about Blender).
 EXCLUDED = [
     "lib/",
     "extern/",
-    "tools/debug/gdb/gdb/",
+    "tools/debug/gdb/",
     "tests/python/view_layer/",
     "tests/python/bl_mesh_modifiers.py",
     "tests/python/rna_array.py",
+    "intern/cycles/app/io_export_cycles_xml.py",
 ]
+# Rules check:blender does not report: the unused `# type: ignore` comments are all written for Blender's mypy check
+# (`tools/check_source/check_mypy.py`), which has no bpy stubs, so they say nothing about Blender's typing.
+IGNORED_RULES = ["unused-type-ignore-comment"]
 # The platform ty checks for, whatever the host: ty takes the host's by default, so `os.getuid`, `fcntl` and
 # `termios` were errors on Windows only and the recorded summaries depended on the machine. Linux, where Blender's
 # tools and tests run most.
@@ -95,6 +100,10 @@ ALLOWED_UNRESOLVED_IMPORTS = [
     "pyopenvdb",
     # Given by the program that runs the script.
     "gdb.**",
+    # CPython's private hash modules, which typeshed leaves out (`hashlib` falls back on them).
+    "_md5",
+    "_sha1",
+    "_sha2",
     # Requirements of developer tools and the documentation build.
     "autopep8",
     "clang.**",
@@ -220,6 +229,8 @@ def run_ty(target: Target, generator: str, site: Path | None) -> Path:
     cmd += ["--config", f"analysis.allowed-unresolved-imports = [{allowed}]"]
     for excluded in EXCLUDED:
         cmd += ["--exclude", excluded]
+    for rule in IGNORED_RULES:
+        cmd += ["--ignore", rule]
     cmd.append(source)
 
     log(f"Running ty (Python {python_version}, {generator} stubs) on {source}")
