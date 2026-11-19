@@ -4,12 +4,13 @@ the subclass its Type tag names. Code that reads a member only some of those sub
 which one it holds. The checker types the read as the union of the subclasses' declarations and reports it under
 blender-assumed-subclass-member. It does so only for refined bases with a Type tag: a member no subclass declares
 (a misspelling), a member of `ID`'s subclasses read on an `ID` and one of `TextCurve` read on a `Curve` (no Type tag)
-stay errors. The assert_type calls are no-ops at runtime."""
+stay errors. A refined base with subclasses ruled out (`not isinstance(strip, EffectStrip)`) counts only the other
+subclasses: a member every one of them declares is read silently. The assert_type calls are no-ops at runtime."""
 
 from typing import assert_type
 
 import bpy
-from bpy.types import ID, Curve, Node, Object
+from bpy.types import ID, Curve, EffectStrip, Node, Object, Strip
 
 
 def first_target(ob: Object) -> Object | None:
@@ -39,6 +40,19 @@ def tested_type(ob: Object) -> Object | None:
     if con.type == 'COPY_LOCATION':
         return con.target  # narrowed by the Type tag: not reported
     return None
+
+
+def content_trim(strip: Strip) -> int:
+    if not isinstance(strip, EffectStrip):
+        assert_type(strip.content_trim_start, int)  # every strip but the effects declares it: not reported
+        return strip.content_trim_start
+    return 0
+
+
+def sound_volume(strip: Strip) -> float:
+    if not isinstance(strip, EffectStrip):
+        return strip.volume  # ty: ignore[blender-assumed-subclass-member]
+    return 0.0
 
 
 def misspelt(ob: Object) -> None:

@@ -40,7 +40,7 @@ CASES = [
             "tree.interface.move(panel0, 0)",
             path="tests/python/bl_node_group_interface.py",
         ),
-        "unsorted",
+        "general-typing",
         id="bf1-undefined-name-not-in-tests",
     ),
     pytest.param(
@@ -481,7 +481,7 @@ CASES = [
             "Object of type `str` is not assignable to attribute `mode` of type `Literal['OBJECT', 'EDIT']`",
             "ob.mode = mode",
         ),
-        "unsorted",
+        "general-typing",
         id="s4-enum-value-error-falls-through",
     ),
     pytest.param(
@@ -2039,6 +2039,89 @@ CASES = [
         "fake-bpy-type-alias",
         id="fake-bpy-registered-class-method-bound",
     ),
+    # Deliberate errors: a test that checks Blender rejects a call.
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            'Argument to bound method `select_all` is incorrect: Expected `Literal["TOGGLE", "SELECT", '
+            '"DESELECT", "INVERT"]`, found `Literal["INVALID"]`',
+            "bpy.ops.object.select_all(action='INVALID')",
+            path="tests/python/bl_operator_function_py_api.py",
+            function="test_invalid_enum",
+            source="    def test_invalid_enum(self):\n        with self.assertRaises(TypeError):\n"
+            "            bpy.ops.object.select_all(action='INVALID')",
+        ),
+        "expected-error",
+        id="debt-expected-error-in-with",
+    ),
+    pytest.param(
+        diagnostic(
+            "unknown-argument",
+            "Argument `dummy` does not match any known parameter",
+            "self.assertRaises(TypeError, lambda: Matrix(dummy=None))",
+            path="tests/python/bl_pyapi_mathutils.py",
+        ),
+        "expected-error",
+        id="debt-expected-error-same-line",
+    ),
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Object of type `Vector` has no attribute `offset_other`",
+            "value.offset_other = 5.0",
+            path="tests/python/bl_pyapi_mathutils.py",
+            function="test_set",
+            source="    def test_set(self):\n        with self.assertRaises(AttributeError):\n"
+            "            pass\n        value.offset_other = 5.0",
+        ),
+        "general-typing",
+        id="debt-expected-error-after-the-block",
+    ),
+    # Plain Python typing in tests and tools, whatever its shape.
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to bound method `TestEnvironment.call` is incorrect: Expected `list[str]`, found "
+            "`list[str | Path]`",
+            "self.call([self.cmake_executable, self.blender_dir, '.'] + cmake_options, self.build_dir)",
+            path="tests/performance/api/environment.py",
+        ),
+        "general-typing",
+        id="debt-general-typing-tests",
+    ),
+    pytest.param(
+        diagnostic(
+            "invalid-argument-type",
+            "Argument to function `call` is incorrect: Expected `Sequence[str]`, found `list[str | Path]`",
+            "exitcode = call(create_dir_command)",
+            path="build_files/utils/make_benchmark.py",
+        ),
+        "general-typing",
+        id="debt-general-typing-tools",
+    ),
+    # A string assigned to an enum property: plain typing, not a union the code tells apart.
+    pytest.param(
+        diagnostic(
+            "invalid-assignment",
+            "Object of type `str` is not assignable to attribute `operation` on type `ShaderNodeMath | "
+            "TextureNodeMath`",
+            "node.operation = operation",
+            path="scripts/addons_core/node_wrangler/operators/batch_change.py",
+        ),
+        "general-typing",
+        id="debt-str-for-enum-not-correlated",
+    ),
+    # A class monkeypatch is no Registered property.
+    pytest.param(
+        diagnostic(
+            "missing-attribute",
+            "Unresolved attribute `_frame_rate_ret` on type `<class 'RENDER_PT_format'>`.",
+            "RENDER_PT_format._frame_rate_ret = args = (fps_label_text, show_framerate)",
+            path="scripts/startup/bl_ui/properties_output.py",
+        ),
+        "general-typing",
+        id="debt-class-monkeypatch-not-registered-property",
+    ),
     # Unsorted
     pytest.param(
         diagnostic("not-iterable", "Object of type `ImBufBuffer` is not iterable", "for p in buf:"),
@@ -2116,6 +2199,7 @@ def test_every_cause_has_a_known_group_and_a_unique_name():
         ("stub-none-mismatch", "typechecker-fix", ""),
         ("runtime-name", "typing-debt", ""),
         ("reload-idiom", "typing-debt", ""),
+        ("expected-error", "typing-debt", ""),
         ("unsorted", "unsorted", ""),
     ],
 )

@@ -389,6 +389,13 @@ GENERAL_TYPING = re.compile(
     r"|`float\*`|No overload of function `dirname`|on type `<module '|Argument to function `(?P<cls>\w+)\.\w+` is "
     r"incorrect: Expected `(?P=cls)`"
 )
+# A string assigned to an enum property (`Object of type `str` is not assignable to attribute `operation``).
+STR_FOR_ENUM = re.compile(r"Object of type `str` is not assignable to attribute `\w+`")
+# A call of a `bpy.props` function, which makes a Registered property.
+PROPERTY_CALL = re.compile(r"\b\w*Property\(")
+# A class attribute that is not a property: `RENDER_PT_format._frame_rate_ret = ...`.
+CLASS_MONKEYPATCH = re.compile(r"Unresolved attribute `\w+` on type `<class")
+ASSERT_RAISES_BLOCK = re.compile(r"\s*with\b.*\bassertRaises\b")
 MONKEYPATCH = re.compile(r"^\s*(?:_bpy|pydoc(?:\.Helper)?)\.\w+ = ")
 
 
@@ -605,6 +612,9 @@ def correlated_union(d: Diagnostic) -> bool:
     flag or a type field ty does not follow (``PoseBone | EditBone | Object`` picked by ``is_ebone``)."""
     if d.rule not in {*MISSING_ATTRIBUTE_RULES, "invalid-assignment", "invalid-argument-type"}:
         return False
+    # A plain `str` for an enum property (Node Wrangler's `node.operation = operation`) is general typing.
+    if STR_FOR_ENUM.match(d.msg):
+        return False
     # ty names the members that lack an attribute when there are many: "not defined on `AddStrip`, `ColorStrip`".
     if re.search(r"is not defined on `\w+`, `\w+`", d.msg):
         return True
@@ -643,6 +653,38 @@ def in_presets(d: Diagnostic) -> bool:
 
 def in_tests(d: Diagnostic) -> bool:
     return d.path.replace("\\", "/").startswith("tests/")
+
+
+def stub_gap(d: Diagnostic) -> bool:
+    """Whether the diagnostic is a shape the stubs leave out (iteration, operators, subscripts, module members)."""
+    return (
+        d.rule in STUB_GAP_RULES
+        or "object.__init__" in d.msg
+        or re.search(r"Module `[\w.]+` has no member", d.msg) is not None
+    )
+
+
+def in_tests_or_tools(d: Diagnostic) -> bool:
+    """Whether the diagnostic is in Blender's tests or its build and developer tools, which are plain Python."""
+    return d.path.replace("\\", "/").startswith(("tests/", "tools/", "build_files/", "doc/python_api/"))
+
+
+def expected_error(d: Diagnostic) -> bool:
+    """Whether a test makes the call on purpose, to check Blender rejects it: the line is in a ``with
+    self.assertRaises(...)`` block, or passes the call to ``assertRaises`` itself."""
+    if not in_tests(d):
+        return False
+    if "assertRaises" in d.text:
+        return True
+    lines = d.scope.source.splitlines()
+    if not lines:
+        return False
+    limit = indentation(lines[-1])
+    for text in reversed(lines[:-1]):
+        if not text.strip() or indentation(text) >= limit:
+            continue
+        return ASSERT_RAISES_BLOCK.match(text) is not None
+    return False
 
 
 NONE_KEY = "with key of type `None`"
@@ -690,8 +732,9 @@ def callback_never_none(d: Diagnostic) -> bool:
 def registered_property(d: Diagnostic) -> bool:
     if in_addon(d):
         return False
-    if re.search(r"Unresolved attribute `\w+` on type `<class", d.msg):
-        return True
+    # A class attribute set to anything but a property (`RENDER_PT_format._frame_rate_ret = ...`) is a monkeypatch.
+    if CLASS_MONKEYPATCH.search(d.msg):
+        return PROPERTY_CALL.search(d.text) is not None
     if re.match(r"\s*del\b", d.text) and d.msg.startswith("Class"):
         return True
     if d.rule == "invalid-assignment" and d.msg.startswith("Object of type `_PropertyDeferred` is not assignable"):
@@ -1064,6 +1107,8 @@ CAUSES = [
     Cause("property-on-panel", "blender-fix", "BF1", rule("blender-unsupported-property-host")),
     Cause("dead-api", "blender-fix", "BF1", outside_tests(lambda d: DEAD_API.search(d.msg) is not None)),
     Cause("reload-idiom", "typing-debt", "", reload_idiom),
+    # Tests that make a wrong call on purpose, inside `assertRaises`.
+    Cause("expected-error", "typing-debt", "", expected_error),
     Cause("runtime-name", "typing-debt", "", lambda d: d.rule == "unresolved-reference"
           and d.path.replace("\\", "/") in RUNTIME_NAME_MODULES),
     Cause("undefined-name", "blender-fix", "BF1", outside_tests(rule("unresolved-reference"))),
@@ -1233,9 +1278,11 @@ CAUSES = [
           or d.rule in {"redundant-condition", "mismatched-type-name"}
           or (d.rule in METHOD_OVERRIDE_RULES and not in_tests(d))
           or (d.rule == "invalid-context-manager" and "`Iterator[None]`" in d.msg)
-          or GENERAL_TYPING.search(d.msg) is not None or MONKEYPATCH.match(d.text) is not None),
-    Cause("stub-gap", "unsorted", "", lambda d: d.rule in STUB_GAP_RULES or "object.__init__" in d.msg
-          or re.search(r"Module `[\w.]+` has no member", d.msg) is not None),
+          or GENERAL_TYPING.search(d.msg) is not None or MONKEYPATCH.match(d.text) is not None
+          or STR_FOR_ENUM.match(d.msg) is not None or CLASS_MONKEYPATCH.search(d.msg) is not None
+          # The rest of the tests and tools is plain Python: what no Blender cause above takes is general typing.
+          or (in_tests_or_tools(d) and not stub_gap(d) and not d.rule.startswith("blender-"))),
+    Cause("stub-gap", "unsorted", "", stub_gap),
     Cause("blender-rule", "unsorted", "", lambda d: d.rule.startswith("blender-")),
     Cause("unsorted", "unsorted", "", lambda d: True),
 ]  # fmt: skip
