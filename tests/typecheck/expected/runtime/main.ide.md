@@ -1,4 +1,4 @@
-# IDE results, builtin stubs, Blender main
+# IDE results, runtime stubs, Blender main
 
 Written by `mise run check:ide main --update`; the task fails when this file would change.
 Each section is one marker, `path | ^marker @column | queried line`, and what ty's language server returned.
@@ -60,7 +60,7 @@ PASS
 
 ````text
 ```python
-Object
+_Object_MESH
 ```
 ````
 

@@ -82,10 +82,10 @@ Ranked by kind, then by what it clears. **Now** is implemented with this report;
 | R11 | Type tag narrowing on a union of refined bases (narrow each member) | 6 | S | now |
 | R12 | `NodeTreeInterface.new_socket(socket_type="NodeSocketX")` is `NodeTreeInterfaceSocketX` | 4 | S | now: the call swaps an unsupported type, but the `socket_type` enum rejects one first |
 | R13 | A Registered property written through an intersection receiver (`X & ~AlwaysFalsy` after `if x:`) | 6 | S | now |
-| R14 | Added-object type: after `mesh.primitive_*_add()`, `object.add(type=...)`, `light_add(type=...)`, `context.object` is the tag view of the new type (part of `blender-assumed-added-object`) | ~102 (+23 subclass reads) | M | later: needs an operator-to-type table and the `view_layer.objects.active` alias; next slice |
-| R15 | A Grease Pencil material preset sees `object.active_material.grease_pencil` set (a path form of the preset table); fluid presets see a domain | 63 | S-M | later: pairs with the (c) fix of the preset generator, which writes to the wrong material |
+| R14 | Added-object type: after `mesh.primitive_*_add()`, `object.add(type=...)`, `light_add(type=...)`, `context.object` is the tag view of the new type (part of `blender-assumed-added-object`) | ~102 (+23 subclass reads) | M | done (2026-11-19): the operator-to-type table in `ty_blender::added_object_type`; clears 86 (a call in a branch the read is not in, an `object.add(type=kind)` and `**kwargs` give no view), while 15 reads of a light's subclass members (`light_add(type='SPOT')`, then `.data.spot_size`) and 4 real test mistakes now show; the `view_layer.objects.active` alias is left |
+| R15 | A Grease Pencil material preset sees `object.active_material.grease_pencil` set (a path form of the preset table); fluid presets see a domain | 63 | S-M | done (2026-11-19), with P8: `ty_blender::preset_set_pointer` and a fluid entry in the preset table; clears 66 |
 | R16 | A Registered property after `hasattr(x, "name")` has the property's type, also when the add-on registers it outside `register()` | 17 | M | later: needs registrations beyond the `register()` walk in the index |
-| R17 | A write to a Type tag narrows when its setter rebuilds the sibling pointer (`fluid.fluid_type = 'DOMAIN'`) | 21 | M | later: reverses the `tag_writers` guard; needs a per-tag table |
+| R17 | A write to a Type tag narrows when its setter rebuilds the sibling pointer (`fluid.fluid_type = 'DOMAIN'`) | 21 | M | done (2026-11-19): `ty_blender::rebuilds_on_tag_write` (`FluidModifier.fluid_type`), the last write of the tag (or `setattr`) before the read, a literal in a block holding the read with no later write in a loop around it; clears 19 with the builtin stubs (fake-bpy-module has no fluid tag views) |
 | R18 | Implied narrowing for `SpaceX.draw_handler_add(fn, ..., 'WINDOW')` callbacks, one helper deep | 19 | M | later |
 | R19 | `self.layout` in Operator methods called only from `draw` | 17 | M | later: needs a call graph within the class |
 | R20 | A Type tag test through a local (`strip_type = strip.type`) | 15 | M | later |
@@ -107,7 +107,7 @@ Ranked by kind, then by what it clears. **Now** is implemented with this report;
 | S7 | Refined bases: `Pose.ik_param` is `Itasc`; members every subclass declares hoisted (`Light.shadow_maximum_resolution`, `UserAssetLibrary.path`, `Attribute.data`); `BoneCollection.id_data` is `Armature` | 9 | S | now |
 | S8 | Docstrings: vector property `get` / `set` take nested sequences for a multi-dimensional `size` (6), dynamic enums `view_transform`, `look`, `display_device`, `Curve.fill_mode` (3), `bl_rna` / `rna_type` on collection structs (4), `bpy.types.bpy_func` and `bpy_struct_meta_idprop` (2), `is_asset_browser(Space \| None)` (2), `ensure_ext(str \| bytes)` (2), `UI_UL_list` items (2), `batch_for_shader` indices (1) | 22 | S | now |
 | S9 | `_DriverFCurve` with `driver: Driver` from `driver_add()` and in `AnimData.drivers` | 16 | M | later: a new private class kind in both generators |
-| S10 | Undocumented Python modules and `__all__` members in the builtin stubs (`bpy_extras.node_shader_utils`, ...); startup-registered classes in `bpy.types` with their Python members | 15 | M | later: changes how the generator discovers modules |
+| S10 | Undocumented Python modules and `__all__` members in the builtin stubs (`bpy_extras.node_shader_utils`, ...); startup-registered classes in `bpy.types` with their Python members | 15 | M | startup classes done by the runtime generator (`--generator runtime`, `docs/research/runtime-stub-generator.md` §7: `registered-class-in-bpy-types` 8 → 2); the builtin stubs keep the gap |
 | S11 | Built-in gizmo types (`GIZMO_GT_*`) as private classes for `gizmos.new()` | 7 | M | later: needs a probe |
 | S12 | `driver_add` overloads on `index`, `RenderPass.rect` nested, typed `libraries.load()` targets, `load_image(place_holder=True)` overload | 5 | S-M | later: low value |
 
@@ -122,7 +122,7 @@ Ranked by kind, then by what it clears. **Now** is implemented with this report;
 | P5 | Node Wrangler records as tuples and a record class | 33 | M | later: touches mutable records |
 | P6 | `script_paths_pref`, `is_path_extension` in `bpy.utils.__all__`; dead `DATA_UL_bone_collections`, `VIEW3D_PT_imagepaint_options`; `FixToCameraCommon`'s mypy stubs | 13 | S | later: public API and removals are the maintainers' call |
 | P7 | `assert mod is not None` after `modifiers.new()` in the multires tests | 30 | S | later: typing-only churn in one test |
-| P8 | The Grease Pencil material preset generator writes to `context.material` | 0 | S | later: with R15 |
+| P8 | The Grease Pencil material preset generator writes to `context.object.active_material`, not the `context.material` its panel shows | 0 | S | done (2026-11-19), with R15 |
 
 ## Nullable pointers
 

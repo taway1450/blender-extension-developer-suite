@@ -1,4 +1,4 @@
-# Feature-test progress, builtin stubs, Blender main
+# Feature-test progress, runtime stubs, Blender main
 
 Markers that pass, per feature, and the diagnostics on lines without a marker. Written by `--update` of
 `check:features` and `check:ide` from the recorded results next to this file; do not edit. Guards are markers
@@ -8,8 +8,8 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | --- | --- | --- | --- | --- | --- |
 | addon_discovery | 17/17 | 8/8 | 3/3 | - | 0 |
 | addon_preferences | 24/24 | 7/7 | 11/11 | 3/3 | 0 |
-| api_types | 30/30 | 7/7 | 277/277 | 3/3 | 0 |
-| assumptions | 15/15 | 67/67 | 15/15 | - | 0 |
+| api_types | 30/30 | 7/7 | 278/278 | 3/3 | 0 |
+| assumptions | 23/23 | 77/77 | 16/16 | - | 0 |
 | bpy_symbols | 153/153 | 47/47 | 9/9 | 2/2 | 0 |
 | context_members | 56/56 | - | 16/16 | - | 0 |
 | implied_narrowings | 8/8 | 69/69 | 23/23 | 3/3 | 0 |
@@ -22,5 +22,5 @@ that hold without ty-blender (`# bare-ok`) and are not counted in the assert_typ
 | property_wrappers | 17/17 | - | 3/3 | 6/6 | 0 |
 | registration | 46/46 | 11/11 | 11/11 | 3/3 | 0 |
 | registration_checks | 13/13 | 39/39 | 11/11 | - | 0 |
-| type_narrowing | 65/65 | 1/1 | 21/21 | - | 0 |
-| **total** | 1068/1068 | 479/479 | 458/458 | 47/47 | 0 |
+| type_narrowing | 67/67 | 1/1 | 25/25 | - | 0 |
+| **total** | 1078/1078 | 489/489 | 464/464 | 47/47 | 0 |
