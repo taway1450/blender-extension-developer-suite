@@ -1,5 +1,6 @@
-"""Feature test: an add-on that declares the add-on it relies on (`[tool.blender] uses` in its manifest) reads that
-add-on's properties. Its own registration of a name comes first."""
+"""Feature test: an add-on reads the properties of the add-ons its manifest declares (`[tool.blender] uses`)."""  # ty: ignore[blender-invalid-addon-metadata]
+# The manifest also declares `regchk_uses_missing`, which no module provides: reported on the line above. Where both
+# add-ons register a name (`Scene.regchk_uses_shared`), the add-on's own registration comes first.
 
 import bpy
 from bpy.props import StringProperty
@@ -26,8 +27,10 @@ def count(ob: Object) -> int:
 def register():
     bpy.utils.register_class(REGCHK_USES_OT_run)
     bpy.types.Object.regchk_uses_label = StringProperty()
+    bpy.types.Scene.regchk_uses_shared = StringProperty()
 
 
 def unregister():
+    del bpy.types.Scene.regchk_uses_shared
     del bpy.types.Object.regchk_uses_label
     bpy.utils.unregister_class(REGCHK_USES_OT_run)

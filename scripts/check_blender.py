@@ -11,8 +11,9 @@ test scripts ``tests/python/CMakeLists.txt`` never runs), once per stub generato
 
 The packages of Blender's bundled Python that its code imports (numpy, setuptools, requests, USD, ...) are on the
 search path, through links in ``.cache/blender-site/<version>/`` (not the whole ``site-packages``: it would put a
-runtime ``typing_extensions.py`` in front of typeshed's), and so is Cycles' add-on source, as ``cycles``, so the
-checker reads what it registers; so are the directories Blender's tools and tests add to ``sys.path`` themselves. Modules nothing can resolve (compiled into Blender, given by GDB, or a developer tool's
+runtime ``typing_extensions.py`` in front of typeshed's). Cycles' add-on source is linked there too, as ``cycles``,
+so the checker reads what it registers (``scene.cycles``). The directories Blender's tools and tests add to
+``sys.path`` themselves are on the search path as well. Modules nothing can resolve (compiled into Blender, given by GDB, or a developer tool's
 own requirements) are allowed to be unresolved, so ``import-not-found`` reports only real gaps.
 
 Each diagnostic is sorted into a cause, which has a group, and an area (see _buckets.py). The cause x area table,

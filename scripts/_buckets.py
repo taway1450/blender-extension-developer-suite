@@ -1037,6 +1037,7 @@ CAUSES = [
                               "assumed-added-object")),
         ("implied-narrowing", "C6", ("narrowed-by-bl-context",)),
         ("assumption", "C7", ("assumed-subclass-member",)),
+        # Step 3 of the cross-add-on work, after the specs that numbered the others: no spec area.
         ("assumption", "", ("assumed-default-addon",)),
     ) for name in names if name != "assumed-preferences"),
     # An add-on's `register()` reads its own preferences, which exist once the add-on is enabled.

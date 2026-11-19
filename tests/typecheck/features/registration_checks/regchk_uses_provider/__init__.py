@@ -13,9 +13,11 @@ def register():
     bpy.utils.register_class(REGCHK_USES_PROVIDER_Settings)
     bpy.types.Scene.regchk_uses_provider = PointerProperty(type=REGCHK_USES_PROVIDER_Settings)
     bpy.types.Object.regchk_uses_provider_count = IntProperty()
+    bpy.types.Scene.regchk_uses_shared = IntProperty()
 
 
 def unregister():
+    del bpy.types.Scene.regchk_uses_shared
     del bpy.types.Object.regchk_uses_provider_count
     del bpy.types.Scene.regchk_uses_provider
     bpy.utils.unregister_class(REGCHK_USES_PROVIDER_Settings)

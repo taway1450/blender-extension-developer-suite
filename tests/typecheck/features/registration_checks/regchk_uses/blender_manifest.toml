@@ -16,4 +16,4 @@ paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]
 
 # Blender ignores the [tool] table; the checker reads the add-ons this one relies on from it.
 [tool.blender]
-uses = ["regchk_uses_provider"]
+uses = ["regchk_uses_provider", "regchk_uses_missing"]
