@@ -8,14 +8,14 @@
   reported.
 - getattr(context, "x", None) and (ob := context.x) are the path context.x; XrSessionState.is_running(context) checks
   window_manager.xr_session_state; bool(a and b) checks a and b; a helper's try body counts when its except returns
-  False.
+  False. A helper passed a member of the context (`helpers.is_mesh(context.object)`) checks that member.
 
 The assert_type calls in the bodies are no-ops at runtime."""
 
 from typing import assert_type
 
 import bpy
-from bpy.types import Material, Object, Operator, Panel, XrSessionState
+from bpy.types import Material, Mesh, Object, Operator, Panel, XrSessionState
 
 from . import helpers
 from .sub_panels import NAR_REACH_PT_far
@@ -195,7 +195,21 @@ class NAR_REACH_PT_try(Panel):
         assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll]
 
 
+class NAR_REACH_PT_member_helper(Panel):
+    bl_label = "member helper"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Reach"
+
+    @classmethod
+    def poll(cls, context):
+        return helpers.is_mesh(context.object)
+
+    def draw(self, context):
+        assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+
+
 classes = (NAR_REACH_PT_parent, NAR_REACH_PT_child, NarReachGrandchild, NAR_REACH_PT_popover_child, NAR_REACH_PT_far,
            NAR_REACH_OT_flow, NAR_REACH_OT_flow_and, NAR_REACH_PT_getattr, NAR_REACH_PT_walrus, NAR_REACH_PT_xr,
-           NAR_REACH_OT_xr, NAR_REACH_PT_bool, NAR_REACH_PT_try)
+           NAR_REACH_OT_xr, NAR_REACH_PT_bool, NAR_REACH_PT_try, NAR_REACH_PT_member_helper)
 register, unregister = bpy.utils.register_classes_factory(classes)

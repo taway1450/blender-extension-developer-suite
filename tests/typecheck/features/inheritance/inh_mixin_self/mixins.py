@@ -7,8 +7,8 @@ error. A mixin method is a draw callback (self.layout is never None) when it is 
 A mixin whose users all derive from unittest.TestCase is typed the same way: its self is a TestCase too, so the test
 case's assertions resolve and narrow.
 
-A mixin that no class of the add-on uses keeps its bare type: its users may be in another add-on, or made at
-runtime."""
+A class the add-on makes with type(name, (Mixin, Panel), {...}) is a user too, typed by the Blender class among its
+bases. A mixin that no class of the add-on uses keeps its bare type: its users may be in another add-on."""
 
 from typing import assert_type
 
@@ -51,6 +51,14 @@ class SharedMixin:
 
     def draw_title(self, context):
         assert_type(self.layout, UILayout | None)
+
+
+class MadeMixin:
+    """Used only by panels made with type(): self is a Panel, and draw is a draw callback."""
+
+    def draw(self, context):
+        assert_type(self.layout, UILayout)
+        self.layout.label(text=self.bl_label)
 
 
 class UnusedMixin:

@@ -5,7 +5,7 @@ import unittest
 import bpy
 from bpy.types import Menu, Operator, Panel
 
-from .mixins import DrawnMixin, OperatorMixin, PanelMixin, SharedMixin, TestCaseMixin
+from .mixins import DrawnMixin, MadeMixin, OperatorMixin, PanelMixin, SharedMixin, TestCaseMixin
 
 
 class INH_MIXIN_SELF_PT_first(PanelMixin, Panel):
@@ -78,6 +78,16 @@ class CubeAgainTest(TestCaseMixin, unittest.TestCase):
         self.check_cube()
 
 
+def made_panels():
+    for index in range(2):
+        yield type(f"INH_MIXIN_SELF_PT_made_{index}", (MadeMixin, Panel), {
+            "bl_label": f"Made {index}",
+            "bl_space_type": "PROPERTIES",
+            "bl_region_type": "WINDOW",
+            "bl_context": "object",
+        })
+
+
 classes = (INH_MIXIN_SELF_PT_first, INH_MIXIN_SELF_PT_second, INH_MIXIN_SELF_OT_finish, INH_MIXIN_SELF_PT_drawn,
-           INH_MIXIN_SELF_MT_drawn, INH_MIXIN_SELF_PT_shared, INH_MIXIN_SELF_OT_shared)
+           INH_MIXIN_SELF_MT_drawn, INH_MIXIN_SELF_PT_shared, INH_MIXIN_SELF_OT_shared, *made_panels())
 register, unregister = bpy.utils.register_classes_factory(classes)

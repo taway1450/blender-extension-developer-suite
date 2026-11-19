@@ -1,4 +1,4 @@
-"""Poll helpers the add-on's polls call with their context."""
+"""Poll helpers the add-on's polls call with their context, or with a member of it."""
 
 
 def has_object(context):
@@ -11,3 +11,7 @@ def has_material(context):
         return context.object.active_material is not None
     except AttributeError:
         return False
+
+
+def is_mesh(ob):
+    return ob and ob.type == 'MESH'

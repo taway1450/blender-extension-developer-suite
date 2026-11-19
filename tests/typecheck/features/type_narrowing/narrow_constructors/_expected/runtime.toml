@@ -52,3 +52,13 @@ reason = "objects.new takes the object type from the data"
 code = "bpy.data.objects.new('narrow_constructors', None).type"
 expect = "EMPTY"
 reason = "objects.new without data makes an empty"
+
+[[probe]]
+code = "type(bpy.data.objects.new('narrow_constructors', None).driver_add('hide_viewport')).__name__"
+expect = "FCurve"
+reason = "driver_add of a property that is no array gives one F-Curve"
+
+[[probe]]
+code = "type(bpy.data.objects.new('narrow_constructors', None).driver_add('location')).__name__"
+expect = "list"
+reason = "driver_add of an array property gives one F-Curve per item"

@@ -8,16 +8,18 @@ and `outputs.new(...)` (a socket's) and `bpy.data.node_groups.new(name, ...)` (a
 (`NodeTreeInterfaceSocketFloat` for `NodeSocketFloat`); a socket type the tree does not support raises `TypeError`.
 `bpy.data.objects.new(name, data)` takes the object type from
 the data, so it returns that type's tag view (`_Object_CAMERA` for a camera, `_Object_EMPTY` for None). A value no
-class declares, a non-literal argument and an add-on node's `bl_idname` read from no class keep the stub type. The
+class declares, a non-literal argument and an add-on node's `bl_idname` read from no class keep the stub type.
+`driver_add(path)` returns one F-Curve when `path` names a property of the struct that is no array
+(`bone.driver_add("bbone_segments")`), and a list of them, one per item, for an array (`location`). The
 narrowing is silent. The assert_type calls are no-ops at runtime."""
 
 from typing import Literal, assert_type
 
 import bpy
-from bpy.types import (ID, Camera, Constraint, CopyLocationConstraint, FloatAttribute, Gizmo, GizmoGroup, Light, Mesh,
-                       Node, NodeSocket, NodeSocketColor, NodeSocketFloat, NodeTree, NodeTreeInterfaceSocket,
-                       NodeTreeInterfaceSocketFloat, Object, ShaderNodeMath, ShaderNodeTree, SpotLight, SunLight,
-                       TrackToConstraint)
+from bpy.types import (ID, Bone, Camera, Constraint, CopyLocationConstraint, Driver, FloatAttribute, Gizmo,
+                       GizmoGroup, Light, Mesh, Node, NodeSocket, NodeSocketColor, NodeSocketFloat, NodeTree,
+                       NodeTreeInterfaceSocket, NodeTreeInterfaceSocketFloat, Object, ShaderNodeMath, ShaderNodeTree,
+                       SpotLight, SunLight, TrackToConstraint)
 
 
 def follow(ob: Object, target: Object) -> None:
@@ -26,6 +28,21 @@ def follow(ob: Object, target: Object) -> None:
     con.target = target
     track = ob.constraints.new(type='TRACK_TO', name="Aim")
     assert_type(track, TrackToConstraint)
+
+
+def bbone_driver(bone: Bone) -> Driver:
+    fcu = bone.driver_add("bbone_segments", -1)
+    assert_type(fcu.data_path, str)  # one F-Curve: `bbone_segments` is no array
+    return fcu.driver
+
+
+def hide_driver(ob: Object) -> Driver:
+    return ob.driver_add("hide_viewport").driver  # no array: one F-Curve
+
+
+def location_drivers(ob: Object) -> None:
+    fcus = ob.driver_add("location")
+    print(fcus.data_path)  # ty: ignore[missing-union-attribute]  # bare-ok: `location` is an array, so a list
 
 
 def any_constraint(ob: Object, kind: str) -> None:

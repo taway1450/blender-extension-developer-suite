@@ -1,5 +1,6 @@
 """Feature test: update, get, set, poll and items callbacks. Blender calls them with the instance of the class
-that declares the property as `self`, so that is their first parameter's type."""
+that declares the property as `self`, so that is their first parameter's type. A property assigned to a class in
+register() has that class as `self`."""
 
 from __future__ import annotations
 
@@ -7,7 +8,7 @@ from typing import assert_type
 
 import bpy
 from bpy.props import EnumProperty, FloatProperty, IntProperty, PointerProperty, StringProperty
-from bpy.types import Context, Material, Object, PropertyGroup
+from bpy.types import Armature, Context, Material, Object, PropertyGroup, Scene
 
 
 def count_update(self: PROPS_CALLBACKS_Settings, context: Context) -> None:
@@ -67,7 +68,14 @@ class PROPS_CALLBACKS_Settings(PropertyGroup):
 
 def register():
     bpy.utils.register_class(PROPS_CALLBACKS_Settings)
+    bpy.types.Armature.props_callbacks_rig = PointerProperty(
+        type=Object,
+        poll=lambda self, obj: assert_type(obj, Object).type == "ARMATURE" and obj.data is not assert_type(self, Armature),
+    )
+    bpy.types.Scene.props_callbacks_step = IntProperty(update=lambda self, context: print(assert_type(self, Scene).frame_current))
 
 
 def unregister():
+    del bpy.types.Scene.props_callbacks_step
+    del bpy.types.Armature.props_callbacks_rig
     bpy.utils.unregister_class(PROPS_CALLBACKS_Settings)
