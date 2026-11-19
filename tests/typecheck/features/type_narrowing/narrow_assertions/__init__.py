@@ -36,12 +36,12 @@ class NarrowAssertionsTest(unittest.TestCase):
         other = unittest.TestCase()
         ob = bpy.data.objects.get("Cube")
         other.assertIsNotNone(ob)
-        assert_type(ob, Object | None)  # another test case's assertion is not this test's
+        assert_type(ob, Object | None)  # bare-ok: another test case's assertion is not this test's
 
     def test_not_a_statement(self) -> None:
         ob = bpy.data.objects.get("Cube")
         checks = [self.assertIsNotNone(ob)]
-        assert_type(ob, Object | None)  # only an assertion statement narrows
+        assert_type(ob, Object | None)  # bare-ok: only an assertion statement narrows
         del checks
 
 
@@ -54,7 +54,34 @@ class NotATestCase:
     def check(self) -> None:
         ob = bpy.data.objects.get("Cube")
         self.assertIsNotNone(ob)
-        assert_type(ob, Object | None)  # not a TestCase: its assertion may return
+        assert_type(ob, Object | None)  # bare-ok: not a TestCase, its assertion may return
+
+
+class BaseTest(unittest.TestCase):
+    """An intermediate base: its subclasses are test cases too."""
+
+
+class DerivedTest(BaseTest):
+    def test_is_not_none(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertIsNotNone(ob)
+        assert_type(ob, Object)  # a TestCase through BaseTest
+
+
+class AsyncTest(unittest.IsolatedAsyncioTestCase):
+    async def test_is_not_none(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertIsNotNone(ob)
+        assert_type(ob, Object)  # IsolatedAsyncioTestCase is a TestCase
+
+
+class AssertionMixin:
+    """A mixin mixed into test cases: its `self` may be any class, so its assertion does not narrow."""
+
+    def check_cube(self) -> None:
+        ob = bpy.data.objects.get("Cube")
+        self.assertIsNotNone(ob)  # ty: ignore[missing-attribute]  # bare-ok: a mixin has no assertIsNotNone
+        assert_type(ob, Object | None)  # bare-ok: `self` is not known to be a TestCase
 
 
 def register():
