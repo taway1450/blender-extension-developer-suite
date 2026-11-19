@@ -301,11 +301,14 @@ The first two are generated in Blender (`make_examples.py`).
   `Object.data` of a light is. Earlier, B used to record the base `Light`, which G showed was wrong.
 - **G, the same manifest written by Blender** (`blender_extract.py`). It opens each file with `open_mainfile` in
   background Blender and writes B's schema from `bpy.data`, so it records the loaded state, after versioning. Opening
-  takes 5-6 ms per file, but each run pays for starting Blender. On the files saved by the Blender that loads them,
-  B and G agree on every fact. On the Sculpting template, saved by 5.2, G has two Principled BSDF inputs that the file
+  takes 4-8 ms per file, but each run pays for starting Blender. On the two files saved by the Blender that loads
+  them, B and G agree on every fact. That says little about B's own tables (object type to data class, light type to
+  light class): the examples have no text, surface or other rarer objects, where B's tables could be wrong. On the Sculpting template, saved by 5.2, G has two Principled BSDF inputs that the file
   does not store: `Transmission Dispersion Scale` and `Transmission Dispersion Abbe Number`. Blender rebuilds a node's
   sockets from its declaration when it loads the file. So a raw reader is exact only for files saved by the stubs'
-  version, as §5 expects. Even then, a newer Blender only adds sockets here, so the facts B has stay true.
+  version, as §5 expects. In this file a newer Blender only adds sockets, so the facts B has stay true there. That
+  is one file, not a rule. The overlays from B's and G's manifests are identical even here, because C leaves a
+  built-in node's sockets to the stubs (below). The difference would matter for a group or custom node.
 - **C, overlay stub with `Literal` keys** (`gen_stubs.py`, checked with `check:addons --generator builtin`). The
   overlays of all three add-ons check clean against the builtin stubs. With the overlay, the checker gives the first
   set of types below; reading `bpy.data` today gives the second:
@@ -336,10 +339,12 @@ The first two are generated in Blender (`make_examples.py`).
   by importing `data` from it under `TYPE_CHECKING`, a code change every script would need.
 - **A, the reader at check time** (`reader_check.py`, with `measure_reader.py` on Blender's test files). `reader_check.py`
   reads the files that the add-on's manifest binds, with no manifest, and resolves each `reveal_type` argument
-  syntactically through simple aliases, the first way of §4.6. On the three add-ons, it types every chain the overlay
-  types, and it types the `check_bare` reads of `bpy.data` too, which the overlay cannot reach: `rock.modifiers["Bevel"]`
+  syntactically through simple aliases, the first way of §4.6. On the three add-ons, it resolves every chain through
+  the file's names that the overlay resolves. A member read after the chain (`camera.data.lens`) keeps the stubs'
+  type, which the checker supplies. A also types the `check_bare` reads of `bpy.data`, which the overlay cannot reach: `rock.modifiers["Bevel"]`
   is `BevelModifier`, and `bpy.data.node_groups["Scatter Points"]` is `GeometryNodeTree`. Reading and merging the
-  facts takes 16-34 ms per file in pure Python. The earlier measurements on 58 test files still hold. The extractor
+  facts takes 16-34 ms per file in pure Python. The resolver is a sketch: it collects aliases in no particular order,
+  and it treats any bare `data` as `bpy.data`. A reader in ty would follow the checker's own bindings. The earlier measurements on 58 test files still hold. The extractor
   reads only 17 `struct.field` paths (18 with `Lamp.type`). Decoding the SDNA dominates (median 17 ms), and it could be
   cached per Blender version. A 2.5 file has no `bNode.idname`, so every field must be optional.
 - **How often a binding would help.** 12 test scripts open literal `.blend` files (other than `empty.blend`). Of their

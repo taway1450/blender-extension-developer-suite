@@ -8,9 +8,9 @@ For each add-on under ``prototypes/blend_typing/examples/`` and each ``.blend`` 
 
 - **B** reads the file without Blender (``extract_manifest.py``) into ``B/<add-on>/<file>-manifest.toml``;
 - **G** opens it in background Blender (``blender_extract.py``) into ``G/<add-on>/<file>-manifest.toml``;
-- **C** turns B's manifest into the add-on's overlay ``_blend/<stem>.pyi`` (committed, so ``check:addons`` reads
-  it), and G's into ``C/<add-on>/<stem>.pyi`` for comparison, against the builtin stubs of the version (a built-in
-  node's sockets are already in them);
+- **C** turns each manifest into an overlay, ``C/<add-on>/<stem>.from-B.pyi`` and ``.from-G.pyi``, against the
+  builtin stubs of the version (a built-in node's sockets are already in them). The add-on's committed
+  ``_blend/<stem>.pyi`` is B's: ``--update-overlays`` rewrites it, and the summary says when it is stale;
 - **A** reads the files itself and types the add-on's ``reveal_type`` calls (``reader_check.py``) into
   ``A/<add-on>.txt``.
 
@@ -18,8 +18,11 @@ For each add-on under ``prototypes/blend_typing/examples/`` and each ``.blend`` 
 ``--make``, the example files that are generated (``asset_pack/assets.blend``, ``scene_template/startup.blend``) are
 first rebuilt in Blender (``make_examples.py``). Everything goes to ``.cache/blend-typing/<version>/``.
 
+With ``--make`` and ``--update-overlays`` the task writes into ``prototypes/blend_typing/examples/``, the files the
+example add-ons commit; otherwise it writes only to the cache.
+
 Usage:
-  uv run scripts/probe_blend_typing.py main [--make]
+  uv run scripts/probe_blend_typing.py main [--make] [--update-overlays]
 """
 
 from __future__ import annotations
@@ -69,28 +72,40 @@ def flatten(table: dict, prefix: str = "") -> dict[str, object]:
     return flat
 
 
-def show(item: object) -> str:
+def describe(item: object) -> str:
     """A manifest list item for the summary: ``Name (Class)`` for a pair, the name otherwise."""
     if isinstance(item, list) and len(item) == 2:
         return f"`{item[0]}` ({item[1]})"
     return f"`{item}`"
 
 
+def unmatched(items: list[str], others: list[str]) -> list[str]:
+    """The items of ``items`` that ``others`` has fewer of, as many times as they are missing (a multiset
+    difference, so a name one side repeats is not lost)."""
+    left = list(others)
+    missing = []
+    for item in items:
+        if item in left:
+            left.remove(item)
+        else:
+            missing.append(item)
+    return missing
+
+
 def differences(stored: Path, loaded: Path) -> list[str]:
     """Where B's manifest (the file as stored) and G's (as Blender loads it) disagree, one line each."""
-    b = flatten(tomllib.loads(stored.read_text(encoding="utf-8")))
-    d = flatten(tomllib.loads(loaded.read_text(encoding="utf-8")))
+    stored_facts = flatten(tomllib.loads(stored.read_text(encoding="utf-8")))
+    loaded_facts = flatten(tomllib.loads(loaded.read_text(encoding="utf-8")))
     lines = []
-    for key in sorted(b.keys() | d.keys()):
-        stored_value, loaded_value = b.get(key), d.get(key)
+    for key in sorted(stored_facts.keys() | loaded_facts.keys()):
+        stored_value, loaded_value = stored_facts.get(key), loaded_facts.get(key)
         if stored_value == loaded_value:
             continue
         if isinstance(stored_value, list) and isinstance(loaded_value, list):
             # A list of [name, class] pairs (sockets, modifiers) or of names (IDs): what each side has alone.
-            stored_items = [show(item) for item in stored_value]
-            loaded_items = [show(item) for item in loaded_value]
-            only_b = [item for item in stored_items if item not in loaded_items]
-            only_g = [item for item in loaded_items if item not in stored_items]
+            stored_items = [describe(item) for item in stored_value]
+            loaded_items = [describe(item) for item in loaded_value]
+            only_b, only_g = unmatched(stored_items, loaded_items), unmatched(loaded_items, stored_items)
             if not only_b and not only_g:
                 lines.append(f"- `{key}`: the same items in another order")
                 continue
@@ -101,9 +116,56 @@ def differences(stored: Path, loaded: Path) -> list[str]:
     return lines
 
 
+def blender_step(blender: Path, script: str, *args: str | Path, log_path: Path) -> None:
+    """Run the prototype ``script`` in background Blender; fails when Blender does."""
+    code, output = run_blender(blender, PROTOTYPES / script, *args, log_path=log_path)
+    if code:
+        raise StepError(f"{script} failed (see {log_path}):\n{output[-3000:]}")
+
+
+def probe_addon(addon: Path, blender: Path, types_stub: Path, out: Path, update_overlays: bool) -> list[str]:
+    """Run the four approaches on the add-on's bound files; its section of the summary."""
+    files = bound_files(addon)
+    missing = [f.name for f in files if not f.exists()]
+    if missing:
+        raise StepError(f"{addon.name}: missing {', '.join(missing)} (run with --make)")
+    stored_dir, loaded_dir, overlay_dir = (out / kind / addon.name for kind in ("B", "G", "C"))
+    for directory in (stored_dir, loaded_dir, overlay_dir):
+        directory.mkdir(parents=True, exist_ok=True)
+    blender_step(blender, "blender_extract.py", loaded_dir, *files, log_path=loaded_dir / "blender.log")
+    section = [f"## {addon.name}", ""]
+    for blend in files:
+        manifest = f"{blend.name}-manifest.toml"
+        (stored_dir / manifest).write_text(run_python("extract_manifest.py", blend), encoding="utf-8")
+        overlays = {}
+        for kind, directory in (("B", stored_dir), ("G", loaded_dir)):
+            overlays[kind] = run_python("gen_stubs.py", directory / manifest, types_stub)
+            (overlay_dir / f"{blend.stem}.from-{kind}.pyi").write_text(overlays[kind], encoding="utf-8")
+        committed = addon / "_blend" / f"{blend.stem}.pyi"
+        if update_overlays:
+            committed.write_text(overlays["B"], encoding="utf-8")
+        diff = differences(stored_dir / manifest, loaded_dir / manifest)
+        section += [f"`{blend.name}`: B and G " + (f"disagree on {len(diff)} fact(s):" if diff else "agree."), ""]
+        section += diff + ([""] if diff else [])
+        same = "the same" if overlays["B"] == overlays["G"] else "different"
+        current = committed.exists() and committed.read_text(encoding="utf-8") == overlays["B"]
+        section += [
+            f"Overlays (C) from B and G: {same}. The add-on's `_blend/{committed.name}` is "
+            + ("current." if current else "stale: rerun with --update-overlays."),
+            "",
+        ]
+    typed = run_python("reader_check.py", addon)
+    (out / "A").mkdir(exist_ok=True)
+    (out / "A" / f"{addon.name}.txt").write_text(typed, encoding="utf-8")
+    return [*section, "Approach A:", "", "```", typed.rstrip(), "```", ""]
+
+
 def main() -> int:
     parser = probe_parser(__doc__)
     parser.add_argument("--make", action="store_true", help="Rebuild the generated example .blend files first")
+    parser.add_argument(
+        "--update-overlays", action="store_true", help="Write the overlays from B into the add-ons' _blend/"
+    )
     args = parser.parse_args()
     blender = find_blender(args.version, args.blender)
     out = probe_dir("blend-typing", args.version)
@@ -111,39 +173,10 @@ def main() -> int:
     if not types_stub.exists():
         raise StepError(f"no builtin stubs for {args.version}: run `mise run stubs:generate {args.version}` first")
     if args.make:
-        code, output = run_blender(blender, PROTOTYPES / "make_examples.py", EXAMPLES, log_path=out / "make.log")
-        if code:
-            raise StepError(f"make_examples.py failed (see {out / 'make.log'}):\n{output[-3000:]}")
-
+        blender_step(blender, "make_examples.py", EXAMPLES, log_path=out / "make.log")
     summary = [f"# .blend typing prototypes on the example add-ons (Blender {args.version})", ""]
     for addon in sorted(p for p in EXAMPLES.iterdir() if (p / "blender_manifest.toml").exists()):
-        files = bound_files(addon)
-        missing = [f.name for f in files if not f.exists()]
-        if missing:
-            raise StepError(f"{addon.name}: missing {', '.join(missing)} (run with --make)")
-        b_dir, g_dir, c_dir = (out / kind / addon.name for kind in ("B", "G", "C"))
-        for directory in (b_dir, g_dir, c_dir):
-            directory.mkdir(parents=True, exist_ok=True)
-        code, output = run_blender(
-            blender, PROTOTYPES / "blender_extract.py", g_dir, *files, log_path=g_dir / "blender.log"
-        )
-        if code:
-            raise StepError(f"blender_extract.py failed on {addon.name} (see {g_dir / 'blender.log'}):\n{output[-3000:]}")
-        summary += [f"## {addon.name}", ""]
-        for blend in files:
-            manifest = f"{blend.name}-manifest.toml"
-            (b_dir / manifest).write_text(run_python("extract_manifest.py", blend), encoding="utf-8")
-            (addon / "_blend" / f"{blend.stem}.pyi").write_text(
-                run_python("gen_stubs.py", b_dir / manifest, types_stub), encoding="utf-8"
-            )
-            (c_dir / f"{blend.stem}.pyi").write_text(run_python("gen_stubs.py", g_dir / manifest, types_stub), encoding="utf-8")
-            diff = differences(b_dir / manifest, g_dir / manifest)
-            summary += [f"`{blend.name}`: B and G " + (f"disagree on {len(diff)} fact(s):" if diff else "agree."), ""]
-            summary += diff + ([""] if diff else [])
-        typed = run_python("reader_check.py", addon)
-        (out / "A").mkdir(exist_ok=True)
-        (out / "A" / f"{addon.name}.txt").write_text(typed, encoding="utf-8")
-        summary += ["Approach A:", "", "```", typed.rstrip(), "```", ""]
+        summary += probe_addon(addon, blender, types_stub, out, args.update_overlays)
     (out / "summary.md").write_text("\n".join(summary), encoding="utf-8")
     log(f"wrote {out / 'summary.md'}")
     return 0

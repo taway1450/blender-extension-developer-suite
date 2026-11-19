@@ -16,7 +16,7 @@ import time
 
 import bpy
 
-# The `bpy.data` collections B records, by the two-letter ID code B keys them on (the TOML key is the collection).
+# The `bpy.data` collections B records (the collections of `ID_CODES` in `extract_manifest.py`).
 COLLECTIONS = [
     "objects", "meshes", "materials", "scenes", "cameras", "lights", "armatures", "node_groups", "images",
     "collections", "worlds", "actions", "curves", "textures", "libraries", "hair_curves", "pointclouds",

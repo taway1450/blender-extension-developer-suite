@@ -20,8 +20,8 @@ The example add-ons:
 - `asset_pack/`: appends a material (`Rust`, with a noise texture), a geometry node group (`Scatter Points`) and an
   object (`Rock`, with a Bevel modifier) from the `assets.blend` it ships;
 - `scene_template/`: runs against the camera, area light and cube of its `startup.blend`;
-- `sculpt_template/`: a copy of Blender's own Sculpting template `startup.blend`, saved by an older Blender (5.2) than
-  the one that loads it, so B and G differ.
+- `sculpt_template/`: a copy of Blender's own Sculpting template `startup.blend`, saved by Blender 5.2, so B and G
+  differ when a newer Blender (`main`, 5.4) loads it.
 
 Each add-on reads the same names twice: `check_bare` through `bpy.data`, as scripts do today, and `check_overlay`
 through the overlay in `_blend/`, which it binds under `TYPE_CHECKING`.
@@ -30,10 +30,11 @@ Run all four on the examples (`--make` rebuilds `assets.blend` and the scene tem
 outputs go to `.cache/blend-typing/<version>/`, and `summary.md` lists where B and G disagree:
 
 ```bash
-mise run probe:blend-typing main --make
+mise run probe:blend-typing main --make --update-overlays
 ```
 
-The task rewrites the overlays in `examples/*/_blend/`. To see what the checker makes of them, check copies of the
+The overlays from both manifests go to the cache; `--update-overlays` writes B's into `examples/*/_blend/`, and the
+summary says when a committed one is stale. To see what the checker makes of them, check copies of the
 add-ons against the builtin stubs (the overlays are generated against them):
 
 ```bash

@@ -7,6 +7,7 @@ import pytest
 
 from _common import StepError, blender_script_command
 from _probe import failed_checks, probe_parser, run_probe
+from probe_blend_typing import differences, unmatched
 from probe_freestyle import failures as freestyle_failures
 from probe_modifiers_new import failures as modifiers_failures
 from probe_never_none import corpus, table
@@ -158,8 +159,6 @@ def rec(member, state, none, total):
 
 
 def test_blend_typing_differences_list_what_each_side_has_alone(tmp_path: Path) -> None:
-    from probe_blend_typing import differences
-
     stored = tmp_path / "b.toml"
     loaded = tmp_path / "g.toml"
     stored.write_text(
@@ -177,3 +176,8 @@ def test_blend_typing_differences_list_what_each_side_has_alone(tmp_path: Path) 
         "- `materials.M.node_tree.nodes.P.outputs`: the same items in another order",
         "- `objects.Lamp.data_class`: B `Light`, G `PointLight`",
     ]
+
+
+def test_blend_typing_unmatched_counts_repeated_items() -> None:
+    assert unmatched(["a", "a", "b"], ["a", "b"]) == ["a"]
+    assert unmatched(["a", "b"], ["b", "a", "a"]) == []
