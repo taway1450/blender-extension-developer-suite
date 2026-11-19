@@ -1,4 +1,4 @@
-# check:blender main, builtin stubs, Blender 42f75d1b26
+# check:blender main, builtin stubs, Blender 3bd52da81e
 cause                           group                 slice    shipped   presets  examples templates     other     total
 property-on-panel               blender-fix           BF1            0         0         0         0         0         0
 dead-api                        blender-fix           BF1            0         0         0         0         0         0
@@ -99,7 +99,7 @@ unexported-function             typing-debt           -              3         0
 untyped-python                  typing-debt           -            445         0         0         2         0       447
 private-member                  typing-debt           -              0         0         0         0         0         0
 build-option-gap                typing-debt           -              0         0         0         0         0         0
-general-typing                  typing-debt           -            214         0         7         4       188       413
+general-typing                  typing-debt           -            214         0         7         4       187       412
 context-member-outside-callback unsorted              -              0         0         0         0         9         9
 unchecked-pointer               unsorted              -              1         0         0         0       547       548
 stub-gap                        unsorted              -              0         0         0         0        40        40
@@ -112,9 +112,9 @@ assumption                                                         402       574
 implied-narrowing                                                 1054         0         4         8        13      1079
 imprecise-annotation                                                 0         0         0         0         0         0
 typechecker-fix                                                     23         0         3         1         5        32
-typing-debt                                                       1942        75       100        49      1253      3419
+typing-debt                                                       1942        75       100        49      1252      3418
 unsorted                                                             1         0         0         0       849       850
-errors                                                            2015       106       104        50      2089      4364
+errors                                                            2015       106       104        50      2088      4363
 warnings                                                          1422       543        29        12       701      2707
 
 rule                                       error warning
@@ -156,7 +156,7 @@ invalid-type-form                              8       0
 lost-keyword-for-regular-parameter            43       0
 mismatched-type-name                           0       1
 missing-argument                               7       0
-missing-attribute                           1126       0
+missing-attribute                           1125       0
 missing-union-attribute                     1522       0
 no-matching-overload                          33       0
 not-callable                                  14       0

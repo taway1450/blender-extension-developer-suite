@@ -69,13 +69,16 @@ the stub generator reads), and the markers guard that the stubs keep saying so.
   `inputs` / `outputs` finds one (`rna_NodeInputs_lookup_string`): an available socket whose identifier is the key,
   else one whose name is (Mix and Map Range by name only, `allow_identifier_lookup`); an integer indexes every
   socket, available or not. Blender's fork probes it when it writes the API docs (`sphinx_doc_gen_node_sockets.py`
-  adds each built-in node in each state of its own enum and boolean properties) and the stubs give each node a
+  adds each built-in node in the states of its own enum and boolean properties and of its menu input sockets: every
+  combination up to 512, else each value and each pair; an enum offers the items it has in the node's default
+  state) and the stubs give each node a
   private class per side, `_ShaderNodeBsdfPrincipled_inputs(NodeInputs)`, whose `__getitem__` has an overload per
   socket class (`Literal['Base Color', 0]` → `NodeSocketColor`), then the collection's own signatures for any other
   key. A key whose socket changes with the node's state is the union (`mix.inputs["A"]` is a float, vector or color
   socket). A node whose sockets are the user's has no such class: a group's, a script's, the items of a zone or a
   switch (the sockets the node declares besides them keep theirs, by key only, as the items shift the indices).
   fake-bpy-module's own generator, which reads the default state only, stands aside when Blender's docs state them.
+  Only `__getitem__` knows the keys: `inputs.get("Base Color")` is still a `NodeSocket | None`.
 - **The only spreadsheet table ID is a geometry table ID:** `SpreadsheetTableID.type` has the one value
   `'GEOMETRY'`, so `SpreadsheetTable.id` is a `SpreadsheetTableIDGeometry`.
 - **The only action strip is a keyframe strip:** `ActionStrip.type` has the one value `'KEYFRAME'`, so the items of
@@ -150,6 +153,6 @@ exception in spec #75). fake-bpy-module also misses the stub-generator gaps it d
 (`BMElemSeq` attributes, `libraries.load()` and `temp_data()` as context managers, the positional Freestyle
 methods; named exceptions in spec #95). The Freestyle gaps fail on 5.2,
 whose stubs give Freestyle's classes no bases (`TrueUP1D` is no `UnaryPredicate1D`, so `pyDensityAnisotropyF1D` has no
-`__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_node_sockets`, `api_stub_gaps`, `api_setters` and `api_c_modules` markers are
-guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
-`description`) need the checker's inheritance typing.
+`__call__`; a named exception in spec #132). The pointer, caller, Type tag, `api_node_sockets` (in `check_api_node_sockets.py`), `api_stub_gaps`, `api_setters` and
+`api_c_modules` markers are guards (`bare-ok`): they hold without the checker. The callback overrides (and `api_stub_gaps`' unannotated
+`description`) need the checker's inheritance typing, and `api_node_sockets`' markers in `__init__.py` its `nodes.new` narrowing.
