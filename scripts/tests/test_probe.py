@@ -155,3 +155,25 @@ def test_table_counts_synthetic_states_and_sums_the_corpus_per_member():
 
 def rec(member, state, none, total):
     return {"member": member, "state": state, "none": none, "total": total, "note": ""}
+
+
+def test_blend_typing_differences_list_what_each_side_has_alone(tmp_path: Path) -> None:
+    from probe_blend_typing import differences
+
+    stored = tmp_path / "b.toml"
+    loaded = tmp_path / "g.toml"
+    stored.write_text(
+        'file = "x.blend"\nparse_seconds = 0.1\n[objects."Lamp"]\ndata_class = "Light"\n'
+        '[materials."M".node_tree.nodes."P"]\ninputs = [["Base", "NodeSocketColor"]]\n'
+        'outputs = [["A", "NodeSocketFloat"], ["B", "NodeSocketFloat"]]\n'
+    )
+    loaded.write_text(
+        'file = "x.blend"\nparse_seconds = 0.2\nloaded_by = 504\n[objects."Lamp"]\ndata_class = "PointLight"\n'
+        '[materials."M".node_tree.nodes."P"]\ninputs = [["Base", "NodeSocketColor"], ["New", "NodeSocketFloat"]]\n'
+        'outputs = [["B", "NodeSocketFloat"], ["A", "NodeSocketFloat"]]\n'
+    )
+    assert differences(stored, loaded) == [
+        "- `materials.M.node_tree.nodes.P.inputs`: only B has nothing; only G has `New` (NodeSocketFloat)",
+        "- `materials.M.node_tree.nodes.P.outputs`: the same items in another order",
+        "- `objects.Lamp.data_class`: B `Light`, G `PointLight`",
+    ]

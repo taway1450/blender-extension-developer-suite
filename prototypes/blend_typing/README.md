@@ -1,31 +1,54 @@
 # PROTOTYPE: typing code from a .blend file (throwaway)
 
 Throwaway code that answers one question from `docs/research/blend-file-typing.md`: what types can a checker get from
-a `.blend` without running Blender, and how would they reach a script? The answers are in §8 of that note. Nothing here
-is production code, and nothing else in the repo depends on it.
+a `.blend`, and how would they reach a script? The answers are in §8 of that note. Nothing here is production code,
+and nothing else in the repo depends on it. The letters are the approaches of §4 of the note.
 
 | File | Approach | What it shows |
 |---|---|---|
 | `blendread.py` | shared | a dependency-free reader: header, blocks, SDNA, zstd (system libzstd) and gzip |
-| `extract_manifest.py` | B | `.blend` → TOML manifest (IDs, object and data types, modifiers, material nodes and sockets) |
-| `usd_materials_export.blend-manifest.toml` | B | its output for `tests/files/usd/usd_materials_export.blend` |
-| `gen_stubs.py` | C | manifest → overlay `.pyi` with `Literal` keys |
-| `addon/` | C | an add-on that reads `bpy.data` and the overlay side by side with `reveal_type` |
+| `extract_manifest.py` | B | `.blend` → TOML manifest (IDs, object and data types, modifiers, material and node group nodes with their sockets), without Blender |
+| `blender_extract.py` | G | the same manifest, written by Blender after it opened the file (the loaded state, after versioning) |
+| `gen_stubs.py` | C | manifest → overlay `.pyi` with `Literal` keys, against the builtin stubs |
+| `reader_check.py` | A | reads the bound files itself, no manifest, and types an add-on's `reveal_type` calls the way a reader inside ty would |
+| `make_examples.py` | — | builds the generated example files in Blender |
+| `examples/` | D | three add-ons whose `blender_manifest.toml` binds their files (`[tool.blender] blend-files`) |
 | `measure_reader.py`, `measure_reader.out` | A | the SDNA fields a reader needs, time per stage, and how many test keys the files hold |
 
-Run (files under `.cache/blender-src/main` have their LFS content; those under `blender/` are pointers):
+The example add-ons:
+
+- `asset_pack/`: appends a material (`Rust`, with a noise texture), a geometry node group (`Scatter Points`) and an
+  object (`Rock`, with a Bevel modifier) from the `assets.blend` it ships;
+- `scene_template/`: runs against the camera, area light and cube of its `startup.blend`;
+- `sculpt_template/`: a copy of Blender's own Sculpting template `startup.blend`, saved by an older Blender (5.2) than
+  the one that loads it, so B and G differ.
+
+Each add-on reads the same names twice: `check_bare` through `bpy.data`, as scripts do today, and `check_overlay`
+through the overlay in `_blend/`, which it binds under `TYPE_CHECKING`.
+
+Run all four on the examples (`--make` rebuilds `assets.blend` and the scene template's `startup.blend` first). The
+outputs go to `.cache/blend-typing/<version>/`, and `summary.md` lists where B and G disagree:
 
 ```bash
-python3 -I prototypes/blend_typing/extract_manifest.py .cache/blender-src/main/tests/files/usd/usd_materials_export.blend > /tmp/m.toml
+mise run probe:blend-typing main --make
+```
+
+The task rewrites the overlays in `examples/*/_blend/`. To see what the checker makes of them, check copies of the
+add-ons against the builtin stubs (the overlays are generated against them):
+
+```bash
+for ex in asset_pack scene_template sculpt_template; do cp -r prototypes/blend_typing/examples/$ex examples/addons/prototype_$ex; done
 ```
 
 ```bash
-python3 -I prototypes/blend_typing/gen_stubs.py /tmp/m.toml > prototypes/blend_typing/addon/_blend/usd_materials_export.pyi
+mise run check:addons main --generator builtin prototype_asset_pack prototype_scene_template prototype_sculpt_template
 ```
 
 ```bash
-cp -r prototypes/blend_typing/addon examples/addons/prototype_blend_typing && mise run check:addons main prototype_blend_typing; rm -rf examples/addons/prototype_blend_typing
+rm -rf examples/addons/prototype_*
 ```
+
+`measure_reader.py` reads Blender's test files, so it needs their Git LFS content:
 
 ```bash
 python3 -I prototypes/blend_typing/measure_reader.py .cache/blender-src/main

@@ -3,7 +3,8 @@
 Usage: python3 -I extract_manifest.py FILE.blend > FILE.blend-manifest.toml
 
 Facts, cheapest first: the ID names per type; each object's type and its data's type and name; its modifiers; each
-material's (embedded) node tree with its nodes' classes and their input and output sockets' classes. Names come from
+material's (embedded) node tree and each node group with its nodes' classes and their input and output sockets'
+classes. Names come from
 the file as stored: Blender's load-time versioning (renamed sockets, ...) is not applied, so the manifest records the
 file's Blender version for a reader to judge.
 """
@@ -34,6 +35,10 @@ OBJECT_TYPES = {
     29: ("VOLUME", "Volume"), 30: ("GREASEPENCIL", "GreasePencil"),
 }
 
+# `Light.type` (DNA_light_types.h, the struct is still `Lamp`): `bpy.types` has a subclass per type, which is what
+# `Object.data` of a light is.
+LIGHT_TYPES = {0: "PointLight", 1: "SunLight", 2: "SpotLight", 4: "AreaLight"}
+
 
 def id_name(blend, block):
     return blend.read(block[5], "ID", "name")
@@ -62,7 +67,7 @@ def node_tree(blend, tree_ptr):
 
 def extract(blend):
     ids = {}
-    objects, materials = {}, {}
+    objects, materials, groups = {}, {}, {}
     for block in blend.blocks:
         code = block[0].decode(errors="replace")
         if code not in ID_CODES:
@@ -72,6 +77,8 @@ def extract(blend):
         if code == "OB":
             kind, data_class = OBJECT_TYPES.get(blend.read(block[5], "Object", "type"), ("UNKNOWN", None))
             data = blend.by_old.get(blend.read(block[5], "Object", "data"))
+            if data_class == "Light" and data:
+                data_class = LIGHT_TYPES.get(blend.read(data[5], "Lamp", "type"), "Light")
             modifiers = [
                 # The modifier's DNA struct (`SubsurfModifierData`) names its RNA class (`SubsurfModifier`).
                 (blend.read(m[5], "ModifierData", "name"), blend.sname(m).removesuffix("Data"))
@@ -86,14 +93,23 @@ def extract(blend):
         elif code == "MA":
             tree = node_tree(blend, blend.read(block[5], "Material", "nodetree"))
             materials[name] = {"node_tree": tree}
-    return ids, objects, materials
+        elif code == "NT":
+            groups[name] = node_tree(blend, block[2])
+    return ids, objects, materials, groups
 
 
 def q(text):
     return '"' + str(text).replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def write_toml(path, blend, ids, objects, materials, seconds):
+def write_nodes(out, prefix, nodes):
+    for node_name, node in nodes.items():
+        out += ["", f"[{prefix}.nodes.{q(node_name)}]", f"class = {q(node['class'])}"]
+        for side in ("inputs", "outputs"):
+            out.append(f"{side} = [" + ", ".join(f"[{q(n)}, {q(c)}]" for n, c in node[side]) + "]")
+
+
+def write_toml(path, blend, ids, objects, materials, groups, seconds):
     out = [
         "# PROTOTYPE blend manifest, written by prototypes/blend_typing/extract_manifest.py",
         f"file = {q(os.path.basename(path))}",
@@ -113,10 +129,12 @@ def write_toml(path, blend, ids, objects, materials, seconds):
         tree = mat["node_tree"]
         if tree is None:
             continue
-        for node_name, node in tree["nodes"].items():
-            out += ["", f"[materials.{q(name)}.node_tree.nodes.{q(node_name)}]", f"class = {q(node['class'])}"]
-            for side in ("inputs", "outputs"):
-                out.append(f"{side} = [" + ", ".join(f"[{q(n)}, {q(c)}]" for n, c in node[side]) + "]")
+        write_nodes(out, f"materials.{q(name)}.node_tree", tree["nodes"])
+    for name, tree in groups.items():
+        if tree is None:
+            continue
+        out += ["", f"[node_groups.{q(name)}]", f"class = {q(tree['class'])}"]
+        write_nodes(out, f"node_groups.{q(name)}", tree["nodes"])
     return "\n".join(out) + "\n"
 
 
@@ -124,9 +142,9 @@ def main():
     path = sys.argv[1]
     start = time.perf_counter()
     blend = blendread.open_blend(path)
-    ids, objects, materials = extract(blend)
+    ids, objects, materials, groups = extract(blend)
     seconds = time.perf_counter() - start
-    sys.stdout.write(write_toml(path, blend, ids, objects, materials, seconds))
+    sys.stdout.write(write_toml(path, blend, ids, objects, materials, groups, seconds))
 
 
 if __name__ == "__main__":

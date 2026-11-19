@@ -403,6 +403,14 @@ arg "<version>" help="Name of a blender:build build (e.g. main) or Blender versi
 '''
 run = 'uv run scripts/probe_modifiers_new.py {{usage.version}}'
 
+[tasks."probe:blend-typing"]
+description = "Run the four .blend typing prototypes (prototypes/blend_typing/) on its example add-ons: B reads each bound .blend without Blender, G opens it in background Blender, C writes the overlays from both, A types the add-ons' reveal_type calls; summary.md lists where B and G disagree"
+usage = '''
+arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
+flag "--make" help="Rebuild the generated example .blend files in Blender first"
+'''
+run = 'uv run scripts/probe_blend_typing.py {{usage.version}} {% if usage.make %}--make{% endif %}'
+
 [tasks."probe:node-menus"]
 description = "Draw every node-add and node-swap menu on a stub layout in background Blender, and list what changed since the last run (#138)"
 usage = '''

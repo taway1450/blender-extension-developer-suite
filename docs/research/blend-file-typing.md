@@ -200,6 +200,16 @@ Offer ID names, node names and socket identifiers as completions inside `bpy.dat
 - **Cons**: it does nothing for `check:blender`. It needs a completion hook in `ty_ide`, an upstream file (`hover/blender.rs` shows the fork already has one for hover).
 - **Effort**: S-M after A or B.
 
+### (G) B inside Blender: the loaded state
+
+B's extractor, run in background Blender after it opens the file (the probe pattern, §6 step 2). It writes the same
+manifest from `bpy.data`.
+
+- **Pros**: it records what a script sees after versioning, and the RNA class names come from Blender itself. No
+  table in the extractor has to keep up with Blender.
+- **Cons**: it needs a Blender binary of the right version, and it starts Blender once per run.
+- **Effort**: S on top of B.
+
 ### 4.6 How the typing would surface
 
 Each step is one hook of the kind `ty_python_semantic/src/types/dedicated/blender/` already has:
@@ -273,43 +283,75 @@ A file is a snapshot. What breaks the facts:
 
 ## 8. Prototype results
 
-Throwaway code in `prototypes/blend_typing/` (see its README). It tested approaches B, C and A on real files from
-`.cache/blender-src/main/tests/files/`.
+Throwaway code in `prototypes/blend_typing/` (see its README). It tested approaches A, B and C, and G (B run inside
+Blender, step 2 of §6), on three example add-ons in `prototypes/blend_typing/examples/`. Each add-on binds its files
+with D (`[tool.blender] blend-files`), and `mise run probe:blend-typing <version>` runs all four approaches on them:
 
-- **B, extractor to TOML manifest** (`extract_manifest.py`). On `usd/usd_materials_export.blend` (Blender 4.3,
-  3070 blocks) it writes 199 lines in 55 ms: ID names per collection; each object's type, data class and data name, and
-  its modifiers; and each material's nodes with their class and their input and output socket classes, for example
-  `"Principled BSDF"`, which is `ShaderNodeBsdfPrincipled` with `["Base Color", "NodeSocketColor"]`. The output parses
-  with `tomllib`.
-- **C, overlay stub with `Literal` keys** (`gen_stubs.py`, then `addon/`, run through `check:addons`). With the
-  overlay, the checker gives these types; reading `bpy.data` today gives the second set:
+- `asset_pack`: an `assets.blend` with a material, a geometry node group and a mesh object with a Bevel modifier,
+  which the add-on appends;
+- `scene_template`: a `startup.blend` with a camera, an area light and a cube with a Subdivision modifier;
+- `sculpt_template`: a copy of Blender's own Sculpting template `startup.blend`, saved by 5.2 and loaded by 5.4.
+
+The first two are generated in Blender (`make_examples.py`).
+
+- **B, extractor to TOML manifest** (`extract_manifest.py`). On the three files it writes 35-50 lines in 16-40 ms:
+  ID names per collection; each object's type, data class and data name, and its modifiers; each material's nodes and
+  each node group's nodes, with their class and their input and output socket classes. A light's data class needs one
+  more field, `Lamp.type`, because `bpy.types` has a class per light type (`AreaLight`), and that class is what
+  `Object.data` of a light is. Earlier, B used to record the base `Light`, which G showed was wrong.
+- **G, the same manifest written by Blender** (`blender_extract.py`). It opens each file with `open_mainfile` in
+  background Blender and writes B's schema from `bpy.data`, so it records the loaded state, after versioning. Opening
+  takes 5-6 ms per file, but each run pays for starting Blender. On the files saved by the Blender that loads them,
+  B and G agree on every fact. On the Sculpting template, saved by 5.2, G has two Principled BSDF inputs that the file
+  does not store: `Transmission Dispersion Scale` and `Transmission Dispersion Abbe Number`. Blender rebuilds a node's
+  sockets from its declaration when it loads the file. So a raw reader is exact only for files saved by the stubs'
+  version, as §5 expects. Even then, a newer Blender only adds sockets here, so the facts B has stay true.
+- **C, overlay stub with `Literal` keys** (`gen_stubs.py`, checked with `check:addons --generator builtin`). The
+  overlays of all three add-ons check clean against the builtin stubs. With the overlay, the checker gives the first
+  set of types below; reading `bpy.data` today gives the second:
 
   | Expression | With the overlay | Through `bpy.data` today |
   |---|---|---|
-  | `objects["Cube"].data` | `Mesh` | `ID \| None` (builtin stubs) or a 14-class union (fake-bpy-module) |
-  | `objects.get("Cube")` | the object, not `None` | `Object \| None` |
-  | `materials["Material"].node_tree.nodes["Principled BSDF"]` | the Principled BSDF node class | `Node` |
-  | `.inputs["Base Color"].default_value` | `bpy_prop_array[float]` | an unknown socket |
-  | an unknown key | the plain `Object` or `Object \| None` | the same |
+  | `objects["Rock"].data` | `Mesh` | `ID \| None` |
+  | `objects.get("Key Light")` | the object, not `None`; its `.data` is `AreaLight` | `Object \| None` |
+  | `objects["Cube"].modifiers["Subdivision"]` | `SubsurfModifier` (`.levels` is `int`) | `Modifier` |
+  | `materials["Rust"].node_tree.nodes["Principled BSDF"]` | the Principled BSDF node | `Node` |
+  | `….inputs["Base Color"]` | `NodeSocketColor` | `NodeSocket` |
+  | `node_groups["Scatter Points"]` | a `GeometryNodeTree` that knows its nodes | `NodeTree` |
+  | `objects.get("Boulder")`, not in the file | `Object \| None` | the same |
 
-  The generated stub is clean against the builtin stubs, but only once its fallback overloads repeat every signature
-  of the base class's: the `int`, `str`, `(name, library)` and `slice` keys, and `get` with a generic default.
-  Against fake-bpy-module the stub itself still gets 18 override errors, because that generator's signatures differ. An
-  overlay must therefore be generated per stub generator, or be read by ty-blender rather than by stock ty. The script
-  binds the overlay by importing `data` from it under `TYPE_CHECKING`. That is a code change every script would need,
-  which is the strongest argument for D: a checker-side binding instead.
-- **A, what a reader inside ty needs** (`measure_reader.py`, output in `measure_reader.out`). The extractor reads only
-  17 `struct.field` paths, from `ID.name` and `Object.type`/`data` through `bNodeSocket.idname`, so a Rust reader needs
-  a generic SDNA decoder and those 17 names. Over the 58 files the tests open, the median times are 5 ms to decompress,
-  1.4 ms to scan the blocks, 17 ms to decode the SDNA and 0.4 ms to extract the facts, all in pure Python. Decoding the
-  SDNA dominates, and it is the same for every file of one Blender version, so it could be cached per version. A 2.5
-  file (`nodegroup25.blend`) has no `bNode.idname`, so a reader must treat each field as optional, not assume it.
+  Three things had to change before the stub checked clean:
+
+  - The stub repeats every signature of the base class's `__getitem__` and `get`, with the `(name, library)` key only
+    on data-block collections.
+  - It narrows a writable attribute (`Object.data`, `Object.type`) through a property whose setter still takes
+    anything the base allows.
+  - It leaves a built-in node's sockets alone. The builtin stubs already type `inputs["Base Color"]` per node class
+    (`_ShaderNodeBsdfPrincipled_inputs`, from row 12 of `docs/reports/remaining-large-groups.md`). Re-declaring them
+    would fight the base's overloads, so the overlay adds sockets only to group and custom nodes.
+
+  The stubs and the file overlap here: for a built-in node, the file adds nothing to what the stubs know. Against the
+  fake-bpy-module stubs, the same overlay gets override errors, because that generator's signatures differ. An overlay
+  must be generated per stub generator, or be read by ty-blender rather than by stock ty. The add-ons bind the overlay
+  by importing `data` from it under `TYPE_CHECKING`, a code change every script would need.
+- **A, the reader at check time** (`reader_check.py`, with `measure_reader.py` on Blender's test files). `reader_check.py`
+  reads the files that the add-on's manifest binds, with no manifest, and resolves each `reveal_type` argument
+  syntactically through simple aliases, the first way of §4.6. On the three add-ons, it types every chain the overlay
+  types, and it types the `check_bare` reads of `bpy.data` too, which the overlay cannot reach: `rock.modifiers["Bevel"]`
+  is `BevelModifier`, and `bpy.data.node_groups["Scatter Points"]` is `GeometryNodeTree`. Reading and merging the
+  facts takes 16-34 ms per file in pure Python. The earlier measurements on 58 test files still hold. The extractor
+  reads only 17 `struct.field` paths (18 with `Lamp.type`). Decoding the SDNA dominates (median 17 ms), and it could be
+  cached per Blender version. A 2.5 file has no `bNode.idname`, so every field must be optional.
 - **How often a binding would help.** 12 test scripts open literal `.blend` files (other than `empty.blend`). Of their
   257 literal `bpy.data.<collection>["Name"]` and `.get("Name")` keys, 168 (65%) name an ID in a file the script opens.
   The rest are data the test creates or imports (USD, Alembic), or a file opened later. Typing from a file is
   therefore an assumption, as §5 says, and a missing key must stay legal.
 
-Verdict: B and C are cheap and give the types this research hoped for. Binding through script code (C alone) is
-impractical, so the next step is a checker-side binding (D), with the manifest as its input. A is a later
-optimisation, with no blocker in the format.
+Verdict:
 
+- **B + D give the types this research hoped for, cheaply.** G is worth running for files older than the stubs.
+- **G and B can share one schema,** so ty needs one manifest reader whichever wrote it.
+- **Scripts can't be asked to bind through code** (C alone).
+- **A's syntactic chains reach the plain `bpy.data` reads that an overlay can't.** That is the case for the
+  checker-side typing of §6 step 1, with the manifest as its input. A Rust reader stays a later optimisation, with no
+  blocker in the format.

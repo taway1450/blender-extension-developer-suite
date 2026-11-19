@@ -1,0 +1,16 @@
+schema_version = "1.0.0"
+
+id = "prototype_asset_pack"
+version = "1.0.0"
+name = "PROTOTYPE blend typing: asset_pack"
+tagline = "Throwaway: typing from the .blend it ships"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+# PROTOTYPE binding (docs/research/blend-file-typing.md, section 5): the files this code runs against.
+[tool.blender]
+blend-files = ["assets.blend"]
