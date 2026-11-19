@@ -109,8 +109,10 @@ def compare(runtime: dict, other: dict, other_name: str) -> list[str]:
     only_runtime = sorted(set(runtime) - set(other))
     only_other = sorted(set(other) - set(runtime))
     lines += [
-        f"- Modules: {len(runtime)} runtime, {len(other)} {other_name}; {len(only_runtime)} only in runtime, "
-        f"{len(only_other)} only in {other_name}.",
+        (
+            f"- Modules: {len(runtime)} runtime, {len(other)} {other_name}; {len(only_runtime)} only in runtime, "
+            f"{len(only_other)} only in {other_name}."
+        ),
         f"  - Only in {other_name}: {', '.join(only_other[:40]) or 'none'}{' ...' if len(only_other) > 40 else ''}",
     ]
     class_only = Counter()
@@ -151,11 +153,15 @@ def compare(runtime: dict, other: dict, other_name: str) -> list[str]:
                 else:
                     same += 1
     lines += [
-        f"- Classes in shared modules: {class_only['runtime']} only in runtime, {class_only[other_name]} only in "
-        f"{other_name}, {reexported} declared by {other_name} and re-exported from their module by runtime.",
-        f"- Members of shared classes: {same} the same, {len(differs)} typed differently, {untyped} untyped in "
-        f"runtime (copied source without annotations) but typed by {other_name}, {member_only['runtime']} only in "
-        f"runtime, {member_only[other_name]} only in {other_name}.",
+        (
+            f"- Classes in shared modules: {class_only['runtime']} only in runtime, {class_only[other_name]} only in "
+            f"{other_name}, {reexported} declared by {other_name} and re-exported from their module by runtime."
+        ),
+        (
+            f"- Members of shared classes: {same} the same, {len(differs)} typed differently, {untyped} untyped in "
+            f"runtime (copied source without annotations) but typed by {other_name}, {member_only['runtime']} only in "
+            f"runtime, {member_only[other_name]} only in {other_name}."
+        ),
         "",
     ]
     for key, title in (
@@ -229,12 +235,16 @@ def main() -> int:
     summary += [
         "## General mode",
         "",
-        f"- {facts['seconds_total']} s in Blender ({facts['seconds_rna']} s for RNA: `BuildRNAInfo` and the Type-tag probe), "
-        f"{len(facts['modules'])} rendered modules, {facts['copied_python_files']} Python files copied, "
-        f"{facts['startup_reexports']} startup classes re-exported from their modules.",
+        (
+            f"- {facts['seconds_total']} s in Blender ({facts['seconds_rna']} s for RNA: `BuildRNAInfo` and the Type-tag probe), "
+            f"{len(facts['modules'])} rendered modules, {facts['copied_python_files']} Python files copied, "
+            f"{facts['startup_reexports']} startup classes re-exported from their modules."
+        ),
         f"- Default add-ons enabled at factory startup: {', '.join(facts['default_addons_enabled']) or 'none'}.",
-        f"- Default add-on classes left out: {len(facts['default_addon_classes'])}; their properties on built-in "
-        f"structs left out: {', '.join(f'`{p}`' for p in facts['default_addon_properties']) or 'none'}.",
+        (
+            f"- Default add-on classes left out: {len(facts['default_addon_classes'])}; their properties on built-in "
+            f"structs left out: {', '.join(f'`{p}`' for p in facts['default_addon_properties']) or 'none'}."
+        ),
         f"- Render errors: {len(facts['render_errors'])}",
         *[f"  - {e}" for e in facts["render_errors"][:SAMPLES]],
         f"- Modules that failed to import: {', '.join(facts['import_failed']) or 'none'}",
