@@ -57,6 +57,10 @@ EXCLUDED = [
     "tests/python/bl_mesh_modifiers.py",
     "tests/python/rna_array.py",
 ]
+# The platform ty checks for, whatever the host: ty takes the host's by default, so `os.getuid`, `fcntl` and
+# `termios` were errors on Windows only and the recorded summaries depended on the machine. Linux, where Blender's
+# tools and tests run most.
+PYTHON_PLATFORM = "linux"
 # Directories (relative to the Blender source root) that Blender puts on ``sys.path``.
 # The generated stubs are searched before these.
 BLENDER_SEARCH_PATHS = [
@@ -163,14 +167,19 @@ def blender_site(version: str, blender: Path | None, source: Path | None = None)
         if os.path.lexists(link):  # stale: points elsewhere or nowhere
             unlink(link)
         site.mkdir(parents=True, exist_ok=True)
-        if sys.platform == "win32":
-            import _winapi
-
-            _winapi.CreateJunction(str(target), str(link))
-        else:
-            link.symlink_to(target, target_is_directory=True)
+        link_directory(link, target)
         log(f"Linked {link} -> {target}")
     return site if targets else None
+
+
+def link_directory(link: Path, target: Path) -> None:
+    """Make ``link`` point to the directory ``target``: a junction on Windows, which needs no symlink privilege."""
+    if sys.platform == "win32":
+        import _winapi
+
+        _winapi.CreateJunction(str(target), str(link))
+    else:
+        link.symlink_to(target, target_is_directory=True)
 
 
 def unlink(link: Path) -> None:
@@ -193,6 +202,8 @@ def run_ty(target: Target, generator: str, site: Path | None) -> Path:
         source,
         "--python-version",
         python_version,
+        "--python-platform",
+        PYTHON_PLATFORM,
         "--output-format",
         "concise",
         "--no-progress",

@@ -10,7 +10,7 @@ def test_blender_site_links_the_listed_packages_and_drops_the_others(tmp_path, m
         (packages / package).mkdir(parents=True)
     site_dir = tmp_path / "blender-site"
     (site_dir / "main").mkdir(parents=True)
-    (site_dir / "main" / "pxr").symlink_to(packages / "pxr", target_is_directory=True)  # listed by an older run
+    check_blender.link_directory(site_dir / "main" / "pxr", packages / "pxr")  # listed by an older run
     monkeypatch.setattr(check_blender, "BLENDER_SITE_DIR", site_dir)
     monkeypatch.setattr(check_blender, "BLENDER_SITE_PACKAGES", ["numpy", "requests"])
 
