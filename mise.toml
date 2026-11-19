@@ -412,6 +412,14 @@ flag "--update-overlays" help="Write the overlays from B into the example add-on
 '''
 run = 'uv run scripts/probe_blend_typing.py {{usage.version}} {% if usage.make %}--make{% endif %} {% if usage.update_overlays %}--update-overlays{% endif %}'
 
+[tasks."probe:runtime-stubs"]
+description = "Run the runtime stub generator prototype (prototypes/runtime_stubs/): stubs from a running Blender at factory startup, compared with the builtin and fake-bpy-module stubs, and each example add-on's runtime delta and .blend content"
+usage = '''
+arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
+flag "--addon <path>" var=#true help="An add-on folder to run add-on mode on (default: the example add-ons)"
+'''
+run = 'uv run scripts/probe_runtime_stubs.py {{usage.version}} {% for a in usage.addon %}--addon "{{a}}" {% endfor %}'
+
 [tasks."probe:node-menus"]
 description = "Draw every node-add and node-swap menu on a stub layout in background Blender, and list what changed since the last run (#138)"
 usage = '''
