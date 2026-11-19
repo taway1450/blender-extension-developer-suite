@@ -17,7 +17,7 @@ import (the research note's R0 seam).
 | `bpy.ops` | the same RNA info: one function per operator, keyword arguments typed as `sphinx_doc_gen` types them |
 | C modules (`mathutils`, `gpu`, `bmesh`, `aud`, `bpy.app`, `_freestyle`, ...) | their live members (`dir()`, `__bases__`, slots), typed by the rst field lists in their `__doc__` (Blender's C functions have no `__text_signature__`), with the `\|X\|` substitutions their module docstring defines |
 | Python modules (`bpy.utils`, `bpy_extras`, `bl_ui`, `freestyle`, ...) | copied as source, as the note recommends; a class a startup script registers in `bpy.types` is re-exported there from its module, with all its members |
-| Default add-ons' registrations (`Scene.cycles`, `CYCLES_*` panels) | left out with their provenance (`facts.json`): the user may disable those add-ons |
+| Default add-ons' registrations (`Scene.cycles`, `CYCLES_*` panels, `bpy.ops.export_scene.gltf`) | left out, their names listed in `facts.json`: the user may disable those add-ons |
 
 Add-on mode (`--addon <folder>`) enables the add-on as a legacy add-on after a first snapshot of RNA and
 `bpy.ops`. It then writes:
@@ -27,7 +27,11 @@ Add-on mode (`--addon <folder>`) enables the add-on as a legacy add-on after a f
   PROPS_REGISTERED_Item | None`, `bpy.ops.opcall_basic.all(...)`), for stock type checkers;
 - `blend/<file>.json`: for every `.blend` under the add-on, opened with `-Y` (no auto-run), every local ID by class
   and name, walked to depth 4 through RNA: named collections (`modifiers`, `material_slots`, `nodes`, sockets by
-  identifier) by refined class, and ID pointers as references.
+  identifier) by refined class, and ID pointers as references;
+- `stubs/<add-on>/_blend/<file>.pyi`: that content as an overlay stub in the merged package. `data` is a
+  `BlendData` whose collections take the file's names as `Literal` keys and give each item's own class
+  (`data.objects["Rock"].modifiers["Bevel"]` is a `BevelModifier`, `.data` a `Mesh`). A script binds it under
+  `TYPE_CHECKING`, as the blend typing prototype's approach C does.
 
 Run it with the builtin and fake-bpy-module stubs of the version already generated:
 
@@ -37,19 +41,20 @@ mise run probe:runtime-stubs main
 
 ## Findings on `main` (Blender 5.4 alpha, 66f10cc53b)
 
-- **Speed.** General mode takes about 2.7 s inside Blender: 1 s of that is `BuildRNAInfo` plus the Type-tag probe.
-  The builtin generator writes and parses 49 MB of rst instead. Add-on mode is 3.2 s per add-on, and a `.blend`
-  takes about 10 ms to open and walk.
+- **Speed.** General mode takes about 2.6 s inside Blender: 0.9 s of that is `BuildRNAInfo` plus the Type-tag
+  probe. The builtin generator writes and parses 49 MB of rst instead. Add-on mode takes 3.1 s per add-on, and a
+  `.blend` takes about 10 ms to open and walk.
 - **Factory startup enables the default add-ons** in background mode (`bl_pkg`, `cycles`, `io_anim_bvh`,
   `io_curve_svg`, `io_mesh_uv_layout`, `io_scene_fbx`, `io_scene_gltf2`, `pose_library`). This answers the note's
-  first open question: no explicit `addon_utils.enable` is needed. 135 of their classes and 16 of their properties
-  on built-in structs are left out of the general stubs.
+  first open question: no explicit `addon_utils.enable` is needed. 193 of their classes and operators, and 16 of their
+  properties on built-in structs, are left out of the general stubs.
 - **Against builtin (same build):**
-  - The runtime package has 366 modules (builtin 147), because it ships the Python source of the script folders.
-    Only `bpy.app.translations`, `bpy.utils.units` and `freestyle.utils.ContextFunctions` are missing: they are
-    module-like C objects or attributes the walk does not reach yet.
-  - Members of shared classes: 22,655 the same, 579 typed differently, 299 untyped (copied source without
-    annotations, where builtin has docstring types), 694 only in runtime and 1,625 only in builtin.
+  - The runtime package has 359 modules (builtin 147), because it ships the Python source of the script folders.
+    Missing: the default add-ons' operator categories (left out on purpose, while builtin keeps them), and
+    `bpy.app.translations`, `bpy.utils.units` and `freestyle.utils.ContextFunctions`, which are module-like C
+    objects or attributes the walk does not reach yet.
+  - Members of shared classes: 22,590 the same, 579 typed differently, 299 untyped (copied source without
+    annotations, where builtin has docstring types), 694 only in runtime and 1,644 only in builtin.
   - The 1,924 startup classes the builtin stubs declare bare (`class VIEW3D_PT_x(Panel): ...`) are re-exported from
     `bl_ui` / `bl_operators` with all their members. This is the S10 gap of `docs/reports/remaining-causes.md`.
 - **What the runtime alone does not give** (the classes and members only in builtin, and the typed differences):
@@ -71,11 +76,27 @@ mise run probe:runtime-stubs main
   because they share its back end.
 - **Add-on mode** sees what source analysis cannot, and what the checker must otherwise assume:
   - `opcall_basic`: Blender registers `OPCALL_BASIC_OT_dropped` and `OPCALL_BASIC_OT_dropped_group` even though
-    their ID pointer properties fail. The add-on logs the error and keeps the operators, without those properties.
+    their ID pointer properties fail. Blender logs the error and keeps the operators, without those properties.
+    The delta does not report the error yet: a product must not emit a partial delta silently (note §4.7).
   - `props_registered`: 27 properties on 17 built-in structs, among them those registered through an alias or
     `setattr`.
   - The `.blend` walk records the loaded state, after versioning: refined socket classes (`NodeSocketFloatFactor`),
     modifiers by name, material slots, and node groups with their nodes.
+
+## Not done (the reviews of this prototype)
+
+- **State facts still in the general stubs:** dynamic enum items that factory state fills
+  (`CollectionExport.new(type=...)` lists the default add-ons' `IO_FH_fbx` and `IO_FH_gltf2`), and primitive
+  properties a default add-on registers on built-in structs. The note's §4.7 wants per-member provenance in an IR,
+  and these only in a side manifest.
+- **Add-on mode:** legacy add-ons only (no extension repository), and the delta has no enum, keymap, handler or
+  preferences changes and no socket probe of the add-on's own nodes (note §4.4). It is not yet compared with
+  `check:load`'s probes or with the checker's Add-on index.
+- **`.blend` walk:** pointers and collections only (no custom property values), and it walks settings structs
+  (`display`, `lineart`) that no script narrows. Its schema is new, not the B/G manifest schema, and it is not
+  compared with G's manifests.
+- **R2:** no `--generator runtime`, so the stubs are compared structurally, not type-checked by `check:features` or
+  `check:blender`.
 
 ## Verdict
 

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import ast
 import json
+import shutil
 from collections import Counter
 from pathlib import Path
 
@@ -118,8 +119,7 @@ def compare(runtime: dict, other: dict, other_name: str) -> list[str]:
     untyped = 0
     same = 0
     reexported = 0
-    samples: dict[str, list[str]] = {"class-runtime": [], "class-other": [], "member-runtime": [],
-                                     "member-other": []}
+    samples: dict[str, list[str]] = {"class-runtime": [], "class-other": [], "member-runtime": [], "member-other": []}
     for module in sorted(set(runtime) & set(other)):
         ours, theirs = runtime[module], other[module]
         for cls in sorted(set(ours) | set(theirs)):
@@ -158,9 +158,12 @@ def compare(runtime: dict, other: dict, other_name: str) -> list[str]:
         f"runtime, {member_only[other_name]} only in {other_name}.",
         "",
     ]
-    for key, title in (("class-other", f"Classes only in {other_name}"), ("class-runtime", "Classes only in runtime"),
-                       ("member-other", f"Members only in {other_name}"),
-                       ("member-runtime", "Members only in runtime")):
+    for key, title in (
+        ("class-other", f"Classes only in {other_name}"),
+        ("class-runtime", "Classes only in runtime"),
+        ("member-other", f"Members only in {other_name}"),
+        ("member-runtime", "Members only in runtime"),
+    ):
         if samples[key]:
             lines += [f"{title} (first {SAMPLES} of {len(samples[key])}):", ""]
             lines += [f"- `{s}`" for s in samples[key][:SAMPLES]] + [""]
@@ -171,7 +174,9 @@ def compare(runtime: dict, other: dict, other_name: str) -> list[str]:
 
 
 def run_generator(blender: Path, source: Path, out: Path, addon: Path | None = None) -> dict:
-    out.mkdir(parents=True, exist_ok=True)
+    if out.exists():
+        shutil.rmtree(out)  # no facts, deltas or manifests left from an earlier run
+    out.mkdir(parents=True)
     args: list[str | Path] = ["--source", source, "--output", out]
     if addon is not None:
         args += ["--addon", addon]
@@ -197,8 +202,14 @@ def addon_section(name: str, out: Path, facts: dict) -> list[str]:
         lines.append(f"  - operator `{op}`")
     for blend in sorted((out / "blend").glob("*.json")):
         manifest = json.loads(blend.read_text(encoding="utf-8"))
-        counts = ", ".join(f"{len(ids)} {kind}" for kind, ids in sorted(manifest["data"].items()))
-        lines.append(f"- `{manifest['file']}` ({manifest['seconds']} s): {counts}")
+        counts = ", ".join(f"{len(entry['items'])} {kind}" for kind, entry in sorted(manifest["data"].items()))
+        overlay = out / "stubs" / delta["package"] / "_blend" / f"{Path(manifest['file']).stem}.pyi"
+        tree = ast.parse(overlay.read_text(encoding="utf-8"))
+        classes = sum(isinstance(node, ast.ClassDef) for node in tree.body)
+        lines.append(
+            f"- `{manifest['file']}` ({manifest['seconds']} s): {counts}; overlay "
+            f"`{overlay.relative_to(out).as_posix()}` with {classes} classes"
+        )
     lines.append(f"- Render errors: {len(facts['render_errors'])}; total {facts['seconds_total']} s.")
     return lines + [""]
 
@@ -218,7 +229,7 @@ def main() -> int:
     summary += [
         "## General mode",
         "",
-        f"- {facts['seconds_total']} s in Blender ({facts['seconds_rna_info']} s for `BuildRNAInfo`), "
+        f"- {facts['seconds_total']} s in Blender ({facts['seconds_rna']} s for RNA: `BuildRNAInfo` and the Type-tag probe), "
         f"{len(facts['modules'])} rendered modules, {facts['copied_python_files']} Python files copied, "
         f"{facts['startup_reexports']} startup classes re-exported from their modules.",
         f"- Default add-ons enabled at factory startup: {', '.join(facts['default_addons_enabled']) or 'none'}.",

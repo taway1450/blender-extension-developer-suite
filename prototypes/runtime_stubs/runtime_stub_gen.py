@@ -45,8 +45,6 @@ PYCAPI_CLASSES = (
     "bpy_struct", "bpy_prop", "bpy_prop_array", "bpy_prop_collection", "bpy_prop_collection_idprop", "bpy_func",
     "bpy_struct_meta_idprop",
 )
-# Script folders whose loaded modules are copied as source.
-SCRIPT_DIRS = ("scripts/modules", "scripts/startup", "scripts/addons_core", "scripts/freestyle/modules")
 DIRECTIVE = re.compile(r"^(\s*)\.\. (class|method|function|staticmethod|classmethod|data|attribute):: (.+)$")
 FIELD = re.compile(r"^(\s*):(\w+)(?: ([\w*.]+))?:(.*)$")
 OPERATOR_RETURN = "set[rna_enum_operator_return_items]"
@@ -250,7 +248,7 @@ class Rna:
             descr = "dict[str, Any]" if prop.type == "pointer" else "Sequence[dict[str, Any]]"
         return rst_type(descr)
 
-    def method(self, func, struct_id: str):
+    def method(self, func):
         back = self.back
         # A required parameter after an optional one (`Panel.draw_header`'s ...) can only be passed by keyword.
         params, optional = [], False
@@ -302,7 +300,7 @@ class Rna:
                     name=identifier, type_str="Literal[{:s}]".format(", ".join(repr(v) for v in values)),
                     readonly=prop.is_readonly))
         for func in struct.functions:
-            cls.methods.append(self.method(func, struct_id))
+            cls.methods.append(self.method(func))
         # The members `_bpy_types` defines in Python (`Object.children`, `Mesh.from_pydata`, ...).
         for identifier, attr in struct.get_py_properties():
             fields = doc_blocks(getattr(attr, "__doc__", None))[-1][2]
@@ -338,10 +336,15 @@ class Rna:
                 cls.attributes.append(back.AttrInfo(name=member, type_str=f":class:`{member_type}` | None",
                                                     readonly=True))
 
-    def operators(self, ops) -> dict[str, list]:
+    def operators(self, ops, hidden_roots: set[str], provenance: dict[str, str]) -> dict[str, list]:
         back = self.back
         modules: dict[str, list] = {}
         for op in sorted(ops.values(), key=lambda o: (o.module_name, o.func_name)):
+            # An operator a default add-on defines (`export_scene.gltf`) is left out like its classes.
+            py_module = getattr(getattr(bpy.types, op.identifier, None), "__module__", "") or ""
+            if py_module.split(".")[0] in hidden_roots:
+                provenance[op.identifier] = f"default-addon:{py_module}"
+                continue
             params = ["*"] if op.args else []
             body = {}
             for arg in op.args:
@@ -402,7 +405,7 @@ def rna_modules(rna: Rna, structs: dict, ops: dict, provenance: dict[str, str], 
         types_module.classes.append(cls)
     for name in PYCAPI_CLASSES:
         if (obj := getattr(bpy.types, name, None)) is not None:
-            types_module.classes.append(c_class(back, name, obj, "bpy.types"))
+            types_module.classes.append(c_class(back, name, obj))
     import _bpy_types
     for name, (_description, members) in rna.doc_gen.RNA_METACLASSES.items():
         metaclass = getattr(_bpy_types, name)
@@ -411,7 +414,7 @@ def rna_modules(rna: Rna, structs: dict, ops: dict, provenance: dict[str, str], 
         types_module.classes.append(back.ClassInfo(name=name, bases=bases, attributes=[
             back.AttrInfo(name=member, type_str=member_type, readonly=True) for member, _d, member_type in members]))
     modules = {"bpy.types": types_module}
-    for category, functions in rna.operators(ops).items():
+    for category, functions in rna.operators(ops, hidden_roots, provenance).items():
         modules[f"bpy.ops.{category}"] = back.ModuleInfo(name=f"bpy.ops.{category}", functions=functions)
     return modules
 
@@ -420,7 +423,7 @@ def rna_modules(rna: Rna, structs: dict, ops: dict, provenance: dict[str, str], 
 # C modules -> their members, typed by their docstrings
 
 
-def c_class(back, name: str, obj: type, module_name: str):
+def c_class(back, name: str, obj: type):
     blocks = doc_blocks(obj.__doc__)
     init_params, bases = None, [b.__name__ for b in obj.__bases__ if b is not object]
     init_types: dict[str, str] = {}
@@ -516,7 +519,7 @@ def c_modules(back, provenance: dict[str, str]) -> tuple[dict, list[types.Module
                 continue
             if inspect.isclass(value):
                 if value.__module__ in {name, module.__name__, "builtins"} or name.endswith(".types"):
-                    info.classes.append(c_class(back, member, value, name))
+                    info.classes.append(c_class(back, member, value))
             elif inspect.isroutine(value):
                 info.functions += callable_infos(back, member, value, "function")
             elif callable(value):
@@ -686,7 +689,7 @@ def enable_addon(addon: Path) -> str:
     """Enable the add-on folder as a legacy add-on (its parent on ``sys.path``); its module name."""
     sys.path.insert(0, str(addon.parent))
     errors: list[str] = []
-    module = addon_utils.enable(addon.name, default_set=True, handle_error=lambda ex: errors.append(repr(ex)))
+    module = addon_utils.enable(addon.name, default_set=False, handle_error=lambda ex: errors.append(repr(ex)))
     if module is None or errors:
         raise SystemExit(f"runtime_stub_gen: enabling {addon.name} failed: {errors}")
     return addon.name
@@ -730,7 +733,8 @@ def walk_value(value, depth: int, *, top: bool = False):
         return None
     if isinstance(value, bpy.types.ID) and not top:
         return {"id": f"{type(value).bl_rna.identifier}:{value.name}"}
-    if not isinstance(value, bpy.types.bpy_struct):
+    if not isinstance(value, bpy.types.bpy_struct) or type(value).__module__ not in {"bpy.types", "_bpy_types"}:
+        # Not RNA's own struct: an add-on's settings (`Object.cycles`), which the stubs do not declare.
         return None
     out: dict = {"class": type(value).bl_rna.identifier}
     for prop in value.bl_rna.properties:
@@ -744,12 +748,19 @@ def walk_value(value, depth: int, *, top: bool = False):
             name_prop = getattr(prop.fixed_type, "name_property", None)
             if name_prop is None or not len(item):
                 continue
+            # Sockets are looked up by identifier first (`rna_NodeInputs_lookup_string`).
             key = "identifier" if prop.fixed_type.identifier.startswith("NodeSocket") else name_prop.identifier
-            out[prop.identifier] = {getattr(x, key, "") or "": walk_value(x, depth - 1) or
-                                    {"class": type(x).bl_rna.identifier} for x in item}
+            out[prop.identifier] = collection_entry(prop, {
+                getattr(x, key, "") or "": walk_value(x, depth - 1) or {"class": type(x).bl_rna.identifier}
+                for x in item})
         elif (sub := walk_value(item, depth - 1)) is not None:
             out[prop.identifier] = sub
     return out
+
+
+def collection_entry(prop, items: dict) -> dict:
+    """A walked collection: its wrapper struct (``ObjectModifiers``), its item struct and the items by key."""
+    return {"wrapper": getattr(prop.srna, "identifier", None), "item": prop.fixed_type.identifier, "items": items}
 
 
 def walk_blend(path: Path) -> dict:
@@ -763,19 +774,84 @@ def walk_blend(path: Path) -> dict:
         local = [i for i in ids if i.library is None]
         if not local:
             continue
-        content[prop.identifier] = {
+        content[prop.identifier] = collection_entry(prop, {
             i.name: {
                 **(walk_value(i, 4, top=True) or {}),
                 "custom_properties": {k: type(v).__name__ for k, v in i.items()},
             } for i in local
-        }
+        })
     return {"file": path.name, "seconds": round(time.perf_counter() - started, 3), "data": content}
+
+
+def blend_overlay(manifest: dict) -> str:
+    """An overlay stub for one ``.blend``: ``data``, a ``BlendData`` whose collections take the file's names as
+    ``Literal`` keys and give each item's refined class, down to what the walk recorded (modifiers, material slots,
+    nodes, sockets) and the class of each ID pointer. A script binds it under ``TYPE_CHECKING``, as the blend typing
+    prototype's approach C does (``from ._blend.assets import data``)."""
+    classes: list[str] = []
+    imports: set[str] = {"BlendData", "bpy_prop_collection"}
+
+    def ident(text: str) -> str:
+        return re.sub(r"\W", "_", text)
+
+    def struct_class(path: str, node: dict) -> str:
+        """The class of a walked struct: a subclass of its refined class, narrowing what the walk recorded."""
+        base = node["class"]
+        imports.add(base)
+        body = []
+        for prop, sub in node.items():
+            if not isinstance(sub, dict) or prop == "custom_properties":
+                continue
+            if "items" in sub:
+                result = collection_class(f"{path}_{ident(prop)}", sub)
+            elif "id" in sub:
+                result = sub["id"].split(":", 1)[0]
+                imports.add(result)
+            else:
+                result = struct_class(f"{path}_{ident(prop)}", sub)
+            body.append(f"    @property\n    def {prop}(self) -> {result}: ...\n")
+        if not body:
+            return base
+        classes.append(f"class _{path}({base}):\n{''.join(body)}")
+        return f"_{path}"
+
+    def collection_class(path: str, entry: dict) -> str:
+        item = entry["item"]
+        imports.add(item)
+        wrapper = entry["wrapper"]
+        if wrapper:
+            imports.add(wrapper)
+        base = wrapper or f"bpy_prop_collection[{item}]"
+        body = []
+        for key, value in entry["items"].items():
+            result = struct_class(f"{path}_{ident(key)}", value) if isinstance(value, dict) and "class" in value \
+                else item
+            body.append(f"    @overload\n    def __getitem__(self, key: Literal[{key!r}], /) -> {result}: ...\n")
+        body += [
+            f"    @overload\n    def __getitem__(self, key: int | str, /) -> {item}: ...\n",
+            f"    @overload\n    def __getitem__(self, key: slice, /) -> list[{item}]: ...\n",
+        ]
+        classes.append(f"class _{path}({base}):\n{''.join(body)}")
+        return f"_{path}"
+
+    data_body = []
+    for collection, entry in manifest["data"].items():
+        data_body.append(f"    @property\n    def {collection}(self) -> {collection_class(ident(collection), entry)}: ...\n")
+    classes.append(f"class _BlendData(BlendData):\n{''.join(data_body) or '    ...'}\n")
+    header = (
+        f'"""PROTOTYPE overlay stub for {manifest["file"]}, generated by prototypes/runtime_stubs/runtime_stub_gen.py '
+        'from the file as Blender loaded it."""\n\n'
+        "from typing import Literal, overload\n\n"
+        f"from bpy.types import {', '.join(sorted(imports))}\n\n"
+    )
+    return header + "\n".join(classes) + "\ndata: _BlendData\n"
 
 
 # ----------------------------------------------------------------------------
 
 
-def general(back, doc_gen, source: Path, output: Path, *, addon: Path | None = None) -> dict:
+def generate(back, doc_gen, output: Path, *, addon: Path | None = None) -> dict:
+    """General mode, or with ``addon`` add-on mode (the general stubs plus the add-on's delta, merged); the facts."""
     started = time.perf_counter()
     facts: dict = {
         "blender": bpy.app.version_string,
@@ -798,7 +874,7 @@ def general(back, doc_gen, source: Path, output: Path, *, addon: Path | None = N
     else:
         structs, ops = pre
     rna.refine(structs)
-    facts["seconds_rna_info"] = round(time.perf_counter() - started, 2)
+    facts["seconds_rna"] = round(time.perf_counter() - started, 2)
     modules = rna_modules(rna, structs, ops, provenance, default_addons - {package})
     c, python = c_modules(back, provenance)
     modules.update(c)
@@ -822,10 +898,14 @@ def general(back, doc_gen, source: Path, output: Path, *, addon: Path | None = N
         blends = sorted(addon.rglob("*.blend"))
         blend_out = output / "blend"
         blend_out.mkdir(exist_ok=True)
+        overlay_dir = stubs / package / "_blend"
         for blend in blends:
             manifest = walk_blend(blend)
-            (blend_out / f"{blend.relative_to(addon).as_posix().replace('/', '__')}.json").write_text(
-                json.dumps(manifest, indent=1, sort_keys=True), encoding="utf-8")
+            stem = blend.relative_to(addon).as_posix().replace("/", "__")
+            (blend_out / f"{stem}.json").write_text(json.dumps(manifest, indent=1, sort_keys=True), encoding="utf-8")
+            # The overlay goes into the merged package, beside the add-on's copied source.
+            overlay_dir.mkdir(parents=True, exist_ok=True)
+            (overlay_dir / f"{Path(stem).stem}.pyi").write_text(blend_overlay(manifest), encoding="utf-8")
         facts["blend_files"] = [b.relative_to(addon).as_posix() for b in blends]
     return facts
 
@@ -835,7 +915,7 @@ def main() -> None:
     args.output.mkdir(parents=True, exist_ok=True)
     back = load_back_end(args.source)
     doc_gen = load_doc_tables(args.source)
-    facts = general(back, doc_gen, args.source, args.output, addon=args.addon)
+    facts = generate(back, doc_gen, args.output, addon=args.addon)
     (args.output / "facts.json").write_text(json.dumps(facts, indent=1, sort_keys=True), encoding="utf-8")
     print("runtime_stub_gen: done in {:.1f}s".format(facts["seconds_total"]))
 
