@@ -31,8 +31,13 @@ def run_blender(
 ) -> tuple[int, str]:
     """Run ``script`` with ``args`` in background Blender, write its output to ``log_path``; the exit code and the
     output."""
-    command = blender_script_command(blender, script, *args, options=options)
-    proc = subprocess.run(command, capture_output=True, text=True)
+    return run_logged(blender_script_command(blender, script, *args, options=options), log_path)
+
+
+def run_logged(command: list[str], log_path: Path, env: dict[str, str] | None = None) -> tuple[int, str]:
+    """Run ``command`` (with the environment ``env``), write its output to ``log_path``; the exit code and the
+    output."""
+    proc = subprocess.run(command, capture_output=True, text=True, env=env)
     output = proc.stdout + proc.stderr
     log_path.write_text(output, encoding="utf-8")
     return proc.returncode, output

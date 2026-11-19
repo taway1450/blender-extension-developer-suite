@@ -23,12 +23,11 @@ from __future__ import annotations
 import ast
 import json
 import shutil
-import subprocess
 from collections import Counter
 from pathlib import Path
 
 from _common import REPO_ROOT, StepError, log, main_wrapper
-from _probe import probe_dir, probe_parser
+from _probe import probe_dir, probe_parser, run_logged
 from generate_stubs import (
     BUILTIN,
     FAKE_BPY,
@@ -192,11 +191,9 @@ def run_addon_mode(version: str, blender: Path, source: Path, addon: Path, out: 
         shutil.rmtree(out)  # no stubs, deltas or manifests left from an earlier run
     out.mkdir(parents=True)
     command, env = runtime_generator_command(version, blender, source, out / "stubs", out / "work", addon)
-    proc = subprocess.run(command, capture_output=True, text=True, env={**env, "PYTHONUTF8": "1"})
-    output = proc.stdout + proc.stderr
-    (out / "blender.log").write_text(output, encoding="utf-8")
+    returncode, output = run_logged(command, out / "blender.log", {**env, "PYTHONUTF8": "1"})
     facts = out / "work" / "facts.json"
-    if proc.returncode or not facts.exists():
+    if returncode or not facts.exists():
         raise StepError(f"runtime_stub_gen.py failed (see {out / 'blender.log'}):\n{output[-3000:]}")
     return json.loads(facts.read_text(encoding="utf-8"))
 
@@ -242,13 +239,12 @@ def general_section(facts: dict, default_addons: dict) -> list[str]:
             f"{facts['rendered_modules']} rendered modules, {facts['copied_python_files']} Python files copied, "
             f"{len(facts['reexported_classes'])} classes of Python modules re-exported from their modules."
         ),
-        (
-            f"- Factory add-ons left out (the others are always enabled): {', '.join(default_addons['addons'])}. "
-            f"They register "
-            f"{len(default_addons['structs'])} structs, {len(default_addons['operators'])} operators and "
-            f"{sum(len(v) for v in default_addons['members'].values())} members of built-in structs "
-            f"({', '.join(f'`{k}.{m}`' for k, v in default_addons['members'].items() for m in v)})."
-        ),
+        "- Factory add-ons left out (the others are always enabled), and what each registers:",
+        *[
+            f"  - {name}: {len(delta['structs'])} structs, {len(delta['operators'])} operators, members of built-in "
+            f"structs: {', '.join(f'`{k}.{m}`' for k, v in delta['members'].items() for m in v) or 'none'}"
+            for name, delta in default_addons.items()
+        ],
         f"- Type reference errors: {len(facts['type_ref_errors'])}",
         *[f"  - {e}" for e in facts["type_ref_errors"][:SAMPLES]],
         "",

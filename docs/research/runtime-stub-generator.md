@@ -513,8 +513,9 @@ module. So:
 
 The prototype (formerly `prototypes/runtime_stubs/`, built on introspection alone) answered the viability
 question and has been removed. The product generator is the fork's `doc/python_api/runtime_stub_gen.py`
-(branch `typecheck-fixes`), run by `mise run stubs:generate <version> --generator runtime`. Instead of a
-front end of its own, it runs the doc pipeline inside the running Blender: `sphinx_doc_gen` writes the rst of
+(branch `typecheck-fixes`), run by `mise run stubs:generate <version> --generator runtime`. It departs from
+§4.3 ("needs neither rst nor docutils"): instead of a front end of its own, it runs the doc pipeline inside the
+running Blender, so there is one front end and §5.3's first risk is gone: `sphinx_doc_gen` writes the rst of
 that state and `sphinx_stub_gen` (split into `collect_modules` / `render_stubs` / `write_stubs`) parses and
 renders it in the same process, with docutils from `.cache/runtime-stubs-site`. So the stubs get every table
 the prototype missed, for free: node socket views, `bmesh.ops` types, slot operand types, `RNA_PROPERTY_TYPES`,
@@ -523,8 +524,10 @@ the prototype missed, for free: node socket views, `bmesh.ops` types, slot opera
 On top of the rst, what only the running Blender has:
 
 - **Startup classes.** A class a Python module registers in `bpy.types` and the rst writes bare (menus, panels,
-  headers) is re-exported from its module with all its members (1,578 on `main`, the S10 gap). A class the
-  module makes at runtime (`type(...)` in `bl_ui.node_add_menu`) is not a module attribute, so it stays bare.
+  headers) is re-exported from its module with all its members, and so is a Python operator class, which the rst
+  leaves out of `bpy.types` altogether (`bpy.types.PREFERENCES_OT_copy_prev`): 1,772 on `main`, the S10 gap. A
+  class the module makes at runtime (`type(...)` in `bl_ui.node_add_menu`) is not a module attribute, so it stays
+  bare.
 - **Python source** of the modules the stubs don't render (`bl_ui`, `bl_operators`, the hidden-core add-ons
   `bl_pkg` / `io_anim_bvh`, and in add-on mode the add-on): copied as `.py`. `check:blender` checks Blender's own
   scripts, so it reads a mirror without those copies (`.cache/bpy-stubs-runtime-rendered`), or the copies would
@@ -536,8 +539,11 @@ On top of the rst, what only the running Blender has:
 disabled into a user resources folder of the generator's own (`.cache/bpy-stubs-runtime-user/<version>`). The
 generation run loads those preferences, so the factory add-ons (Cycles, glTF, pose library) register nothing
 before the stubs are written: their panels, `Scene.cycles`, `bpy.ops.export_scene.gltf` and the dynamic enum
-items they fill (`IO_FH_gltf2`) stay out. They are enabled afterwards, and what they register goes to
-`.cache/bpy-stubs-runtime-work/<version>/default_addons.json` (122 structs, 16 operators, 14 members). Blender
+items they fill (`IO_FH_gltf2`) stay out. They are then enabled one at a time, and what each registers goes to
+`.cache/bpy-stubs-runtime-work/<version>/default_addons.json` by add-on (122 structs, 16 operators and 14
+members in all). The dynamic enum items they add are left out but not recorded there, and a dynamic enum is still a
+closed `Literal` of the startup state rather than §4.7's `str` (`CollectionExports.new(type=...)` keeps the
+hidden-core `IO_FH_fbx`). Blender
 5.x keeps `addon_utils._addons_hidden_core` (`bl_pkg`, `io_*` importers) enabled regardless, so those are core
 facts. Disabling add-ons in the same process is not an option: their classes keep a freed `bl_rna`, and
 `_rna_info`'s `__subclasses__` walk crashes on it.
@@ -549,9 +555,15 @@ facts. Disabling add-ons in the same process is not an option: their classes kee
 - `check:stubs`: the same 229 `.pyi` diagnostics as builtin;
 - `check:features` and `check:ide`: identical to the builtin baselines
   (`tests/typecheck/expected/runtime/` was seeded from them);
-- `check:blender`: the builtin summary plus 6 uses of the factory add-ons' operators in Blender's own tests
-  (`bpy.ops.cycles`, `export_scene.gltf`), which is item 3 working as intended. The checker reading
-  `default_addons.json` as an assumption is R5.
+- `check:blender`: 3,489 errors, as many as builtin, but not the same ones. `operator-call` gains 6 uses of the
+  factory add-ons' operators in Blender's own tests (`bpy.ops.cycles`, `export_scene.gltf`), which is item 3
+  working as intended (the checker reading `default_addons.json` as an Assumption is R5).
+  `registered-class-in-bpy-types` goes from 8 to 2: the startup classes resolve (S10). Left there are
+  `POSELIB_OT_restore_previous_action`, a factory add-on's, and `bl_pkg` passing
+  `PREFERENCES_OT_addon_install._target_path_items` as an `EnumProperty` `items` callback typed for another
+  operator class. The newly typed classes expose 3 more real mismatches of that kind elsewhere (`mixin-self`,
+  `unsorted`).
 
-Still open: R3's comparison of the delta with `check:load` probes and the Add-on index, extensions in add-on mode,
+`generator_revision` covers `doc/python_api` and `scripts/modules/_rna_info.py`; docutils is pinned
+(`RUNTIME_SITE_REQUIREMENT`). Still open: R3's comparison of the delta with `check:load` probes and the Add-on index, extensions in add-on mode,
 the delta's enum / keymap / handler changes, and the error a partially registered add-on logs.
