@@ -34,7 +34,10 @@ default), while a pointer nothing checked stays an error.
   `".curve_edit"`: an edit object, of a curve or a surface); `".objectmode"` gives nothing. Other editors check no
   mode.
 - **Popovers:** a Panel opened as a popover (`layout.popover`, `wm.call_panel`) is drawn with the area of the editor
-  that opened it, whatever its `bl_space_type` says.
+  that opened it, whatever its `bl_space_type` says. It is drawn with that editor's context, so what the function that opened it
+  checked before the call (`if context.space_data.node_tree: layout.popover(...)`) holds when the popover is drawn,
+  unless the user changed it while the popover is open. A panel of the `'HEADER'` region type is drawn only as a
+  popover (the header region draws no panels).
 
 ## Rules
 
@@ -42,7 +45,7 @@ default), while a pointer nothing checked stays an error.
 | --- | --- | --- |
 | `blender-narrowed-by-poll` | a read of a pointer the class's `poll()` checked, in a callback the poll gates | not `None`; a Type tag test narrows it (`ob.type == 'MESH'` makes `ob.data` a `Mesh`), and one on `space_data` or `area` makes `space_data` the editor's subclass |
 | `blender-narrowed-by-menu-prefix` | `space_data` / `area` in a menu's `draw` / `poll`, from its idname prefix | the prefix's `Space` subclass; `area` not `None` |
-| `blender-narrowed-by-popover` | `space_data` in a Panel the same add-on opens as a popover | its `bl_space_type` subclass |
+| `blender-narrowed-by-popover` | `space_data` in a Panel the same add-on opens as a popover; in a `'HEADER'` panel's gated callbacks, a pointer that every function opening it checked before the call, by its own control flow (as a poll's flow is read) | its `bl_space_type` subclass; not `None`, or the tested Type tag's subclass |
 | `blender-narrowed-by-bl-context` | a context member a Panel's `bl_context` guarantees, in its `poll`, its gated callbacks and those of its sub-panels | `context.object` not `None` in the object-needing Properties tabs; in the 3D viewport's mode contexts what the mode gives (as `context.mode == ...` in a poll) |
 
 What a poll checks is read from its code: the conjuncts of a `return` (`X`, `X is not None`, `isinstance(X, T)`,
@@ -77,7 +80,7 @@ An ignored rule still narrows.
 | `nar_poll_reach` | a sub-panel's `poll` and `draw`, a grandchild and a sub-panel in another module reading their parents' facts; the poll's own flow after a helper guard and through `and` (silent); `getattr` and walrus aliases; `XrSessionState.is_running`; `bool(a and b)`; a helper's `try` body; errors: a sub-panel also opened as a popover, a pointer no poll up the chain checked |
 | `nar_mode` | `context.mode` in a poll: `EDIT_MESH` (object, active and edit object as mesh objects), `SCULPT` (`tool_settings.sculpt`, also silently in the poll after a guard), `in {"PAINT_VERTEX", "PAINT_WEIGHT"}` (only what both give), `POSE` (`object.pose`); errors: `OBJECT` gives nothing |
 | `nar_menu_prefix` | `VIEW3D_`, `CLIP_` (`bl_idname`), `TIME_`, `TOPBAR_` menus in `draw` and `poll`; guards: a helper method, an add-on's own prefix |
-| `nar_popover` | a panel opened by `layout.popover` and one by `wm.call_panel`; silent: a panel drawn only in its region; `strictness` presets (`_expected/strictness.toml`) |
+| `nar_popover` | a panel opened by `layout.popover` and one by `wm.call_panel`; a `'HEADER'` panel a header opens only after checking `context.object` (and its type) in an `if`, and one opened after an early `return`; silent: a panel drawn only in its region; errors: a `'HEADER'` panel also opened where nothing was checked, a `'WINDOW'` panel opened under a check; `strictness` presets (`_expected/strictness.toml`) |
 | `nar_bl_context` | Properties `object` (through a mixin, in a poll, a sub-panel) and `physics` tabs; `mesh_edit` (sidebar) and `posemode` (toolbar); the dotted groups `".mesh_edit"`, `".sculpt_mode"`, `".paint_common"` (an active object) and `".curve_edit"` (an edit object); a poll's own check wins over `bl_context`; errors: the `data` tab, `".objectmode"`, `"objectmode"`, a mode in the image editor, a panel opened as a popover, `active_object` in a Properties tab; `strictness` presets |
 | `nar_config` | an `[[overrides]]` entry in `tests/typecheck/ty.toml`: the category at `error`, `blender-narrowed-by-menu-prefix` at `ignore` |
 

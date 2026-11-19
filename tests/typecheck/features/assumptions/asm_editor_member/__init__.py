@@ -10,6 +10,8 @@ from typing import assert_type
 import bpy
 from bpy.types import Area, Menu, Operator, Panel, Region, RenderEngine, Space, WorkSpaceTool
 
+from . import draw
+
 
 class AsmEditorMemberPanelMixin:
     bl_space_type = 'VIEW_3D'
@@ -79,8 +81,25 @@ class ASM_EDITOR_MEMBER_OT_run(Operator):
         return {'FINISHED'}
 
 
+class ASM_EDITOR_MEMBER_OT_outline(Operator):
+    bl_idname = "asm_editor_member.outline"
+    bl_label = "Outline"
+
+    _handle = None
+
+    def invoke(self, context, event):
+        self._handle = bpy.types.SpaceNodeEditor.draw_handler_add(
+            draw.draw_outline, (self, context), 'WINDOW', 'POST_PIXEL')
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def modal(self, context, event):
+        bpy.types.SpaceNodeEditor.draw_handler_remove(self._handle, 'WINDOW')
+        return {'FINISHED'}
+
+
 classes = (ASM_EDITOR_MEMBER_PT_panel, ASM_EDITOR_MEMBER_MT_menu, ASM_EDITOR_MEMBER_RenderEngine,
-           ASM_EDITOR_MEMBER_OT_run)
+           ASM_EDITOR_MEMBER_OT_run, ASM_EDITOR_MEMBER_OT_outline)
 
 
 def register():

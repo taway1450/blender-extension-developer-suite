@@ -47,6 +47,11 @@ from a test of it, since the write may come between the test and a read.
 A `bl_idname` test names an add-on's own class too: `node.bl_idname == 'MyNode'` narrows `node` to the registered
 class whose `bl_idname` is `'MyNode'` (Blender gives every node of that type an instance of it).
 
+A test of a local copy of the tag (`strip_type = strip.type`, then `if strip_type == 'SPEED':` and its `elif` / `else`
+clauses, as Blender's strip panels do) types the member reads of the struct in each clause from the subclass it names
+(`strip.speed_control` from `SpeedControlStrip`). The struct itself keeps its type (ty narrows only the name a test
+names), and the copy counts only while neither name is bound again before the read.
+
 Not narrowed: a variable read before the test (`data = ob.data`), which is another binding; a `bl_idname` that
 several registered classes share (the one registered last wins in Blender); and the tag `'CUSTOM'`, which every
 add-on-defined node, socket and tree has. A `bl_idname` test does not narrow its `else` branch: an add-on class
@@ -54,7 +59,7 @@ derived from a built-in one (`ShaderNodeCustomGroup`) has its own `bl_idname`.
 
 | Addon | Variant |
 | --- | --- |
-| `narrow_values` | modifier in a loop over `ob.modifiers`, constraint, strip, light, node `bl_idname`, node `type` and socket `type` (many-to-one), interface `item_type` (a shared value on an intermediate class), boid rule, line style modifier (the tag on its base), a union of two line style modifier bases (each member narrowed), viewer path element, project variable, an object's `pose`; `elif`, `!=` with an early return, `in {...}`, `not in (...)`, `match`; an add-on's own node by its registered class's `bl_idname`; not narrowed: a `bl_idname` two registered classes share |
+| `narrow_values` | modifier in a loop over `ob.modifiers`, constraint, strip, light, node `bl_idname`, node `type` and socket `type` (many-to-one), interface `item_type` (a shared value on an intermediate class), boid rule, line style modifier (the tag on its base), a union of two line style modifier bases (each member narrowed), viewer path element, project variable, an object's `pose`; `elif`, `!=` with an early return, `in {...}`, `not in (...)`, `match`; a local copy of a strip's tag tested by `==`, `in {...}` and the `else` of `!=`; an add-on's own node by its registered class's `bl_idname`; not narrowed: a `bl_idname` two registered classes share, a strip bound again after its tag was copied |
 | `narrow_constructors` | `constraints.new` (positional, `type=`), `lights.new` (a literal, a conditional of two), `attributes.new`, `nodes.new` (`type=`, positional), `gizmos.new(MyGizmo.bl_idname)` in a GizmoGroup's `setup`, a node's `inputs.new` / `outputs.new` (a built-in or the add-on's socket), `bpy.data.node_groups.new` (a built-in tree, or the add-on's by `MyTree.bl_idname`, which the stubs' enum of tree types does not list); `interface.new_socket(socket_type=...)` (the socket type's interface socket); `bpy.data.objects.new(name, data)` (a camera's tag view, `None`'s empty, an optional mesh); not narrowed: a `str` argument, an unknown `bl_idname` (also for `new_socket`), a C gizmo type, object data typed `ID` |
 | `narrow_area_type` | `area.spaces.active` after `==` in a loop, `in {...}` in an `elif`, `!=` with `continue`, `and` in a generator, a list comprehension; not narrowed: the `else` branch, `area` rebound after the test, a function that writes `area.type` or `area.ui_type` |
 | `narrow_views` | `ob.data` after `ob.type == 'MESH'`, after a call, after `!= 'FONT'` with an early return, in a comprehension; `match`; Fluid `domain_settings`, also after `fluid.fluid_type = 'DOMAIN'` earlier in the block; not narrowed: `data = ob.data` before the test, the fluid after a tag write in a branch or bound again after it |

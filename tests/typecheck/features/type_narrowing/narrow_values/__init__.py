@@ -5,7 +5,7 @@ type is 'STRING' is one of the string sockets. Interface items, boid rules, line
 elements and project variables narrow on their tags too, and an object's type decides its pose. The assert_type
 calls in the bodies are no-ops at runtime."""
 
-from typing import assert_type
+from typing import Literal, assert_type
 
 import bpy
 from bpy.types import (ID, ArrayModifier, BoidRule, BoidRuleGoal, ColorStrip, Constraint, CopyLocationConstraint,
@@ -13,7 +13,7 @@ from bpy.types import (ID, ArrayModifier, BoidRule, BoidRuleGoal, ColorStrip, Co
                        LineStyleColorModifier, LineStyleColorModifier_DistanceFromObject,
                        Modifier, MultiresModifier, Node, NodeSocket, NodeSocketString, NodeSocketStringFilePath,
                        NodeTreeInterfaceItem, NodeTreeInterfacePanel, NodeTreeInterfaceSocket, Object, PointLight,
-                       Pose, ProjectVariable, ProjectVariableInteger, SequenceEditor, ShaderNodeMath, SpotLight,
+                       Pose, ProjectVariable, ProjectVariableInteger, SequenceEditor, ShaderNodeMath, SpotLight, Strip,
                        SubsurfModifier, SunLight, TextureNodeMath, ViewerPathElem)
 from mathutils import Color
 
@@ -59,6 +59,29 @@ def strip_colors(editor: SequenceEditor) -> list[Color]:
             assert_type(strip, ColorStrip)
             colors.append(strip.color)
     return colors
+
+
+def strip_settings(editor: SequenceEditor) -> list[object]:
+    """Blender's strip panels read the tag once into a local and test the local: a member read of the strip in a
+    branch comes from the subclass the test names, while the strip itself keeps its type."""
+    settings: list[object] = []
+    for strip in editor.strips_all:
+        strip_type = strip.type
+        if strip_type == 'SPEED':
+            assert_type(strip.speed_control, Literal['STRETCH', 'MULTIPLY', 'FRAME_NUMBER', 'LENGTH'])
+        elif strip_type in {'GLOW', 'GAUSSIAN_BLUR'}:
+            assert_type(strip.input_1, Strip)  # both blur strips have one input
+        elif strip_type != 'WIPE':
+            continue
+        else:
+            assert_type(strip.transition_type, Literal['SINGLE', 'DOUBLE', 'IRIS', 'CLOCK'])  # else of `!=`
+    for strip in editor.strips_all:
+        strip_type = strip.type
+        strip = editor.active_strip  # bound again after the copy: the test says nothing about it
+        if strip_type == 'SPEED':
+            assert strip is not None
+            settings.append(strip.speed_control)  # ty: ignore[blender-assumed-subclass-member]  # another strip: not narrowed
+    return settings
 
 
 def sun_angle(light: Light) -> float:

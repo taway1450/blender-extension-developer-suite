@@ -4,11 +4,13 @@ Every ID type and the structs with ID properties (bones, nodes, sockets, view la
 Other structs do not: the assignment silently becomes a plain class attribute holding the `_PropertyDeferred` value.
 """
 
+from typing import assert_type
+
 import bpy
 from bpy.props import (BoolProperty, CollectionProperty, EnumProperty, FloatProperty, IntProperty,
                        PointerProperty, StringProperty)
 from bpy.types import Collection as Coll
-from bpy.types import PropertyGroup
+from bpy.types import PropertyGroup, bpy_prop_collection_idprop
 
 
 class PROPS_REGISTERED_Item(PropertyGroup):
@@ -42,8 +44,43 @@ DYNAMIC = {"dyn_a": IntProperty(), "dyn_b": FloatProperty()}
 bpy.types.Camera.reg_module_level = IntProperty()
 
 
+def enable_on_demand(self, context):
+    """An update callback that registers a property only when an option is turned on, as the glTF exporter does:
+    register() never runs it, so the write itself is not known to Scene, while a read after hasattr has found the
+    property has its type."""
+    bpy.types.Scene.reg_on_demand = CollectionProperty(type=PROPS_REGISTERED_Item)  # ty: ignore[missing-attribute]  # bare-ok: register() does not run it
+
+
+def read_on_demand(scene: bpy.types.Scene) -> None:
+    if hasattr(scene, "reg_on_demand"):
+        assert_type(scene.reg_on_demand, bpy_prop_collection_idprop[PROPS_REGISTERED_Item])
+    scene.reg_on_demand  # ty: ignore[missing-attribute]  # bare-ok: register() does not set it up
+    if hasattr(bpy.data.scenes[0], "reg_on_demand"):
+        assert_type([item.label for item in bpy.data.scenes[0].reg_on_demand], list[str])
+    if hasattr(scene, "reg_int"):  # registered by register(): hasattr keeps its type
+        assert_type(scene.reg_int, int)
+    if hasattr(scene, "reg_never"):
+        assert_type(scene.reg_never, object)  # bare-ok: no registration anywhere
+
+
+def enable_late(self, context):
+    """The same with a class defined further down and `bpy.props` spelled out, as in the glTF exporter."""
+    if self.option is True:
+        bpy.types.Scene.reg_late = bpy.props.CollectionProperty(type=PROPS_REGISTERED_Late)  # ty: ignore[missing-attribute]  # bare-ok: register() does not run it
+    elif hasattr(bpy.data.scenes[0], "reg_late"):
+        assert_type(bpy.data.scenes[0].reg_late, bpy_prop_collection_idprop[PROPS_REGISTERED_Late])
+        del bpy.types.Scene.reg_late  # ty: ignore[missing-attribute]  # bare-ok: register() does not run it
+
+
+class PROPS_REGISTERED_Late(bpy.types.PropertyGroup):
+    __slots__ = ()
+
+    keep: bpy.props.BoolProperty()
+
+
 def register():
     bpy.utils.register_class(PROPS_REGISTERED_Item)
+    bpy.utils.register_class(PROPS_REGISTERED_Late)
     bpy.utils.register_class(PROPS_REGISTERED_WorldSettings)
     bpy.types.Scene.reg_int = IntProperty()
     bpy.types.Scene.reg_mode = EnumProperty(items=[("A", "A", ""), ("B", "B", "")])
@@ -96,4 +133,5 @@ def unregister():
                       (bpy.types.SpaceView3D, "reg_space"), (bpy.types.Context, "reg_context")]:
         delattr(cls, name)
     bpy.utils.unregister_class(PROPS_REGISTERED_WorldSettings)
+    bpy.utils.unregister_class(PROPS_REGISTERED_Late)
     bpy.utils.unregister_class(PROPS_REGISTERED_Item)

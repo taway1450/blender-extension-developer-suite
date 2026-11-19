@@ -81,11 +81,29 @@ class INH_OVERRIDES_OT_check_layout(Operator):  # ty: ignore[blender-unregistere
     bl_idname = "inh_overrides.check_layout"
     bl_label = "Check layout"
 
+    _stored = None
+
     def draw(self, context):
         self._draw_config()
+        self._draw_shared()
 
-    def _draw_config(self) -> None:
-        assert_type(self.layout, UILayout | None)  # bare-ok: an Operator's helper may run outside draw, where its layout is None
+    def execute(self, context):
+        self._draw_shared()
+        self._stored = self._draw_stored
+        return {"FINISHED"}
+
+    def _draw_config(self) -> None:  # called only from draw, on self
+        assert_type(self.layout, UILayout)  # oracle-skip: a class defined in the check file
+        self._draw_nested()
+
+    def _draw_nested(self) -> None:  # called only from a helper that draw calls
+        assert_type(self.layout, UILayout)  # oracle-skip: a class defined in the check file
+
+    def _draw_shared(self) -> None:
+        assert_type(self.layout, UILayout | None)  # bare-ok: execute calls it too, where the layout is None
+
+    def _draw_stored(self) -> None:
+        assert_type(self.layout, UILayout | None)  # bare-ok: stored as a value, so it may run outside draw
 
 
 def check_menu_func(self: Menu, context: Context) -> None:  # a function given to `Menu.append`
