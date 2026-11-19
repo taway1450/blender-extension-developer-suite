@@ -19,3 +19,18 @@ def test_blender_site_links_the_listed_packages_and_drops_the_others(tmp_path, m
     assert site == site_dir / "main"
     assert sorted(p.name for p in site.iterdir()) == ["numpy"]
     assert (site / "numpy").resolve() == (packages / "numpy").resolve()
+
+
+def test_blender_site_links_the_default_addons_from_the_source(tmp_path, monkeypatch):
+    install = tmp_path / "blender"
+    (install / "5.4" / "python" / "lib" / "python3.13" / "site-packages" / "numpy").mkdir(parents=True)
+    source = tmp_path / "source"
+    (source / "intern" / "cycles" / "blender" / "addon").mkdir(parents=True)
+    monkeypatch.setattr(check_blender, "BLENDER_SITE_DIR", tmp_path / "blender-site")
+    monkeypatch.setattr(check_blender, "BLENDER_SITE_PACKAGES", ["numpy"])
+
+    site = check_blender.blender_site("main", install, source)
+
+    assert site is not None
+    assert sorted(p.name for p in site.iterdir()) == ["cycles", "numpy"]
+    assert (site / "cycles").resolve() == (source / "intern" / "cycles" / "blender" / "addon").resolve()

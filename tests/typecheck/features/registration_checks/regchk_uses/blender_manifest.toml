@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "regchk_uses"
+version = "1.0.0"
+name = "Feature test: a declared dependency"
+tagline = "a declared dependency"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]
+
+# Blender ignores the [tool] table; the checker reads the add-ons this one relies on from it.
+[tool.blender]
+uses = ["regchk_uses_provider"]

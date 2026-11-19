@@ -53,6 +53,7 @@ from _features import (
     Addon,
     AddonResult,
     MarkerResult,
+    all_addons,
     evaluate,
     parse_diagnostics,
     run_ty,
@@ -310,20 +311,22 @@ def link_tree(source: Path, target: Path) -> None:
 
 
 def build_project(addon: Addon, target: Path) -> None:
-    """A copy of tests/typecheck (ty.toml and all features, so imports of other addons resolve) with the addon's
-    own reference stubs next to its modules."""
+    """A copy of tests/typecheck (ty.toml and all features, so imports of other addons resolve) with the reference
+    stubs of the addon and of the add-ons its manifest declares (``[tool.blender] uses``) next to their modules."""
     if target.exists():
         shutil.rmtree(target)
     target.mkdir(parents=True)
     shutil.copy2(TYPECHECK_TESTS_DIR / "ty.toml", target / "ty.toml")
     shutil.copytree(FEATURES_DIR, target / "features", ignore=shutil.ignore_patterns("__pycache__"))
-    own = addon.expected_stubs / "addon" if addon.expected_stubs else None
-    if own and own.is_dir():
-        addon_copy = target / addon.rel
-        for stub in own.rglob("*.pyi"):
-            out = addon_copy / stub.relative_to(own)
-            out.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(stub, out)
+    used = [other for other in all_addons() if other.module in addon.uses]
+    for stubbed in [addon, *used]:
+        own = stubbed.expected_stubs / "addon" if stubbed.expected_stubs else None
+        if own and own.is_dir():
+            addon_copy = target / stubbed.rel
+            for stub in own.rglob("*.pyi"):
+                out = addon_copy / stub.relative_to(own)
+                out.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(stub, out)
 
 
 @dataclass

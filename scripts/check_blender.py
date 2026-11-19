@@ -11,8 +11,8 @@ test scripts ``tests/python/CMakeLists.txt`` never runs), once per stub generato
 
 The packages of Blender's bundled Python that its code imports (numpy, setuptools, requests, USD, ...) are on the
 search path, through links in ``.cache/blender-site/<version>/`` (not the whole ``site-packages``: it would put a
-runtime ``typing_extensions.py`` in front of typeshed's), and so are the directories Blender's tools and tests add
-to ``sys.path`` themselves. Modules nothing can resolve (compiled into Blender, given by GDB, or a developer tool's
+runtime ``typing_extensions.py`` in front of typeshed's), and so is Cycles' add-on source, as ``cycles``, so the
+checker reads what it registers; so are the directories Blender's tools and tests add to ``sys.path`` themselves. Modules nothing can resolve (compiled into Blender, given by GDB, or a developer tool's
 own requirements) are allowed to be unresolved, so ``import-not-found`` reports only real gaps.
 
 Each diagnostic is sorted into a cause, which has a group, and an area (see _buckets.py). The cause x area table,
@@ -124,32 +124,40 @@ BLENDER_SITE_PACKAGES = [
     "OpenImageIO",
     "opentimelineio",
 ]
+# The add-ons Blender enables by default whose source is not on BLENDER_SEARCH_PATHS, by the module name Blender
+# imports them as, and their folder in the Blender source: the checker reads what they register (`scene.cycles`).
+BLENDER_SOURCE_PACKAGES = {"cycles": "intern/cycles/blender/addon"}
 BLENDER_SITE_DIR = CACHE_DIR / "blender-site"
 # The recorded bucket summaries, per stub generator; only BASELINE_VERSION has one.
 EXPECTED_DIR = REPO_ROOT / "tests" / "blender" / "expected"
 BASELINE_VERSION = "main"
 
 
-def blender_site(version: str, blender: Path | None) -> Path | None:
+def blender_site(version: str, blender: Path | None, source: Path | None = None) -> Path | None:
     """``.cache/blender-site/<version>/`` with a link to each of BLENDER_SITE_PACKAGES in Blender's bundled
-    ``site-packages`` (a junction on Windows), and no other link, or None when that Blender has none of them."""
+    ``site-packages`` and to each of BLENDER_SOURCE_PACKAGES in ``source`` (a junction on Windows), and no other
+    link, or None when it would have no link."""
     install = blender or BLENDER_BIN_DIR / version
     if install.is_file():
         install = install.parent
-    site = BLENDER_SITE_DIR / version
-    for stale in site.iterdir() if site.is_dir() else ():
-        if stale.name not in BLENDER_SITE_PACKAGES:
-            unlink(stale)
-            log(f"Removed {stale}: no longer in BLENDER_SITE_PACKAGES")
-    linked = False
+    targets: dict[str, Path] = {}
     for package in BLENDER_SITE_PACKAGES:
         found = sorted(install.glob(f"*/python/lib/**/site-packages/{package}"))
-        if not found:
+        if found:
+            targets[package] = found[0]
+        else:
             log(f"Blender's bundled {package} not found under {install}; checking without it")
-            continue
-        linked = True
+    for package, folder in BLENDER_SOURCE_PACKAGES.items():
+        if source is not None and (source / folder).is_dir():
+            targets[package] = source / folder
+    site = BLENDER_SITE_DIR / version
+    for stale in site.iterdir() if site.is_dir() else ():
+        if stale.name not in targets:
+            unlink(stale)
+            log(f"Removed {stale}: no longer linked")
+    for package, target in targets.items():
         link = site / package
-        if link.exists() and link.resolve() == found[0].resolve():
+        if link.exists() and link.resolve() == target.resolve():
             continue
         if os.path.lexists(link):  # stale: points elsewhere or nowhere
             unlink(link)
@@ -157,11 +165,11 @@ def blender_site(version: str, blender: Path | None) -> Path | None:
         if sys.platform == "win32":
             import _winapi
 
-            _winapi.CreateJunction(str(found[0]), str(link))
+            _winapi.CreateJunction(str(target), str(link))
         else:
-            link.symlink_to(found[0], target_is_directory=True)
-        log(f"Linked {link} -> {found[0]}")
-    return site if linked else None
+            link.symlink_to(target, target_is_directory=True)
+        log(f"Linked {link} -> {target}")
+    return site if targets else None
 
 
 def unlink(link: Path) -> None:
@@ -283,7 +291,7 @@ def main() -> int:
     args = parser.parse_args()
 
     target = Target.from_args(args)
-    site = blender_site(args.version, args.blender)
+    site = blender_site(args.version, args.blender, target.source)
     for generator in target.stubs:
         results = run_ty(target, generator, site)
         report_buckets(target, generator, results, update=args.update)

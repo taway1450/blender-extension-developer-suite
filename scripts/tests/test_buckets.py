@@ -1205,6 +1205,16 @@ CASES = [
     ),
     pytest.param(
         diagnostic(
+            "blender-assumed-default-addon",
+            "`cycles` is taken as registered by `cycles`, an add-on Blender enables by default but a user can disable",
+            "cycles = bpy.context.scene.cycles",
+            path="scripts/presets/cycles/sampling/Final.py",
+        ),
+        "assumed-default-addon",
+        id="assumed-default-addon",
+    ),
+    pytest.param(
+        diagnostic(
             "invalid-argument-type",
             "Argument to function `spin` is incorrect: Expected `list[BMVert | BMEdge | BMFace]`, found `list[BMEdge | BMVert]`",
             "geom=geom_start_a,",

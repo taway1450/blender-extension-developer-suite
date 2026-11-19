@@ -55,6 +55,7 @@ as if the fact held, and report it under a `blender-assumed-*` rule (category `b
 | `blender-assumed-editor-member` | a read of `area` / `region` / `space_data` in the `poll` of a Panel or Menu that names no editor, a tool's `draw_settings` and `RenderEngine.view_update` / `view_draw` | not `None` |
 | `blender-assumed-preset-context` | a module-level read of a context member in a file under a `presets` folder (`scene` and its siblings stay `blender-assumed-context-member`) | not `None` |
 | `blender-assumed-added-object` | a read of `context.object` / `active_object` after a `bpy.ops.<category>.<name>_add()` (or `.add()`) call earlier in the same function or module-level script | not `None` |
+| `blender-assumed-default-addon` | a read of a property that only an add-on Blender enables by default registers (`scene.cycles`), when neither the add-on's own code, an add-on its manifest declares (`[tool.blender] uses`) nor a startup package (`bl_operators`, `bl_ui`) gives it; the default add-on's source must be on a search path. No add-on here tests it: a test add-on named like a bundled one would replace it in Blender (`check:load`); the rule's documentation example and `check:blender` (Cycles' presets and tests) do | the default add-on's registration |
 | `blender-assumed-subclass-member` | a read of a member that a refined base with a Type tag (`Constraint`, `Modifier`, `Light`, `Node`, `NodeSocket`, ...) lacks but some of its tagged subclasses declare; never on `bpy_struct` or `ID`, and a member no subclass declares stays an error | the union of the subclasses' declarations |
 
 A read that is only tested for truth or `None` (`if bpy.context.scene:`, `item is None`) or that sits where the code's
@@ -63,7 +64,7 @@ Blender callback `scene` and its siblings stay a silent guarantee (context_membe
 
 ## Configuration
 
-The category's name sets all ten rules (`blender-assumptions = "ignore"`), a rule's name one of them;
+The category's name sets all eleven rules (`blender-assumptions = "ignore"`), a rule's name one of them;
 `[blender] strictness = "lenient"` and `"default"` warn, `"strict"` makes them errors. An ignored rule still narrows.
 
 | Addon | Variant |

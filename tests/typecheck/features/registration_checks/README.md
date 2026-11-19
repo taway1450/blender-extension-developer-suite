@@ -1,7 +1,7 @@
 # registration_checks
 
 **The checker must:** report registration mistakes, and keep add-ons apart: what one add-on registers is not
-visible in another.
+visible in another, unless that one declares it in its manifest.
 
 | Addon | Rule | Variant |
 | --- | --- | --- |
@@ -17,6 +17,7 @@ visible in another.
 | `regchk_unregister_unknown` | `blender-unregister-mismatch` | `unregister_class` for a class that was not registered (fails in unregister) |
 | `regchk_isolation_a`, `_b` | `missing-attribute` | each sees only its own operators and properties; only A calls the shared library's `register_tool()` |
 | `regchk_shared_lib` | | a package both import; not an add-on (`load = false`) |
+| `regchk_uses`, `regchk_uses_provider` | `missing-attribute` | an add-on that declares another in its manifest (`[tool.blender] uses = ["regchk_uses_provider"]`, a table Blender ignores) reads that add-on's Registered properties, besides its own; an add-on it does not declare stays unseen |
 
 **Runtime facts (Blender 5.4):** a valid operator idname is `category.name` with lower case letters, digits and
 underscores (`OBJECT_OT_x`, upper case, two dots, dashes and a missing part raise `RuntimeError`). A pointer to an
