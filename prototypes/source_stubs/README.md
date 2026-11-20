@@ -29,11 +29,11 @@ All three share `common/`:
 ## Running
 
 `mise run probe:source-stubs 5.2 --source .cache/blender-src/5.2-src` runs all three readers under the suite's
-lock and job limit, then the comparison and the audit (`--tool` picks one reader). Each step on its own:
+lock and job limit, then the comparison and the audit (`--tool` picks one reader).
 
 The source tree is a Blender worktree (`mise run blender:build 5.2-src --ref v5.2.0 ...` makes one under
 `.cache/blender-src/5.2-src`, plus the build `makesrna` and `libclang` need). Every prototype writes
-`facts.json`, `stubs/` and `coverage.md` to `.cache/source-stubs/<version>/<tool>/`:
+`facts.json`, `stubs/` and `coverage.md` to `.cache/source-stubs/<version>/<tool>/`. Each step on its own:
 
 ```bash
 uv run --no-project --python 3.13 python prototypes/source_stubs/regex/run.py 5.2 --source .cache/blender-src/5.2-src
