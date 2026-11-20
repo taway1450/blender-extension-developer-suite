@@ -83,6 +83,8 @@ class Context:
         return m
 
     def record(self, rna_type: str, collection: bool, kind: str | None = None, call=None) -> None:
+        if not self.i.where.startswith("source/blender/editors/"):
+            return
         for name in self.i.ctx_members:
             m = self.member(name)
             entry = (rna_type, collection)
@@ -159,7 +161,7 @@ class Context:
 
     # ----------------------------------------------------------------------------------------------------------------
     def run(self, files: set[str]) -> None:
-        fns = [f for f in self.i.p.functions.values() if f.file in files]
+        fns = [f for f in self.i.p.functions.values() if f.file in files and f.file.startswith("source/blender/editors/")]
         for fn in fns:
             names = [p[0] for p in fn.params]
             if "member" in names and any("bContextDataResult" in p[1] for p in fn.params):
@@ -210,6 +212,8 @@ def _map_adds(body):
             continue
         if len(x) > 3 and x[0] == "mc" and x[1] in ("add", "add_new", "add_overwrite") and len(x[3]) == 2:
             a, b = x[3]
+            if a and a[0] == "ctor" and len(a[2]) == 1:  # StringRef("scene")
+                a = a[2][0]
             if a and b and a[0] == "s" and b[0] == "fn":
                 yield a[1], b[1]
         stack.extend(y for y in x if isinstance(y, list))

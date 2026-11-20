@@ -26,7 +26,7 @@ from pathlib import Path
 import clang.cindex as ci
 from clang.cindex import CursorKind as K
 
-LOWER_VERSION = 9
+LOWER_VERSION = 10
 
 _lib = ci.conf.lib
 _lib.clang_Cursor_Evaluate.argtypes = [ci.Cursor]
@@ -257,16 +257,43 @@ class Lowerer:
             other = self.stmts(ch[2]) if len(ch) > 2 else []
             return [*pre, ["if", cond, then, other, line]]
         if k in LOOPS:
+            # ["loop", kind, body, line, cond, inc, range_var, range_expr]: the interpreter iterates concretely
+            # when the condition (or the range) evaluates, and runs the body once otherwise.
             ch = list(c.get_children())
             body = ch[-1] if ch else None
-            pre = []
-            if k == K.FOR_STMT and ch and ch[0].kind == K.DECL_STMT:
-                pre = self.stmt(ch[0])
-            if k == K.CXX_FOR_RANGE_STMT:
+            pre: list = []
+            cond = inc = None
+            range_var = range_expr = None
+            if k == K.FOR_STMT:
+                head = ch[:-1]
+                init = None
+                if len(head) == 3:
+                    init, cond, inc = head
+                elif len(head) == 2:
+                    if head[0].kind == K.DECL_STMT or (head[0].kind == K.BINARY_OPERATOR and _lib.clang_getCursorBinaryOperatorKind(head[0]) == 22):
+                        init, cond = head
+                    else:
+                        cond, inc = head
+                elif len(head) == 1:
+                    cond = head[0]
+                if init is not None:
+                    pre = self.stmt(init)
+            elif k in (K.WHILE_STMT,):
+                cond = ch[0] if len(ch) > 1 else None
+            elif k == K.DO_STMT:
+                cond = ch[1] if len(ch) > 1 else None
+                body = ch[0] if ch else None
+            elif k == K.CXX_FOR_RANGE_STMT:
                 for x in ch[:-1]:
-                    if x.kind == K.VAR_DECL:
+                    if x.kind == K.VAR_DECL and range_var is None:
+                        range_var = x.spelling
                         pre.append(["decl", x.spelling, x.type.spelling, None, x.location.line, record_name(x.type)])
-            return [*pre, ["loop", LOOPS[k], self.stmts(body) if body is not None else [], line]]
+                    elif x.kind.is_expression():
+                        range_expr = self.expr(x)
+            return [*pre, ["loop", LOOPS[k], self.stmts(body) if body is not None else [], line,
+                           self.expr(cond) if cond is not None and cond.kind.is_expression() else None,
+                           self.expr(inc) if inc is not None and inc.kind.is_expression() else None,
+                           range_var, range_expr]]
         if k == K.SWITCH_STMT:
             ch = list(c.get_children())
             return [["switch", self.expr(ch[0]) if ch else None, self.stmts(ch[-1]) if ch else [], line]]
@@ -276,7 +303,9 @@ class Lowerer:
         if k == K.RETURN_STMT:
             ch = list(c.get_children())
             return [["ret", self.expr(ch[0]) if ch else None, line]]
-        if k in (K.BREAK_STMT, K.CONTINUE_STMT, K.NULL_STMT, K.GOTO_STMT):
+        if k == K.BREAK_STMT:
+            return [["break", line]]
+        if k in (K.CONTINUE_STMT, K.NULL_STMT, K.GOTO_STMT):
             return []
         if k.is_expression():
             return [["e", self.expr(c), line]]

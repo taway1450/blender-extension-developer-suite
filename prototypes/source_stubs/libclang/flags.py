@@ -38,6 +38,20 @@ def _clean(command: str | list[str], file: str) -> list[str]:
     parts = shlex.split(command) if isinstance(command, str) else list(command)
     out: list[str] = []
     skip = False
+    # Precompiled headers the build may not have produced: keep ``-include cmake_pch.hxx``, drop ``-include-pch``.
+    cleaned: list[str] = []
+    i = 1
+    while i < len(parts):
+        if parts[i] == "-Xclang" and i + 3 < len(parts) and parts[i + 1] == "-include-pch":
+            i += 4
+            continue
+        if parts[i] == "-Xclang" and i + 3 < len(parts) and parts[i + 1] == "-include" and parts[i + 2] == "-Xclang":
+            cleaned += ["-include", parts[i + 3]]
+            i += 4
+            continue
+        cleaned.append(parts[i])
+        i += 1
+    parts = [parts[0], *cleaned]
     for a in parts[1:]:
         if skip:
             skip = False

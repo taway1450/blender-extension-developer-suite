@@ -97,6 +97,10 @@ class MemberTest:
     names: frozenset[str]
 
 
+class _Break(Exception):
+    pass
+
+
 class Return(Exception):
     def __init__(self, value: Any) -> None:
         self.value = value
@@ -242,6 +246,8 @@ class Interp:
             self.run(fn.body, env)
         except Return as r:
             return r.value
+        except _Break:
+            return None
         finally:
             self.stack.pop()
         return None
@@ -264,7 +270,7 @@ class Interp:
         self.speculative += 1
         try:
             self.run(stmts, env)
-        except Return:
+        except (Return, _Break):
             pass
         finally:
             self.speculative -= 1
@@ -301,12 +307,55 @@ class Interp:
                 self.run_speculative(s[2], env)
                 self.run_speculative(s[3], env)
         elif tag == "loop":
-            self.run_speculative(s[2], env)
+            self.loop(s, env)
         elif tag == "switch":
             self.eval(s[1], env) if s[1] is not None else None
             self.run_speculative(s[2], env)
+        elif tag == "break":
+            raise _Break()
         elif tag == "ret":
             raise Return(self.eval(s[1], env) if s[1] is not None else None)
+
+    MAX_ITERATIONS = 512
+
+    def loop(self, s: list, env: dict) -> None:
+        """Iterate concretely while the condition is known (``for (i = 0; table[i].name; i++)``, a range-for over
+        an initializer array); otherwise run the body once, speculatively."""
+        cond, inc = (s[4], s[5]) if len(s) > 5 else (None, None)
+        range_var, range_expr = (s[6], s[7]) if len(s) > 7 else (None, None)
+        if range_var and range_expr is not None:
+            seq = self.eval(range_expr, env)
+            if isinstance(seq, list) and len(seq) <= self.MAX_ITERATIONS:
+                for item in seq:
+                    env[range_var] = item
+                    try:
+                        self.run(s[2], env)
+                    except _Break:
+                        break
+                return
+            self.run_speculative(s[2], env)
+            return
+        if cond is not None and s[1] in ("for", "while"):
+            done = False
+            for _ in range(self.MAX_ITERATIONS):
+                t = self.truth(self.eval(cond, env))
+                if t is False:
+                    done = True
+                    break
+                if t is not True:
+                    break
+                try:
+                    self.run(s[2], env)
+                except _Break:
+                    done = True
+                    break
+                if inc is not None:
+                    self.eval(inc, env)
+            else:
+                done = True
+            if done:
+                return
+        self.run_speculative(s[2], env)
 
     @staticmethod
     def truth(value: Any) -> bool | None:
@@ -422,6 +471,12 @@ class Interp:
             return [self.eval(v, env) for v in e[2]]
         if tag == "lambda":
             return Lambda(e[1], e[2], env)
+        if tag == "x" and e[1] == "udl":
+            # A string user-defined literal whose literal libclang does not expose: its single token.
+            text = e[2]
+            if text.startswith('"') and '"_' in text:
+                from common.rstdoc import decode_c_string
+                return decode_c_string(text[1 : text.rindex('"_')])
         return UNKNOWN
 
     def member(self, base: Any, name: str, e: list) -> Any:

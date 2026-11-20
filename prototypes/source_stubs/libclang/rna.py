@@ -279,7 +279,11 @@ class Rna:
             plist.append(p)
         else:
             self.dynamic_props += 1
-        return Obj("prop", p, {"owner": owner})
+        h = Obj("prop", p, {"owner": owner})
+        if isinstance(owner, RnaStruct) and i.where.startswith("source/blender/makesrna/intern/") and ptype != "collection":
+            # makesrna's RNA_def_property looks the identifier up in the struct's DNA (silently).
+            self._sdna(i, [h, None, None, 0], call, "enum" if ptype == "enum" else ptype)
+        return h
 
     @staticmethod
     def _p(a) -> RnaProperty | None:
@@ -308,16 +312,13 @@ class Rna:
         for d in dims:
             total *= d
         bit = a[3] if len(a) > 3 else 0
-        if kind in ("int", "float") and total > 1 and not p.array:
-            p.array = [total]
-        if kind == "boolean" and total > 1 and not p.array and not bit:
-            p.array = [total]
+        # ``rna_def_property_sdna``: the DNA array length replaces the property's (none for a scalar member).
+        if kind in ("int", "float") or (kind == "boolean" and not bit):
+            p.array = [total] if total > 1 else []
         if kind == "string" and dims and p.max_length is None:
             p.max_length = total
         if kind in ("pointer", "collection") and not p.struct_type and level >= 1 and record not in ("ListBase", "void", ""):
             self._extra(p)["dna_struct"] = record
-        if kind == "enum_bitflag":
-            p.enum_flag = True
 
     def dna_field(self, struct: str, path: str):
         fields = self.i.p.dna.get(struct)
@@ -648,12 +649,35 @@ class Rna:
         for op in self.model.operators:
             for p in op.properties:
                 finalize(p)
+                implicit_default(p, self.model.enum_items)
+        for s in self.model.structs:
+            for f in s.functions:
+                for p in f.parameters:
+                    implicit_default(p, self.model.enum_items)
 
 
 def finalize(p: RnaProperty) -> None:
     p.readonly = "editable" not in p.flags and not p.editable_func
     p.never_null = "never_null" in p.flags
     p.enum_flag = p.enum_flag or "enum_flag" in p.flags
+
+
+def implicit_default(p: RnaProperty, shared) -> None:
+    """Runtime RNA (operator properties, function parameters) has no DNA defaults: an unset default is zero."""
+    if p.default is not None:
+        return
+    n = 1
+    for d in p.array:
+        n *= d
+    if p.type in ("boolean", "int", "float") and not p.dynamic_array:
+        zero = {"boolean": False, "int": 0, "float": 0.0}[p.type]
+        p.default = [zero] * n if p.array else zero
+    elif p.type == "enum" and not p.itemf:
+        items = p.items or shared.get(p.items_name, [])
+        if p.enum_flag:
+            p.default = []
+        elif items:
+            p.default = next((i.identifier for i in items if i.value == 0), items[0].identifier)
 
 
 def enum_items(values: list) -> list[EnumItem]:
