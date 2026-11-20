@@ -17,14 +17,14 @@ JSON model of facts (`common/model.py`), an `ast` reader for the Python side (`c
 ## 1. Answer
 
 1. **Most of the API can be read from source, by all three tools.**
-   - The readers agree with the builtin stubs on about 80% of the members both have (regex 80%, libclang 78%,
-     makesrna 81%). Builtin and fake-bpy agree with each other on only 64%.
+   - The readers agree with the builtin stubs on about 80% of the members both have (regex 82%, libclang 80%,
+     makesrna 82%; on operators regex 92%, libclang 91%). Builtin and fake-bpy agree with each other on only 63%.
    - With one exception, the readers find every RNA struct and every C operator the builtin stubs have. The
      exception is the 55 classes registered from Python (`*_UL_*`, `*_AST_*`, `*_FH_*`).
    - The disagreements left are mostly facts the readers have right and the builtin stubs miss (section 4), or
      conventions (enum alias vs inline `Literal`).
 2. **On RNA, the plain-Python reader matches makesrna.**
-   - regex and makesrna agree on 100% of the members both have (13,035 same, 44 different).
+   - regex and makesrna agree on 100% of the members both have (32,027 same, 33 different).
    - regex reads 95% of makesrna's properties: 10,103 of 10,634.
    - makesrna is exact by construction, because it runs the definitions. The regex reader interprets the same
      `RNA_def_*` call sequences with a small C tokenizer, `#define` expansion and an interpreter that runs both
@@ -32,7 +32,7 @@ JSON model of facts (`common/model.py`), an `ast` reader for the Python side (`c
 3. **Only regex and libclang reach beyond RNA.** makesrna knows RNA only. Operators, the Python C API, context
    members, node declarations and bmesh operators are not RNA definitions.
    - regex and libclang read all six areas.
-   - They agree with each other on 99% of shared members (37,136 same, 519 different).
+   - They agree with each other on 99% of shared members (37,202 same, 456 different).
 4. **What only a source reader knows** (section 4) is what the generators lose at runtime or in the rst:
    - the names of callbacks (item function, refine, poll, editable, getter/setter);
    - never-null and required flags on parameters;
@@ -91,12 +91,12 @@ convention (positional `execution_context`, `undo`) is left out first; `comparis
 
 | | builtin | fake-bpy | regex | libclang | makesrna |
 |---|---|---|---|---|---|
-| regex | 80% | 76% | | 99% | 100% |
-| libclang | 78% | 74% | 99% | | 99% |
-| makesrna | 81% | 84% | 100% | 99% | |
-| builtin | | 64% | | | |
+| regex | 82% | 74% | | 99% | 100% |
+| libclang | 80% | 72% | 99% | | 99% |
+| makesrna | 82% | 85% | 100% | 99% | |
+| builtin | | 63% | | | |
 
-Per area against builtin, for regex: `bpy.types` 82%, `bpy.ops` 84%, `mathutils` 85%, `gpu` 34%, `bmesh` 32%,
+Per area against builtin, for regex: `bpy.types` 82%, `bpy.ops` 92%, `mathutils` 85%, `gpu` 34%, `bmesh` 32%,
 other C modules 46%. The low figures for `gpu`, `bmesh` and the C modules are mostly parameter names and kinds:
 the readers take positional-only from the argument parser and keyword-only from bmesh slots, and builtin has
 neither.
@@ -105,12 +105,16 @@ Kinds of disagreement with builtin, for makesrna (the cleanest case, RNA only):
 
 | Kind | Count | Who is right |
 |---|---|---|
-| Return `X \| None` vs `X` | 1,267 | Open. RNA return pointers have no never-null flag; builtin assumes non-null. |
-| Parameter `X` vs `X \| None` | 471 | makesrna: the parameters are `PROP_NEVER_NULL` (e.g. `AOVs.remove(aov)`), and `None` raises. |
-| `Literal` vs `str` (dynamic enum) | 200 | Builtin keeps the static items of enums with an item function; the readers say `str` (section 5). |
-| Positional-only / keyword-only | 199 | Convention: RNA functions take any parameter by position; builtin makes optional ones keyword-only. |
-| Parameter types | 134 | Mixed: mostly Python-script functions the `ast` reader leaves untyped. |
+| Return `X \| None` vs `X` | 1,379 | Split. Builtin never makes a return nullable, which is wrong for lookups (`FCurves.find`, `Object.find_armature` return NULL when nothing matches). The readers make every pointer return nullable, which is over-cautious for `new()`-style functions: they report an error and pyrna raises instead of returning `None`. |
+| Parameter `X` vs `X \| None` | 553 | makesrna: the parameters are `PROP_NEVER_NULL` (e.g. `AOVs.remove(aov)`), and `None` raises (section 4.1). |
+| `Literal` vs `str` (dynamic enum) | 200 | Builtin keeps the static items of enums with an item function; the readers say `str` (section 6). |
 | One side untyped | 124 + 24 | Builtin: Python-script functions the `ast` reader leaves untyped (it renders annotations only). |
+| Parameter names or count | 44 | Mostly Python-script functions and dunders. |
+| Parameter types | 21 | Mixed. |
+
+Positional-only and keyword-only no longer differ for RNA functions: the readers now make every parameter after the
+first optional one keyword-only, as `pyrna_func_call` (`bpy_rna.cc`) requires ("optional arguments must be
+keywords"), and as builtin already did.
 
 ## 3. Upstream tools that already exist
 
@@ -127,15 +131,21 @@ Kinds of disagreement with builtin, for makesrna (the cleanest case, RNA only):
   build's compile commands for source checks (struct comments, and so on). The libclang prototype uses the same
   approach, so upstream has the dependency in its tooling, but not in the build.
 - **`doc/python_api/sphinx_doc_gen.py` / `sphinx_stub_gen.py`**. The builtin generator introspects a running
-  Blender. A source reader can feed its data model (section 6) or check its hand tables (section 5).
+  Blender. A source reader can feed its data model (section 7) or check its hand tables (section 6).
 
 ## 4. Facts only a source reader has
 
 Each was found by at least one prototype and is missing or wrong in the builtin 5.2 stubs.
 
 1. **Never-null parameters.** 812 RNA function pointer parameters are required and `PROP_NEVER_NULL`
-   (`AOVs.remove(aov)`, `Action.flip_with_pose(object)`); for 471 of the members both sets have, builtin types
+   (`AOVs.remove(aov)`, `Action.flip_with_pose(object)`); for 553 of the members both sets have, builtin types
    such a parameter `X | None`.
+   - *How the readers know:* the `RNA_def_parameter_flags(parm, PROP_NEVER_NULL, PARM_REQUIRED)` call right after
+     the parameter is defined. makesrna dumps the flag it keeps; regex and libclang read the call.
+   - *Why builtin misses it:* the runtime does expose the flag (`is_never_none`), but 5.2's
+     `scripts/modules/_rna_info.py:562` adds `| None` to any argument whose default renders as `None`, which every
+     pointer parameter's does, before looking at `is_never_none`. The fork's `_rna_info` checks the flag first.
+   - *Who is right:* `pyrna_py_to_prop` raises `TypeError` for `None` on a never-null pointer.
 2. **Positional-only C functions.** The argument parsers say which parameters have no keyword:
    - `METH_VARARGS` functions;
    - empty `_keywords[]` entries, 488 parameters;
@@ -155,7 +165,7 @@ Each was found by at least one prototype and is missing or wrong in the builtin 
    - `Context.edit_mask` is `Mask | None`, answered by the sequencer, clip and image editors.
 6. **Callbacks by name.** For each enum, its item function (205-244 of them); for each struct, its refine function
    (1,103); for each pointer, its poll (111) and type function (9); 96 editable functions; getters and setters.
-   These are what a stub generator needs to decide whether static items are real (section 5) or a pointer's type
+   These are what a stub generator needs to decide whether static items are real (section 6) or a pointer's type
    is narrower than declared.
 7. **DNA mapping.** Each property's DNA field (`Object.location` reads `Object.loc`; 8,796 properties in
    makesrna's facts) and each struct's DNA name (1,635 by libclang). The runtime has no such link.
@@ -171,7 +181,38 @@ Facts no source reader can get, so they still need the runtime or the docs:
 - `#ifdef` branches the build disabled, as seen by libclang. regex runs both and makesrna sees the build's.
 - Everything registered from Python by add-ons that are not in the scanned roots.
 
-## 5. Hand tables checked against the facts
+## 5. All the generators: where each fact comes from
+
+| Fact | builtin 5.2 | fake-bpy 5.2 | source readers |
+|---|---|---|---|
+| RNA structs, properties, functions | runtime `bpy.types` via `_rna_info` → rst → stubs | the same rst | `RNA_def_*` calls (makesrna runs them) |
+| Never-null parameters | lost (`_rna_info.py:562`, section 4.1) | lost: every pointer argument and every optional argument is `\| None` (`FCurves.ensure(index: int \| None = 0)`) | `RNA_def_parameter_flags` |
+| Nullable returns | never | rarely | every pointer return (over-cautious) |
+| Optional RNA parameters keyword-only | yes | yes | yes (`pyrna_func_call`) |
+| Array and math arguments | `Sequence[...]` | `Sequence[...]` | `Vector \| Sequence[float]`, as `pyrna_py_to_array` accepts any sequence |
+| Dynamic enums | the items the item function gives at runtime | the same | `str`, with the item function's name |
+| Context members | a hand table in `sphinx_doc_gen` (stale: `annotation_data`) | the same rst | the `CTX_data_*_set` calls in each editor's context callback |
+| Positional-only C parameters | no (`/` missing from docstring signatures) | no | `METH_VARARGS`, empty `_keywords[]` entries |
+| bmesh slots | defaults, no markers | the same | positional `bm`, keyword-only slots, no defaults |
+| Node sockets per node | no | no | `declare()` builders |
+| `bpy.app` members, freestyle, Python-registered `*_UL_*` classes | yes | yes | no (`bpy.app` is a struct sequence and the readers model it as classes; freestyle's Python package re-exports from `_freestyle` are not read; `*_UL_*` come from add-on registration) |
+| Python-script functions | typed from docstrings | typed | annotations only (`?` elsewhere) |
+| DNA field names, callbacks, source locations | no | no | yes |
+
+**The fork's runtime generator** (`stubs:generate` with the fork's `_rna_info`, `BuildRNAInfo(keep_ui=)`) could
+not run for 5.2: the fork's `_rna_info` needs the fork's Blender, and the 5.2 release binary ships its own. The
+comparison covers the release's builtin stubs instead.
+
+Known gaps and disagreements in the readers, besides the above:
+
+- `RenderEngine.render` is both a registerable function and a pointer property in `rna_render.cc`. pyrna's
+  getattr finds the property first, so the readers' attribute is what an instance returns, while builtin keeps the
+  method subclasses implement.
+- Operators whose identifiers are built from templates (node item operators) are missing.
+- `Image.pixels`-style dynamic arrays: regex records only the `PROP_DYNAMIC` flag, which the renderer now reads as a
+  dynamic array.
+
+## 6. Hand tables checked against the facts
 
 `common/audit.py` checks `ENUM_RUNTIME_ITEMS` (`scripts/modules/_rna_info.py`). This is the fork's hand list of
 enums whose static items are not the ones their item function gives.
@@ -188,7 +229,7 @@ Other hand tables a source reader could replace or check:
 - `POSITIONAL_ONLY_METHODS`: the readers already find these from `PyObject_CallMethod` formats and argument parsers.
 - `BUFFER_CLASSES`: `tp_as_buffer` in the type tables, read by both regex and libclang.
 
-## 6. Upstreamability
+## 7. Upstreamability
 
 | | regex | libclang | makesrna |
 |---|---|---|---|
@@ -221,10 +262,11 @@ what the source gives from what the tables add. The renderer encodes only what t
 
 Feeding the facts into `sphinx_stub_gen`'s data model is the next step for an upstream version.
 
-## 7. Open questions
+## 8. Open questions
 
-- Should a return pointer of an RNA function be `X | None`? RNA has no flag for it. Most `new()` functions raise
-  instead of returning NULL, but some lookups return NULL.
+- Should a return pointer of an RNA function be `X | None`? RNA has no flag for it. Most `new()` functions report
+  an error, which pyrna raises, instead of returning NULL; lookups (`find`, `find_armature`) return NULL. A
+  libclang pass over the C bodies could tell them apart.
 - Is the 1-second makesrna dump worth adding to `stubs:generate` now, as a fact source for the builtin generator's
   never-null parameters and callback names?
 - The 108 enum candidates: classify their item functions with libclang, then decide which stay `Literal`.

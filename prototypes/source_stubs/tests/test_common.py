@@ -204,6 +204,25 @@ def test_array_arguments_take_sequences() -> None:
     )
 
 
+def test_dynamic_flag_makes_an_array() -> None:
+    """The text readers see ``PROP_DYNAMIC`` only as a flag; it is RNA's dynamic-array flag (``Image.pixels``)."""
+    from common.model import RnaFunction, RnaProperty, RnaStruct, SourceModel
+
+    f = RnaFunction(identifier="normals")
+    f.parameters = [RnaProperty(identifier="out", type="float", flags=["dynamic"], parameter_flags=["output"])]
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.structs.append(
+        RnaStruct(
+            identifier="Image",
+            properties=[RnaProperty(identifier="pixels", type="float", flags=["editable", "dynamic"])],
+            functions=[f],
+        )
+    )
+    text = rendered_types(model)
+    assert "pixels: bpy_prop_array[float]" in text
+    assert "def normals(self) -> bpy_prop_array[float]: ..." in text
+
+
 def test_entry_points_import() -> None:
     """Each reader's ``run.py`` and the probe import (a linter once dropped an import one of them needed)."""
     import importlib.util

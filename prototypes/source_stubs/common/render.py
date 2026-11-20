@@ -271,9 +271,11 @@ class Renderer:
 
     def prop_type(self, p: RnaProperty, current: str, *, param: bool = False) -> str:
         t = p.type
+        # PROP_DYNAMIC is RNA's dynamic-array flag; the text readers see it only among the flags.
+        dynamic = p.dynamic_array or "dynamic" in p.flags
         if t == "string" and p.subtype == "byte_string":
             return "bytes"
-        if t in SCALAR and not p.array and not p.dynamic_array:
+        if t in SCALAR and not p.array and not dynamic:
             return SCALAR[t]
         if t in {"boolean", "int", "float"}:
             if t == "float" and p.subtype in MATH_SUBTYPES:
@@ -283,7 +285,7 @@ class Renderer:
                     total *= n
                 dims_ok = len(p.array) <= 1 or (len(p.array) == 2 and p.subtype == "matrix")
                 cls = by_length.get(total) if dims_ok else None
-                if cls is None and p.dynamic_array and p.subtype == "matrix":
+                if cls is None and dynamic and p.subtype == "matrix":
                     cls = "mathutils.Matrix"
                 if cls:
                     text = self.ref(cls, current)
