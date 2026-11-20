@@ -48,6 +48,23 @@ def _subtype(v) -> str:
     return ""
 
 
+def _items(interp: Interp, v) -> list[str]:
+    """Identifiers of a slot's ``BMO_FlagSet`` array (``{value, "IDENTIFIER"}`` rows ending in ``{0, nullptr}``)."""
+    from .interp import GlobalRef
+
+    if isinstance(v, GlobalRef):
+        v = interp.global_value(v.usr, v.name)
+    if not isinstance(v, list):
+        return []
+    out = []
+    for row in v:
+        ident = row.get("identifier") if isinstance(row, dict) else None
+        if not isinstance(ident, str):
+            break
+        out.append(ident)
+    return out
+
+
 def read_bmesh(interp: Interp, source: Path, model) -> None:
     text_cache: dict[str, list[str]] = {}
     for usr, g in interp.p.globals.items():
@@ -80,5 +97,6 @@ def read_bmesh(interp: Interp, source: Path, model) -> None:
                 if not isinstance(s, dict) or not isinstance(s.get("name"), str) or not s["name"]:
                     break
                 out.append(BmeshSlot(name=s["name"], type=_slot_type(s.get("type")),
-                                     subtype=_subtype(s.get("subtype")), doc=slot_docs.get(s["name"], "")))
+                                     subtype=_subtype(s.get("subtype")), doc=slot_docs.get(s["name"], ""),
+                                     items=_items(interp, s.get("enum_flags"))))
         model.bmesh_ops.append(op)

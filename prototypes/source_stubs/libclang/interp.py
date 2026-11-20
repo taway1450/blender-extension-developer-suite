@@ -91,6 +91,17 @@ class Lambda:
 
 
 @dataclass(frozen=True)
+class Ptr:
+    """A pointer into a table: ``for (effect = def_effects; effect->struct_name[0]; effect++)``."""
+
+    seq: list
+    index: int = 0
+
+    def current(self) -> Any:
+        return self.seq[self.index] if 0 <= self.index < len(self.seq) else UNKNOWN
+
+
+@dataclass(frozen=True)
 class MemberTest:
     """``CTX_data_equals(member, "x")`` (possibly or-ed): the then-branch defines these context members."""
 
@@ -207,8 +218,12 @@ class Interp:
         if g is None:
             cands = self.p.globals_by_name.get(name, [])
             g = next((c for c in cands if c.get("init") is not None), cands[0] if cands else None)
-        if g is not None and g.get("init") is None and g.get("record") and not g["type"].rstrip().endswith(("*", "]")) \
-                and g["record"][:1].isalpha() and g["record"] not in ("StructRNA", "PropertyRNA", "BlenderRNA"):
+        init = g.get("init") if g is not None else None
+        # ``PyTypeObject X;`` in C++ arrives as an implicit default constructor call.
+        zero_init = init is None or (isinstance(init, list) and init[:2] == ["ctor", "_typeobject"] and not init[2])
+        if g is not None and zero_init and g.get("record") and not g["type"].rstrip().endswith(("*", "]")) \
+                and g["record"].lstrip("_")[:1].isalpha() \
+                and g["record"] not in ("StructRNA", "PropertyRNA", "BlenderRNA"):
             # A zero-initialized struct global (``static PyTypeObject BlenderAppType;``): fields are assigned at runtime.
             value = {"__record__": g["record"]}
             self.global_names[id(value)] = name
@@ -359,6 +374,8 @@ class Interp:
 
     @staticmethod
     def truth(value: Any) -> bool | None:
+        if isinstance(value, Ptr):
+            return True if 0 <= value.index < len(value.seq) else None
         if value is UNKNOWN or isinstance(value, (Obj, GlobalRef, FuncRef, Lambda, MemberTest)):
             return True if isinstance(value, (FuncRef, Lambda)) else (None if value is UNKNOWN or isinstance(value, Obj) else True)
         if value is None:
@@ -458,8 +475,14 @@ class Interp:
         if tag == "idx":
             base = self.eval(e[1], env)
             idx = self.eval(e[2], env)
-            if isinstance(base, (list, str)) and isinstance(idx, int) and 0 <= idx < len(base):
+            if isinstance(base, Ptr) and isinstance(idx, int):
+                base, idx = base.seq, base.index + idx
+            if isinstance(base, str) and isinstance(idx, int) and 0 <= idx < len(base):
+                return ord(base[idx])  # a C ``char`` (character literals are lowered as ints)
+            if isinstance(base, list) and isinstance(idx, int) and 0 <= idx < len(base):
                 return base[idx]
+            if isinstance(base, str) and idx == len(base):
+                return 0  # the terminating NUL
             if isinstance(base, list) and idx is UNKNOWN:
                 return Obj("anyof", base)  # ``table[i]`` in a loop over a table
             return UNKNOWN
@@ -480,6 +503,10 @@ class Interp:
         return UNKNOWN
 
     def member(self, base: Any, name: str, e: list) -> Any:
+        if isinstance(base, Ptr):
+            base = base.current()
+        elif isinstance(base, list) and base and isinstance(base[0], dict):
+            base = base[0]  # ``table->field``: a table used as a pointer to its first row
         if isinstance(base, Obj):
             if name in base.fields:
                 return base.fields[name]
@@ -522,9 +549,15 @@ class Interp:
                 new = v + (1 if "+" in op else -1)
                 env[e[2][1]] = new
                 return v if op.startswith("post") else new
-            if isinstance(v, list) and e[2] and e[2][0] == "v":
-                return v  # pointer walk over a table: keep the table
+            if isinstance(v, (list, Ptr)) and e[2] and e[2][0] == "v":
+                # A pointer walk over a table.
+                ptr = v if isinstance(v, Ptr) else Ptr(v, 0)
+                new_ptr = Ptr(ptr.seq, ptr.index + (1 if "+" in op else -1))
+                env[e[2][1]] = new_ptr
+                return ptr if op.startswith("post") else new_ptr
             return UNKNOWN
+        if op == "*" and isinstance(v, Ptr):
+            return v.current()
         if op in ("&", "*", "+"):
             return v
         if op == "!":
@@ -613,14 +646,14 @@ class Interp:
     def call(self, e: list, env: dict) -> Any:
         usr, name, arg_exprs = e[1], e[2], e[3]
         intrinsic = self.intrinsics.get(name)
-        if intrinsic is None and usr is None:
-            # A call through a variable: a lambda or a function pointer held in a local.
-            target = env.get(name)
+        target = env.get(name)
+        if intrinsic is None and (usr is None or isinstance(target, (Lambda, FuncRef))):
+            # A call through a variable: a lambda or a function pointer held in a local (its USR is the local's).
             args = [self.eval(a, env) for a in arg_exprs]
             if isinstance(target, Lambda):
                 return self.call_lambda(target, args)
             if isinstance(target, FuncRef):
-                fn = self.p.functions.get(target.usr)
+                fn = self.p.resolve(target.usr, target.name, len(args), self.where)
                 if fn is not None:
                     return self.call_function(fn, args)
             return UNKNOWN

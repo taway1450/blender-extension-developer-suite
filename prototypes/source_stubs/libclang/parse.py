@@ -26,8 +26,9 @@ PATTERNS = {
     "nodes": ("node_declare", "NodeDeclarationBuilder", "_node_type_base"),
 }
 TOPS = ("source/blender", "intern/audaspace", "extern/audaspace/bindings", "intern/cycles/blender")
-SKIP_PARTS = ("/tests/", "_test.cc", "_tests.cc", "/draw/", "/gpu/", "/compositor/", "/blenlib/", "/cycles/kernel/",
-              "/io/usd/", "/io/alembic/", "/io/fbx/", "/makesdna/")
+# ``/source/blender/gpu/`` but not ``python/gpu/`` (the ``gpu`` module).
+SKIP_PARTS = ("/tests/", "_test.cc", "_tests.cc", "/source/blender/draw/", "/source/blender/gpu/", "/compositor/",
+              "/blenlib/", "/cycles/kernel/", "/io/usd/", "/io/alembic/", "/io/fbx/", "/makesdna/")
 
 
 def select_files(source: Path) -> dict[str, list[Path]]:
