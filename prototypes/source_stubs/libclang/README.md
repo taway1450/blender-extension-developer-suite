@@ -9,9 +9,12 @@ every call resolved to its declaration, constant expressions evaluated by clang 
    `PyTypeObject`, `CTX_data_equals`, `node_declare`, `bmesh_opdefines.cc`): ~1,290 files, 833 translation units
    (node files are parsed through CMake's unity files; 1,289 units with `--synthesize-flags`).
 2. **Flags** (`flags.py`): `--compile-commands PATH` (default `.cache/blender-build/<src>/compile_commands.json`)
-   or `--synthesize-flags` (`-x c++ -std=c++20`, `-I` every header directory, feature defines, library headers). Generated headers the
-   build has not made yet (`RNA_prototypes.hh`) are replaced by a declaration shim: clang drops a whole call that
-   names an undeclared `RNA_Object`, so without it context members lose their types.
+   or `--synthesize-flags` (`-x c++ -std=c++20`, `-I` every header directory, feature defines, library headers).
+   The build should be the full configuration with its code generation done (`blender:build --target codegen`,
+   see `makesrna/run.py`): then the generated headers (`RNA_prototypes.hh`, `dna_type_offsets.h`) and the
+   `rna_*_gen.cc` units exist, and every `#ifdef WITH_*` branch matches a release build. Without them a
+   declaration shim stands in for the generated headers (clang drops a whole call that names an undeclared
+   `RNA_Object`, so without it context members lose their types).
 3. **Lower** (`lower.py`, 2 processes, cached per unit in `.cache/source-stubs/5.2/libclang/cache/`): each function
    body and global initializer becomes a small JSON AST: calls carry the callee's USR (static helpers of the same
    name in two files stay apart), enum constants keep name and value, `sizeof`/`ARRAY_SIZE`/`#define` arithmetic is
@@ -38,6 +41,12 @@ every call resolved to its declaration, constant expressions evaluated by clang 
      `node_rna(ntype.rna_ext.srna)`.
    - bmesh (`bmesh.py`): `BMOpDefine` globals, enum/flag slot items from their `BMO_FlagSet` tables; docs from the
      text at AST positions (comments are not in the AST).
+5. **Returns** (`returns.py`): the runtime halves of the RNA files, parsed as the `rna_*_gen.cc` units Blender
+   compiles, and their callees: can an RNA function return NULL? Written to `returns.md`; see
+   `docs/research/source-stub-generators.md` section 5.1.
+6. **Cross-checks** (`crosscheck.py`, needs the generated units): LLVM's inferred `nonnull` returns
+   (`clang -O1 -fno-inline -emit-llvm`) and Clang Static Analyzer probes that call each RNA function with its
+   never-null arguments and dereference the result. Disagreements with `returns.py` are listed in `crosscheck.md`.
 
 Loops run concretely while their condition is known (`for (i = 0; lists[i].name; i++)` defines the 40
 `BlendData*` collections, `for (effect = def_effects; effect->struct_name[0]; effect++)` the effect strips);
