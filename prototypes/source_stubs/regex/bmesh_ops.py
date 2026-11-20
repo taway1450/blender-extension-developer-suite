@@ -106,12 +106,14 @@ class BmeshReader:
                     for prefix in ("MAP_", "PTR_", "INT_"):
                         if rest.startswith(prefix):
                             sub.append(rest[len(prefix):].lower())
+        items: list[str] = []
         if len(row) > 3:
             items_var = next((t.text for t in row[3] if t.kind == "id"), "")
             if items_var in self.enums:
-                self.enum_slots[f"{op}.{name}"] = self.enums[items_var]
+                items = self.enums[items_var]
+                self.enum_slots[f"{op}.{name}"] = items
         line = self.f.line(row[0][0].pos)
-        return BmeshSlot(name=name, type=typ, subtype="|".join(sub), doc=self.comment_above(line, stop_line))
+        return BmeshSlot(name=name, type=typ, subtype="|".join(sub), doc=self.comment_above(line, stop_line), items=items)
 
     def slots(self, op: str, toks: list[Tok], stop_line: int) -> list[BmeshSlot]:
         out = []

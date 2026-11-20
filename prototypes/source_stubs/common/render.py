@@ -237,6 +237,8 @@ class Renderer:
 
     def prop_type(self, p: RnaProperty, current: str, *, param: bool = False) -> str:
         t = p.type
+        if t == "string" and p.subtype == "byte_string":
+            return "bytes"
         if t in SCALAR and not p.array and not p.dynamic_array:
             return SCALAR[t]
         if t in {"boolean", "int", "float"}:
@@ -247,7 +249,10 @@ class Renderer:
                     total *= n
                 if total in lengths or (p.dynamic_array and p.subtype == "matrix"):
                     return self.ref(cls, current)
-            return f"{self.ref('bpy.types.bpy_prop_array', current)}[{SCALAR[t]}]"
+            text = SCALAR[t]
+            for _ in p.array or [0]:
+                text = f"{self.ref('bpy.types.bpy_prop_array', current)}[{text}]"
+            return text
         if t == "string":
             return "str"
         if t == "enum":
@@ -261,7 +266,7 @@ class Renderer:
             return f"set[{base}]" if p.enum_flag else base
         if t == "pointer":
             target = self.struct_ref(p.struct_type, current)
-            if p.never_null or (param and "required" in p.parameter_flags):
+            if p.never_null:  # a required parameter still takes None unless PROP_NEVER_NULL (pyrna_py_to_prop)
                 return target
             return f"{target} | None"
         if t == "collection":
@@ -274,6 +279,8 @@ class Renderer:
     def default_text(self, p: RnaProperty) -> str:
         """The default as Python source when it is a plain literal (``'TOGGLE'``, ``False``, ``(0.0, 0.0)``)."""
         value = p.default
+        if isinstance(value, list) and p.type == "enum":
+            return "{" + ", ".join(repr(v) for v in value) + "}" if value else "set()"
         if isinstance(value, list):
             value = tuple(value)
         if isinstance(value, (bool, int, float, str, tuple)) and not (isinstance(value, float) and value != value):
@@ -326,12 +333,19 @@ class Renderer:
             decorator = ["@staticmethod"]
         else:
             params = ["self"]
-        required = [p for p in inputs if "required" in p.parameter_flags]
-        optional = [p for p in inputs if "required" not in p.parameter_flags]
-        for p in required:
-            params.append(f"{py_ident(p.identifier)}: {self.prop_type(p, current, param=True)}")
-        for p in optional:
-            params.append(f"{py_ident(p.identifier)}: {self.prop_type(p, current, param=True)} = {self.default_text(p)}")
+        # pyrna_func_call takes the parameters in declaration order; a required one after an optional one can only be
+        # given by keyword, so it and the rest become keyword-only.
+        seen_optional = keyword_only = False
+        for p in inputs:
+            text = f"{py_ident(p.identifier)}: {self.prop_type(p, current, param=True)}"
+            if "required" in p.parameter_flags:
+                if seen_optional and not keyword_only:
+                    params.append("*")
+                    keyword_only = True
+            else:
+                seen_optional = True
+                text += f" = {self.default_text(p)}"
+            params.append(text)
         if not outputs:
             ret = "None"
         elif len(outputs) == 1:
@@ -374,7 +388,7 @@ class Renderer:
         m = self.mod(mod_name)
         params = ["execution_context: int | str | None = None", "undo: bool | None = None", "/", "*"]
         for p in properties:
-            if not p.identifier.isidentifier() or keyword.iskeyword(p.identifier) or "hidden" in p.flags:
+            if not p.identifier.isidentifier() or keyword.iskeyword(p.identifier):  # PROP_HIDDEN ones too
                 continue
             params.append(f"{p.identifier}: {self.prop_type(p, mod_name, param=True)} = {self.default_text(p)}")
         if params[-1] == "*":
@@ -416,7 +430,8 @@ class Renderer:
         positional_only = method is not None and "keywords" not in flags and ("varargs" in flags or "o" in flags or "fastcall" in flags)
         rendered = []
         saw_kwonly = False
-        for p in sig.params:
+        last_posonly = max((i for i, p in enumerate(sig.params) if p.kind == "positional_only"), default=-1)
+        for index, p in enumerate(sig.params):
             t = p.type or "Any"
             if p.kind == "var_positional":
                 rendered.append(f"*{p.name}: {t}")
@@ -432,6 +447,8 @@ class Renderer:
             if p.default is not None:
                 text += f" = {p.default if p.default in ('None', 'True', 'False') else '...'}"
             rendered.append(text)
+            if index == last_posonly and not positional_only:
+                rendered.append("/")
         if positional_only and rendered and not saw_kwonly:
             rendered.append("/")
         elif positional_only and not rendered and first:
@@ -552,13 +569,18 @@ class Renderer:
             for slot in op.inputs:
                 if not slot.name.isidentifier():
                     continue
-                if slot.type in BMO_SLOT_TYPES:
+                if slot.items:
+                    t = literal(slot.items)
+                    if "flag" in slot.subtype.split("|"):
+                        t = f"set[{t}]"
+                elif slot.type in BMO_SLOT_TYPES:
                     t = self.ref(BMO_SLOT_TYPES[slot.type], "bmesh.ops") if "." in BMO_SLOT_TYPES[slot.type] else BMO_SLOT_TYPES[slot.type]
                 elif slot.type == "elem_buf":
                     kinds = [elem[k] for k in ("vert", "edge", "face") if k in slot.subtype]
                     for k in kinds:
                         self.ref(k, "bmesh.ops")
-                    t = f"list[{' | '.join(kinds) or 'Any'}]"
+                    joined = " | ".join(kinds) or "Any"
+                    t = joined if "single" in slot.subtype.split("|") else f"list[{joined}]"
                 elif slot.type == "mapping":
                     t = "dict[Any, Any]"
                 elif slot.type == "ptr":

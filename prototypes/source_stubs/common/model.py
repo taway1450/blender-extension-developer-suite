@@ -242,6 +242,7 @@ class BmeshSlot:
     type: str  # BMO_OP_SLOT_* lowercased: bool, int, flt, ptr, mat, vec, elem_buf, mapping
     subtype: str = ""  # element types (vert|edge|face), map value type, pointer type
     doc: str = ""
+    items: list[str] = field(default_factory=list)  # identifiers of an int enum / flag slot
 
 
 @dataclass

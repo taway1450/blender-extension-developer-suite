@@ -69,3 +69,43 @@ def test_parameter_nullability_and_duplicate_union_members() -> None:
     assert normalize("None | str | None") == normalize("str | None")
     a, b = normalize("(aov: AOV) -> None"), normalize("(aov: bpy.types.AOV | None) -> None")
     assert difference_kind(a, b) == "parameter nullability"
+
+
+def rendered_types(model) -> str:
+    from common.render import Renderer
+
+    return Renderer(model).render()["bpy.types"]
+
+
+def test_rna_function_keeps_declaration_order_and_nullable_pointers() -> None:
+    from common.model import RnaFunction, RnaProperty, RnaStruct, SourceModel
+
+    f = RnaFunction(identifier="ensure")
+    f.parameters = [
+        RnaProperty(identifier="data_path", type="string", parameter_flags=["required"]),
+        RnaProperty(identifier="index", type="int", default=0),
+        RnaProperty(identifier="target", type="pointer", struct_type="Object", parameter_flags=["required"]),
+        RnaProperty(identifier="owner", type="pointer", struct_type="ID", parameter_flags=["required"], never_null=True),
+    ]
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.structs.append(RnaStruct(identifier="Thing", functions=[f]))
+    text = rendered_types(model)
+    assert "def ensure(self, data_path: str, index: int = 0, *, target: Object | None, owner: ID) -> None: ..." in text
+
+
+def test_byte_strings_and_nested_arrays() -> None:
+    from common.model import RnaProperty, RnaStruct, SourceModel
+
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.structs.append(
+        RnaStruct(
+            identifier="Thing",
+            properties=[
+                RnaProperty(identifier="path", type="string", subtype="byte_string"),
+                RnaProperty(identifier="box", type="float", array=[8, 3]),
+            ],
+        )
+    )
+    text = rendered_types(model)
+    assert "path: bytes" in text
+    assert "box: bpy_prop_array[bpy_prop_array[float]]" in text
