@@ -272,3 +272,166 @@ def test_unresolved_calls_and_class_template_methods_resolve_by_name() -> None:
     member = fn("rna_first", [["ret", ["mc", "first", base, [], 1, "first()", "Item"], 1]])
     assert kinds(caller, get, entry="rna_get") == "null"
     assert kinds(member, first, entry="rna_first") == "null"
+
+
+OB = [["ob", "Object *", "Object"]]
+TYPE_IS_MESH = ["b", "==", ["m", ["v", "ob", "Object *", "Object"], "type", "Object", "short", ""], ["i", 1]]
+
+
+def test_a_condition_tested_again_on_the_same_path_is_decided() -> None:
+    f = fn(
+        "rna_get",
+        [
+            [
+                "if",
+                TYPE_IS_MESH,
+                [["if", ["u", "!", TYPE_IS_MESH], [["ret", ["null"], 2]], [], 2], ["ret", ["u", "&", v("a")], 3]],
+                [],
+                1,
+            ],
+            ["ret", ["u", "&", v("b")], 4],
+        ],
+        params=OB,
+    )
+    assert kinds(f, entry="rna_get", args=("never",)) == "never"
+    # ``!=`` is the negation of ``==``.
+    ne = ["b", "!=", TYPE_IS_MESH[2], ["i", 1]]
+    g = fn(
+        "rna_g",
+        [
+            ["if", TYPE_IS_MESH, [["if", ne, [["ret", ["null"], 2]], [], 2], ["ret", ["u", "&", v("a")], 3]], [], 1],
+            ["ret", ["u", "&", v("b")], 4],
+        ],
+        params=OB,
+    )
+    assert kinds(g, entry="rna_g", args=("never",)) == "never"
+
+
+# ``add(ob) { if (!supported(ob)) return nullptr; return new ...; }``
+SUPPORTED = fn("supported", [["ret", TYPE_IS_MESH, 1]], params=OB, ret="bool")
+ADD = fn(
+    "add",
+    [
+        ["if", ["u", "!", call("supported", ["v", "ob", "Object *", "Object"])], [["ret", ["null"], 1]], [], 1],
+        ["ret", ["x", "CXX_NEW_EXPR", ""], 2],
+    ],
+    params=OB,
+)
+
+
+def test_a_fact_follows_the_arguments_into_the_callee() -> None:
+    """``if (!supported(ob)) { report; return nullptr; } return add(ob);``: ``add`` tests ``supported(ob)`` again."""
+    f = fn(
+        "rna_new",
+        [
+            [
+                "if",
+                ["u", "!", call("supported", ["v", "self", "Object *", "Object"])],
+                [["e", REPORT, 1], ["ret", ["null"], 1]],
+                [],
+                1,
+            ],
+            ["ret", call("add", ["v", "self", "Object *", "Object"]), 2],
+        ],
+        params=[["self", "Object *", "Object"]],
+    )
+    assert kinds(f, SUPPORTED, ADD, entry="rna_new", args=("never",)) == "raises"
+
+
+def test_what_a_callee_returns_true_on_holds_in_the_caller() -> None:
+    """``check(ob)`` returns true only where ``supported(ob)`` held, so after ``if (!check(ob)) ...`` it holds."""
+    check = fn(
+        "check",
+        [
+            [
+                "if",
+                ["u", "!", call("supported", ["v", "ob", "Object *", "Object"])],
+                [["e", REPORT, 1], ["ret", ["i", 0], 1]],
+                [],
+                1,
+            ],
+            ["ret", ["i", 1], 2],
+        ],
+        params=OB,
+        ret="bool",
+    )
+    f = fn(
+        "rna_new",
+        [
+            ["if", ["u", "!", call("check", ["v", "self", "Object *", "Object"])], [["ret", ["null"], 1]], [], 1],
+            ["ret", call("add", ["v", "self", "Object *", "Object"]), 2],
+        ],
+        params=[["self", "Object *", "Object"]],
+    )
+    assert kinds(f, check, SUPPORTED, ADD, entry="rna_new", args=("never",)) == "raises"
+
+
+def test_locals_stand_for_their_initializer_in_facts() -> None:
+    """``Object *o = self; if (!supported(o)) {...} return add(self);``"""
+    f = fn(
+        "rna_new",
+        [
+            ["decl", "o", "Object *", ["v", "self", "Object *", "Object"], 1],
+            [
+                "if",
+                ["u", "!", call("supported", ["v", "o", "Object *", "Object"])],
+                [["e", REPORT, 1], ["ret", ["null"], 1]],
+                [],
+                1,
+            ],
+            ["ret", call("add", ["v", "self", "Object *", "Object"]), 2],
+        ],
+        params=[["self", "Object *", "Object"]],
+    )
+    assert kinds(f, SUPPORTED, ADD, entry="rna_new", args=("never",)) == "raises"
+
+
+def test_assigning_a_local_drops_its_facts() -> None:
+    f = fn(
+        "rna_get",
+        [
+            ["decl", "x", "int", ["i", 0], 1],
+            [
+                "if",
+                ["b", "==", v("x"), ["i", 1]],
+                [
+                    ["e", ["a", "=", v("x"), ["v", "y", "int", ""]], 2],
+                    ["if", ["b", "!=", v("x"), ["i", 1]], [["ret", ["null"], 3]], [], 3],
+                ],
+                [],
+                2,
+            ],
+            ["ret", ["u", "&", v("b")], 4],
+        ],
+    )
+    assert kinds(f, entry="rna_get") == "null"
+
+
+def test_a_loop_forgets_what_its_body_assigns() -> None:
+    """The second iteration sees the body's assignment, so the fact from before the loop no longer holds."""
+    f = fn(
+        "rna_get",
+        [
+            ["decl", "x", "int", ["v", "y", "int", ""], 1],
+            [
+                "if",
+                ["b", "==", v("x"), ["i", 1]],
+                [
+                    [
+                        "loop",
+                        "while",
+                        [
+                            ["if", ["b", "!=", v("x"), ["i", 1]], [["ret", ["null"], 3]], [], 3],
+                            ["e", ["a", "=", v("x"), ["i", 2]], 4],
+                        ],
+                        2,
+                        ["i", 1],
+                    ],
+                ],
+                [],
+                2,
+            ],
+            ["ret", ["u", "&", v("b")], 5],
+        ],
+    )
+    assert kinds(f, entry="rna_get") == "null"

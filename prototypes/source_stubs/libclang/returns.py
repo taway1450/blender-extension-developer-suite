@@ -18,6 +18,13 @@ nullptr; ... }`` called with the never-null ``self`` gives ``never``. A ``Pointe
 ``data`` is (``pyrna_struct_CreatePyObject`` gives ``None`` for it), so ``RNA_pointer_create_discrete(owner, type,
 data)`` follows ``data``.
 
+Conditions are remembered along the path as facts (``supported(ob)`` held, ``ob->type == OB_MESH`` did not), so a
+test the path already decided takes only its feasible side. A local stands for its initializer in a fact until it is
+assigned. Facts that name only a callee's arguments follow the call into the callee (``if (!supported(ob)) return
+...; return add(ob);`` where ``add`` tests ``supported(ob)`` again), and what holds on every path where a callee
+returns true (false) holds after ``if (check(ob))`` in the caller. Struct fields are not invalidated by calls, so a
+callee that changes ``ob->type`` between two tests would fool it; RNA functions do not.
+
 The verdict of a function is ``null`` if any return can be NULL, else ``unknown`` if any return is unknown, else
 ``raises`` if any return is NULL after a report, else ``never``.
 """
@@ -96,13 +103,140 @@ def _is_null_literal(e) -> bool:
     return isinstance(e, list) and bool(e) and (e[0] == "null" or (e[0] == "i" and e[1] == 0))
 
 
+# A fact is a canonical condition (nested tuples, types and lines dropped) and whether it held.
+Key = tuple
+Facts = dict[Key, bool]
+
+
+def canon(e, defs: dict[str, Key]) -> Key | None:
+    """The canonical form of a side-effect-free expression, or None. Locals in ``defs`` stand for their initializer."""
+    if not isinstance(e, list) or not e:
+        return None
+    tag = e[0]
+    if tag == "v":
+        return defs.get(e[1], ("v", e[1]))
+    if tag in ("i", "k"):
+        return ("i", e[-1] if tag == "k" else e[1])
+    if tag == "null":
+        return ("i", 0)
+    if tag == "g":
+        return ("g", e[2])
+    if tag == "s":
+        return ("s", e[1])
+    if tag == "m":
+        base = canon(e[1], defs)
+        return None if base is None else ("m", base, e[2])
+    if tag == "u" and e[1] in ("!", "-", "~", "*", "&"):
+        inner = canon(e[2], defs)
+        return None if inner is None else ("u", e[1], inner)
+    if tag == "b" and e[1] not in (",",):
+        l, r = canon(e[2], defs), canon(e[3], defs)
+        return None if l is None or r is None else ("b", e[1], l, r)
+    if tag == "idx":
+        a, i = canon(e[1], defs), canon(e[2], defs)
+        return None if a is None or i is None else ("idx", a, i)
+    if tag == "c" and e[2]:
+        args = tuple(canon(a, defs) for a in e[3])
+        return None if None in args else ("c", e[2], args)
+    if tag == "mc":
+        base = canon(e[2], defs)
+        args = tuple(canon(a, defs) for a in e[3])
+        return None if base is None or None in args else ("mc", e[1], base, args)
+    return None
+
+
+def _mentions(key, leaves: set) -> bool:
+    if key in leaves:
+        return True
+    return isinstance(key, tuple) and any(_mentions(k, leaves) for k in key[1:])
+
+
+def _substitute(key, mapping: dict):
+    if key in mapping:
+        return mapping[key]
+    if isinstance(key, tuple) and key and isinstance(key[0], str):
+        return (key[0], *(_substitute(k, mapping) for k in key[1:]))
+    if isinstance(key, tuple):
+        return tuple(_substitute(k, mapping) for k in key)
+    return key
+
+
+def _variables(key) -> set[str]:
+    if isinstance(key, tuple) and key[:1] == ("v",):
+        return {key[1]}
+    if isinstance(key, tuple):
+        return set().union(*(_variables(k) for k in key)) if key else set()
+    return set()
+
+
+def _parameters(key) -> bool:
+    """Whether ``key`` still names a callee parameter (``("p", i)``)."""
+    if isinstance(key, tuple) and key[:1] == ("p",):
+        return True
+    return isinstance(key, tuple) and any(_parameters(k) for k in key)
+
+
+def _translate(facts, mapping: dict) -> Facts:
+    """``facts`` with ``mapping`` substituted, keeping only those whose variables were all mapped."""
+    out: Facts = {}
+    for k, held in facts.items() if isinstance(facts, dict) else facts:
+        new = _substitute(k, mapping)
+        if not _variables(new):
+            out[new] = held
+    return out
+
+
+def _condition(cond) -> tuple[list, bool]:
+    """``a != b`` is the negation of ``a == b``: the condition to key facts by, and whether it is negated."""
+    if isinstance(cond, list) and cond[:2] == ["b", "!="]:
+        return ["b", "==", cond[2], cond[3]], True
+    return cond, False
+
+
+def _assigned(stmts) -> set[str]:
+    """The locals assigned, incremented or address-taken anywhere in ``stmts``."""
+    out: set[str] = set()
+
+    def visit(x) -> None:
+        if not isinstance(x, list) or not x:
+            return
+        if x[0] == "a" and isinstance(x[2], list) and x[2][:1] == ["v"]:
+            out.add(x[2][1])
+        if (
+            x[0] == "u"
+            and x[1] in ("++", "--", "&", "post++", "post--")
+            and isinstance(x[2], list)
+            and x[2][:1] == ["v"]
+        ):
+            out.add(x[2][1])
+        if x[0] == "decl" and isinstance(x[1], str):
+            out.add(x[1])
+        for sub in x[1:]:
+            visit(sub)
+
+    visit(stmts)
+    return out
+
+
 @dataclass
 class State:
     env: dict[str, Value]
     reported: bool = False
+    facts: Facts = field(default_factory=dict)
+    defs: dict[str, Key] = field(default_factory=dict)
 
     def copy(self) -> State:
-        return State(dict(self.env), self.reported)
+        return State(dict(self.env), self.reported, dict(self.facts), dict(self.defs))
+
+    def forget(self, names: set[str]) -> None:
+        """``names`` were assigned: drop the facts and definitions that read them."""
+        if not names:
+            return
+        leaves = {("v", n) for n in names}
+        for n in names:
+            self.defs.pop(n, None)
+        self.defs = {k: d for k, d in self.defs.items() if not _mentions(d, leaves)}
+        self.facts = {k: h for k, h in self.facts.items() if not _mentions(k, leaves)}
 
 
 def _merge(states: list[State | None]) -> State | None:
@@ -113,7 +247,9 @@ def _merge(states: list[State | None]) -> State | None:
     for s in live:
         for k, val in s.env.items():
             env[k] = env.get(k, frozenset()) | val
-    return State(env, all(s.reported for s in live))
+    facts = {k: h for k, h in live[0].facts.items() if all(s.facts.get(k) is h for s in live[1:])}
+    defs = {k: d for k, d in live[0].defs.items() if all(s.defs.get(k) == d for s in live[1:])}
+    return State(env, all(s.reported for s in live), facts, defs)
 
 
 class Returns:
@@ -121,8 +257,10 @@ class Returns:
 
     def __init__(self, program: Program) -> None:
         self.program = program
-        self.memo: dict[tuple[str, tuple[str, ...]], Value] = {}
-        self.active: set[tuple[str, tuple[str, ...]]] = set()
+        self.memo: dict[tuple, Value] = {}
+        # Per memo key: the facts (over parameters ``("p", i)``) on every true return, and on every false return.
+        self.ret_facts: dict[tuple, tuple[Facts, Facts]] = {}
+        self.active: set[tuple] = set()
         self.unresolved: set[tuple[str, str]] = set()  # (record or "", name) of callees without a body
         self.methods: dict[str, list[Function]] = {}
         for f in program.functions.values():
@@ -139,8 +277,10 @@ class Returns:
         kind = max((o.kind for o in outcomes), key=RANK.__getitem__)
         return Verdict(kind, outcomes)
 
-    def summary(self, fn: Function, args: tuple[str, ...], depth: int) -> Value:
-        key = (fn.usr, args)
+    def summary(self, fn: Function, args: tuple[str, ...], depth: int, facts: Facts | None = None) -> Value:
+        """What ``fn`` can return, given each argument's nullness and the facts over its arguments (``("p", i)``)."""
+        facts = facts or {}
+        key = (fn.usr, args, tuple(sorted(facts.items(), key=repr)))
         if key in self.memo:
             return self.memo[key]
         where = f"{fn.file}:{fn.line}"
@@ -156,11 +296,16 @@ class Returns:
             else:
                 env[name] = _one(UNKNOWN, where, f"parameter {name} may be NULL")
         self.outs: list[Outcome]
-        outs_saved = getattr(self, "outs", None)
-        self.outs = []
-        self.walk(fn.body, State(env), None)
+        outs_saved, rets_saved = getattr(self, "outs", None), getattr(self, "rets", None)
+        self.outs, self.rets = [], []
+        params = {("p", i): ("v", p[0]) for i, p in enumerate(fn.params)}
+        self.walk(fn.body, State(env, facts={_substitute(k, params): h for k, h in facts.items()}), None)
         result = frozenset(self.outs)
-        self.outs = outs_saved  # type: ignore[assignment]
+        self.ret_facts[key] = (
+            _common([f for held, f in self.rets if held]),
+            _common([f for held, f in self.rets if not held]),
+        )
+        self.outs, self.rets = outs_saved, rets_saved  # type: ignore[assignment]
         self.fn, self.depth = saved, saved_depth  # type: ignore[assignment]
         self.active.discard(key)
         self.memo[key] = result
@@ -168,6 +313,27 @@ class Returns:
 
     def where(self, line) -> str:
         return f"{self.fn.file}:{line}"
+
+    def to_params(self, st: State) -> Facts:
+        """The facts of ``st`` over the current function's parameters, as ``("p", i)``."""
+        return _translate(st.facts, {("v", p[0]): ("p", i) for i, p in enumerate(self.fn.params)})
+
+    def to_callee(self, args: list, st: State) -> Facts:
+        """The facts of ``st`` restated over a callee's parameters, given the call's arguments."""
+        mapping = {}
+        for i, a in enumerate(args):
+            k = canon(a, st.defs)
+            if k is not None and k not in mapping:
+                mapping[k] = ("p", i)
+        return _translate(st.facts, mapping) if mapping else {}
+
+    def from_callee(self, facts: Facts, args: list, st: State) -> Facts:
+        mapping = {}
+        for i, a in enumerate(args):
+            k = canon(a, st.defs)
+            if k is not None:
+                mapping[("p", i)] = k
+        return {new: held for k, held in facts.items() if not _parameters(new := _substitute(k, mapping))}
 
     # ------------------------------------------------------------------------------------------------------------
     # Statements
@@ -180,6 +346,9 @@ class Returns:
             if tag == "decl":
                 if s[3] is not None:
                     self.effect(s[3], st, s[4])
+                st.forget({s[1]})
+                if s[3] is not None and (k := canon(s[3], st.defs)) is not None and s[1] not in _variables(k):
+                    st.defs[s[1]] = k
                 st.env[s[1]] = (
                     self.eval(s[3], st, s[4]) if s[3] is not None else _one(UNKNOWN, self.where(s[4]), "uninitialized")
                 )
@@ -218,6 +387,7 @@ class Returns:
 
     def loop(self, s: list, st: State) -> State:
         body, cond = s[2], s[4] if len(s) > 4 else None
+        st.forget(_assigned(s[1:]))
         inside = st.copy()
         if cond is not None:
             self.effect(cond, inside, s[3])
@@ -244,6 +414,23 @@ class Returns:
     def ret(self, e, st: State, line) -> None:
         if e is None:
             return
+        facts = self.to_params(st)
+        if isinstance(e, list) and e[:1] in (["i"], ["null"]):
+            self.rets.append((e[0] == "i" and e[1] != 0, facts))
+        elif _pointee(self.fn.ret) is None and (k := canon(e, st.defs)) is not None:
+            for held in (True, False):
+                self.rets.append(
+                    (
+                        held,
+                        {
+                            **facts,
+                            **_translate({k: held}, {("v", p[0]): ("p", i) for i, p in enumerate(self.fn.params)}),
+                        },
+                    )
+                )
+        else:
+            self.rets.append((True, facts))
+            self.rets.append((False, facts))
         declared = _pointee(self.fn.ret)
         if isinstance(e, list) and e[:1] == ["v"] and declared and _pointee(e[2]) not in (None, declared):
             self.outs.append(Outcome(UNKNOWN, self.where(line), f"returns a {e[2]} (a call the lowering lost)"))
@@ -259,8 +446,19 @@ class Returns:
         if not isinstance(e, list) or not e:
             return
         tag = e[0]
-        if tag == "a" and e[1] == "=" and isinstance(e[2], list) and e[2][:1] == ["v"]:
-            st.env[e[2][1]] = self.eval(e[3], st, line)
+        if tag == "a" and isinstance(e[2], list) and e[2][:1] == ["v"]:
+            self.effect(e[3], st, line)
+            value = self.eval(e[3], st, line)
+            st.forget({e[2][1]})
+            if e[1] == "=":
+                st.env[e[2][1]] = value
+        elif (
+            tag == "u"
+            and e[1] in ("++", "--", "&", "post++", "post--")
+            and isinstance(e[2], list)
+            and e[2][:1] == ["v"]
+        ):
+            st.forget({e[2][1]})
         elif tag == "c":
             if e[2] in REPORT_FUNCTIONS and len(e[3]) > 1:
                 level = e[3][1]
@@ -315,10 +513,8 @@ class Returns:
                 return a1, None
             a2, b2 = self.refine(cond[3], b1, line)
             return _merge([a1, a2]), b2
-        if tag == "c" and self.reports_when_false(cond, st, line):
-            no = st.copy()
-            no.reported = True
-            return st.copy(), no
+        if tag not in ("v",) and not (tag == "m" and _path(cond) is not None):
+            return self.decide(cond, st, line)
         name = _path(cond)
         if name is not None and (name in st.env or tag == "m"):
             val = st.env.get(name, frozenset())
@@ -329,6 +525,32 @@ class Returns:
                 no.reported = True  # the callee that gave it NULL reported an error first
             return (None if _null_only(val) else yes), (None if _never_only(val) else no)
         return st.copy(), st.copy()
+
+    def decide(self, cond, st: State, line) -> tuple[State | None, State | None]:
+        """A condition that is not a null check: decided by the path's facts, or remembered as a fact."""
+        keyed, negated = _condition(cond)
+        key = canon(keyed, st.defs)
+        if key is not None and key in st.facts:
+            held = st.facts[key] != negated
+            return (st.copy(), None) if held else (None, st.copy())
+        yes, no = st.copy(), st.copy()
+        if cond[0] == "c" and cond[1] is not None:
+            fn = self.program.resolve(cond[1], cond[2], len(cond[3]), self.fn.file)
+            if fn is not None:
+                args = self.args_of(cond[3], st, line)
+                inward = self.to_callee(cond[3], st)
+                outs = self.summary(fn, args, self.depth + 1, inward)
+                if any(o.kind == RAISES for o in outs) and not any(o.kind == NULL for o in outs):
+                    no.reported = True  # the callee reports an error on every path that returns false
+                true_facts, false_facts = self.ret_facts.get(
+                    (fn.usr, args, tuple(sorted(inward.items(), key=repr))), ({}, {})
+                )
+                yes.facts.update(self.from_callee(true_facts, cond[3], st))
+                no.facts.update(self.from_callee(false_facts, cond[3], st))
+        if key is not None:
+            yes.facts[key] = not negated
+            no.facts[key] = negated
+        return yes, no
 
     # ------------------------------------------------------------------------------------------------------------
     # Expressions
@@ -360,6 +582,7 @@ class Returns:
         if tag == "a":
             value = self.eval(e[3], st, line)
             if isinstance(e[2], list) and e[2][:1] == ["v"]:
+                st.forget({e[2][1]})
                 st.env[e[2][1]] = value
             return value
         if tag == "init" and isinstance(e[2], dict) and "data" in e[2]:
@@ -383,22 +606,12 @@ class Returns:
                 return _one(NULL, where, "an empty PointerRNA")
         return _one(UNKNOWN, where, f"{tag} expression")
 
-    def reports_when_false(self, e: list, st: State, line) -> bool:
-        """Whether the callee reports an error on every path that returns false, 0 or NULL."""
-        if e[1] is None:
-            return False
-        fn = self.program.resolve(e[1], e[2], len(e[3]), self.fn.file)
-        if fn is None:
-            return False
-        outs = self.summary(fn, self.args_of(e[3], st, line), self.depth + 1)
-        return any(o.kind == RAISES for o in outs) and not any(o.kind == NULL for o in outs)
-
     def args_of(self, args: list, st: State, line) -> tuple[str, ...]:
         return tuple(NEVER if _never_only(self.eval(a, st, line)) else "maybe" for a in args)
 
-    def follow(self, fn: Function, args: tuple[str, ...], where: str) -> Value:
+    def follow(self, fn: Function, args: tuple[str, ...], where: str, facts: Facts | None = None) -> Value:
         out = set()
-        for o in self.summary(fn, args, self.depth + 1):
+        for o in self.summary(fn, args, self.depth + 1, facts):
             why = o.why if o.why.startswith("via ") else f"via {fn.name} ({o.where}: {o.why})"
             out.add(Outcome(o.kind, where, why))
         return frozenset(out)
@@ -417,7 +630,7 @@ class Returns:
         if fn is None:
             self.unresolved.add(("", name))
             return _one(UNKNOWN, where, f"no body for {name}")
-        return self.follow(fn, self.args_of(args, st, line), where)
+        return self.follow(fn, self.args_of(args, st, line), where, self.to_callee(args, st))
 
     def method(self, e: list, st: State, line) -> Value:
         where = self.where(line)
@@ -435,6 +648,12 @@ class Returns:
 
 # --------------------------------------------------------------------------------------------------------------------
 # Driving it over the RNA functions
+
+
+def _common(facts: list[Facts]) -> Facts:
+    if not facts:
+        return {}
+    return {k: h for k, h in facts[0].items() if all(f.get(k) is h for f in facts[1:])}
 
 
 def rna_arguments(f, c_params: list) -> tuple[str, ...]:
