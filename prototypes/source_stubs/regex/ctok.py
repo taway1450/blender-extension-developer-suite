@@ -219,6 +219,7 @@ class Assume:
 
 _DEFINED_RE = re.compile(r"\bdefined\s*(?:\(\s*(\w+)\s*\)|(\w+))")
 _IDENT_RE = re.compile(r"\b[A-Za-z_]\w*\b")
+_MACRO_NAME = re.compile(r"^[A-Z][A-Z0-9_]{2,}$")
 
 
 def eval_condition(expr: str, assume: Assume, local: dict[str, str]) -> bool | None:
@@ -521,7 +522,16 @@ class CFile:
                 start = i
                 continue
             if s in {"(", "["}:
-                i = match_close(toks, i) + 1
+                close_ = match_close(toks, i)
+                # A macro invocation without a semicolon: ``NODE_STORAGE_FUNCS(NodeSwitch)`` before a function.
+                if (s == "(" and i == start + 1 and _MACRO_NAME.match(toks[start].text)
+                        and close_ + 1 < n and toks[close_ + 1].kind == "id"
+                        and toks[close_ + 1].text not in {"const", "override", "noexcept", "final"}):
+                    self._statement(start, close_ + 1)
+                    i = close_ + 1
+                    start = i
+                    continue
+                i = close_ + 1
                 continue
             if s != "{":
                 i += 1

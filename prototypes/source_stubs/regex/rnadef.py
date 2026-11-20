@@ -107,13 +107,6 @@ class RnaBuilder:
         for m in re.finditer(r"\b(RNA_def_\w+|RNA_define_\w+)\s*\(([^;{}]*)\)\s*;", hdr.code):
             params = parse_params(tokenize(m.group(2)))
             self.decl_params[m.group(1)] = [p.name for p in params]
-        for path in ("source/blender/nodes/NOD_rna_define.hh",):
-            try:
-                h = self.tree.file(path)
-            except OSError:
-                continue
-            for m in re.finditer(r"\b(RNA_def_\w+)\s*\(([^;{}]*)\)\s*;", h.code):
-                self.decl_params.setdefault(m.group(1), [p.name for p in parse_params(tokenize(m.group(2)))])
         funcs: dict[str, Any] = {}
         for runtime in (False, True):
             f = self.tree.file("source/blender/makesrna/intern/rna_define.cc", rna_runtime=runtime)
