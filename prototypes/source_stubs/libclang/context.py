@@ -134,6 +134,8 @@ class Context:
         self.record(ptr.data if isinstance(ptr, Obj) and ptr.kind == "ptr" else "", True, call=call)
 
     def type_set(self, i, a, e, call):
+        if not self.i.where.startswith("source/blender/editors/"):
+            return  # e.g. bpy_interface.cc's Python fall-back, reached through CTX_wm_window()
         names = getattr(a[1], "names", ()) if len(a) > 1 else ()
         for name in self.i.ctx_members:
             m = self.member(name)

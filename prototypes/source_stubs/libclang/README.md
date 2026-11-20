@@ -9,7 +9,7 @@ every call resolved to its declaration, constant expressions evaluated by clang 
    `PyTypeObject`, `CTX_data_equals`, `node_declare`, `bmesh_opdefines.cc`): ~1,290 files, 833 translation units
    (node files are parsed through CMake's unity files; 1,289 units with `--synthesize-flags`).
 2. **Flags** (`flags.py`): `--compile-commands PATH` (default `.cache/blender-build/<src>/compile_commands.json`)
-   or `--synthesize-flags` (`-x c++ -std=c++20`, `-I` every header directory, feature defines). Generated headers the
+   or `--synthesize-flags` (`-x c++ -std=c++20`, `-I` every header directory, feature defines, library headers). Generated headers the
    build has not made yet (`RNA_prototypes.hh`) are replaced by a declaration shim: clang drops a whole call that
    names an undeclared `RNA_Object`, so without it context members lose their types.
 3. **Lower** (`lower.py`, 2 processes, cached per unit in `.cache/source-stubs/5.2/libclang/cache/`): each function
@@ -50,7 +50,11 @@ marked dynamic). Function pointers held in locals and lambda parameters are foll
 1,725 RNA structs, 9,980 properties, 3,005 functions; 2,136 operators with 4,967 properties; 255 Python types,
 58 modules, 228 module functions; 104 context members (60 typed); 515 node declarations with 2,490 sockets;
 82 bmesh operators. Every `bpy.types` class of Blender's builtin stubs is found except the 55 registered from
-Python (`*_UL_*`, `*_AST_*`, `*_FH_*`).
+Python (`*_UL_*`, `*_AST_*`, `*_FH_*`). 48 of 832 units have clang errors (204), parsing continues.
+
+`--synthesize-flags` (every header directory except ones shadowing system headers, Blender's precompiled library
+headers, Python's): 1,289 units, 71 with errors, ~35 min cold; the same RNA counts, 4,909 operator properties
+and 2,481 sockets (a few `#ifdef` branches differ).
 
 ## Cannot reach
 

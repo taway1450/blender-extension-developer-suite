@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import re
+import sysconfig
 import shlex
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -108,13 +109,27 @@ class FlagSource:
     def synthesized_args(self) -> list[str]:
         if self._synth is None:
             dirs: set[str] = set()
+            # Skip directories with a header that shadows a system one (``intern/cycles/kernel/features.h`` hides
+            # glibc's ``<features.h>``, a fatal error in every unit that reaches it).
+            system = {"features.h", "types.h", "math.h", "string.h", "time.h", "limits.h", "stdint.h", "assert.h",
+                      "float.h", "memory.h", "version.h", "config.h"}
             for top in ("source/blender", "intern", "extern"):
                 for header in (self.source / top).rglob("*.h*"):
                     if header.suffix in (".h", ".hh", ".hpp"):
                         dirs.add(str(header.parent))
+            dirs = {d for d in dirs if not any((Path(d) / name).exists() for name in system)}
+            # Generated-file-free roots that headers include relative to (``util/types.h`` for cycles).
+            dirs.add(str(self.source / "intern/cycles"))
             args = ["-x", "c++", "-std=c++20"]
             args += [f"-D{d}" for d in SYNTH_DEFINES]
             args += [f"-I{d}" for d in sorted(dirs)]
+            # Third-party headers (fmt, tbb, Python): Blender's precompiled libraries when present; else at least
+            # this interpreter's Python headers.
+            libs = self.source.parent.parent / "blender-libs"
+            python = sorted(libs.glob("*/python/include/python3*"))
+            args += ["-isystem", str(python[-1]) if python else sysconfig.get_paths()["include"]]
+            for include in sorted(libs.glob("*/*/include")):
+                args += ["-isystem", str(include)]
             self._synth = args
         return self._synth
 
