@@ -64,7 +64,7 @@ def run_areas(tree: Tree, model: SourceModel, areas: list[str]) -> None:
             elif area == "bmesh":
                 from bmesh_ops import extract_bmesh
 
-                extract_bmesh(tree, model)
+                extract_bmesh(tree, model, extra)
         except Exception:
             model.coverage.warnings.append(f"area {area} failed: {traceback.format_exc()}")
             traceback.print_exc()
