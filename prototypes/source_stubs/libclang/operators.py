@@ -13,7 +13,7 @@ import re
 
 from common.model import Operator, RnaProperty
 
-from .interp import UNKNOWN, Flag, FuncRef, Interp, Lambda, Obj
+from .interp import UNKNOWN, FuncRef, Interp, Lambda, Obj
 from .rna import Rna, finalize
 
 CALLBACKS = ("exec", "invoke", "modal", "poll", "poll_property", "ui", "cancel", "check", "get_name",

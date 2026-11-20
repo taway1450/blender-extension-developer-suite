@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from common.model import ContextMember
 
-from .interp import UNKNOWN, FuncRef, GlobalRef, Interp, MemberTest, Obj
+from .interp import UNKNOWN, GlobalRef, Interp, MemberTest, Obj
 
 
 class Context:

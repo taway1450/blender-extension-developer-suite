@@ -6,8 +6,8 @@ every call resolved to its declaration, constant expressions evaluated by clang 
 ## How
 
 1. **Select** (`parse.py`): a cheap text filter picks the files each area needs (`RNA_def_`, `wmOperatorType *ot`,
-   `PyTypeObject`, `CTX_data_equals`, `node_declare`, `bmesh_opdefines.cc`): ~1,270 files, ~810 translation units
-   (node files are parsed through CMake's unity files).
+   `PyTypeObject`, `CTX_data_equals`, `node_declare`, `bmesh_opdefines.cc`): ~1,290 files, 833 translation units
+   (node files are parsed through CMake's unity files; 1,289 units with `--synthesize-flags`).
 2. **Flags** (`flags.py`): `--compile-commands PATH` (default `.cache/blender-build/<src>/compile_commands.json`)
    or `--synthesize-flags` (`-x c++ -std=c++20`, `-I` every header directory, feature defines). Generated headers the
    build has not made yet (`RNA_prototypes.hh`) are replaced by a declaration shim: clang drops a whole call that
@@ -36,18 +36,33 @@ every call resolved to its declaration, constant expressions evaluated by clang 
    - Nodes (`nodes.py`): functions calling `node_register_type` (idname from `*_node_type_base`), their `declare`
      run with a symbolic `NodeDeclarationBuilder` (`add_input<decl::Float>` template argument from clang), and
      `node_rna(ntype.rna_ext.srna)`.
-   - bmesh (`bmesh.py`): `BMOpDefine` globals; docs from the text at AST positions (comments are not in the AST).
+   - bmesh (`bmesh.py`): `BMOpDefine` globals, enum/flag slot items from their `BMO_FlagSet` tables; docs from the
+     text at AST positions (comments are not in the AST).
 
-Unknown conditions run both branches (sockets declared there are marked dynamic), loops run once.
+Loops run concretely while their condition is known (`for (i = 0; lists[i].name; i++)` defines the 40
+`BlendData*` collections, `for (effect = def_effects; effect->struct_name[0]; effect++)` the effect strips);
+otherwise, like unknown conditions, both branches / the body run once speculatively (sockets declared there are
+marked dynamic). Function pointers held in locals and lambda parameters are followed (`define("GeometryNode",
+"GeometryNodeBake", rna_def_geo_bake)`).
+
+## Numbers (5.2, compile_commands)
+
+1,725 RNA structs, 9,980 properties, 3,005 functions; 2,136 operators with 4,967 properties; 255 Python types,
+58 modules, 228 module functions; 104 context members (60 typed); 515 node declarations with 2,490 sockets;
+82 bmesh operators. Every `bpy.types` class of Blender's builtin stubs is found except the 55 registered from
+Python (`*_UL_*`, `*_AST_*`, `*_FH_*`).
 
 ## Cannot reach
 
 DNA defaults (`DNA_*_defaults.h`, applied by makesrna through SDNA), items of dynamic enums, definitions in loops
-with computed identifiers, anything registered from Python, comments. See `coverage.md` (`Not reachable`).
+with computed identifiers, anything registered from Python, comments, context members whose pointer flows through
+a local variable or a `PointerRNA` path (the Properties editor's members). Facts follow the build configuration
+of the flags: `#ifdef WITH_INTERNATIONAL` / `WITH_OPENVDB_BLOSC` branches the compile_commands build disabled are
+not seen. See `coverage.md` (`Not reachable`).
 
 ## Run
 
     uv run --no-project --python 3.13 --with libclang==18.1.1 python prototypes/source_stubs/libclang/run.py 5.2 \
         --source .cache/blender-src/5.2-src [--compile-commands PATH | --synthesize-flags] [--jobs 2]
 
-First run parses ~810 units (~20 min with 2 processes); later runs reuse the cache (~1-2 min).
+First run parses 833 units (~17 min with 2 processes); later runs reuse the cache (~20 s).

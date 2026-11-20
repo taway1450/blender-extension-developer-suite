@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import ctypes
 import os
-from pathlib import Path
 
 import clang.cindex as ci
 from clang.cindex import CursorKind as K

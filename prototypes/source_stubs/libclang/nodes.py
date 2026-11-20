@@ -21,6 +21,10 @@ from .interp import UNKNOWN, FuncRef, Interp, Obj
 PREFIX_BASES = (("GeometryNode", "GeometryNode"), ("ShaderNode", "ShaderNode"), ("CompositorNode", "CompositorNode"),
                 ("TextureNode", "TextureNode"), ("FunctionNode", "FunctionNode"), ("Node", "NodeInternal"))
 _DECL = re.compile(r"decl::(\w+)")
+# ``eNodeSocketDatatype`` (DNA_node_types.h) -> socket declaration type
+SOCK_TYPES = {0: "Float", 1: "Vector", 2: "Color", 3: "Shader", 4: "Bool", 6: "Int", 7: "String", 8: "Object",
+              9: "Image", 10: "Geometry", 11: "Collection", 12: "Texture", 13: "Material", 14: "Rotation", 15: "Menu",
+              16: "Matrix", 17: "Bundle", 18: "Closure", 19: "Font", 20: "Scene", 21: "Text", 22: "Mask"}
 
 
 class Nodes:
@@ -98,8 +102,12 @@ class Nodes:
 
     def add_socket(self, i, base: Obj, a, e):
         decl: NodeDecl = base.data
-        m = _DECL.search(e[5] or "")
-        stype = m.group(1) if m else "Custom"
+        stype = _decl_type(e)
+        if a and not isinstance(a[0], str) and stype == "BaseSocketDeclaration":
+            # ``b.add_input(data_type, "Value")``: the socket type is an ``eNodeSocketDatatype`` argument.
+            kind, a = a[0], a[1:]
+            stype = SOCK_TYPES.get(int(kind), "Custom") if isinstance(kind, int) and not isinstance(kind, bool) \
+                else "Custom"
         name = a[0] if a and isinstance(a[0], str) else ""
         ident = a[1] if len(a) > 1 and isinstance(a[1], str) else ""
         sock = NodeSocket(name=name, type=stype, identifier=ident, dynamic=bool(i.speculative) or not name,
@@ -130,6 +138,23 @@ class Nodes:
             if _calls(fn.body, "node_register_type") and not fn.params:
                 self.i.call_function(fn, [])
         self.model.nodes.extend(self.decls.values())
+
+
+def _decl_type(e: list) -> str:
+    """The socket declaration type of ``b.add_input<decl::Float>(...)``. libclang spells the specialization
+    ``add_input<>`` without its argument, so it is read from the call's return type: ``decl::Float::Builder`` is
+    ``FloatBuilder`` (``CustomTypeBuilder`` for ``decl::Custom``), and declarations without their own builder
+    return ``SocketDeclarationBuilder<decl::Object>`` (record ``Object>``)."""
+    m = _DECL.search(e[5] or "")
+    if m:
+        return m.group(1)
+    record = (e[6] if len(e) > 6 else "") or ""
+    record = record.rstrip(">& ")
+    if record == "CustomTypeBuilder":
+        return "Custom"
+    if record.endswith("Builder") and record != "Builder":
+        return record.removesuffix("Builder")
+    return record or "Custom"
 
 
 def _calls(body, name: str) -> bool:

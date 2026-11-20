@@ -17,7 +17,7 @@ import re
 from common.model import PyGetSet, PyMember, PyMethod, PyModule, PyType
 from common.rstdoc import parse_directive, rst_type_to_python
 
-from .interp import UNKNOWN, Flag, FuncRef, GlobalRef, Interp, Obj
+from .interp import UNKNOWN, FuncRef, GlobalRef, Interp, Obj
 
 METH_FLAGS = [(1, "varargs"), (2, "keywords"), (4, "noargs"), (8, "o"), (16, "class"), (32, "static"),
               (64, "coexist"), (128, "fastcall"), (512, "method")]

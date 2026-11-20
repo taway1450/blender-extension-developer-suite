@@ -720,7 +720,13 @@ def resolve_default(p: RnaProperty, raw, shared):
             vals = [(float(x) if p.type == "float" else int(x)) for x in raw if isinstance(x, (int, float))]
             return vals or None
         if isinstance(raw, (int, float)):
-            return float(raw) if p.type == "float" else int(raw)
+            value = float(raw) if p.type == "float" else int(raw)
+            if p.array and not p.dynamic_array:  # ``static float4 color_default(1)``: the constructor broadcasts
+                n = 1
+                for d in p.array:
+                    n *= d
+                return [value] * n
+            return value
         return None
     if p.type == "string":
         return raw if isinstance(raw, str) else None
