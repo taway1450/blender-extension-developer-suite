@@ -75,6 +75,23 @@ def _null_only(value: Value) -> bool:
     return bool(value) and all(o.kind in (NULL, RAISES) for o in value)
 
 
+def _path(e) -> str | None:
+    """``x`` or ``x->f`` (``x.f``): the locals and fields of locals the walk tracks."""
+    if isinstance(e, list) and e[:1] == ["v"]:
+        return e[1]
+    if isinstance(e, list) and e[:1] == ["m"] and isinstance(e[1], list) and e[1][:1] == ["v"]:
+        return f"{e[1][1]}->{e[2]}"
+    return None
+
+
+def _pointee(t: str) -> str | None:
+    """``const Foo *`` -> ``Foo`` (None for a non-pointer or ``void *``)."""
+    if not t.rstrip().endswith("*"):
+        return None
+    base = re.sub(r"\b(const|struct|volatile)\b", "", t.rstrip()[:-1]).replace(" ", "").split("::")[-1]
+    return None if base in ("void", "") else base
+
+
 def _is_null_literal(e) -> bool:
     return isinstance(e, list) and bool(e) and (e[0] == "null" or (e[0] == "i" and e[1] == 0))
 
@@ -161,7 +178,16 @@ class Returns:
                 return None
             tag = s[0]
             if tag == "decl":
-                st.env[s[1]] = self.eval(s[3], st, s[4]) if s[3] is not None else _one(UNKNOWN, self.where(s[4]), "uninitialized")
+                if s[3] is not None:
+                    self.effect(s[3], st, s[4])
+                st.env[s[1]] = (
+                    self.eval(s[3], st, s[4]) if s[3] is not None else _one(UNKNOWN, self.where(s[4]), "uninitialized")
+                )
+                init, declared = s[3], _pointee(s[2])
+                if isinstance(init, list) and init[:1] == ["v"] and declared:
+                    given = _pointee(init[2])
+                    if given and given != declared:  # a call the lowering lost (a dependent template call)
+                        st.env[s[1]] = _one(UNKNOWN, self.where(s[4]), f"{s[1]} initialized from a {init[2]}")
             elif tag == "e":
                 self.effect(s[1], st, s[2])
             elif tag == "if":
@@ -209,11 +235,18 @@ class Returns:
             return self.walk(then if cond[1] else other, st, breaks)
         a, b = self.refine(cond, st, line)
         return _merge(
-            [self.walk(then, a, breaks) if a is not None else None, self.walk(other, b, breaks) if b is not None else None]
+            [
+                self.walk(then, a, breaks) if a is not None else None,
+                self.walk(other, b, breaks) if b is not None else None,
+            ]
         )
 
     def ret(self, e, st: State, line) -> None:
         if e is None:
+            return
+        declared = _pointee(self.fn.ret)
+        if isinstance(e, list) and e[:1] == ["v"] and declared and _pointee(e[2]) not in (None, declared):
+            self.outs.append(Outcome(UNKNOWN, self.where(line), f"returns a {e[2]} (a call the lowering lost)"))
             return
         for o in self.eval(e, st, line):
             if o.kind == NULL and st.reported:
@@ -235,9 +268,21 @@ class Returns:
                     st.reported = True
             for a in e[3]:
                 self.effect(a, st, line)
-        elif tag in ("b", "u"):
-            for sub in e[2:]:
-                self.effect(sub, st, line)
+        elif tag in ("b", "u", "m", "mc", "idx"):
+            # A dereferenced local is non-null after the dereference: a NULL would have crashed there.
+            target = e[2] if tag == "u" and e[1] == "*" else e[1] if tag == "m" else None
+            if isinstance(target, list) and target[:1] == ["v"] and target[2].rstrip().endswith("*"):
+                st.env[target[1]] = _one(NEVER, self.where(line), f"{target[1]} dereferenced")
+            if tag == "b" and e[1] in ("&&", "||"):
+                self.effect(e[2], st, line)  # the right side runs only sometimes
+                return
+            for sub in e[1:]:
+                if isinstance(sub, list):
+                    if sub and isinstance(sub[0], list):
+                        for a in sub:
+                            self.effect(a, st, line)
+                    else:
+                        self.effect(sub, st, line)
 
     # ------------------------------------------------------------------------------------------------------------
     # Conditions
@@ -270,11 +315,18 @@ class Returns:
                 return a1, None
             a2, b2 = self.refine(cond[3], b1, line)
             return _merge([a1, a2]), b2
-        if tag == "v" and cond[1] in st.env:
-            name, val = cond[1], st.env[cond[1]]
+        if tag == "c" and self.reports_when_false(cond, st, line):
+            no = st.copy()
+            no.reported = True
+            return st.copy(), no
+        name = _path(cond)
+        if name is not None and (name in st.env or tag == "m"):
+            val = st.env.get(name, frozenset())
             yes, no = st.copy(), st.copy()
             yes.env[name] = _one(NEVER, self.where(line), f"{name} checked non-null")
             no.env[name] = _one(NULL, self.where(line), f"{name} checked NULL")
+            if any(o.kind == RAISES for o in val) and not any(o.kind == NULL for o in val):
+                no.reported = True  # the callee that gave it NULL reported an error first
             return (None if _null_only(val) else yes), (None if _never_only(val) else no)
         return st.copy(), st.copy()
 
@@ -312,13 +364,34 @@ class Returns:
             return value
         if tag == "init" and isinstance(e[2], dict) and "data" in e[2]:
             return self.eval(e[2]["data"], st, line)
+        if tag == "init" and e[1] == "PointerRNA" and not e[2]:
+            return _one(NULL, where, "an empty PointerRNA")
         if tag == "c":
             return self.call(e, st, line)
         if tag == "mc":
             return self.method(e, st, line)
         if tag == "m":
+            name = _path(e)
+            if name is not None and name in st.env:
+                return st.env[name]
             return _one(UNKNOWN, where, f"field {e[2]}")
+        if tag == "ctor":
+            # A copy or move (``return ptr;`` of a PointerRNA by value) is its argument; ``PointerRNA()`` is empty.
+            if len(e[2]) == 1:
+                return self.eval(e[2][0], st, line)
+            if not e[2] and e[1] == "PointerRNA":
+                return _one(NULL, where, "an empty PointerRNA")
         return _one(UNKNOWN, where, f"{tag} expression")
+
+    def reports_when_false(self, e: list, st: State, line) -> bool:
+        """Whether the callee reports an error on every path that returns false, 0 or NULL."""
+        if e[1] is None:
+            return False
+        fn = self.program.resolve(e[1], e[2], len(e[3]), self.fn.file)
+        if fn is None:
+            return False
+        outs = self.summary(fn, self.args_of(e[3], st, line), self.depth + 1)
+        return any(o.kind == RAISES for o in outs) and not any(o.kind == NULL for o in outs)
 
     def args_of(self, args: list, st: State, line) -> tuple[str, ...]:
         return tuple(NEVER if _never_only(self.eval(a, st, line)) else "maybe" for a in args)
@@ -381,7 +454,7 @@ def rna_arguments(f, c_params: list) -> tuple[str, ...]:
     return tuple(by_name.get(name, NEVER if i < len(lead) else "maybe") for i, (name, _t, _r) in enumerate(c_params))
 
 
-DEFINITION = re.compile(r"^(?![#/\s{}])(?!return\b)[^;=\n(]*?\b(?:(\w+)::)?(\w+)\s*\(", re.M)
+DEFINITION = re.compile(r"^(?![#/\s{}])(?!return\b)[^;=\n(]*?\b(?:(\w+)::)?(\w+)\s*\(", re.MULTILINE)
 
 
 def definition_index(source: Path) -> dict[str, set[tuple[str, str]]]:
@@ -450,7 +523,12 @@ def report(model) -> str:
         "| Verdict | Functions | Stub |",
         "|---|---|---|",
     ]
-    stub = {NEVER: "`X`", RAISES: "`X` (NULL only with an error, which raises)", NULL: "`X | None`", UNKNOWN: "`X | None`"}
+    stub = {
+        NEVER: "`X`",
+        RAISES: "`X` (NULL only with an error, which raises)",
+        NULL: "`X | None`",
+        UNKNOWN: "`X | None`",
+    }
     for kind in (NEVER, RAISES, NULL, UNKNOWN):
         lines.append(f"| {kind} | {counts.get(kind, 0)} | {stub[kind]} |")
     reasons = Counter(re.sub(r"\(.*", "", r[3].split(": ", 1)[-1]).strip() for r in rows if r[0] == UNKNOWN)

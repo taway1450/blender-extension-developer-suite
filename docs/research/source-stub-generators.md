@@ -48,8 +48,9 @@ JSON model of facts (`common/model.py`), an `ast` reader for the Python side (`c
      - The non-RNA areas are C tables and short call sequences. A plain-Python reader handles them in the style of
        upstream's own `rst_from_bmesh_opdefines.py`, with no build and no dependency.
    - **libclang is the most capable and the most expensive.** It is the right tool for questions that need real C
-     semantics: classifying item callbacks, following function pointers, resolving types of locals. It is the
-     wrong one for generating stubs on every build: 17 minutes cold, a pinned wheel, and the build's
+     semantics: classifying item callbacks, following function pointers, resolving types of locals, and deciding
+     which RNA functions can return NULL (section 5.1). It is the wrong one for generating stubs on every build:
+     23 minutes cold, a pinned wheel, and the build's
      `compile_commands.json`.
 
 ## 2. The three tools
@@ -59,7 +60,7 @@ JSON model of facts (`common/model.py`), an `ast` reader for the Python side (`c
 | Reads | C/C++ as text: tokenizer, `#define` expansion, call interpreter, table readers | clang's AST (`libclang==18.1.1` from PyPI), flags from `compile_commands.json` | RNA definitions as makesrna runs them, dumped by `makesrna-json-dump.patch` |
 | Needs | Python 3, the source tree | the wheel, a configured build for compile flags (`--synthesize-flags` works without one, with more errors) | a configured build with the patch and the `makesrna` target built |
 | Areas | RNA, operators, nodes, Python C API, context, bmesh | the same | RNA only |
-| Time (5.2) | 55 s extract + 5 s Python | ~17 min cold (832 units, 2 processes), 11 s warm | 1 s extract + 6 s Python |
+| Time (5.2) | 55 s extract + 5 s Python | ~23 min cold (833 units, plus 227 for returns, 2 processes), 24 s warm | 1 s extract + 6 s Python |
 | Code | 6,084 lines | 3,735 lines | 195 lines + 483-line C++ patch |
 | Exact | tables (`PyTypeObject`, `PyMethodDef`, bmesh, sockets), DNA array sizes, define helpers | call targets, enum values, constant arithmetic, initializer fields, expression types, loops with known bounds, calls through function pointers | everything RNA defines, as defined |
 | Heuristic | unknown conditions run both branches; unknown ternaries take the first; context types from C variable types | unknown conditions run both branches; context types from `&x->id`; bmesh docs from text near AST positions | none |
@@ -187,7 +188,7 @@ Facts no source reader can get, so they still need the runtime or the docs:
 |---|---|---|---|
 | RNA structs, properties, functions | runtime `bpy.types` via `_rna_info` → rst → stubs | the same rst | `RNA_def_*` calls (makesrna runs them) |
 | Never-null parameters | lost (`_rna_info.py:562`, section 4.1) | lost: every pointer argument and every optional argument is `\| None` (`FCurves.ensure(index: int \| None = 0)`) | `RNA_def_parameter_flags` |
-| Nullable returns | never | rarely | every pointer return (over-cautious) |
+| Nullable returns | never | rarely | regex, makesrna: every pointer return; libclang: from the C body (section 5.1) |
 | Optional RNA parameters keyword-only | yes | yes | yes (`pyrna_func_call`) |
 | Array and math arguments | `Sequence[...]` | `Sequence[...]` | `Vector \| Sequence[float]`, as `pyrna_py_to_array` accepts any sequence |
 | Dynamic enums | the items the item function gives at runtime | the same | `str`, with the item function's name |
@@ -211,6 +212,54 @@ Known gaps and disagreements in the readers, besides the above:
 - Operators whose identifiers are built from templates (node item operators) are missing.
 - `Image.pixels`-style dynamic arrays: regex records only the `PROP_DYNAMIC` flag, which the renderer now reads as a
   dynamic array.
+
+### 5.1 Nullable returns, classified from the C bodies (libclang)
+
+RNA has no flag for whether a function's pointer return can be NULL, so the answer is in the C implementation.
+`libclang/returns.py` reads it:
+
+1. **Parse the runtime halves.** The C implementations sit behind `#ifdef RNA_RUNTIME`, which the define-time parse
+   leaves out. Each `rna_*.cc` is parsed a second time with `-DRNA_RUNTIME` (109 units, 3 minutes cold).
+2. **Follow the callees.** Calls without a parsed body are looked up in a text index of definitions under
+   `source/blender`, and their files are parsed, three rounds deep (118 more units, 3 minutes cold).
+3. **Walk each return.** A small path-sensitive walk over the lowered AST classifies every `return`. Calls are
+   followed with each argument's nullness bound to the callee's parameter, so `get(ob) { if (!ob) return nullptr; ...
+   }` called with the never-null `self` gives `never`.
+   - `never`: an address, `new`, a `MEM_*` allocation, or a local known to be non-null. A local is non-null when it
+     was checked (`if (!x) return ...`), sits in a loop condition (`for (x = first; x; ...)`), or was dereferenced
+     (a NULL would crash there, not reach Python).
+   - `null`: `nullptr`, `PointerRNA_NULL` or an empty `PointerRNA`, or a callee that can return NULL. pyrna gives
+     `None` for a pointer return whose `data` is NULL (`pyrna_param_to_py`, `bpy_rna.cc`).
+   - `raises`: NULL after a report of level `RPT_ERROR` or above on the same path. This includes a report inside a
+     failed check (`if (!check(ob, reports)) return nullptr;`) and inside the callee that gave the NULL.
+     `pyrna_func_call` turns such reports into a `RuntimeError` (`BPy_reports_to_error`), so the NULL never reaches
+     Python.
+   - `unknown`: a callee without a body, a call through a pointer, or a field read never checked.
+
+Results for 5.2 (1,389 RNA functions with a pointer return; distinct C functions in brackets):
+
+| Verdict | Functions | Stub | Examples |
+|---|---|---|---|
+| never | 91 (91) | `X` | `BlendDataMeshes.new` (the ID is dereferenced right after allocation), `UILayout.row`, `CurveSplines.new` (`MEM_new`), `KeyMap.active` (falls back to `self`) |
+| raises | 36 (35) | `X` | `ActionChannelbagFCurves.new` / `ensure`, `BlendDataObjects.new`, `Nodes.new`, `KeyMaps.new` |
+| null | 1,206 (84) | `X \| None` | lookups (`FCurves.find`, `KeyMaps.find_match`, `Strip.strip_elem_from_frame`); `PaletteColors.new` (not editable, no report); `AssetTags.new` (only a warning); `NodeLinks.new` (sockets from another tree); `ID.copy`; 1,120 are `input_template` / `output_template` on every node type, which return an empty pointer past the last template |
+| unknown | 56 (35) | `X \| None` | callees in headers or in unparsed files (`DEG_get_evaluated`, `GreasePencilLayer::frame_at`) |
+
+Effect on the comparison: libclang's return nullability differs from builtin's on 1,243 members, down from
+1,355. Its overall agreement with builtin rises to 81%, and its return differences with fake-bpy drop from 77 to 24.
+The remaining differences with builtin are almost all real NULL returns that builtin types as non-null.
+
+Limits:
+
+- **Path correlation.** A NULL path the caller has already ruled out still counts.
+  - `VertexGroups.new` checks support before calling `BKE_object_defgroup_add_name`, which checks it again.
+  - `BKE_attribute_new` ends in `(index == -1) ? nullptr : ...` right after adding that layer.
+- **Lowering losses.** In units with clang errors (the shims), a dependent template call can become a recovery
+  expression. The lowering keeps only its last argument (`add_item_with_name<A>(*node, name)` becomes `name`). The
+  walk distrusts a local or return whose pointer type differs from the declared one. A same-type case
+  (`return DEG_get_evaluated(depsgraph, id)` read as `return id`) still slips through. Lowering such calls as calls
+  needs a `LOWER_VERSION` bump, which re-parses everything.
+- **Header functions.** Inline functions and templates in headers are not lowered, so their callers are `unknown`.
 
 ## 6. Hand tables checked against the facts
 
@@ -264,9 +313,9 @@ Feeding the facts into `sphinx_stub_gen`'s data model is the next step for an up
 
 ## 8. Open questions
 
-- Should a return pointer of an RNA function be `X | None`? RNA has no flag for it. Most `new()` functions report
-  an error, which pyrna raises, instead of returning NULL; lookups (`find`, `find_armature`) return NULL. A
-  libclang pass over the C bodies could tell them apart.
+- Should RNA get a flag for never-null returns? The libclang classification (section 5.1) shows only 127 of 245
+  distinct C functions are provably non-null to Python. A flag set where the C guarantees it would let every
+  generator drop the guesswork.
 - Is the 1-second makesrna dump worth adding to `stubs:generate` now, as a fact source for the builtin generator's
   never-null parameters and callback names?
 - The 108 enum candidates: classify their item functions with libclang, then decide which stay `Literal`.

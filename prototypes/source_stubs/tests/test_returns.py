@@ -10,17 +10,29 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from libclang.interp import Program
 from libclang.returns import Returns
 
-REPORT = ["c", "c:@F@BKE_report", "BKE_report", [["v", "reports", "ReportList *", ""], ["k", "RPT_ERROR", 32], ["s", "x"]], 1]
-WARN = ["c", "c:@F@BKE_report", "BKE_report", [["v", "reports", "ReportList *", ""], ["k", "RPT_WARNING", 4], ["s", "x"]], 1]
+REPORT = [
+    "c",
+    "c:@F@BKE_report",
+    "BKE_report",
+    [["v", "reports", "ReportList *", ""], ["k", "RPT_ERROR", 32], ["s", "x"]],
+    1,
+]
+WARN = [
+    "c",
+    "c:@F@BKE_report",
+    "BKE_report",
+    [["v", "reports", "ReportList *", ""], ["k", "RPT_WARNING", 4], ["s", "x"]],
+    1,
+]
 
 
-def fn(name: str, body: list, params: list | None = None, usr: str | None = None) -> dict:
+def fn(name: str, body: list, params: list | None = None, usr: str | None = None, ret: str = "FCurve *") -> dict:
     return {
         "usr": usr or f"c:@F@{name}",
         "name": name,
         "qual": name,
         "params": params or [],
-        "ret": "FCurve *",
+        "ret": ret,
         "static": False,
         "file": "f.cc",
         "line": 1,
@@ -55,7 +67,10 @@ MATCH = fn("match", [["ret", ["i", 1], 1]])
 
 
 def test_null_after_an_error_report_raises() -> None:
-    f = fn("rna_new", [["if", v("bad"), [["e", REPORT, 1], ["ret", ["null"], 2]], [], 1], ["ret", ["x", "CXX_NEW_EXPR", ""], 3]])
+    f = fn(
+        "rna_new",
+        [["if", v("bad"), [["e", REPORT, 1], ["ret", ["null"], 2]], [], 1], ["ret", ["x", "CXX_NEW_EXPR", ""], 3]],
+    )
     assert kinds(f, entry="rna_new") == "raises"
 
 
@@ -83,7 +98,9 @@ def test_checked_lookup_is_never_null() -> None:
 
 
 def test_allocations_and_addresses_are_never_null() -> None:
-    f = fn("rna_add", [["if", v("c"), [["ret", call("MEM_callocN", ["i", 8]), 1]], [], 1], ["ret", ["u", "&", v("x")], 2]])
+    f = fn(
+        "rna_add", [["if", v("c"), [["ret", call("MEM_callocN", ["i", 8]), 1]], [], 1], ["ret", ["u", "&", v("x")], 2]]
+    )
     assert kinds(f, entry="rna_add") == "never"
 
 
@@ -128,3 +145,102 @@ def test_pointer_rna_follows_its_data() -> None:
         ],
     )
     assert kinds(f, entry="rna_ptr") == "null"
+
+
+def test_copies_of_a_pointer_rna_follow_their_argument() -> None:
+    """``return ptr;`` / ``return PointerRNA_NULL;`` by value lower to a copy constructor; ``PointerRNA()`` is empty."""
+    null = ["g", "c:@PointerRNA_NULL", "PointerRNA_NULL", "const PointerRNA"]
+    f = fn(
+        "rna_ptr",
+        [
+            ["decl", "ptr", "PointerRNA", call("RNA_pointer_create_discrete", v("id"), v("t"), ["u", "&", v("d")]), 1],
+            ["if", v("c"), [["ret", ["ctor", "PointerRNA", [v("ptr")], 2], 2]], [], 2],
+            ["ret", ["ctor", "PointerRNA", [null], 3], 3],
+        ],
+    )
+    assert kinds(f, entry="rna_ptr") == "null"
+    empty = fn("rna_empty", [["ret", ["ctor", "PointerRNA", [], 1], 1]])
+    assert kinds(empty, entry="rna_empty") == "null"
+    copy = fn("rna_copy", [["ret", ["ctor", "PointerRNA", [call("RNA_id_pointer_create", ["u", "&", v("x")])], 1], 1]])
+    assert kinds(copy, entry="rna_copy") == "never"
+
+
+def test_checked_fields_are_non_null() -> None:
+    """``if (ntype && ntype->inputs) { stemp = ntype->inputs; return stemp; } return nullptr;``"""
+    field_ = ["m", v("ntype"), "inputs", "bNodeType", "Template *", "Template"]
+    f = fn(
+        "rna_tmpl",
+        [
+            [
+                "if",
+                ["b", "&&", v("ntype"), field_],
+                [["decl", "s", "Template *", field_, 2], ["ret", v("s"), 3]],
+                [],
+                1,
+            ],
+            ["ret", ["x", "CXX_NEW_EXPR", ""], 4],
+        ],
+    )
+    assert kinds(f, entry="rna_tmpl") == "never"
+
+
+def test_a_dereferenced_pointer_is_non_null_after() -> None:
+    """``id = alloc(); ensure(*id); if (id) {...} return id;``: a NULL ``id`` would have crashed at ``*id``."""
+    alloc = fn("alloc", [["if", v("ok"), [["ret", call("MEM_new_zeroed", ["i", 8]), 1]], [], 1], ["ret", ["null"], 2]])
+    f = fn(
+        "rna_new",
+        [
+            ["decl", "id", "ID *", call("alloc"), 1],
+            ["e", call("ensure", ["u", "*", ["v", "id", "ID *", "ID"], "ID &", "ID"]), 2],
+            ["ret", ["v", "id", "ID *", "ID"], 3],
+        ],
+        ret="ID *",
+    )
+    assert kinds(f, alloc, fn("ensure", []), entry="rna_new") == "never"
+
+
+def test_a_failed_check_that_reports_raises() -> None:
+    """``if (!check(ob, reports)) return nullptr;`` where ``check`` reports an error whenever it returns false."""
+    ob = [["ob", "Object *", "Object"]]
+    check = fn("check", [["if", v("bad"), [["e", REPORT, 1], ["ret", ["i", 0], 1]], [], 1], ["ret", ["i", 1], 2]], ob)
+    quiet = fn("quiet", [["if", v("bad"), [["ret", ["i", 0], 1]], [], 1], ["ret", ["i", 1], 2]], ob)
+
+    def caller(name: str, callee: str) -> dict:
+        return fn(
+            name,
+            [["if", ["u", "!", call(callee, v("ob"))], [["ret", ["null"], 1]], [], 1], ["ret", ["u", "&", v("x")], 2]],
+        )
+
+    assert kinds(caller("rna_a", "check"), check, entry="rna_a") == "raises"
+    assert kinds(caller("rna_b", "quiet"), quiet, entry="rna_b") == "null"
+
+
+def test_a_value_of_another_pointer_type_is_unknown() -> None:
+    """A dependent template call can lower to its last argument (``add_item<A>(node, name)`` as ``name``)."""
+    f = fn(
+        "rna_new",
+        [
+            ["decl", "item", "NodeEnumItem *", ["v", "name", "const char *", "char"], 1, "NodeEnumItem"],
+            ["ret", ["v", "item", "NodeEnumItem *", "NodeEnumItem"], 2],
+        ],
+        params=[["name", "const char *", "char"]],
+    )
+    assert kinds(f, entry="rna_new", args=("never",)) == "unknown"
+
+
+def test_a_null_the_callee_reported_raises_in_the_caller() -> None:
+    """``layer = attribute_new(..., reports); if (!layer) return PointerRNA_NULL;`` where the callee reports first."""
+    make = fn(
+        "attribute_new",
+        [["if", v("bad"), [["e", REPORT, 1], ["ret", ["null"], 1]], [], 1], ["ret", ["x", "CXX_NEW_EXPR", ""], 2]],
+    )
+    null = ["g", "c:@PointerRNA_NULL", "PointerRNA_NULL", "const PointerRNA"]
+    f = fn(
+        "rna_new",
+        [
+            ["decl", "layer", "FCurve *", call("attribute_new"), 1],
+            ["if", ["u", "!", v("layer")], [["ret", ["ctor", "PointerRNA", [null], 2], 2]], [], 2],
+            ["ret", call("RNA_pointer_create_discrete", v("id"), v("t"), v("layer")), 3],
+        ],
+    )
+    assert kinds(f, make, entry="rna_new") == "raises"

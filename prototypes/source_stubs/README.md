@@ -7,7 +7,7 @@ upstream could adopt. The findings are in [docs/research/source-stub-generators.
 | Prototype | Reads | Needs |
 |---|---|---|
 | `regex/` | the C/C++ files as text: a small tokenizer, `#define` expansion and an interpreter for the `RNA_def_*` call sequences, `PyTypeObject` / `PyMethodDef` tables, operator, node and bmesh definitions | Python only |
-| `libclang/` | the same files through clang's AST (the pinned `libclang` wheel), using the build's `compile_commands.json` | `libclang` from PyPI, a configured build for the compile flags |
+| `libclang/` | the same files through clang's AST (the pinned `libclang` wheel), using the build's `compile_commands.json`; also the runtime C bodies (`-DRNA_RUNTIME`) and their callees, to classify whether RNA functions can return NULL (`returns.py`, written to `returns.md`) | `libclang` from PyPI, a configured build for the compile flags |
 | `makesrna/` | the RNA definitions as makesrna itself runs them, dumped as JSON by `makesrna-json-dump.patch` | a configured Blender build with the patch applied and the `makesrna` target built |
 
 All three share `common/`:
