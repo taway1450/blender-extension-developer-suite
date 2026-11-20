@@ -109,6 +109,34 @@ def read_stubs(root: Path) -> dict[str, dict[str, dict[str, str]]]:
     return modules
 
 
+def type_aliases(root: Path) -> dict[str, str]:
+    """Module-level ``X: TypeAlias = ...`` / ``X = Literal[...]`` of a stub set (builtin's ``_rna_enums``)."""
+    aliases: dict[str, str] = {}
+    for path in root.rglob("*.pyi"):
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (SyntaxError, UnicodeDecodeError):
+            continue
+        for node in tree.body:
+            if isinstance(node, ast.AnnAssign) and node.value and ast.unparse(node.annotation).endswith("TypeAlias"):
+                aliases[ast.unparse(node.target)] = ast.unparse(node.value)
+            elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+                if ast.unparse(node.value).startswith(("Literal[", "typing.Literal[")):
+                    aliases[node.targets[0].id] = ast.unparse(node.value)
+    return aliases
+
+
+def expand_aliases(modules: dict[str, dict[str, dict[str, str]]], aliases: dict[str, str]) -> None:
+    """Spell each alias out in every annotation, so ``rna_enum_x_items`` and its ``Literal[...]`` compare equal."""
+    if not aliases:
+        return
+    pattern = re.compile(r"\b(?:_rna_enums\.)?(" + "|".join(map(re.escape, sorted(aliases, key=len, reverse=True))) + r")\b")
+    for classes in modules.values():
+        for members in classes.values():
+            for name, text in members.items():
+                members[name] = pattern.sub(lambda m: aliases[m.group(1)], text)
+
+
 _QUALIFIER = re.compile(r"\b(?:bpy\.types|mathutils|bmesh\.types|gpu\.types|freestyle\.types|typing|collections\.abc|builtins|_rna_enums)\.")
 
 
@@ -135,6 +163,21 @@ def normalize(text: str) -> str:
         head, _, ret = t.rpartition("->")
         return f"{head}->{sort_union(ret)}"
     return sort_union(t)
+
+
+_OPERATOR_PREFIX = re.compile(r"^\(execution_context:[^,)]*(,undo:[^,)]*)?,?")
+
+
+def operator_call(sig: str) -> str:
+    """An operator's signature without the positional ``execution_context`` / ``undo`` every operator takes: a
+    convention some stub sets spell out and others leave out, not a fact about the operator."""
+    if not _OPERATOR_PREFIX.match(sig):
+        return sig
+    head, _, ret = sig.rpartition("->")
+    head = _OPERATOR_PREFIX.sub("(", head)
+    params, _, flags = head.rpartition(")")
+    flags = flags.replace("/", "")
+    return f"{params}){flags}->{ret}"
 
 
 def difference_kind(a: str, b: str) -> str:
@@ -216,6 +259,8 @@ def compare_pair(a: dict, b: dict) -> dict:
                         stats["samples"]["member only B"].append(f"{module}.{cls}.{member}".replace("..", "."))
                 else:
                     na, nb = normalize(ma[member]), normalize(mb[member])
+                    if module.startswith("bpy.ops."):
+                        na, nb = operator_call(na), operator_call(nb)
                     if na == nb:
                         counter["members same"] += 1
                     else:
@@ -287,6 +332,8 @@ def main() -> int:
     args = parser.parse_args()
     sets = stub_sets(args.version)
     data = {name: read_stubs(path) for name, path in sets.items()}
+    for name, path in sets.items():
+        expand_aliases(data[name], type_aliases(path))
     prototypes = [n for n in sets if n in {"regex", "libclang", "makesrna"}]
     if args.pairs:
         wanted = [tuple(p.split(":")) for p in args.pairs.split(",")]

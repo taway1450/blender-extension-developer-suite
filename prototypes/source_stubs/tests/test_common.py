@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.compare import difference_kind, normalize, read_stubs  # noqa: E402
+from common.compare import difference_kind, expand_aliases, type_aliases, normalize, operator_call, read_stubs  # noqa: E402
 from common.pysource import Imports, StubWriter  # noqa: E402
 
 
@@ -142,3 +142,20 @@ def test_defaults() -> None:
     assert literal_default("Vector((0, 0, 0))") == "..."
     p = RnaProperty(identifier="m", type="float", array=[2, 2], default=[1.0, 0.0, 0.0, 1.0])
     assert Renderer.default_text(None, p) == "((1.0, 0.0), (0.0, 1.0))"  # type: ignore[arg-type]
+
+
+def test_operator_call_drops_execution_context() -> None:
+    ours = normalize("(execution_context: int | str | None, undo: bool | None, only_unused: bool)/* -> set[str]")
+    theirs = normalize("(only_unused: bool)* -> set[str]")
+    assert operator_call(ours) == operator_call(theirs)
+    assert operator_call(normalize("(execution_context: int | str | None, undo: bool | None)/ -> set[str]")) == "()->set[str]"
+
+
+def test_enum_aliases_are_spelled_out(tmp_path: Path) -> None:
+    (tmp_path / "_rna_enums").mkdir()
+    (tmp_path / "_rna_enums" / "__init__.pyi").write_text(
+        "from typing import Literal, TypeAlias\nrna_enum_x_items: TypeAlias = Literal['A', 'B']\n"
+    )
+    modules = {"bpy.types": {"T": {"p": "_rna_enums.rna_enum_x_items", "q": "set[rna_enum_x_items]"}}}
+    expand_aliases(modules, type_aliases(tmp_path))
+    assert modules["bpy.types"]["T"] == {"p": "Literal['A', 'B']", "q": "set[Literal['A', 'B']]"}
