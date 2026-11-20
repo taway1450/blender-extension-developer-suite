@@ -53,6 +53,9 @@ def main() -> int:
     parser.add_argument("--tool", default="makesrna")
     args = parser.parse_args()
     facts = CACHE_DIR / "source-stubs" / args.version / args.tool / "facts.json"
+    if not facts.is_file():
+        print(f"audit: {facts} not found, run the {args.tool} reader first")
+        return 1
     model = SourceModel.read(facts)
     table = table_from_source(REPO_ROOT / "blender/scripts/modules/_rna_info.py", "ENUM_RUNTIME_ITEMS")
     found = enums_with_callbacks(model)

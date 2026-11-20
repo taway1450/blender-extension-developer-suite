@@ -20,7 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.driver import CACHE_DIR, main
+from common.driver import CACHE_DIR, default_jobs, main
 from common.model import SourceModel
 from libclang.bmesh import read_bmesh
 from libclang.context import Context
@@ -41,7 +41,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="compile_commands.json (default: .cache/blender-build/<source dir name>/compile_commands.json)",
     )
     group.add_argument("--synthesize-flags", action="store_true", help="Ignore any compile_commands.json")
-    parser.add_argument("--jobs", type=int, default=2, help="Parser processes (at most 2)")
+    parser.add_argument("--jobs", type=int, help="Parser processes (default and maximum: the suite's job limit)")
 
 
 def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
@@ -58,7 +58,7 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     selection = select_files(source)
     files = sorted({f for fs in selection.values() for f in fs})
     cache = out / ("cache" if cc else "cache-synth")
-    lowered = parse_all(source, flags, files, cache, jobs=max(1, min(args.jobs, 2)))
+    lowered = parse_all(source, flags, files, cache, jobs=max(1, min(args.jobs or default_jobs(), default_jobs())))
     timings["parse (libclang, cached per unit)"] = time.perf_counter() - start
 
     start = time.perf_counter()

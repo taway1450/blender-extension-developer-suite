@@ -81,6 +81,8 @@ def convert_property(raw: dict, src: str) -> RnaProperty:
     p.getter = raw.get("get") or raw.get("get_array") or ""
     p.setter = raw.get("set") or raw.get("set_array") or ""
     p.deprecated = "deprecated" in raw
+    if raw.get("dna_name"):
+        p.dna = f"{raw.get('dna_struct') or ''}.{raw['dna_name']}"
     for key in ("hard_min", "hard_max", "soft_min", "soft_max"):
         value = raw.get(key)
         if isinstance(value, (int, float)):

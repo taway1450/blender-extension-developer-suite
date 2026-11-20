@@ -9,9 +9,9 @@ libclang or makesrna? Could upstream adopt it?
 **Method.** Three prototypes were built in `prototypes/source_stubs/` (see its README), one per tool. They share a
 JSON model of facts (`common/model.py`), an `ast` reader for the Python side (`common/pysource.py`) and one renderer
 (`common/render.py`). Each was run on the Blender 5.2.0 source (`v5.2.0`, `fbe6228777e7`, worktree
-`.cache/blender-src/5.2-src`). Their stubs were compared with Blender's builtin 5.2 stubs
+`.cache/blender-src/5.2-src`; the coverage files record `038a2fc3c26a`, which is `v5.2.0` plus the makesrna patch). Their stubs were compared with Blender's builtin 5.2 stubs
 (`.cache/bpy-stubs-builtin/5.2`), fake-bpy-module 5.2 (`.cache/bpy-stubs/5.2`) and each other
-(`common/compare.py`). The outputs are in `.cache/source-stubs/5.2/`: `<tool>/facts.json`, `<tool>/stubs/`,
+(`common/compare.py`). `mise run probe:source-stubs 5.2 --source .cache/blender-src/5.2-src` reruns all of it. The outputs are in `.cache/source-stubs/5.2/`: `<tool>/facts.json`, `<tool>/stubs/`,
 `<tool>/coverage.md`, `comparison.md` and `audit.md`.
 
 ## 1. Answer
@@ -59,7 +59,7 @@ JSON model of facts (`common/model.py`), an `ast` reader for the Python side (`c
 | Reads | C/C++ as text: tokenizer, `#define` expansion, call interpreter, table readers | clang's AST (`libclang==18.1.1` from PyPI), flags from `compile_commands.json` | RNA definitions as makesrna runs them, dumped by `makesrna-json-dump.patch` |
 | Needs | Python 3, the source tree | the wheel, a configured build for compile flags (`--synthesize-flags` works without one, with more errors) | a configured build with the patch and the `makesrna` target built |
 | Areas | RNA, operators, nodes, Python C API, context, bmesh | the same | RNA only |
-| Time (5.2) | 55 s extract + 5 s Python | ~17 min cold (833 units, 2 processes), 11 s warm | 1 s extract + 6 s Python |
+| Time (5.2) | 55 s extract + 5 s Python | ~17 min cold (832 units, 2 processes), 11 s warm | 1 s extract + 6 s Python |
 | Code | 6,084 lines | 3,735 lines | 195 lines + 483-line C++ patch |
 | Exact | tables (`PyTypeObject`, `PyMethodDef`, bmesh, sockets), DNA array sizes, define helpers | call targets, enum values, constant arithmetic, initializer fields, expression types, loops with known bounds, calls through function pointers | everything RNA defines, as defined |
 | Heuristic | unknown conditions run both branches; unknown ternaries take the first; context types from C variable types | unknown conditions run both branches; context types from `&x->id`; bmesh docs from text near AST positions | none |
@@ -75,7 +75,7 @@ The shared part (`common/`, 2,412 lines): the model, the `ast` reader, the rende
 | Operators / their properties | 2,146 / 5,263 | 2,136 / 4,967 | - |
 | Python C types / module functions | 255 / 205 | 255 / 228 | - |
 | Signatures from C docstrings | 728 | 718 | - |
-| Context members (typed) | 104 (99) | 104 (60) | - |
+| Context members (typed) | 104 (98) | 104 (56) | - |
 | Node declarations / sockets | 516 / 2,498 | 515 / 2,490 | - |
 | bmesh operators | 83 | 82 | - |
 | Python modules / classes / registrations (shared `ast` reader) | 555 / 3,048 / 82 | same | same |
@@ -105,12 +105,12 @@ Kinds of disagreement with builtin, for makesrna (the cleanest case, RNA only):
 
 | Kind | Count | Who is right |
 |---|---|---|
-| Return `X \| None` vs `X` | 1,226 | Open. RNA return pointers have no never-null flag; builtin assumes non-null. |
-| Parameter `X` vs `X \| None` | 468 | makesrna: the parameters are `PROP_NEVER_NULL` (e.g. `AOVs.remove(aov)`), and `None` raises. |
-| Enum `Literal` vs alias | 321 + 186 | Equal: alias spelling the comparison does not resolve. |
-| Parameter types | 222 | Mixed: mostly Python-script functions the `ast` reader leaves untyped. |
-| Positional-only / keyword-only | 168 | Convention: RNA functions take any parameter by position; builtin makes optional ones keyword-only. |
-| `Literal` vs `str` (dynamic enum) | 133 | Builtin keeps the static items of enums with an item function; the readers say `str` (section 5). |
+| Return `X \| None` vs `X` | 1,267 | Open. RNA return pointers have no never-null flag; builtin assumes non-null. |
+| Parameter `X` vs `X \| None` | 471 | makesrna: the parameters are `PROP_NEVER_NULL` (e.g. `AOVs.remove(aov)`), and `None` raises. |
+| `Literal` vs `str` (dynamic enum) | 200 | Builtin keeps the static items of enums with an item function; the readers say `str` (section 5). |
+| Positional-only / keyword-only | 199 | Convention: RNA functions take any parameter by position; builtin makes optional ones keyword-only. |
+| Parameter types | 134 | Mixed: mostly Python-script functions the `ast` reader leaves untyped. |
+| One side untyped | 124 + 24 | Builtin: Python-script functions the `ast` reader leaves untyped (it renders annotations only). |
 
 ## 3. Upstream tools that already exist
 
@@ -133,16 +133,18 @@ Kinds of disagreement with builtin, for makesrna (the cleanest case, RNA only):
 
 Each was found by at least one prototype and is missing or wrong in the builtin 5.2 stubs.
 
-1. **Never-null parameters.** 468 RNA function parameters are `PROP_NEVER_NULL` and required
-   (`AOVs.remove(aov)`, `Action.flip_with_pose(object)`). Builtin types them `X | None`.
+1. **Never-null parameters.** 812 RNA function pointer parameters are required and `PROP_NEVER_NULL`
+   (`AOVs.remove(aov)`, `Action.flip_with_pose(object)`); for 471 of the members both sets have, builtin types
+   such a parameter `X | None`.
 2. **Positional-only C functions.** The argument parsers say which parameters have no keyword:
    - `METH_VARARGS` functions;
    - empty `_keywords[]` entries, 488 parameters;
    - `bl_math.clamp`, `lerp` and `smoothstep`.
 
    Builtin allows keywords for all of them.
-3. **bmesh operators.** `bm` is positional-only, every slot is keyword-only, and enum slots are `Literal`s
-   (`beautify_fill(method: Literal['AREA', 'ANGLE'])`). Builtin has `int` and neither marker.
+3. **bmesh operators.** `bm` is positional-only and every slot keyword-only (`python/bmesh/bmesh_py_ops_call.cc`
+   expects "a single BMesh positional argument" and reads the slots from `**kw`). Builtin has neither marker. Both have the enum slots as `Literal`s; builtin also has the slots'
+   defaults, which the readers render as `...`.
 4. **Typed node sockets.** For example `GeometryNodeMeshCube.inputs['Size']` is a vector with subtype translation,
    and `GeometryNodeSetPosition.inputs['Position']` is a `NodeSocketVector`. The readers render per-node
    `inputs` / `outputs` views with `Literal` overloads. Builtin has only the generic `NodeInputs`.
@@ -155,8 +157,8 @@ Each was found by at least one prototype and is missing or wrong in the builtin 
    (1,103); for each pointer, its poll (111) and type function (9); 96 editable functions; getters and setters.
    These are what a stub generator needs to decide whether static items are real (section 5) or a pointer's type
    is narrower than declared.
-7. **DNA mapping.** Each property's DNA struct and field and each struct's DNA name (1,635 by libclang). The
-   runtime has no such link.
+7. **DNA mapping.** Each property's DNA field (`Object.location` reads `Object.loc`; 8,796 properties in
+   makesrna's facts) and each struct's DNA name (1,635 by libclang). The runtime has no such link.
 8. **Operator property flags**, e.g. `MESH_OT_primitive_cube_add_gizmo.matrix` is hidden and skip-save.
 9. **A source location for every fact**, so a wrong stub points at the line that defines it.
 

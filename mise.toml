@@ -359,7 +359,7 @@ uv run scripts/run_ruff.py format features {{usage.version}}
 '''
 
 [tasks."lint:scripts"]
-description = "Lint and format the tooling in scripts/ with the pinned upstream ruff through prek (.pre-commit-config.yaml); fixes files"
+description = "Lint and format the tooling in scripts/ and prototypes/source_stubs/ with the pinned upstream ruff through prek (.pre-commit-config.yaml); fixes files"
 run = 'uvx prek@0.5.6 run --all-files'
 
 [tasks."test:scripts"]
@@ -416,6 +416,17 @@ flag "--make" help="Rebuild the generated example .blend files in Blender first"
 flag "--update-overlays" help="Write the overlays from B into the example add-ons' _blend/"
 '''
 run = 'uv run scripts/probe_blend_typing.py {{usage.version}} {% if usage.make %}--make{% endif %} {% if usage.update_overlays %}--update-overlays{% endif %}'
+
+[tasks."probe:source-stubs"]
+description = "Run the source stub readers (prototypes/source_stubs/: regex, libclang, makesrna) on a Blender source tree, compare their stubs with the builtin and fake-bpy-module stubs and each other, and audit ENUM_RUNTIME_ITEMS"
+usage = '''
+arg "<version>" help="Version label for the outputs in .cache/source-stubs/<version>/ (e.g. 5.2)"
+flag "--source <path>" help="Blender source tree (default: .cache/blender-src/<version>)"
+flag "--tool <tool>" default="all" help="Reader to run before the comparison" {
+  choices "regex" "libclang" "makesrna" "all"
+}
+'''
+run = 'uv run --no-project --python 3.13 prototypes/source_stubs/probe.py {{usage.version}} --tool {{usage.tool}} {% if usage.source %}--source {{usage.source}}{% endif %}'
 
 [tasks."probe:runtime-stubs"]
 description = "Compare the runtime stubs (stubs:generate --generator runtime) with the builtin and fake-bpy-module stubs, and run the runtime generator on each example add-on: its delta, merged stubs and .blend overlays"

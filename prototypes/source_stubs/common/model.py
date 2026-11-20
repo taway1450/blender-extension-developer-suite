@@ -68,6 +68,7 @@ class RnaProperty:
     getter: str = ""
     setter: str = ""
     deprecated: bool = False
+    dna: str = ""  # the DNA field it reads, ``Struct.field`` (``Object.loc``)
     src: str = ""
 
 

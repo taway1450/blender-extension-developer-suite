@@ -25,6 +25,9 @@ from .pysource import read_python
 from .render import write_stubs
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT / "scripts"))
+from _resources import guarded
+
 CACHE_DIR = REPO_ROOT / ".cache"
 
 
@@ -111,9 +114,10 @@ def main(
     model = SourceModel(tool=tool, source=str(source), commit=commit)
     out = out_dir(args.version, tool)
 
-    start = time.perf_counter()
-    extract(source, model, args)
-    model.coverage.seconds["extract"] = time.perf_counter() - start
+    with guarded():  # the suite's machine-wide lock and resource limits (scripts/_resources.py)
+        start = time.perf_counter()
+        extract(source, model, args)
+        model.coverage.seconds["extract"] = time.perf_counter() - start
     if not args.no_python:
         start = time.perf_counter()
         read_python(source, model)
