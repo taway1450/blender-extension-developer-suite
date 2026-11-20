@@ -148,8 +148,17 @@ class Program:
             for f in unit.get("functions", []):
                 if f["usr"] in self.functions:
                     continue
-                fn = Function(f["usr"], f["name"], f["qual"], f["params"], f["body"], f["file"], f["line"],
-                              f.get("static", False), f.get("ret", ""))
+                fn = Function(
+                    f["usr"],
+                    f["name"],
+                    f["qual"],
+                    f["params"],
+                    f["body"],
+                    f["file"],
+                    f["line"],
+                    f.get("static", False),
+                    f.get("ret", ""),
+                )
                 self.functions[fn.usr] = fn
                 self.by_name.setdefault(fn.name, []).append(fn)
             for g in unit.get("globals", []):
@@ -221,9 +230,14 @@ class Interp:
         init = g.get("init") if g is not None else None
         # ``PyTypeObject X;`` in C++ arrives as an implicit default constructor call.
         zero_init = init is None or (isinstance(init, list) and init[:2] == ["ctor", "_typeobject"] and not init[2])
-        if g is not None and zero_init and g.get("record") and not g["type"].rstrip().endswith(("*", "]")) \
-                and g["record"].lstrip("_")[:1].isalpha() \
-                and g["record"] not in ("StructRNA", "PropertyRNA", "BlenderRNA"):
+        if (
+            g is not None
+            and zero_init
+            and g.get("record")
+            and not g["type"].rstrip().endswith(("*", "]"))
+            and g["record"].lstrip("_")[:1].isalpha()
+            and g["record"] not in ("StructRNA", "PropertyRNA", "BlenderRNA")
+        ):
             # A zero-initialized struct global (``static PyTypeObject BlenderAppType;``): fields are assigned at runtime.
             value = {"__record__": g["record"]}
             self.global_names[id(value)] = name
@@ -377,7 +391,11 @@ class Interp:
         if isinstance(value, Ptr):
             return True if 0 <= value.index < len(value.seq) else None
         if value is UNKNOWN or isinstance(value, (Obj, GlobalRef, FuncRef, Lambda, MemberTest)):
-            return True if isinstance(value, (FuncRef, Lambda)) else (None if value is UNKNOWN or isinstance(value, Obj) else True)
+            return (
+                True
+                if isinstance(value, (FuncRef, Lambda))
+                else (None if value is UNKNOWN or isinstance(value, Obj) else True)
+            )
         if value is None:
             return False
         if isinstance(value, (int, float)):
@@ -499,6 +517,7 @@ class Interp:
             text = e[2]
             if text.startswith('"') and '"_' in text:
                 from common.rstdoc import decode_c_string
+
                 return decode_c_string(text[1 : text.rindex('"_')])
         return UNKNOWN
 
@@ -634,7 +653,11 @@ class Interp:
         b = self.eval(re_, env)
         if op in ("==", "!=", "<", ">", "<=", ">="):
             if a is UNKNOWN or b is UNKNOWN or isinstance(a, (Obj, GlobalRef)) or isinstance(b, (Obj, GlobalRef)):
-                if op in ("==", "!=") and (a is None or b is None) and isinstance(a if b is None else b, (Obj, GlobalRef, FuncRef, list, str)):
+                if (
+                    op in ("==", "!=")
+                    and (a is None or b is None)
+                    and isinstance(a if b is None else b, (Obj, GlobalRef, FuncRef, list, str))
+                ):
                     return op == "!="
                 return UNKNOWN
             try:

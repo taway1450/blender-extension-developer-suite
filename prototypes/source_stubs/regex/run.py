@@ -9,22 +9,22 @@ from __future__ import annotations
 
 import argparse
 import sys
-import time
-import traceback
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 sys.path.insert(0, str(HERE))
 
-from common.driver import main  # noqa: E402
-from common.model import SourceModel  # noqa: E402
+from common.driver import main
+from common.model import SourceModel
 
 AREAS = ["rna", "operators", "nodes", "pyapi", "context", "bmesh"]
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--areas", default=",".join(AREAS), help=f"Comma-separated areas (default: all: {','.join(AREAS)})")
+    parser.add_argument(
+        "--areas", default=",".join(AREAS), help=f"Comma-separated areas (default: all: {','.join(AREAS)})"
+    )
 
 
 def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:

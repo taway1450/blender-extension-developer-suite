@@ -14,15 +14,25 @@ from __future__ import annotations
 
 import json
 import re
-import sysconfig
 import shlex
+import sysconfig
 from dataclasses import dataclass, field
 from pathlib import Path
 
 RESOURCE_INCLUDE = "/usr/lib/llvm-18/lib/clang/18/include"
 SYNTH_DEFINES = [
-    "WITH_PYTHON", "WITH_FREESTYLE", "WITH_INTERNATIONAL", "WITH_AUDASPACE", "WITH_INPUT_NDOF", "WITH_FLUID",
-    "WITH_IO_WAVEFRONT_OBJ", "WITH_IO_PLY", "WITH_IO_STL", "WITH_TBB", "__LITTLE_ENDIAN__", "WITH_OPENGL_BACKEND",
+    "WITH_PYTHON",
+    "WITH_FREESTYLE",
+    "WITH_INTERNATIONAL",
+    "WITH_AUDASPACE",
+    "WITH_INPUT_NDOF",
+    "WITH_FLUID",
+    "WITH_IO_WAVEFRONT_OBJ",
+    "WITH_IO_PLY",
+    "WITH_IO_STL",
+    "WITH_TBB",
+    "__LITTLE_ENDIAN__",
+    "WITH_OPENGL_BACKEND",
 ]
 
 
@@ -85,7 +95,7 @@ class FlagSource:
 
     def _load(self, path: Path) -> None:
         entries = json.loads(path.read_text())
-        include_re = re.compile(r'^#include "([^"]+)"', re.M)
+        include_re = re.compile(r'^#include "([^"]+)"', re.MULTILINE)
         for e in entries:
             file = e["file"]
             args = _clean(e.get("command") or e.get("arguments"), file)
@@ -111,8 +121,20 @@ class FlagSource:
             dirs: set[str] = set()
             # Skip directories with a header that shadows a system one (``intern/cycles/kernel/features.h`` hides
             # glibc's ``<features.h>``, a fatal error in every unit that reaches it).
-            system = {"features.h", "types.h", "math.h", "string.h", "time.h", "limits.h", "stdint.h", "assert.h",
-                      "float.h", "memory.h", "version.h", "config.h"}
+            system = {
+                "features.h",
+                "types.h",
+                "math.h",
+                "string.h",
+                "time.h",
+                "limits.h",
+                "stdint.h",
+                "assert.h",
+                "float.h",
+                "memory.h",
+                "version.h",
+                "config.h",
+            }
             for top in ("source/blender", "intern", "extern"):
                 for header in (self.source / top).rglob("*.h*"):
                     if header.suffix in (".h", ".hh", ".hpp"):

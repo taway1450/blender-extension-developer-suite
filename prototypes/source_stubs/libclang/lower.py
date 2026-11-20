@@ -48,14 +48,49 @@ _lib.clang_getCursorBinaryOperatorKind.restype = ctypes.c_int
 _lib.clang_getCursorUnaryOperatorKind.argtypes = [ci.Cursor]
 _lib.clang_getCursorUnaryOperatorKind.restype = ctypes.c_int
 
-BINOPS = {3: "*", 4: "/", 5: "%", 6: "+", 7: "-", 8: "<<", 9: ">>", 11: "<", 12: ">", 13: "<=", 14: ">=", 15: "==",
-          16: "!=", 17: "&", 18: "^", 19: "|", 20: "&&", 21: "||", 22: "=", 23: "*=", 24: "/=", 25: "%=", 26: "+=",
-          27: "-=", 28: "<<=", 29: ">>=", 30: "&=", 31: "^=", 32: "|=", 33: ","}
+BINOPS = {
+    3: "*",
+    4: "/",
+    5: "%",
+    6: "+",
+    7: "-",
+    8: "<<",
+    9: ">>",
+    11: "<",
+    12: ">",
+    13: "<=",
+    14: ">=",
+    15: "==",
+    16: "!=",
+    17: "&",
+    18: "^",
+    19: "|",
+    20: "&&",
+    21: "||",
+    22: "=",
+    23: "*=",
+    24: "/=",
+    25: "%=",
+    26: "+=",
+    27: "-=",
+    28: "<<=",
+    29: ">>=",
+    30: "&=",
+    31: "^=",
+    32: "|=",
+    33: ",",
+}
 UNOPS = {1: "post++", 2: "post--", 3: "++", 4: "--", 5: "&", 6: "*", 7: "+", 8: "-", 9: "~", 10: "!"}
 
 PASS_THROUGH = {
-    K.UNEXPOSED_EXPR, K.PAREN_EXPR, K.CSTYLE_CAST_EXPR, K.CXX_STATIC_CAST_EXPR, K.CXX_REINTERPRET_CAST_EXPR,
-    K.CXX_CONST_CAST_EXPR, K.CXX_FUNCTIONAL_CAST_EXPR, K.CXX_DYNAMIC_CAST_EXPR,
+    K.UNEXPOSED_EXPR,
+    K.PAREN_EXPR,
+    K.CSTYLE_CAST_EXPR,
+    K.CXX_STATIC_CAST_EXPR,
+    K.CXX_REINTERPRET_CAST_EXPR,
+    K.CXX_CONST_CAST_EXPR,
+    K.CXX_FUNCTIONAL_CAST_EXPR,
+    K.CXX_DYNAMIC_CAST_EXPR,
 }
 LOOPS = {K.FOR_STMT: "for", K.WHILE_STMT: "while", K.DO_STMT: "do", K.CXX_FOR_RANGE_STMT: "range"}
 
@@ -183,33 +218,37 @@ class Lowerer:
                 body = ch
         if body is None:
             return
-        self.functions.append({
-            "usr": c.canonical.get_usr() or c.get_usr(),
-            "name": c.spelling,
-            "qual": ns + c.spelling,
-            "params": params,
-            "ret": c.result_type.spelling,
-            "static": c.storage_class == ci.StorageClass.STATIC,
-            "file": self.rel(path),
-            "line": c.location.line,
-            "body": self.stmts(body),
-        })
+        self.functions.append(
+            {
+                "usr": c.canonical.get_usr() or c.get_usr(),
+                "name": c.spelling,
+                "qual": ns + c.spelling,
+                "params": params,
+                "ret": c.result_type.spelling,
+                "static": c.storage_class == ci.StorageClass.STATIC,
+                "file": self.rel(path),
+                "line": c.location.line,
+                "body": self.stmts(body),
+            }
+        )
 
     def lower_global(self, c: ci.Cursor, ns: str, path: str) -> None:
         init = None
         for ch in c.get_children():
             if ch.kind not in (K.TYPE_REF, K.NAMESPACE_REF, K.TEMPLATE_REF) and ch.kind.is_expression():
                 init = ch
-        self.globals.append({
-            "usr": c.get_usr(),
-            "name": c.spelling,
-            "qual": ns + c.spelling,
-            "type": c.type.spelling,
-            "record": record_name(c.type),
-            "file": self.rel(path),
-            "line": c.location.line,
-            "init": self.expr(init) if init is not None else None,
-        })
+        self.globals.append(
+            {
+                "usr": c.get_usr(),
+                "name": c.spelling,
+                "qual": ns + c.spelling,
+                "type": c.type.spelling,
+                "record": record_name(c.type),
+                "file": self.rel(path),
+                "line": c.location.line,
+                "init": self.expr(init) if init is not None else None,
+            }
+        )
 
     # ----------------------------------------------------------------------------------------------------------------
     # Statements
@@ -236,19 +275,39 @@ class Lowerer:
                     for ch in d.get_children():
                         if ch.kind.is_expression():
                             init = ch
-                    out.append(["decl", d.spelling, d.type.spelling, self.expr(init) if init is not None else None,
-                                d.location.line, record_name(d.type)])
+                    out.append(
+                        [
+                            "decl",
+                            d.spelling,
+                            d.type.spelling,
+                            self.expr(init) if init is not None else None,
+                            d.location.line,
+                            record_name(d.type),
+                        ]
+                    )
             return out
         if k == K.IF_STMT:
             ch = list(c.get_children())
             # [init-stmt] [condition-variable decl] cond then [else]
             pre: list = []
-            while len(ch) > 2 and ch[0].kind in (K.DECL_STMT, K.VAR_DECL) or (len(ch) > 3 and not ch[0].kind.is_expression()):
+            while (
+                len(ch) > 2
+                and ch[0].kind in (K.DECL_STMT, K.VAR_DECL)
+                or (len(ch) > 3 and not ch[0].kind.is_expression())
+            ):
                 first = ch.pop(0)
                 if first.kind == K.VAR_DECL:
                     init = [x for x in first.get_children() if x.kind.is_expression()]
-                    pre.append(["decl", first.spelling, first.type.spelling, self.expr(init[-1]) if init else None,
-                                first.location.line, record_name(first.type)])
+                    pre.append(
+                        [
+                            "decl",
+                            first.spelling,
+                            first.type.spelling,
+                            self.expr(init[-1]) if init else None,
+                            first.location.line,
+                            record_name(first.type),
+                        ]
+                    )
                 else:
                     pre.extend(self.stmt(first))
             cond = self.expr(ch[0]) if ch else ["x", "?", ""]
@@ -269,7 +328,9 @@ class Lowerer:
                 if len(head) == 3:
                     init, cond, inc = head
                 elif len(head) == 2:
-                    if head[0].kind == K.DECL_STMT or (head[0].kind == K.BINARY_OPERATOR and _lib.clang_getCursorBinaryOperatorKind(head[0]) == 22):
+                    if head[0].kind == K.DECL_STMT or (
+                        head[0].kind == K.BINARY_OPERATOR and _lib.clang_getCursorBinaryOperatorKind(head[0]) == 22
+                    ):
                         init, cond = head
                     else:
                         cond, inc = head
@@ -289,10 +350,19 @@ class Lowerer:
                         pre.append(["decl", x.spelling, x.type.spelling, None, x.location.line, record_name(x.type)])
                     elif x.kind.is_expression():
                         range_expr = self.expr(x)
-            return [*pre, ["loop", LOOPS[k], self.stmts(body) if body is not None else [], line,
-                           self.expr(cond) if cond is not None and cond.kind.is_expression() else None,
-                           self.expr(inc) if inc is not None and inc.kind.is_expression() else None,
-                           range_var, range_expr]]
+            return [
+                *pre,
+                [
+                    "loop",
+                    LOOPS[k],
+                    self.stmts(body) if body is not None else [],
+                    line,
+                    self.expr(cond) if cond is not None and cond.kind.is_expression() else None,
+                    self.expr(inc) if inc is not None and inc.kind.is_expression() else None,
+                    range_var,
+                    range_expr,
+                ],
+            ]
         if k == K.SWITCH_STMT:
             ch = list(c.get_children())
             return [["switch", self.expr(ch[0]) if ch else None, self.stmts(ch[-1]) if ch else [], line]]
@@ -386,18 +456,33 @@ class Lowerer:
                 return ["k", ref.spelling, ref.enum_value]
             if rk in (K.FUNCTION_DECL, K.CXX_METHOD, K.FUNCTION_TEMPLATE):
                 return ["fn", ref.canonical.get_usr(), ref.spelling]
-            if rk == K.VAR_DECL and (ref.semantic_parent is None or ref.semantic_parent.kind in (
-                    K.TRANSLATION_UNIT, K.NAMESPACE, K.LINKAGE_SPEC, K.UNEXPOSED_DECL)) or (
-                    rk == K.VAR_DECL and ref.storage_class == ci.StorageClass.STATIC
-                    and ref.semantic_parent is not None and ref.semantic_parent.kind not in (K.FUNCTION_DECL, K.CXX_METHOD)):
+            if (
+                rk == K.VAR_DECL
+                and (
+                    ref.semantic_parent is None
+                    or ref.semantic_parent.kind in (K.TRANSLATION_UNIT, K.NAMESPACE, K.LINKAGE_SPEC, K.UNEXPOSED_DECL)
+                )
+                or (
+                    rk == K.VAR_DECL
+                    and ref.storage_class == ci.StorageClass.STATIC
+                    and ref.semantic_parent is not None
+                    and ref.semantic_parent.kind not in (K.FUNCTION_DECL, K.CXX_METHOD)
+                )
+            ):
                 return ["g", ref.get_usr(), ref.spelling, c.type.spelling]
             return ["v", ref.spelling, c.type.spelling, record_name(c.type)]
         if k == K.MEMBER_REF_EXPR:
             ch = [x for x in c.get_children() if x.kind.is_expression()]
             base = ch[0] if ch else None
             rec = record_name(base.type) if base is not None else ""
-            return ["m", self.expr(base) if base is not None else None, c.spelling, rec, c.type.spelling,
-                    record_name(c.type)]
+            return [
+                "m",
+                self.expr(base) if base is not None else None,
+                c.spelling,
+                rec,
+                c.type.spelling,
+                record_name(c.type),
+            ]
         if k == K.CALL_EXPR:
             return self.call(c)
         if k == K.UNARY_OPERATOR:
@@ -527,8 +612,9 @@ def lower_tu(path: str, args: list[str], files: list[str], root: str) -> dict:
         "tu": os.path.relpath(path, root) if path.startswith(root) else path,
         "files": [os.path.relpath(f, root) for f in files],
         "errors": len(diags),
-        "first_errors": [f"{d.location.file.name if d.location.file else '?'}:{d.location.line}: {d.spelling}"
-                         for d in diags[:5]],
+        "first_errors": [
+            f"{d.location.file.name if d.location.file else '?'}:{d.location.line}: {d.spelling}" for d in diags[:5]
+        ],
         "functions": low.functions,
         "globals": low.globals,
         "dna": low.dna,

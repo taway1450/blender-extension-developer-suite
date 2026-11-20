@@ -96,7 +96,13 @@ def read_bmesh(interp: Interp, source: Path, model) -> None:
             for s in slots:
                 if not isinstance(s, dict) or not isinstance(s.get("name"), str) or not s["name"]:
                     break
-                out.append(BmeshSlot(name=s["name"], type=_slot_type(s.get("type")),
-                                     subtype=_subtype(s.get("subtype")), doc=slot_docs.get(s["name"], ""),
-                                     items=_items(interp, s.get("enum_flags"))))
+                out.append(
+                    BmeshSlot(
+                        name=s["name"],
+                        type=_slot_type(s.get("type")),
+                        subtype=_subtype(s.get("subtype")),
+                        doc=slot_docs.get(s["name"], ""),
+                        items=_items(interp, s.get("enum_flags")),
+                    )
+                )
         model.bmesh_ops.append(op)

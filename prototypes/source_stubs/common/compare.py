@@ -13,11 +13,11 @@ Writes ``.cache/source-stubs/<version>/comparison.md`` and ``comparison.json``.
 from __future__ import annotations
 
 import argparse
-import warnings
 import ast
 import json
 import re
 import sys
+import warnings
 from collections import Counter, defaultdict
 from itertools import combinations
 from pathlib import Path
@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 warnings.filterwarnings("ignore", category=SyntaxWarning)  # escape sequences in parsed docstrings
 
-from common.driver import CACHE_DIR  # noqa: E402
+from common.driver import CACHE_DIR
 
 AREAS = (
     ("bpy.types", lambda m: m == "bpy.types"),
@@ -120,9 +120,13 @@ def type_aliases(root: Path) -> dict[str, str]:
         for node in tree.body:
             if isinstance(node, ast.AnnAssign) and node.value and ast.unparse(node.annotation).endswith("TypeAlias"):
                 aliases[ast.unparse(node.target)] = ast.unparse(node.value)
-            elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
-                if ast.unparse(node.value).startswith(("Literal[", "typing.Literal[")):
-                    aliases[node.targets[0].id] = ast.unparse(node.value)
+            elif (
+                isinstance(node, ast.Assign)
+                and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and ast.unparse(node.value).startswith(("Literal[", "typing.Literal["))
+            ):
+                aliases[node.targets[0].id] = ast.unparse(node.value)
     return aliases
 
 
@@ -130,19 +134,24 @@ def expand_aliases(modules: dict[str, dict[str, dict[str, str]]], aliases: dict[
     """Spell each alias out in every annotation, so ``rna_enum_x_items`` and its ``Literal[...]`` compare equal."""
     if not aliases:
         return
-    pattern = re.compile(r"\b(?:_rna_enums\.)?(" + "|".join(map(re.escape, sorted(aliases, key=len, reverse=True))) + r")\b")
+    pattern = re.compile(
+        r"\b(?:_rna_enums\.)?(" + "|".join(map(re.escape, sorted(aliases, key=len, reverse=True))) + r")\b"
+    )
     for classes in modules.values():
         for members in classes.values():
             for name, text in members.items():
                 members[name] = pattern.sub(lambda m: aliases[m.group(1)], text)
 
 
-_QUALIFIER = re.compile(r"\b(?:bpy\.types|mathutils|bmesh\.types|gpu\.types|freestyle\.types|typing|collections\.abc|builtins|_rna_enums)\.")
+_QUALIFIER = re.compile(
+    r"\b(?:bpy\.types|mathutils|bmesh\.types|gpu\.types|freestyle\.types|typing|collections\.abc|builtins|_rna_enums)\."
+)
 
 
 def normalize(text: str) -> str:
     t = _QUALIFIER.sub("", text).replace(" ", "")
     t = re.sub(r"Optional\[([^\[\]]+)\]", r"\1|None", t)
+
     # Sort the members of top-level unions.
     def sort_union(s: str) -> str:
         depth, parts, cur = 0, [], ""
@@ -268,7 +277,11 @@ def compare_pair(a: dict, b: dict) -> dict:
                         kind = difference_kind(na, nb)
                         stats["kinds"][kind] += 1
                         if len(stats["samples"][kind]) < 6:
-                            stats["samples"][kind].append(f"{module}.{cls}.{member}: {ma[member][:110]}  ||  {mb[member][:110]}".replace("..", "."))
+                            stats["samples"][kind].append(
+                                f"{module}.{cls}.{member}: {ma[member][:110]}  ||  {mb[member][:110]}".replace(
+                                    "..", "."
+                                )
+                            )
     return stats
 
 
@@ -288,11 +301,24 @@ def totals(counter: Counter) -> Counter:
 
 def markdown(version: str, sets: dict[str, Path], data: dict, pairs: dict) -> str:
     lines = [f"# Source stub readers vs the other generators (Blender {version})", ""]
-    lines += ["Stub sets: " + ", ".join(f"`{n}` ({sum(sum(len(m) for m in c.values()) for c in data[n].values())} members in {len(data[n])} modules)" for n in sets), ""]
-    lines += ["Members are attributes, properties and methods; a class's members are compared only when both sets have the class.", ""]
+    lines += [
+        "Stub sets: "
+        + ", ".join(
+            f"`{n}` ({sum(sum(len(m) for m in c.values()) for c in data[n].values())} members in {len(data[n])} modules)"
+            for n in sets
+        ),
+        "",
+    ]
+    lines += [
+        "Members are attributes, properties and methods; a class's members are compared only when both sets have the class.",
+        "",
+    ]
     for (a, b), stats in pairs.items():
         lines += [f"## {a} (A) vs {b} (B)", ""]
-        lines += ["| Area | modules A/both/B | classes A/both/B | members only A | members only B | same | differ | agree % |", "|---|---|---|---|---|---|---|---|"]
+        lines += [
+            "| Area | modules A/both/B | classes A/both/B | members only A | members only B | same | differ | agree % |",
+            "|---|---|---|---|---|---|---|---|",
+        ]
         total = Counter()
         for area, _ in AREAS:
             c = stats["areas"].get(area)
@@ -328,7 +354,9 @@ def markdown(version: str, sets: dict[str, Path], data: dict, pairs: dict) -> st
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("version")
-    parser.add_argument("--pairs", default="", help="Comma-separated A:B pairs (default: every prototype against every set)")
+    parser.add_argument(
+        "--pairs", default="", help="Comma-separated A:B pairs (default: every prototype against every set)"
+    )
     args = parser.parse_args()
     sets = stub_sets(args.version)
     data = {name: read_stubs(path) for name, path in sets.items()}

@@ -20,24 +20,26 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.driver import CACHE_DIR, main  # noqa: E402
-from common.model import SourceModel  # noqa: E402
-
-from libclang.bmesh import read_bmesh  # noqa: E402
-from libclang.context import Context  # noqa: E402
-from libclang.flags import FlagSource  # noqa: E402
-from libclang.interp import Interp, Obj, Program  # noqa: E402
-from libclang.nodes import Nodes  # noqa: E402
-from libclang.operators import Operators  # noqa: E402
-from libclang.parse import parse_all, select_files  # noqa: E402
-from libclang.pyapi import PyApi  # noqa: E402
-from libclang.rna import Rna  # noqa: E402
+from common.driver import CACHE_DIR, main
+from common.model import SourceModel
+from libclang.bmesh import read_bmesh
+from libclang.context import Context
+from libclang.flags import FlagSource
+from libclang.interp import Interp, Obj, Program
+from libclang.nodes import Nodes
+from libclang.operators import Operators
+from libclang.parse import parse_all, select_files
+from libclang.pyapi import PyApi
+from libclang.rna import Rna
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--compile-commands", type=Path,
-                       help="compile_commands.json (default: .cache/blender-build/<source dir name>/compile_commands.json)")
+    group.add_argument(
+        "--compile-commands",
+        type=Path,
+        help="compile_commands.json (default: .cache/blender-build/<source dir name>/compile_commands.json)",
+    )
     group.add_argument("--synthesize-flags", action="store_true", help="Ignore any compile_commands.json")
     parser.add_argument("--jobs", type=int, default=2, help="Parser processes (at most 2)")
 
@@ -73,9 +75,15 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     # 1. RNA: each makesrna file's RNA_def_<x>(BlenderRNA *brna) entry, with brna bound.
     start = time.perf_counter()
     brna = Obj("brna")
-    entries = [f for f in program.functions.values()
-               if f.file.startswith("source/blender/makesrna/intern/rna_") and f.name.startswith("RNA_def_")
-               and not f.file.endswith("rna_define.cc") and len(f.params) == 1 and "BlenderRNA" in f.params[0][1]]
+    entries = [
+        f
+        for f in program.functions.values()
+        if f.file.startswith("source/blender/makesrna/intern/rna_")
+        and f.name.startswith("RNA_def_")
+        and not f.file.endswith("rna_define.cc")
+        and len(f.params) == 1
+        and "BlenderRNA" in f.params[0][1]
+    ]
     for fn in sorted(entries, key=lambda f: (f.file, f.line)):
         interp.call_function(fn, [brna])
     timings["rna"] = time.perf_counter() - start
@@ -101,22 +109,26 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
 
     # Coverage notes
     cov = model.coverage
-    cov.unreachable.update({
-        "flags": f"{flags.kind}; generated headers replaced by declaration shims: {', '.join(flags.missing_generated) or 'none'}",
-        "rna DNA defaults": "makesrna takes many property defaults from DNA_*_defaults.h through SDNA at build time; "
-                            "only defaults given in RNA_def_* calls are read",
-        "rna runtime-registered structs": "structs registered from Python (bpy.types.Panel subclasses, add-ons) and "
-                                          "RNA built from data at runtime (ID properties, geometry attributes)",
-        "dynamic enums": "items of enums with an item function (itemf) exist only at runtime: the function is named",
-        "loops": "a definition inside a loop runs once with an unknown index (identifiers built with sprintf "
-                 "are lost); unknown conditions run both branches",
-        "context": "members answered by Python (bl_ui, add-ons) or by generic fall-backs (CTX_data_* from bContext "
-                   "fields in BKE_context) are not callbacks of an editor",
-        "comments": "comments are not in clang's AST: bmesh docs are read from the text at AST positions",
-    })
+    cov.unreachable.update(
+        {
+            "flags": f"{flags.kind}; generated headers replaced by declaration shims: {', '.join(flags.missing_generated) or 'none'}",
+            "rna DNA defaults": "makesrna takes many property defaults from DNA_*_defaults.h through SDNA at build time; "
+            "only defaults given in RNA_def_* calls are read",
+            "rna runtime-registered structs": "structs registered from Python (bpy.types.Panel subclasses, add-ons) and "
+            "RNA built from data at runtime (ID properties, geometry attributes)",
+            "dynamic enums": "items of enums with an item function (itemf) exist only at runtime: the function is named",
+            "loops": "a definition inside a loop runs once with an unknown index (identifiers built with sprintf "
+            "are lost); unknown conditions run both branches",
+            "context": "members answered by Python (bl_ui, add-ons) or by generic fall-backs (CTX_data_* from bContext "
+            "fields in BKE_context) are not callbacks of an editor",
+            "comments": "comments are not in clang's AST: bmesh docs are read from the text at AST positions",
+        }
+    )
     errors = {tu: n for tu, n in program.errors.items() if n}
-    cov.warnings.append(f"{len(errors)} of {len(program.errors)} translation units had clang errors "
-                        f"({sum(n for n in errors.values() if n > 0)} errors); parsing continued")
+    cov.warnings.append(
+        f"{len(errors)} of {len(program.errors)} translation units had clang errors "
+        f"({sum(n for n in errors.values() if n > 0)} errors); parsing continued"
+    )
     for tu, n in sorted(errors.items(), key=lambda kv: -kv[1])[:15]:
         cov.warnings.append(f"clang errors: {tu}: {n}")
     for name, n in Counter(interp.unresolved).most_common(25):

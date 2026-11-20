@@ -18,30 +18,114 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from common.model import PyGetSet, PyMember, PyMethod, PyModule, PyParam, PySignature, PyType, SourceModel
-from common.rstdoc import parse_directive, rst_type_to_python
 from ctok import CFile, Tok, Tree, VarDef, match_close, split_commas, string_value
 from macro import expand
 
-TP_FIELDS = (
-    "tp_name tp_basicsize tp_itemsize tp_dealloc tp_vectorcall_offset tp_getattr tp_setattr tp_as_async tp_repr "
-    "tp_as_number tp_as_sequence tp_as_mapping tp_hash tp_call tp_str tp_getattro tp_setattro tp_as_buffer tp_flags "
-    "tp_doc tp_traverse tp_clear tp_richcompare tp_weaklistoffset tp_iter tp_iternext tp_methods tp_members tp_getset "
-    "tp_base tp_dict tp_descr_get tp_descr_set tp_dictoffset tp_init tp_alloc tp_new tp_free tp_is_gc tp_bases tp_mro "
-    "tp_cache tp_subclasses tp_weaklist tp_del tp_version_tag tp_finalize tp_vectorcall tp_watched"
-).split()
+from common.model import PyGetSet, PyMember, PyMethod, PyModule, PyParam, PySignature, PyType, SourceModel
+from common.rstdoc import parse_directive, rst_type_to_python
+
+TP_FIELDS = [
+    "tp_name",
+    "tp_basicsize",
+    "tp_itemsize",
+    "tp_dealloc",
+    "tp_vectorcall_offset",
+    "tp_getattr",
+    "tp_setattr",
+    "tp_as_async",
+    "tp_repr",
+    "tp_as_number",
+    "tp_as_sequence",
+    "tp_as_mapping",
+    "tp_hash",
+    "tp_call",
+    "tp_str",
+    "tp_getattro",
+    "tp_setattro",
+    "tp_as_buffer",
+    "tp_flags",
+    "tp_doc",
+    "tp_traverse",
+    "tp_clear",
+    "tp_richcompare",
+    "tp_weaklistoffset",
+    "tp_iter",
+    "tp_iternext",
+    "tp_methods",
+    "tp_members",
+    "tp_getset",
+    "tp_base",
+    "tp_dict",
+    "tp_descr_get",
+    "tp_descr_set",
+    "tp_dictoffset",
+    "tp_init",
+    "tp_alloc",
+    "tp_new",
+    "tp_free",
+    "tp_is_gc",
+    "tp_bases",
+    "tp_mro",
+    "tp_cache",
+    "tp_subclasses",
+    "tp_weaklist",
+    "tp_del",
+    "tp_version_tag",
+    "tp_finalize",
+    "tp_vectorcall",
+    "tp_watched",
+]
 SUB_TABLES = {
-    "PyNumberMethods": (
-        "nb_add nb_subtract nb_multiply nb_remainder nb_divmod nb_power nb_negative nb_positive nb_absolute nb_bool "
-        "nb_invert nb_lshift nb_rshift nb_and nb_xor nb_or nb_int nb_reserved nb_float nb_inplace_add "
-        "nb_inplace_subtract nb_inplace_multiply nb_inplace_remainder nb_inplace_power nb_inplace_lshift "
-        "nb_inplace_rshift nb_inplace_and nb_inplace_xor nb_inplace_or nb_floor_divide nb_true_divide "
-        "nb_inplace_floor_divide nb_inplace_true_divide nb_index nb_matrix_multiply nb_inplace_matrix_multiply"
-    ).split(),
-    "PySequenceMethods": (
-        "sq_length sq_concat sq_repeat sq_item was_sq_slice sq_ass_item was_sq_ass_slice sq_contains "
-        "sq_inplace_concat sq_inplace_repeat"
-    ).split(),
+    "PyNumberMethods": [
+        "nb_add",
+        "nb_subtract",
+        "nb_multiply",
+        "nb_remainder",
+        "nb_divmod",
+        "nb_power",
+        "nb_negative",
+        "nb_positive",
+        "nb_absolute",
+        "nb_bool",
+        "nb_invert",
+        "nb_lshift",
+        "nb_rshift",
+        "nb_and",
+        "nb_xor",
+        "nb_or",
+        "nb_int",
+        "nb_reserved",
+        "nb_float",
+        "nb_inplace_add",
+        "nb_inplace_subtract",
+        "nb_inplace_multiply",
+        "nb_inplace_remainder",
+        "nb_inplace_power",
+        "nb_inplace_lshift",
+        "nb_inplace_rshift",
+        "nb_inplace_and",
+        "nb_inplace_xor",
+        "nb_inplace_or",
+        "nb_floor_divide",
+        "nb_true_divide",
+        "nb_inplace_floor_divide",
+        "nb_inplace_true_divide",
+        "nb_index",
+        "nb_matrix_multiply",
+        "nb_inplace_matrix_multiply",
+    ],
+    "PySequenceMethods": [
+        "sq_length",
+        "sq_concat",
+        "sq_repeat",
+        "sq_item",
+        "was_sq_slice",
+        "sq_ass_item",
+        "was_sq_ass_slice",
+        "sq_contains",
+        "sq_inplace_concat",
+        "sq_inplace_repeat",
+    ],
     "PyMappingMethods": ["mp_length", "mp_subscript", "mp_ass_subscript"],
     "PyBufferProcs": ["bf_getbuffer", "bf_releasebuffer"],
     "PyAsyncMethods": ["am_await", "am_aiter", "am_anext", "am_send"],
@@ -49,15 +133,27 @@ SUB_TABLES = {
 MODULE_FIELDS = ["m_base", "m_name", "m_doc", "m_size", "m_methods", "m_slots", "m_traverse", "m_clear", "m_free"]
 NULLS = {"nullptr", "NULL", "0", "nullptr_t"}
 CONST_TYPES = {
-    "PyModule_AddIntConstant": "int", "PyModule_AddStringConstant": "str", "PyModule_AddIntMacro": "int",
+    "PyModule_AddIntConstant": "int",
+    "PyModule_AddStringConstant": "str",
+    "PyModule_AddIntMacro": "int",
     "PyModule_AddStringMacro": "str",
 }
 VALUE_TYPES = [
-    ("PyLong_From", "int"), ("PyFloat_From", "float"), ("PyUnicode_From", "str"), ("PyBool_From", "bool"),
-    ("PyBytes_From", "bytes"), ("PyTuple_", "tuple[Any, ...]"), ("PyDict_New", "dict[str, Any]"),
-    ("PyList_New", "list[Any]"), ("PyC_UnicodeFrom", "str"), ("PyFrozenSet_New", "frozenset[Any]"),
-    ("PySet_New", "set[Any]"), ("Py_RETURN_NONE", "None"), ("PyC_FrozenSetFromStrings", "frozenset[str]"),
-    ("PyErr_NewException", "type[Exception]"), ("PyDictProxy_New", "types.MappingProxyType[str, Any]"),
+    ("PyLong_From", "int"),
+    ("PyFloat_From", "float"),
+    ("PyUnicode_From", "str"),
+    ("PyBool_From", "bool"),
+    ("PyBytes_From", "bytes"),
+    ("PyTuple_", "tuple[Any, ...]"),
+    ("PyDict_New", "dict[str, Any]"),
+    ("PyList_New", "list[Any]"),
+    ("PyC_UnicodeFrom", "str"),
+    ("PyFrozenSet_New", "frozenset[Any]"),
+    ("PySet_New", "set[Any]"),
+    ("Py_RETURN_NONE", "None"),
+    ("PyC_FrozenSetFromStrings", "frozenset[str]"),
+    ("PyErr_NewException", "type[Exception]"),
+    ("PyDictProxy_New", "types.MappingProxyType[str, Any]"),
     ("PyCFunction_New", "Callable[..., Any]"),
 ]
 FMT_UNIT = re.compile(r"\||\$|e[st]#?|[A-Za-z][#*!&]?|\(|\)")
@@ -65,17 +161,37 @@ FMT_UNIT = re.compile(r"\||\$|e[st]#?|[A-Za-z][#*!&]?|\(|\)")
 
 def python_files(tree: Tree) -> list[str]:
     return tree.glob(
-        "source/blender/python/**/*.cc", "source/blender/python/**/*.c", "source/blender/python/**/*.hh",
-        "source/blender/freestyle/intern/python/**/*.cpp", "extern/audaspace/bindings/python/*.cpp",
+        "source/blender/python/**/*.cc",
+        "source/blender/python/**/*.c",
+        "source/blender/python/**/*.hh",
+        "source/blender/freestyle/intern/python/**/*.cpp",
+        "extern/audaspace/bindings/python/*.cpp",
     )
 
 
 def last_ident(toks: list[Tok]) -> str:
     """``(PyCFunction)(void (*)(void))func`` / ``&T`` -> the last identifier that is not a cast keyword."""
-    ids = [t.text for t in toks if t.kind == "id" and t.text not in {"void", "PyCFunction", "getter", "setter",
-                                                                       "PyObject", "reinterpret_cast", "static_cast",
-                                                                       "PyCFunctionWithKeywords", "const", "char",
-                                                                       "Py_ssize_t", "PyTypeObject", "struct"}]
+    ids = [
+        t.text
+        for t in toks
+        if t.kind == "id"
+        and t.text
+        not in {
+            "void",
+            "PyCFunction",
+            "getter",
+            "setter",
+            "PyObject",
+            "reinterpret_cast",
+            "static_cast",
+            "PyCFunctionWithKeywords",
+            "const",
+            "char",
+            "Py_ssize_t",
+            "PyTypeObject",
+            "struct",
+        }
+    ]
     return ids[-1] if ids and ids[-1] not in NULLS else ""
 
 
@@ -153,7 +269,11 @@ class PyReader:
             if len(part) >= 3 and part[0].text == "." and part[2].text == "=":
                 out[part[1].text] = part[3:]
                 continue
-            if part[0].text in {"PyVarObject_HEAD_INIT", "PyObject_HEAD_INIT", "PyModuleDef_HEAD_INIT", "{"} and k == 0 and order[0] in {"tp_name", "m_base"}:
+            if (
+                part[0].text in {"PyVarObject_HEAD_INIT", "PyObject_HEAD_INIT", "PyModuleDef_HEAD_INIT", "{"}
+                and k == 0
+                and order[0] in {"tp_name", "m_base"}
+            ):
                 # ``PyVarObject_HEAD_INIT(nullptr, 0)`` is often followed by tp_name without a comma.
                 if len(part) > 1 and part[1].text in {"(", "{"}:
                     part = part[match_close(part, 1) + 1 :]
@@ -178,14 +298,23 @@ class PyReader:
             toks = f.tokens
             for start, end in f.statements:
                 t = toks[start]
-                if t.text in {"PyDoc_STRVAR", "BPY_PROPDEF_DOC_STRVAR"} and start + 1 < end and toks[start + 1].text == "(":
+                if (
+                    t.text in {"PyDoc_STRVAR", "BPY_PROPDEF_DOC_STRVAR"}
+                    and start + 1 < end
+                    and toks[start + 1].text == "("
+                ):
                     close = match_close(toks, start + 1)
                     args = split_commas(toks[start + 2 : close])
                     if len(args) >= 2 and args[0]:
                         text = self.string(f, [x for a in args[1:] for x in a]) or ""
                         d[args[0][0].text] = text
             for name, var in f.variables.items():
-                if not var.braced and ("char" in var.type_text) and var.init and all(x.kind in {"str", "id"} for x in var.init):
+                if (
+                    not var.braced
+                    and ("char" in var.type_text)
+                    and var.init
+                    and all(x.kind in {"str", "id"} for x in var.init)
+                ):
                     s = self.string(f, var.init)
                     if s is not None:
                         d.setdefault(name, s)
@@ -198,8 +327,13 @@ class PyReader:
             toks = f.tokens
             for start, end in f.statements:
                 words = [t.text for t in toks[start:end]]
-                if (len(words) >= 2 and words[-2] == "PyTypeObject" and toks[end - 1].kind == "id"
-                        and "extern" not in words and "*" not in words):
+                if (
+                    len(words) >= 2
+                    and words[-2] == "PyTypeObject"
+                    and toks[end - 1].kind == "id"
+                    and "extern" not in words
+                    and "*" not in words
+                ):
                     name = words[-1]
                     if name not in self.types:
                         self.types[name] = PyType(c_name=name, src=f.src(toks[start].pos))
@@ -224,9 +358,12 @@ class PyReader:
                     self.structseq_fields[key] = rows
                 elif "PyStructSequence_Desc" in tt:
                     flds = self.fields(f, var.init, ["name", "doc", "fields", "n_in_sequence"], var.pos)
-                    self.structseq_desc[name] = (self.string(f, flds.get("name", [])) or "",
-                                                 last_ident(flds.get("doc", [])),
-                                                 last_ident(flds.get("fields", [])), f)
+                    self.structseq_desc[name] = (
+                        self.string(f, flds.get("name", [])) or "",
+                        last_ident(flds.get("doc", [])),
+                        last_ident(flds.get("fields", [])),
+                        f,
+                    )
                 elif "PyModuleDef" in tt and "PyModuleDef_Slot" not in tt:
                     self.module_def(f, name, var)
                 elif "PyTypeObject" in tt:
@@ -235,8 +372,14 @@ class PyReader:
                     for table, order in SUB_TABLES.items():
                         if table in tt:
                             flds = self.fields(f, var.init, order, var.pos)
-                            self.sub_slots[key] = {k: last_ident(v) for k, v in flds.items()
-                                                   if v and not (len(v) == 1 and v[0].text in NULLS) and not k.startswith("was_") and k != "nb_reserved"}
+                            self.sub_slots[key] = {
+                                k: last_ident(v)
+                                for k, v in flds.items()
+                                if v
+                                and not (len(v) == 1 and v[0].text in NULLS)
+                                and not k.startswith("was_")
+                                and k != "nb_reserved"
+                            }
 
     def method_rows(self, f: CFile, var: VarDef) -> list[PyMethod]:
         out = []
@@ -246,9 +389,13 @@ class PyReader:
             name = self.string(f, r[0])
             if not name:
                 continue
-            flags = [t.text.removeprefix("METH_").lower() for t in r[2] if t.kind == "id" and t.text.startswith("METH_")]
+            flags = [
+                t.text.removeprefix("METH_").lower() for t in r[2] if t.kind == "id" and t.text.startswith("METH_")
+            ]
             doc = self.string(f, r[3]) if len(r) > 3 else None
-            out.append(PyMethod(name=name, c_function=last_ident(r[1]), flags=flags, doc=doc or "", src=f.src(r[0][0].pos)))
+            out.append(
+                PyMethod(name=name, c_function=last_ident(r[1]), flags=flags, doc=doc or "", src=f.src(r[0][0].pos))
+            )
         return out
 
     def getset_rows(self, f: CFile, var: VarDef) -> list[PyGetSet]:
@@ -260,8 +407,16 @@ class PyReader:
             get = last_ident(r[1]) if len(r) > 1 else ""
             set_ = last_ident(r[2]) if len(r) > 2 else ""
             doc = (self.string(f, r[3]) if len(r) > 3 else None) or ""
-            out.append(PyGetSet(name=name, getter=get if get not in NULLS else "", setter=set_ if set_ not in NULLS else "",
-                                doc=doc, type=attr_type(doc), src=f.src(r[0][0].pos)))
+            out.append(
+                PyGetSet(
+                    name=name,
+                    getter=get if get not in NULLS else "",
+                    setter=set_ if set_ not in NULLS else "",
+                    doc=doc,
+                    type=attr_type(doc),
+                    src=f.src(r[0][0].pos),
+                )
+            )
         return out
 
     def member_rows(self, f: CFile, var: VarDef) -> list[PyMember]:
@@ -273,8 +428,15 @@ class PyReader:
             code = last_ident(r[1]) if len(r) > 1 else ""
             flags = {t.text for t in r[3]} if len(r) > 3 else set()
             doc = (self.string(f, r[4]) if len(r) > 4 else None) or ""
-            out.append(PyMember(name=name, type_code=code, readonly=bool(flags & {"READONLY", "Py_READONLY"}), doc=doc,
-                                src=f.src(r[0][0].pos)))
+            out.append(
+                PyMember(
+                    name=name,
+                    type_code=code,
+                    readonly=bool(flags & {"READONLY", "Py_READONLY"}),
+                    doc=doc,
+                    src=f.src(r[0][0].pos),
+                )
+            )
         return out
 
     def module_def(self, f: CFile, name: str, var: VarDef) -> None:
@@ -309,14 +471,23 @@ class PyReader:
             elif k == "tp_doc":
                 t.doc = self.string(f, v) or t.doc
             elif k == "tp_flags":
-                t.flags = sorted({x.text.removeprefix("Py_TPFLAGS_") for x in v if x.text.startswith("Py_TPFLAGS_")} | set(t.flags))
+                t.flags = sorted(
+                    {x.text.removeprefix("Py_TPFLAGS_") for x in v if x.text.startswith("Py_TPFLAGS_")} | set(t.flags)
+                )
             elif k == "tp_base":
                 t.base = last_ident(v)
             elif k in {"tp_methods", "tp_getset", "tp_members"}:
                 t.slots["__" + k] = last_ident(v)
             elif k in {"tp_as_number", "tp_as_sequence", "tp_as_mapping", "tp_as_buffer", "tp_as_async"}:
                 t.slots[k] = last_ident(v)
-            elif k in {"tp_basicsize", "tp_itemsize", "tp_weaklistoffset", "tp_dictoffset", "tp_vectorcall_offset", "tp_version_tag"}:
+            elif k in {
+                "tp_basicsize",
+                "tp_itemsize",
+                "tp_weaklistoffset",
+                "tp_dictoffset",
+                "tp_vectorcall_offset",
+                "tp_version_tag",
+            }:
                 continue
             else:
                 t.slots[k] = last_ident(v) or " ".join(x.text for x in v)
@@ -336,12 +507,20 @@ class PyReader:
                         if body[k + 1].text == "=" and body[k + 2].text == "&" and body[k + 3].text in self.types:
                             alias[t.text] = body[k + 3].text
                         target = alias.get(t.text, t.text)
-                        if body[k + 1].text in {".", "->"} and body[k + 2].text.startswith("tp_") and body[k + 3].text == "=" and target in self.types:
+                        if (
+                            body[k + 1].text in {".", "->"}
+                            and body[k + 2].text.startswith("tp_")
+                            and body[k + 3].text == "="
+                            and target in self.types
+                        ):
                             end = k + 4
                             while end < n and body[end].text != ";":
                                 end += 1
                             self.apply_type_fields(f, self.types[target], {body[k + 2].text: body[k + 4 : end]})
-                        elif t.text in {"PyStructSequence_InitType", "PyStructSequence_InitType2"} and body[k + 1].text == "(":
+                        elif (
+                            t.text in {"PyStructSequence_InitType", "PyStructSequence_InitType2"}
+                            and body[k + 1].text == "("
+                        ):
                             close = match_close(body, k + 1)
                             args = split_commas(body[k + 2 : close])
                             if len(args) == 2:
@@ -391,7 +570,13 @@ class PyReader:
         n = len(body)
         for k in range(n):
             t = body[k]
-            if t.text in {"_keywords", "kwlist", "keywords"} and k + 3 < n and body[k + 1].text == "[" and body[k + 2].text == "]" and body[k + 3].text == "=":
+            if (
+                t.text in {"_keywords", "kwlist", "keywords"}
+                and k + 3 < n
+                and body[k + 1].text == "["
+                and body[k + 2].text == "]"
+                and body[k + 3].text == "="
+            ):
                 if k + 4 < n and body[k + 4].text == "{":
                     close = match_close(body, k + 4)
                     keywords = []
@@ -408,12 +593,21 @@ class PyReader:
                     parts = split_commas(toks)
                     if parts:
                         fmt = "".join(string_value(x.text) for x in parts[0] if x.kind == "str")
-            elif t.text in {"PyArg_ParseTupleAndKeywords", "PyArg_ParseTuple"} and fmt is None and k + 1 < n and body[k + 1].text == "(":
+            elif (
+                t.text in {"PyArg_ParseTupleAndKeywords", "PyArg_ParseTuple"}
+                and fmt is None
+                and k + 1 < n
+                and body[k + 1].text == "("
+            ):
                 close = match_close(body, k + 1)
                 args = split_commas(body[k + 2 : close])
                 idx = 2 if t.text == "PyArg_ParseTupleAndKeywords" else 1
                 if len(args) > idx:
-                    strs = [x for x in self.expand(fd.file, args[idx], args[idx][0].pos if args[idx] else 0) if x.kind == "str"]
+                    strs = [
+                        x
+                        for x in self.expand(fd.file, args[idx], args[idx][0].pos if args[idx] else 0)
+                        if x.kind == "str"
+                    ]
                     if strs:
                         fmt = "".join(string_value(x.text) for x in strs)
                 if t.text == "PyArg_ParseTuple" and fmt is not None:
@@ -422,14 +616,13 @@ class PyReader:
             return None
         fmt = fmt.split(":")[0].split(";")[0]
         params: list[PyParam] = []
-        optional = kwonly = False
+        optional = False  # ``$`` (keyword-only) is applied below, once the names are known
         depth = 0
         for unit in FMT_UNIT.findall(fmt):
             if unit == "|":
                 optional = True
                 continue
             if unit == "$":
-                kwonly = True
                 continue
             if unit == "(":
                 depth += 1
@@ -466,7 +659,7 @@ class PyReader:
         return params
 
     def method_signature(self, m: PyMethod, f: CFile | None, owner: str) -> None:
-        kind, name, sig, _ = parse_directive(m.doc) if m.doc else ("", "", None, "")
+        _kind, _name, sig, _ = parse_directive(m.doc) if m.doc else ("", "", None, "")
         params = self.arg_signature(m.c_function, f) if m.c_function else None
         if sig is None and params is not None:
             sig = PySignature(params=params)
@@ -485,7 +678,11 @@ class PyReader:
                 for fd in defs:
                     body = fd.body
                     for k, t in enumerate(body):
-                        if t.text in {"PyModule_Create", "PyModule_Create2", "PyModuleDef_Init"} and k + 1 < len(body) and body[k + 1].text == "(":
+                        if (
+                            t.text in {"PyModule_Create", "PyModule_Create2", "PyModuleDef_Init"}
+                            and k + 1 < len(body)
+                            and body[k + 1].text == "("
+                        ):
                             close = match_close(body, k + 1)
                             args = split_commas(body[k + 2 : close])
                             key = self.mkey(f, last_ident(args[0])) if args else ""
@@ -524,7 +721,12 @@ class PyReader:
         own = init_of.get(fd.name)
         for k in range(n):
             t = body[k]
-            if t.kind == "id" and k + 1 < n and body[k + 1].text == "=" and (k == 0 or body[k - 1].text not in {".", "->"}):
+            if (
+                t.kind == "id"
+                and k + 1 < n
+                and body[k + 1].text == "="
+                and (k == 0 or body[k - 1].text not in {".", "->"})
+            ):
                 end = k + 2
                 depth = 0
                 while end < n:
@@ -583,7 +785,15 @@ class PyReader:
                 value = values[value[0].text]
             self.module_value(f, mod, attr, value, init_of, returns_type)
 
-    def module_value(self, f: CFile, mod: PyModule, attr: str, value: list[Tok], init_of: dict[str, str], returns_type: dict[str, str]) -> None:
+    def module_value(
+        self,
+        f: CFile,
+        mod: PyModule,
+        attr: str,
+        value: list[Tok],
+        init_of: dict[str, str],
+        returns_type: dict[str, str],
+    ) -> None:
         ids = [x.text for x in value if x.kind == "id"]
         tv = next((i for i in ids if i in self.types), "")
         if tv and "&" in [x.text for x in value]:
@@ -605,7 +815,9 @@ class PyReader:
         callee = next((i for i in ids if i not in {"PyObject", "Py_NewRef", "Py_INCREF", "submodule"}), "")
         if callee in returns_type:
             mod.constants[attr] = "Any"
-            self.extra.setdefault("py_struct_sequence_instances", {})[f"{mod.name}.{attr}"] = self.types[returns_type[callee]].name
+            self.extra.setdefault("py_struct_sequence_instances", {})[f"{mod.name}.{attr}"] = self.types[
+                returns_type[callee]
+            ].name
             return
         for prefix, typ in VALUE_TYPES:
             if callee.startswith(prefix):
@@ -617,15 +829,16 @@ class PyReader:
         mod.constants[attr] = "Any"
         self.unresolved_values.append(f"{mod.name}.{attr}: {' '.join(x.text for x in value)[:80]}")
 
-    unresolved_values: list[str] = []
-
     # -- assemble
 
     def assemble(self) -> None:
         for cname, t in self.types.items():
             f = self.type_file[cname]
-            for key, store, rows in (("__tp_methods", "methods", self.methods), ("__tp_getset", "getsets", self.getsets),
-                                     ("__tp_members", "members", self.members)):
+            for key, store, rows in (
+                ("__tp_methods", "methods", self.methods),
+                ("__tp_getset", "getsets", self.getsets),
+                ("__tp_members", "members", self.members),
+            ):
                 var = t.slots.pop(key, "")
                 if not var:
                     continue
@@ -638,7 +851,9 @@ class PyReader:
                 getattr(t, store).extend(found)
             for slot in [s for s in t.slots if s.startswith("tp_as_")]:
                 var = t.slots[slot]
-                found = self.sub_slots.get((f.rel, var)) or next((v for (r, n), v in self.sub_slots.items() if n == var), None)
+                found = self.sub_slots.get((f.rel, var)) or next(
+                    (v for (r, n), v in self.sub_slots.items() if n == var), None
+                )
                 if found is None:
                     if slot != "tp_as_buffer":
                         self.warnings.append(f"{t.src}: {cname}.{slot} = {var}: table not found")
@@ -670,7 +885,9 @@ class PyReader:
             info = self.module_fields[dname]
             var = info.get("m_methods")
             if var:
-                rows = self.methods.get((info["file"], var)) or next((v for (r, n), v in self.methods.items() if n == var), None)
+                rows = self.methods.get((info["file"], var)) or next(
+                    (v for (r, n), v in self.methods.items() if n == var), None
+                )
                 if rows is None:
                     self.warnings.append(f"{mod.src}: module {mod.name} methods {var}: table not found")
                 else:
@@ -692,8 +909,20 @@ class PyReader:
         self.extra["py_argument_parsers_read"] = self.arg_kinds
         self.extra["py_unresolved_module_values"] = self.unresolved_values[:60]
         self.extra["py_positional_only_params"] = sum(
-            1 for t in self.types.values() for m in t.methods if m.signature for p in m.signature.params if p.kind == "positional_only"
-        ) + sum(1 for mod in self.modules.values() for m in mod.methods if m.signature for p in m.signature.params if p.kind == "positional_only")
+            1
+            for t in self.types.values()
+            for m in t.methods
+            if m.signature
+            for p in m.signature.params
+            if p.kind == "positional_only"
+        ) + sum(
+            1
+            for mod in self.modules.values()
+            for m in mod.methods
+            if m.signature
+            for p in m.signature.params
+            if p.kind == "positional_only"
+        )
 
 
 def merge_kinds(sig: PySignature, params: list[PyParam]) -> None:
@@ -713,13 +942,13 @@ def merge_kinds(sig: PySignature, params: list[PyParam]) -> None:
             p.kind = "keyword_only"
 
 
-_TYPE_FIELD = re.compile(r"^\s*:type:\s*(.+?)\s*$", re.M)
+_TYPE_FIELD = re.compile(r"^\s*:type:\s*(.+?)\s*$", re.MULTILINE)
 
 
 def attr_type(doc: str) -> str:
     if not doc:
         return ""
-    kind, _, _, typ = parse_directive(doc)
+    _kind, _, _, typ = parse_directive(doc)
     if typ:
         return typ
     m = _TYPE_FIELD.search(doc)

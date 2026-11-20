@@ -32,15 +32,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.driver import CACHE_DIR, main, out_dir  # noqa: E402
-from common.model import EnumItem, RnaFunction, RnaProperty, RnaStruct, SourceModel  # noqa: E402
+from common.driver import CACHE_DIR, main, out_dir
+from common.model import EnumItem, RnaFunction, RnaProperty, RnaStruct, SourceModel
 
 PATCH = Path(__file__).resolve().parent / "makesrna-json-dump.patch"
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "--build", type=Path, help="CMake build directory with bin/makesrna (default: .cache/blender-build/<source name>)"
+        "--build",
+        type=Path,
+        help="CMake build directory with bin/makesrna (default: .cache/blender-build/<source name>)",
     )
     parser.add_argument("--json", type=Path, help="Read this dump instead of running makesrna")
 

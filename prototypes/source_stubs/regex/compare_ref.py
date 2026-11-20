@@ -38,7 +38,9 @@ def members(path: Path) -> tuple[dict[str, dict[str, str]], dict[str, str]]:
                     elif any(d.endswith(".setter") for d in decos) or m.name in body:
                         continue
                     else:
-                        body[m.name] = "def(" + ast.unparse(m.args) + ")->" + (ast.unparse(m.returns) if m.returns else "")
+                        body[m.name] = (
+                            "def(" + ast.unparse(m.args) + ")->" + (ast.unparse(m.returns) if m.returns else "")
+                        )
             classes[node.name] = body
         elif isinstance(node, ast.FunctionDef):
             funcs[node.name] = "(" + ast.unparse(node.args) + ")"
@@ -73,9 +75,11 @@ def compare(version: str, module: str, show: int = 12) -> None:
                 missing.append(f"{c}.{m}")
     extra_cls = [c for c in our_c if c not in ref_c and not c.startswith("_")]
     f_hit = [f for f in ref_f if f in our_f]
-    print(f"== {module}: classes {len(cls_hit)}/{len(ref_c)} (+{len(extra_cls)} not in ref), "
-          f"members {mem_hit}/{mem_total} ({100 * mem_hit / max(mem_total, 1):.1f}%), "
-          f"same type {type_hit}/{mem_hit} ({100 * type_hit / max(mem_hit, 1):.1f}%), functions {len(f_hit)}/{len(ref_f)}")
+    print(
+        f"== {module}: classes {len(cls_hit)}/{len(ref_c)} (+{len(extra_cls)} not in ref), "
+        f"members {mem_hit}/{mem_total} ({100 * mem_hit / max(mem_total, 1):.1f}%), "
+        f"same type {type_hit}/{mem_hit} ({100 * type_hit / max(mem_hit, 1):.1f}%), functions {len(f_hit)}/{len(ref_f)}"
+    )
     if show:
         print("  missing classes:", [c for c in ref_c if c not in our_c][:show])
         print("  missing members:", missing[:show])

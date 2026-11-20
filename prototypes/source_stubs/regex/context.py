@@ -19,14 +19,20 @@ from __future__ import annotations
 
 from typing import Any
 
-from common.model import ContextMember, SourceModel
 from ctok import CFile, Tok, Tree, match_close, split_commas, string_value
 from dna import Dna
 
+from common.model import ContextMember, SourceModel
+
 POINTER_SETTERS = {"CTX_data_id_pointer_set", "CTX_data_pointer_set", "CTX_data_pointer_set_ptr"}
 LIST_SETTERS = {"CTX_data_id_list_add", "CTX_data_list_add", "CTX_data_list_add_ptr"}
-KIND_OF_TYPE = {"Pointer": "pointer", "Collection": "collection", "Property": "property", "String": "string",
-                "Int64": "int"}
+KIND_OF_TYPE = {
+    "Pointer": "pointer",
+    "Collection": "collection",
+    "Property": "property",
+    "String": "string",
+    "Int64": "int",
+}
 SKIP_IDS = {"id", "ID", "reinterpret_cast", "static_cast", "const_cast", "nullptr", "result", "C"}
 
 
@@ -104,12 +110,24 @@ class ContextReader:
             j = k - 1
             while j >= 0 and body[j].text in {"*", "&", "const"}:
                 j -= 1
-            if j < k - 1 or (j >= 0 and body[j].kind == "id" and body[j].text not in {"return", "else", "case"} and body[j + 1 :k] == []):
-                if j >= 0 and body[j].kind == "id" and body[j].text not in {"return", "else", "case", "const", "auto"}:
-                    nxt = body[k + 1].text if k + 1 < len(body) else ""
-                    if nxt in {"=", ";", ",", ")", ":", "{"}:
-                        found = body[j].text
-                        break
+            if (
+                (
+                    j < k - 1
+                    or (
+                        j >= 0
+                        and body[j].kind == "id"
+                        and body[j].text not in {"return", "else", "case"}
+                        and body[j + 1 : k] == []
+                    )
+                )
+                and j >= 0
+                and body[j].kind == "id"
+                and body[j].text not in {"return", "else", "case", "const", "auto"}
+            ):
+                nxt = body[k + 1].text if k + 1 < len(body) else ""
+                if nxt in {"=", ";", ",", ")", ":", "{"}:
+                    found = body[j].text
+                    break
         if not found:
             found = self.macro_var_type(body, name, before)
         return found
@@ -122,7 +140,6 @@ class ContextReader:
                 close = match_close(body, k + 1)
                 if close > before or not any(x.text == name for x in body[k + 2 : close]):
                     continue
-                f = body[k].file if hasattr(body[k], "file") else None
                 lookup = self.macro_lookup
                 if lookup is None:
                     return ""
@@ -193,7 +210,9 @@ class ContextReader:
 
     # -- regions
 
-    def region(self, f: CFile, name: str, body: list[Tok], start: int, end: int, dir_names: set[str], depth: int = 0) -> None:
+    def region(
+        self, f: CFile, name: str, body: list[Tok], start: int, end: int, dir_names: set[str], depth: int = 0
+    ) -> None:
         m = self.member(name, f, body[start].pos if start < len(body) else 0)
         n = end
         kind = ""
@@ -204,7 +223,11 @@ class ContextReader:
             if body[j].kind == "id" and body[j + 1].text == "(":
                 close = match_close(body, j + 1)
                 args = split_commas(body[j + 2 : close])
-                rnas = [x.text[4:] for x in body[j + 2 : close] if x.kind == "id" and x.text.startswith("RNA_") and x.text[4:] in self.rna_known]
+                rnas = [
+                    x.text[4:]
+                    for x in body[j + 2 : close]
+                    if x.kind == "id" and x.text.startswith("RNA_") and x.text[4:] in self.rna_known
+                ]
                 if not rnas:
                     continue
                 if any(len(a) == 1 and a[0].text == "result" for a in args):
@@ -217,7 +240,12 @@ class ContextReader:
             t = body[k]
             if t.kind == "id" and k + 1 < n and body[k + 1].text == "(":
                 fname = t.text
-                if fname not in POINTER_SETTERS and fname not in LIST_SETTERS and not fname.startswith("CTX_") and depth < 3:
+                if (
+                    fname not in POINTER_SETTERS
+                    and fname not in LIST_SETTERS
+                    and not fname.startswith("CTX_")
+                    and depth < 3
+                ):
                     # helpers that receive ``result``: ``screen_ctx_sel_actions_impl(C, result, true, false)``
                     close = match_close(body, k + 1)
                     args = split_commas(body[k + 2 : close])
@@ -248,7 +276,6 @@ class ContextReader:
                         if ids and ids[-1].startswith("RNA_"):
                             typ = ids[-1][4:]
                         elif ids:
-                            v = self.var_type(body, ids[-1], k)
                             typ = ""
                     else:
                         typ = ""
@@ -302,7 +329,12 @@ class ContextReader:
                 for k in range(n - 3):
                     t = body[k]
                     # map.add("scene", screen_ctx_scene)
-                    if t.text in {"add", "add_new"} and body[k - 1].text in {".", "->"} and body[k + 1].text == "(" and body[k + 2].kind == "str":
+                    if (
+                        t.text in {"add", "add_new"}
+                        and body[k - 1].text in {".", "->"}
+                        and body[k + 1].text == "("
+                        and body[k + 2].kind == "str"
+                    ):
                         close = match_close(body, k + 1)
                         args = split_commas(body[k + 2 : close])
                         if len(args) == 2 and len(args[1]) == 1 and args[1][0].kind == "id":
@@ -350,7 +382,9 @@ class ContextReader:
                 # an untyped ``ID *`` next to concrete types: keep the concrete ones
                 m.types = [t for t in m.types if t[0] != "ID"]
         self.model.context.extend(sorted(self.members.values(), key=lambda m: m.name))
-        self.extra["context_untyped_members"] = sorted(m.name for m in self.members.values() if not m.types and m.kind in {"", "pointer", "collection"})
+        self.extra["context_untyped_members"] = sorted(
+            m.name for m in self.members.values() if not m.types and m.kind in {"", "pointer", "collection"}
+        )
         self.extra["context_unmapped_c_types"] = sorted(set(self.unknown_types))[:40]
 
 

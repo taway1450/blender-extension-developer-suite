@@ -19,22 +19,71 @@ from common.rstdoc import parse_directive, rst_type_to_python
 
 from .interp import UNKNOWN, FuncRef, GlobalRef, Interp, Obj
 
-METH_FLAGS = [(1, "varargs"), (2, "keywords"), (4, "noargs"), (8, "o"), (16, "class"), (32, "static"),
-              (64, "coexist"), (128, "fastcall"), (512, "method")]
-TPFLAGS = [(1 << 9, "METHOD_DESCRIPTOR"), (1 << 10, "BASETYPE"), (1 << 14, "HAVE_GC"), (1 << 12, "READY"),
-           (1 << 20, "DISALLOW_INSTANTIATION"), (1 << 21, "IMMUTABLETYPE"), (1 << 3, "MANAGED_DICT")]
-MEMBER_TYPES = {0: "T_SHORT", 1: "T_INT", 2: "T_LONG", 3: "T_FLOAT", 4: "T_DOUBLE", 5: "T_STRING", 6: "T_OBJECT",
-                7: "T_CHAR", 8: "T_BYTE", 9: "T_UBYTE", 10: "T_UINT", 11: "T_USHORT", 12: "T_ULONG", 13: "T_STRING_INPLACE",
-                14: "T_BOOL", 16: "T_OBJECT_EX", 17: "T_LONGLONG", 18: "T_ULONGLONG", 19: "T_PYSSIZET", 20: "T_NONE"}
+METH_FLAGS = [
+    (1, "varargs"),
+    (2, "keywords"),
+    (4, "noargs"),
+    (8, "o"),
+    (16, "class"),
+    (32, "static"),
+    (64, "coexist"),
+    (128, "fastcall"),
+    (512, "method"),
+]
+TPFLAGS = [
+    (1 << 9, "METHOD_DESCRIPTOR"),
+    (1 << 10, "BASETYPE"),
+    (1 << 14, "HAVE_GC"),
+    (1 << 12, "READY"),
+    (1 << 20, "DISALLOW_INSTANTIATION"),
+    (1 << 21, "IMMUTABLETYPE"),
+    (1 << 3, "MANAGED_DICT"),
+]
+MEMBER_TYPES = {
+    0: "T_SHORT",
+    1: "T_INT",
+    2: "T_LONG",
+    3: "T_FLOAT",
+    4: "T_DOUBLE",
+    5: "T_STRING",
+    6: "T_OBJECT",
+    7: "T_CHAR",
+    8: "T_BYTE",
+    9: "T_UBYTE",
+    10: "T_UINT",
+    11: "T_USHORT",
+    12: "T_ULONG",
+    13: "T_STRING_INPLACE",
+    14: "T_BOOL",
+    16: "T_OBJECT_EX",
+    17: "T_LONGLONG",
+    18: "T_ULONGLONG",
+    19: "T_PYSSIZET",
+    20: "T_NONE",
+}
 SLOT_TABLES = ("tp_as_number", "tp_as_sequence", "tp_as_mapping", "tp_as_async")
-_TYPE_FIELD = re.compile(r"^\s*:type:\s*(.+?)\s*$", re.M)
-VALUE_TYPES = {"PyLong_FromLong": "int", "PyLong_FromSsize_t": "int", "PyLong_FromUnsignedLong": "int",
-               "PyLong_FromLongLong": "int", "PyUnicode_FromString": "str", "PyC_UnicodeFromBytes": "str",
-               "PyUnicode_FromFormat": "str", "PyC_UnicodeFromStdStr": "str", "PyFloat_FromDouble": "float",
-               "PyBool_FromLong": "bool", "PyBytes_FromString": "bytes", "PyTuple_New": "tuple[Any, ...]",
-               "PyDict_New": "dict[str, Any]", "PyList_New": "list[Any]", "PyFrozenSet_New": "frozenset[str]",
-               "PyC_Tuple_Pack_I32": "tuple[int, ...]", "PyC_Tuple_Pack_F32": "tuple[float, ...]",
-               "PyC_FlagSet_AsString": "str", "PySet_New": "set[Any]"}
+_TYPE_FIELD = re.compile(r"^\s*:type:\s*(.+?)\s*$", re.MULTILINE)
+VALUE_TYPES = {
+    "PyLong_FromLong": "int",
+    "PyLong_FromSsize_t": "int",
+    "PyLong_FromUnsignedLong": "int",
+    "PyLong_FromLongLong": "int",
+    "PyUnicode_FromString": "str",
+    "PyC_UnicodeFromBytes": "str",
+    "PyUnicode_FromFormat": "str",
+    "PyC_UnicodeFromStdStr": "str",
+    "PyFloat_FromDouble": "float",
+    "PyBool_FromLong": "bool",
+    "PyBytes_FromString": "bytes",
+    "PyTuple_New": "tuple[Any, ...]",
+    "PyDict_New": "dict[str, Any]",
+    "PyList_New": "list[Any]",
+    "PyFrozenSet_New": "frozenset[str]",
+    "PyC_Tuple_Pack_I32": "tuple[int, ...]",
+    "PyC_Tuple_Pack_F32": "tuple[float, ...]",
+    "PyC_FlagSet_AsString": "str",
+    "PySet_New": "set[Any]",
+}
 
 
 def meth_flags(value) -> list[str]:
@@ -61,16 +110,37 @@ class PyApi:
         self.structseq: dict[str, dict] = {}  # type c_name -> desc
         self.extra: dict[str, dict] = {}  # type c_name -> {"getsets": [...], "methods": [...]}
         I = interp.intrinsics
-        for name in ("PyModule_Create2", "PyModule_Create", "PyModule_New", "PyModule_AddObject",
-                     "PyModule_AddObjectRef", "PyModule_Add", "PyModule_AddType", "PyModule_AddIntConstant",
-                     "PyModule_AddStringConstant", "PyModule_GetDict", "PyDict_SetItemString", "PyDict_SetItem",
-                     "PyStructSequence_InitType", "PyStructSequence_InitType2", "PyStructSequence_New",
-                     "PyStructSequence_SetItem", "PyCFunction_New", "PyCFunction_NewEx", "PyCMethod_New",
-                     "PyDescr_NewGetSet", "PyDescr_NewMethod", "PyDescr_NewClassMethod", "PyType_Ready",
-                     "PyStructSequence_NewType", "PyType_FromSpec", "PyImport_AddModule"):
+        for name in (
+            "PyModule_Create2",
+            "PyModule_Create",
+            "PyModule_New",
+            "PyModule_AddObject",
+            "PyModule_AddObjectRef",
+            "PyModule_Add",
+            "PyModule_AddType",
+            "PyModule_AddIntConstant",
+            "PyModule_AddStringConstant",
+            "PyModule_GetDict",
+            "PyDict_SetItemString",
+            "PyDict_SetItem",
+            "PyStructSequence_InitType",
+            "PyStructSequence_InitType2",
+            "PyStructSequence_New",
+            "PyStructSequence_SetItem",
+            "PyCFunction_New",
+            "PyCFunction_NewEx",
+            "PyCMethod_New",
+            "PyDescr_NewGetSet",
+            "PyDescr_NewMethod",
+            "PyDescr_NewClassMethod",
+            "PyType_Ready",
+            "PyStructSequence_NewType",
+            "PyType_FromSpec",
+            "PyImport_AddModule",
+        ):
             I[name] = getattr(self, name.replace("PyModule_Create2", "PyModule_Create"))
-        for name in VALUE_TYPES:
-            I[name] = self._value(VALUE_TYPES[name])
+        for name, value_type in VALUE_TYPES.items():
+            I[name] = self._value(value_type)
         interp.methods["member:dict"] = self._dict_member
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -136,9 +206,17 @@ class PyApi:
                 continue
             seen.add(name)
             doc = _s(m.get("ml_doc"))
-            kind, _dname, sig, _ = parse_directive(doc) if doc else ("", "", None, "")
-            out.append(PyMethod(name=name, c_function=m["ml_meth"].name if isinstance(m.get("ml_meth"), FuncRef) else "",
-                                flags=meth_flags(m.get("ml_flags")), doc=doc, signature=sig, src=src_hint))
+            _kind, _dname, sig, _ = parse_directive(doc) if doc else ("", "", None, "")
+            out.append(
+                PyMethod(
+                    name=name,
+                    c_function=m["ml_meth"].name if isinstance(m.get("ml_meth"), FuncRef) else "",
+                    flags=meth_flags(m.get("ml_flags")),
+                    doc=doc,
+                    signature=sig,
+                    src=src_hint,
+                )
+            )
 
     def _add(self, mod_h, name, value, i, call) -> None:
         if not (isinstance(mod_h, Obj) and mod_h.kind == "pymod"):
@@ -232,7 +310,6 @@ class PyApi:
     def PyStructSequence_SetItem(self, i, a, e, call):
         if len(a) >= 3 and isinstance(a[0], Obj) and a[0].kind == "pyinst" and isinstance(a[1], int):
             a[0].fields["items"][int(a[1])] = a[2]
-        return None
 
     def PyCFunction_New(self, i, a, e, call):
         m = a[0] if a else None
@@ -290,8 +367,17 @@ class PyApi:
         for fn in list(self.i.p.functions.values()):
             if not fn.file.startswith(("source/blender/python", "source/blender/freestyle", "intern/", "extern/")):
                 continue
-            if _calls_any(fn.body, ("PyModule_Create2", "PyModule_New", "PyStructSequence_InitType",
-                                    "PyStructSequence_InitType2", "PyModule_AddObject", "PyModule_AddType")):
+            if _calls_any(
+                fn.body,
+                (
+                    "PyModule_Create2",
+                    "PyModule_New",
+                    "PyStructSequence_InitType",
+                    "PyStructSequence_InitType2",
+                    "PyModule_AddObject",
+                    "PyModule_AddType",
+                ),
+            ):
                 try:
                     self.i.call_function(fn, [UNKNOWN] * len(fn.params))
                 except RecursionError:
@@ -348,9 +434,16 @@ class PyApi:
             if not isinstance(name, str):
                 continue
             gdoc = _s(gs.get("doc"))
-            t.getsets.append(PyGetSet(name=name, getter=gs["get"].name if isinstance(gs.get("get"), FuncRef) else "",
-                                      setter=gs["set"].name if isinstance(gs.get("set"), FuncRef) else "",
-                                      doc=gdoc, type=doc_type(gdoc), src=t.src))
+            t.getsets.append(
+                PyGetSet(
+                    name=name,
+                    getter=gs["get"].name if isinstance(gs.get("get"), FuncRef) else "",
+                    setter=gs["set"].name if isinstance(gs.get("set"), FuncRef) else "",
+                    doc=gdoc,
+                    type=doc_type(gdoc),
+                    src=t.src,
+                )
+            )
         for mem in value.get("tp_members") if isinstance(value.get("tp_members"), list) else []:
             if not isinstance(mem, dict):
                 continue
@@ -360,9 +453,15 @@ class PyApi:
             if not isinstance(name, str):
                 continue
             tc = mem.get("type")
-            t.members.append(PyMember(name=name, type_code=MEMBER_TYPES.get(int(tc), str(tc)) if isinstance(tc, int) else "",
-                                      readonly=bool(isinstance(mem.get("flags"), int) and int(mem["flags"]) & 1),
-                                      doc=_s(mem.get("doc")), src=t.src))
+            t.members.append(
+                PyMember(
+                    name=name,
+                    type_code=MEMBER_TYPES.get(int(tc), str(tc)) if isinstance(tc, int) else "",
+                    readonly=bool(isinstance(mem.get("flags"), int) and int(mem["flags"]) & 1),
+                    doc=_s(mem.get("doc")),
+                    src=t.src,
+                )
+            )
         if doc:
             kind, _name, sig, _ = parse_directive(doc)
             if kind == "class" and sig is not None:

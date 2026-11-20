@@ -27,8 +27,20 @@ PATTERNS = {
 }
 TOPS = ("source/blender", "intern/audaspace", "extern/audaspace/bindings", "intern/cycles/blender")
 # ``/source/blender/gpu/`` but not ``python/gpu/`` (the ``gpu`` module).
-SKIP_PARTS = ("/tests/", "_test.cc", "_tests.cc", "/source/blender/draw/", "/source/blender/gpu/", "/compositor/",
-              "/blenlib/", "/cycles/kernel/", "/io/usd/", "/io/alembic/", "/io/fbx/", "/makesdna/")
+SKIP_PARTS = (
+    "/tests/",
+    "_test.cc",
+    "_tests.cc",
+    "/source/blender/draw/",
+    "/source/blender/gpu/",
+    "/compositor/",
+    "/blenlib/",
+    "/cycles/kernel/",
+    "/io/usd/",
+    "/io/alembic/",
+    "/io/fbx/",
+    "/makesdna/",
+)
 
 
 def select_files(source: Path) -> dict[str, list[Path]]:
@@ -84,8 +96,7 @@ def _work(path: str, args: list[str], files: list[str], root: str, out: str) -> 
     return path, time.perf_counter() - start, data.get("errors", 0)
 
 
-def parse_all(source: Path, flags: FlagSource, files: list[Path], cache: Path, jobs: int = 2,
-              log=print) -> list[dict]:
+def parse_all(source: Path, flags: FlagSource, files: list[Path], cache: Path, jobs: int = 2, log=print) -> list[dict]:
     cache.mkdir(parents=True, exist_ok=True)
     units: dict[str, Unit] = {}
     wanted: dict[str, set[str]] = {}
@@ -111,7 +122,7 @@ def parse_all(source: Path, flags: FlagSource, files: list[Path], cache: Path, j
         with ProcessPoolExecutor(max_workers=jobs) as pool:
             futures = [pool.submit(_work, u.path, u.args, u.files, str(source), str(out)) for u, out in todo]
             for fut in as_completed(futures):
-                path, seconds, errors = fut.result()
+                path, _seconds, _errors = fut.result()
                 done += 1
                 if done % 25 == 0 or done == len(todo):
                     log(f"  parsed {done}/{len(todo)} ({time.perf_counter() - start:.0f} s)")

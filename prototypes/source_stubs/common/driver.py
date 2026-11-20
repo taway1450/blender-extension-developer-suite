@@ -57,9 +57,8 @@ def count(model: SourceModel) -> dict[str, int]:
         "py_type_slots": sum(len(t.slots) for t in model.py_types),
         "py_modules": len(model.py_modules),
         "py_module_functions": sum(len(m.methods) for m in model.py_modules),
-        "py_signatures_from_docstrings": sum(
-            1 for t in model.py_types for m in t.methods if m.signature
-        ) + sum(1 for mod in model.py_modules for m in mod.methods if m.signature),
+        "py_signatures_from_docstrings": sum(1 for t in model.py_types for m in t.methods if m.signature)
+        + sum(1 for mod in model.py_modules for m in mod.methods if m.signature),
         "context_members": len(model.context),
         "node_decls": len(model.nodes),
         "node_sockets": sum(len(n.inputs) + len(n.outputs) for n in model.nodes),
@@ -89,8 +88,12 @@ def coverage_markdown(model: SourceModel, stub_files: int) -> str:
     return "\n".join(lines) + "\n"
 
 
-def main(tool: str, extract: Callable[[Path, SourceModel, argparse.Namespace], None], doc: str | None = None,
-         add_arguments: Callable[[argparse.ArgumentParser], None] | None = None) -> int:
+def main(
+    tool: str,
+    extract: Callable[[Path, SourceModel, argparse.Namespace], None],
+    doc: str | None = None,
+    add_arguments: Callable[[argparse.ArgumentParser], None] | None = None,
+) -> int:
     parser = argparse.ArgumentParser(description=doc, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("version", help="Source worktree name under .cache/blender-src (e.g. 5.2)")
     parser.add_argument("--source", type=Path, help="Blender source tree (default: .cache/blender-src/<version>)")
@@ -102,7 +105,9 @@ def main(tool: str, extract: Callable[[Path, SourceModel, argparse.Namespace], N
     if not (source / "source" / "blender").is_dir():
         print(f"error: {source} is not a Blender source tree", file=sys.stderr)
         return 1
-    commit = subprocess.run(["git", "-C", str(source), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    commit = subprocess.run(
+        ["git", "-C", str(source), "rev-parse", "HEAD"], capture_output=True, text=True
+    ).stdout.strip()
     model = SourceModel(tool=tool, source=str(source), commit=commit)
     out = out_dir(args.version, tool)
 

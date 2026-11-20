@@ -89,7 +89,11 @@ class Dna:
                 d = d[match_close(d, 1) + 1 :]
             while len(d) >= 2 and d[0].text in {"public", "private", "protected"} and d[1].text == ":":
                 d = d[2:]
-            if not d or d[0].text in {"static", "using", "typedef", "friend", "template", "enum", "union", "struct"} and "{" in [x.text for x in d]:
+            if (
+                not d
+                or d[0].text in {"static", "using", "typedef", "friend", "template", "enum", "union", "struct"}
+                and "{" in [x.text for x in d]
+            ):
                 continue
             if any(x.text in {"static", "using", "typedef", "friend", "template", "operator"} for x in d[:3]):
                 continue

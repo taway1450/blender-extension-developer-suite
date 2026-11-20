@@ -8,8 +8,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.compare import difference_kind, expand_aliases, type_aliases, normalize, operator_call, read_stubs  # noqa: E402
-from common.pysource import Imports, StubWriter  # noqa: E402
+from common.compare import difference_kind, expand_aliases, normalize, operator_call, read_stubs, type_aliases
+from common.pysource import Imports, StubWriter
 
 
 def writer(code: str, module: str = "cycles.properties") -> StubWriter:
@@ -85,7 +85,9 @@ def test_rna_function_keeps_declaration_order_and_nullable_pointers() -> None:
         RnaProperty(identifier="data_path", type="string", parameter_flags=["required"]),
         RnaProperty(identifier="index", type="int", default=0),
         RnaProperty(identifier="target", type="pointer", struct_type="Object", parameter_flags=["required"]),
-        RnaProperty(identifier="owner", type="pointer", struct_type="ID", parameter_flags=["required"], never_null=True),
+        RnaProperty(
+            identifier="owner", type="pointer", struct_type="ID", parameter_flags=["required"], never_null=True
+        ),
     ]
     model = SourceModel(tool="t", source="s", commit="c")
     model.structs.append(RnaStruct(identifier="Thing", functions=[f]))
@@ -148,7 +150,10 @@ def test_operator_call_drops_execution_context() -> None:
     ours = normalize("(execution_context: int | str | None, undo: bool | None, only_unused: bool)/* -> set[str]")
     theirs = normalize("(only_unused: bool)* -> set[str]")
     assert operator_call(ours) == operator_call(theirs)
-    assert operator_call(normalize("(execution_context: int | str | None, undo: bool | None)/ -> set[str]")) == "()->set[str]"
+    assert (
+        operator_call(normalize("(execution_context: int | str | None, undo: bool | None)/ -> set[str]"))
+        == "()->set[str]"
+    )
 
 
 def test_enum_aliases_are_spelled_out(tmp_path: Path) -> None:

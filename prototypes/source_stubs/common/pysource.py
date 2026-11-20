@@ -66,8 +66,18 @@ def literal_type(node: ast.AST) -> str:
         return "dict[Any, Any]"
     if isinstance(node, (ast.Set, ast.SetComp)):
         return "set[Any]"
-    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in {"frozenset", "set", "dict", "list", "tuple"}:
-        return {"frozenset": "frozenset[Any]", "set": "set[Any]", "dict": "dict[Any, Any]", "list": "list[Any]", "tuple": "tuple[Any, ...]"}[node.func.id]
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id in {"frozenset", "set", "dict", "list", "tuple"}
+    ):
+        return {
+            "frozenset": "frozenset[Any]",
+            "set": "set[Any]",
+            "dict": "dict[Any, Any]",
+            "list": "list[Any]",
+            "tuple": "tuple[Any, ...]",
+        }[node.func.id]
     return "Any"
 
 
@@ -87,7 +97,9 @@ class Imports:
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    self.names[alias.asname or alias.name.split(".")[0]] = alias.name if alias.asname else alias.name.split(".")[0]
+                    self.names[alias.asname or alias.name.split(".")[0]] = (
+                        alias.name if alias.asname else alias.name.split(".")[0]
+                    )
             elif isinstance(node, ast.ImportFrom):
                 mod = node.module or ""
                 if node.level:
@@ -106,7 +118,9 @@ class Imports:
         return text
 
 
-def read_property(call: ast.Call, imports: Imports, module: str, identifier: str, local_classes: set[str]) -> RnaProperty | None:
+def read_property(
+    call: ast.Call, imports: Imports, module: str, identifier: str, local_classes: set[str]
+) -> RnaProperty | None:
     func = imports.resolve(call.func)
     short = func.rpartition(".")[2]
     if short not in PROP_FUNCS or not (func.startswith("bpy.props") or func == short):
@@ -173,7 +187,9 @@ class StubWriter:
         lines = []
         for dec in node.decorator_list:
             text = ast.unparse(dec)
-            if text in {"staticmethod", "classmethod", "property", "overload", "typing.overload"} or text.endswith((".setter", ".deleter")):
+            if text in {"staticmethod", "classmethod", "property", "overload", "typing.overload"} or text.endswith(
+                (".setter", ".deleter")
+            ):
                 lines.append(f"{indent}@{text}")
         returns = f" -> {ast.unparse(node.returns)}" if node.returns else ""
         prefix = "async def" if isinstance(node, ast.AsyncFunctionDef) else "def"
@@ -208,13 +224,22 @@ class StubWriter:
             if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 body += self.function(item, indent + "    ")
                 decs = {ast.unparse(d) for d in item.decorator_list}
-                kind = "property" if "property" in decs else "classmethod" if "classmethod" in decs else "staticmethod" if "staticmethod" in decs else "method"
+                kind = (
+                    "property"
+                    if "property" in decs
+                    else "classmethod"
+                    if "classmethod" in decs
+                    else "staticmethod"
+                    if "staticmethod" in decs
+                    else "method"
+                )
                 info.members.append(
                     PyClassMember(
                         name=item.name,
                         kind=kind,
                         annotation=ast.unparse(item.returns) if item.returns and kind == "property" else "",
-                        signature=f"({stub_args(item.args)})" + (f" -> {ast.unparse(item.returns)}" if item.returns else ""),
+                        signature=f"({stub_args(item.args)})"
+                        + (f" -> {ast.unparse(item.returns)}" if item.returns else ""),
                         src=f"{self.module}:{item.lineno}",
                     )
                 )
@@ -222,7 +247,14 @@ class StubWriter:
                 body += self.class_def(item, indent + "    ")
             elif isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
                 body += self.assign(item, indent + "    ")
-                info.members.append(PyClassMember(name=item.target.id, kind="attribute", annotation=ast.unparse(item.annotation), src=f"{self.module}:{item.lineno}"))
+                info.members.append(
+                    PyClassMember(
+                        name=item.target.id,
+                        kind="attribute",
+                        annotation=ast.unparse(item.annotation),
+                        src=f"{self.module}:{item.lineno}",
+                    )
+                )
                 if isinstance(item.annotation, ast.Call):
                     prop = read_property(item.annotation, self.imports, self.module, item.target.id, self.local_classes)
                     if prop:
@@ -231,7 +263,14 @@ class StubWriter:
                 body += self.assign(item, indent + "    ")
                 for target in item.targets:
                     if isinstance(target, ast.Name):
-                        info.members.append(PyClassMember(name=target.id, kind="attribute", value=ast.unparse(item.value)[:120], src=f"{self.module}:{item.lineno}"))
+                        info.members.append(
+                            PyClassMember(
+                                name=target.id,
+                                kind="attribute",
+                                value=ast.unparse(item.value)[:120],
+                                src=f"{self.module}:{item.lineno}",
+                            )
+                        )
                         if target.id == "bl_idname" and isinstance(const(item.value), str):
                             info.bl_idname = const(item.value)
         if indent == "":
@@ -293,7 +332,11 @@ class StubWriter:
                     continue
                 prop = read_property(node.value, self.imports, self.module, target.attr, self.local_classes)
                 if prop:
-                    regs.append(Registration(struct=struct, property=prop, module=self.module, src=f"{self.module}:{node.lineno}"))
+                    regs.append(
+                        Registration(
+                            struct=struct, property=prop, module=self.module, src=f"{self.module}:{node.lineno}"
+                        )
+                    )
         return regs
 
 

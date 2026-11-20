@@ -8,8 +8,9 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from common.model import SourceModel
 from ctok import Tree
+
+from common.model import SourceModel
 
 UNREACHABLE = {
     "rna: DNA defaults": "struct property defaults come from DNA_*_defaults.h through makesrna's sdna lookup; not read",
@@ -79,7 +80,6 @@ def run_areas(tree: Tree, model: SourceModel, areas: list[str]) -> None:
     model.coverage.warnings += sorted(set(tree.warnings))[:100]
     model.coverage.unreachable.update(UNREACHABLE)
     extra["preprocessor_warnings"] = len(set(tree.warnings))
-    out = Path(__file__).resolve().parents[3] / ".cache" / "source-stubs"
     state["extra"] = extra
     model._extra = extra  # type: ignore[attr-defined]
     _write_extra(model, extra)
@@ -99,4 +99,6 @@ def _write_extra(model: SourceModel, extra: dict[str, Any]) -> None:
             version = a
     out = Path(__file__).resolve().parents[3] / ".cache" / "source-stubs" / version / "regex"
     out.mkdir(parents=True, exist_ok=True)
-    (out / "extra.json").write_text(json.dumps(extra, indent=1, default=lambda v: sorted(v) if isinstance(v, set) else repr(v)), encoding="utf-8")
+    (out / "extra.json").write_text(
+        json.dumps(extra, indent=1, default=lambda v: sorted(v) if isinstance(v, set) else repr(v)), encoding="utf-8"
+    )

@@ -13,24 +13,15 @@ from __future__ import annotations
 
 import ast
 import keyword
-import re
-from collections import defaultdict
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from .model import (
-    BmeshOp,
-    ContextMember,
-    NodeDecl,
-    Operator,
     PyMethod,
-    PyModule,
-    PyParam,
     PySignature,
-    PyType,
     RnaFunction,
     RnaProperty,
-    RnaStruct,
     SourceModel,
 )
 
@@ -145,7 +136,14 @@ PRELUDE = (
     "from typing import Any, Generic, Literal, Self, TypeVar, overload\n"
 )
 # The C type names bpy.types re-exports (``python/intern/bpy_rna.cc``): their Python spelling.
-BPY_TYPES_C = {"bpy_struct", "bpy_prop", "bpy_prop_array", "bpy_prop_collection", "bpy_prop_collection_idprop", "bpy_func"}
+BPY_TYPES_C = {
+    "bpy_struct",
+    "bpy_prop",
+    "bpy_prop_array",
+    "bpy_prop_collection",
+    "bpy_prop_collection_idprop",
+    "bpy_func",
+}
 
 
 def py_ident(name: str) -> str:
@@ -296,7 +294,7 @@ class Renderer:
                 value = tuple(tuple(value[r * cols : (r + 1) * cols]) for r in range(rows))
             else:
                 value = tuple(value)
-        if isinstance(value, (bool, int, float, str, tuple)) and not (isinstance(value, float) and value != value):
+        if isinstance(value, (bool, int, float, str, tuple)) and not (isinstance(value, float) and math.isnan(value)):
             text = repr(value)
             if len(text) <= 80:
                 return text
@@ -427,7 +425,9 @@ class Renderer:
                 where[t.c_name] = (module, name)
         return where
 
-    def signature_text(self, sig: PySignature | None, method: PyMethod | None, *, first: str | None, current: str) -> str:
+    def signature_text(
+        self, sig: PySignature | None, method: PyMethod | None, *, first: str | None, current: str
+    ) -> str:
         flags = set(method.flags) if method else set()
         params: list[str] = [first] if first else []
         if sig is None:
@@ -440,7 +440,11 @@ class Renderer:
             else:
                 params += ["*args: Any"]
             return f"({', '.join(params)}) -> Any"
-        positional_only = method is not None and "keywords" not in flags and ("varargs" in flags or "o" in flags or "fastcall" in flags)
+        positional_only = (
+            method is not None
+            and "keywords" not in flags
+            and ("varargs" in flags or "o" in flags or "fastcall" in flags)
+        )
         rendered = []
         saw_kwonly = False
         last_posonly = max((i for i, p in enumerate(sig.params) if p.kind == "positional_only"), default=-1)
@@ -489,7 +493,10 @@ class Renderer:
                 m.block("_T", "_T = TypeVar('_T')")
             c.doc = t.doc.split("\n")[0][:200]
             if t.constructor is not None:
-                c.add("__init__", f"def __init__{self.signature_text(t.constructor, None, first='self', current=module).replace(' -> Any', ' -> None')}: ...")
+                c.add(
+                    "__init__",
+                    f"def __init__{self.signature_text(t.constructor, None, first='self', current=module).replace(' -> Any', ' -> None')}: ...",
+                )
             for meth in t.methods:
                 if not meth.name.isidentifier():
                     continue
@@ -499,7 +506,13 @@ class Renderer:
                     decorator, first = ["@classmethod"], "cls"
                 elif "static" in meth.flags:
                     decorator, first = ["@staticmethod"], None
-                c.add(meth.name, [*decorator, f"def {meth.name}{self.signature_text(meth.signature, meth, first=first, current=module)}: ..."])
+                c.add(
+                    meth.name,
+                    [
+                        *decorator,
+                        f"def {meth.name}{self.signature_text(meth.signature, meth, first=first, current=module)}: ...",
+                    ],
+                )
             for gs in t.getsets:
                 if not gs.name.isidentifier():
                     continue
@@ -528,7 +541,10 @@ class Renderer:
             for meth in mod.methods:
                 if not meth.name.isidentifier():
                     continue
-                m.block(meth.name, f"def {meth.name}{self.signature_text(meth.signature, meth, first=None, current=mod.name)}: ...")
+                m.block(
+                    meth.name,
+                    f"def {meth.name}{self.signature_text(meth.signature, meth, first=None, current=mod.name)}: ...",
+                )
             for attr, typ in mod.constants.items():
                 if attr.isidentifier():
                     m.block(attr, f"{attr}: {typ or 'Any'}")
@@ -587,7 +603,11 @@ class Renderer:
                     if "flag" in slot.subtype.split("|"):
                         t = f"set[{t}]"
                 elif slot.type in BMO_SLOT_TYPES:
-                    t = self.ref(BMO_SLOT_TYPES[slot.type], "bmesh.ops") if "." in BMO_SLOT_TYPES[slot.type] else BMO_SLOT_TYPES[slot.type]
+                    t = (
+                        self.ref(BMO_SLOT_TYPES[slot.type], "bmesh.ops")
+                        if "." in BMO_SLOT_TYPES[slot.type]
+                        else BMO_SLOT_TYPES[slot.type]
+                    )
                 elif slot.type == "elem_buf":
                     kinds = [elem[k] for k in ("vert", "edge", "face") if k in slot.subtype]
                     for k in kinds:
@@ -597,7 +617,12 @@ class Renderer:
                 elif slot.type == "mapping":
                     t = "dict[Any, Any]"
                 elif slot.type == "ptr":
-                    t = {"bmesh": "bmesh.types.BMesh", "scene": "bpy.types.Scene", "object": "bpy.types.Object", "mesh": "bpy.types.Mesh"}.get(slot.subtype, "Any")
+                    t = {
+                        "bmesh": "bmesh.types.BMesh",
+                        "scene": "bpy.types.Scene",
+                        "object": "bpy.types.Object",
+                        "mesh": "bpy.types.Mesh",
+                    }.get(slot.subtype, "Any")
                     if "." in t:
                         t = self.ref(t, "bmesh.ops")
                 else:
@@ -652,7 +677,11 @@ class Renderer:
         # Python operators.
         for src in self.model.python:
             for cls in src.classes:
-                if cls.bl_idname and "." in cls.bl_idname and any(b.split(".")[-1] in {"Operator", "Macro"} for b in cls.bases):
+                if (
+                    cls.bl_idname
+                    and "." in cls.bl_idname
+                    and any(b.split(".")[-1] in {"Operator", "Macro"} for b in cls.bases)
+                ):
                     module, _, func = cls.bl_idname.partition(".")
                     if module.isidentifier() and func.isidentifier():
                         self.render_operator(f"bpy.ops.{module}", func, cls.properties)

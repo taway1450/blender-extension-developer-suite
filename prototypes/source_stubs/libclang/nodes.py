@@ -18,13 +18,40 @@ from common.model import NodeDecl, NodeSocket
 
 from .interp import UNKNOWN, FuncRef, Interp, Obj
 
-PREFIX_BASES = (("GeometryNode", "GeometryNode"), ("ShaderNode", "ShaderNode"), ("CompositorNode", "CompositorNode"),
-                ("TextureNode", "TextureNode"), ("FunctionNode", "FunctionNode"), ("Node", "NodeInternal"))
+PREFIX_BASES = (
+    ("GeometryNode", "GeometryNode"),
+    ("ShaderNode", "ShaderNode"),
+    ("CompositorNode", "CompositorNode"),
+    ("TextureNode", "TextureNode"),
+    ("FunctionNode", "FunctionNode"),
+    ("Node", "NodeInternal"),
+)
 _DECL = re.compile(r"decl::(\w+)")
 # ``eNodeSocketDatatype`` (DNA_node_types.h) -> socket declaration type
-SOCK_TYPES = {0: "Float", 1: "Vector", 2: "Color", 3: "Shader", 4: "Bool", 6: "Int", 7: "String", 8: "Object",
-              9: "Image", 10: "Geometry", 11: "Collection", 12: "Texture", 13: "Material", 14: "Rotation", 15: "Menu",
-              16: "Matrix", 17: "Bundle", 18: "Closure", 19: "Font", 20: "Scene", 21: "Text", 22: "Mask"}
+SOCK_TYPES = {
+    0: "Float",
+    1: "Vector",
+    2: "Color",
+    3: "Shader",
+    4: "Bool",
+    6: "Int",
+    7: "String",
+    8: "Object",
+    9: "Image",
+    10: "Geometry",
+    11: "Collection",
+    12: "Texture",
+    13: "Material",
+    14: "Rotation",
+    15: "Menu",
+    16: "Matrix",
+    17: "Bundle",
+    18: "Closure",
+    19: "Font",
+    20: "Scene",
+    21: "Text",
+    22: "Mask",
+}
 
 
 class Nodes:
@@ -51,7 +78,6 @@ class Nodes:
     def node_type_base(self, i, a, e, call):
         if a and isinstance(a[0], Obj) and len(a) > 1 and isinstance(a[1], str):
             a[0].fields["idname"] = a[1]
-        return None
 
     def install_type_base(self) -> None:
         for name in self.i.p.by_name:
@@ -73,10 +99,10 @@ class Nodes:
     def register_type(self, i, a, e, call):
         nt = a[0] if a else None
         if not isinstance(nt, Obj):
-            return None
+            return
         idname = nt.fields.get("idname")
         if not isinstance(idname, str):
-            return None
+            return
         self.registered += 1
         h = self.struct_for(idname)
         s = h.data
@@ -98,7 +124,7 @@ class Nodes:
                     i.call_function(fn, [Obj("builder", decl)])
                 finally:
                     i.speculative = saved
-        return None
+        return
 
     def add_socket(self, i, base: Obj, a, e):
         decl: NodeDecl = base.data
@@ -106,12 +132,16 @@ class Nodes:
         if a and not isinstance(a[0], str) and stype == "BaseSocketDeclaration":
             # ``b.add_input(data_type, "Value")``: the socket type is an ``eNodeSocketDatatype`` argument.
             kind, a = a[0], a[1:]
-            stype = SOCK_TYPES.get(int(kind), "Custom") if isinstance(kind, int) and not isinstance(kind, bool) \
+            stype = (
+                SOCK_TYPES.get(int(kind), "Custom")
+                if isinstance(kind, int) and not isinstance(kind, bool)
                 else "Custom"
+            )
         name = a[0] if a and isinstance(a[0], str) else ""
         ident = a[1] if len(a) > 1 and isinstance(a[1], str) else ""
-        sock = NodeSocket(name=name, type=stype, identifier=ident, dynamic=bool(i.speculative) or not name,
-                          src=i.src(e[4]))
+        sock = NodeSocket(
+            name=name, type=stype, identifier=ident, dynamic=bool(i.speculative) or not name, src=i.src(e[4])
+        )
         (decl.inputs if e[1] == "add_input" else decl.outputs).append(sock)
         return Obj("socket", sock)
 

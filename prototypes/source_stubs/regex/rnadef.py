@@ -9,16 +9,24 @@ they delegate to). Units come from ``RNA_types.hh`` (``PROP_DISTANCE = 18 | PROP
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from common.model import EnumItem, Operator, RnaFunction, RnaProperty, RnaStruct
-from ctok import CFile, Tok, Tree, parse_params, tokenize, tokens_text
+from ctok import Tok, Tree, parse_params, tokenize
 from enums import EnumArray, EnumRegistry
-from interp import MISSING, FuncRef, Interp, Raw, StructRef, flags_of
+from interp import FuncRef, Interp, Raw, StructRef, flags_of
 
-PROP_TYPES = {"PROP_BOOLEAN": "boolean", "PROP_INT": "int", "PROP_FLOAT": "float", "PROP_STRING": "string",
-              "PROP_ENUM": "enum", "PROP_POINTER": "pointer", "PROP_COLLECTION": "collection"}
+from common.model import Operator, RnaFunction, RnaProperty, RnaStruct
+
+PROP_TYPES = {
+    "PROP_BOOLEAN": "boolean",
+    "PROP_INT": "int",
+    "PROP_FLOAT": "float",
+    "PROP_STRING": "string",
+    "PROP_ENUM": "enum",
+    "PROP_POINTER": "pointer",
+    "PROP_COLLECTION": "collection",
+}
 
 
 class BRNA:
@@ -58,16 +66,31 @@ class OpH:
         elif name == "description" and isinstance(value, str):
             op.description = value
         elif name == "flag":
-            op.flags = [f[len("OPTYPE_"):].lower() for f in flags_of(value, "OPTYPE_")]
-        elif name in {"exec", "invoke", "modal", "poll", "ui", "cancel", "check", "poll_property", "get_name",
-                      "get_description", "pyop_poll"}:
-            if value is not None and name not in op.callbacks:
-                op.callbacks.append(name)
+            op.flags = [f[len("OPTYPE_") :].lower() for f in flags_of(value, "OPTYPE_")]
+        elif (
+            name
+            in {
+                "exec",
+                "invoke",
+                "modal",
+                "poll",
+                "ui",
+                "cancel",
+                "check",
+                "poll_property",
+                "get_name",
+                "get_description",
+                "pyop_poll",
+            }
+            and value is not None
+            and name not in op.callbacks
+        ):
+            op.callbacks.append(name)
         setattr(self, "_" + name, value)
 
     def compound(self, name: str, op_: str, value: Any) -> None:
         if name == "flag":
-            extra = [f[len("OPTYPE_"):].lower() for f in flags_of(value, "OPTYPE_")]
+            extra = [f[len("OPTYPE_") :].lower() for f in flags_of(value, "OPTYPE_")]
             if op_ == "|=":
                 self.op.flags += [e for e in extra if e not in self.op.flags]
             elif op_ == "&=":
@@ -152,11 +175,23 @@ class RnaBuilder:
                     if len(args) >= 4 and not spec.type:
                         spec.type = PROP_TYPES.get(args[2].strip(), "")
                         spec.subtype = args[3].strip()
-                elif t.text.startswith("RNA_def_") and t.text != name and k + 1 < len(body) and body[k + 1].text == "(" and not spec.type:
+                elif (
+                    t.text.startswith("RNA_def_")
+                    and t.text != name
+                    and k + 1 < len(body)
+                    and body[k + 1].text == "("
+                    and not spec.type
+                ):
                     inner = spec_of(t.text, seen | {name})
                     if inner is not None and inner.type:
                         spec.type, spec.subtype, spec.enum_flag = inner.type, inner.subtype, inner.enum_flag
-                elif t.text == "subtype" and k >= 1 and body[k - 1].text == "->" and k + 2 < len(body) and body[k + 1].text == "=":
+                elif (
+                    t.text == "subtype"
+                    and k >= 1
+                    and body[k - 1].text == "->"
+                    and k + 2 < len(body)
+                    and body[k + 1].text == "="
+                ):
                     spec.subtype = body[k + 2].text
                 elif t.text == "RNA_def_property_subtype" and k + 4 < len(body):
                     spec.subtype = body[k + 4].text
@@ -175,7 +210,7 @@ class RnaBuilder:
             if e.name == "PropertySubType":
                 for cname, vtoks in e.constants:
                     unit = next((t.text for t in vtoks if t.text.startswith("PROP_UNIT_")), "")
-                    self.units[cname] = unit[len("PROP_UNIT_"):].lower() if unit else "none"
+                    self.units[cname] = unit[len("PROP_UNIT_") :].lower() if unit else "none"
 
     # ----------------------------------------------------------------------------------------------------------------
     # Structs and containers
@@ -231,17 +266,18 @@ class RnaBuilder:
         subtype, unit = "none", "none"
         for n in names:
             if n.startswith("PROP_UNIT_"):
-                unit = n[len("PROP_UNIT_"):].lower()
+                unit = n[len("PROP_UNIT_") :].lower()
             elif n != "PROP_NONE":
-                subtype = n[len("PROP_"):].lower()
+                subtype = n[len("PROP_") :].lower()
                 if unit == "none":
                     unit = self.units.get(n, "none")
         return subtype, unit
 
     def new_prop(self, ip: Interp, cont: Any, ident: Any, ptype: str, subtype: Any, pos: int) -> RnaProperty:
         st, unit = self.subtype_unit(subtype)
-        p = RnaProperty(identifier=ident if isinstance(ident, str) else "", type=ptype, subtype=st, unit=unit,
-                        src=ip.src(pos))
+        p = RnaProperty(
+            identifier=ident if isinstance(ident, str) else "", type=ptype, subtype=st, unit=unit, src=ip.src(pos)
+        )
         flags = []
         if ptype not in {"pointer", "collection"}:
             flags.append("editable")
@@ -317,7 +353,7 @@ class RnaBuilder:
         for n in names:
             if not n.startswith("PROP_") or n == "PROP_NONE":
                 continue
-            flag = n[len("PROP_"):].lower()
+            flag = n[len("PROP_") :].lower()
             if on and flag not in p.flags:
                 p.flags.append(flag)
             elif not on and flag in p.flags:
@@ -427,7 +463,9 @@ def finalize_prop(p: RnaProperty, enums: EnumRegistry) -> None:
                 num = eval_number(raw.text, enums.tree.constants(raw.file) if raw.file else {})
             if p.enum_flag:
                 if isinstance(num, (int, float)):
-                    p.default = {i.identifier for i in items if i.value is not None and int(num) & i.value and i.identifier}
+                    p.default = {
+                        i.identifier for i in items if i.value is not None and int(num) & i.value and i.identifier
+                    }
             else:
                 hit = None
                 for item, rv in zip(items, raws or []):
@@ -504,6 +542,7 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
                 if v not in ("", None):
                     setattr(st, attr, v)
             return None
+
         return h
 
     H["RNA_def_struct_sdna"] = struct_attr("dna")
@@ -541,11 +580,12 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
             if st is None:
                 return
             for n in flags_of(arg(vals, 1), "STRUCT_"):
-                f = n[len("STRUCT_"):].lower()
+                f = n[len("STRUCT_") :].lower()
                 if on and f not in st.flags:
                     st.flags.append(f)
                 elif not on and f in st.flags:
                     st.flags.remove(f)
+
         return h
 
     H["RNA_def_struct_flag"] = struct_flag(True)
@@ -581,7 +621,7 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
             if m:  # ``(len >= 3) ? PROP_EULER : PROP_ANGLE``
                 n = ip.number(by.get(m.group(1)))
                 if isinstance(n, (int, float)):
-                    ok = eval(f"{n} {m.group(2)} {m.group(3)}")  # noqa: S307 - digits and a comparison
+                    ok = eval(f"{n} {m.group(2)} {m.group(3)}")
                     subtype = m.group(4) if ok else m.group(5)
                 else:
                     subtype = m.group(4)
@@ -654,8 +694,12 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
                 p.description = arg(vals, 2)
 
     H["RNA_def_property_ui_text"] = ui_text
-    H["RNA_def_property_flag"] = lambda ip, vals, toks, pos: b.set_flag(prop_of(vals), flags_of(arg(vals, 1), "PROP_"), True)
-    H["RNA_def_property_clear_flag"] = lambda ip, vals, toks, pos: b.set_flag(prop_of(vals), flags_of(arg(vals, 1), "PROP_"), False)
+    H["RNA_def_property_flag"] = lambda ip, vals, toks, pos: b.set_flag(
+        prop_of(vals), flags_of(arg(vals, 1), "PROP_"), True
+    )
+    H["RNA_def_property_clear_flag"] = lambda ip, vals, toks, pos: b.set_flag(
+        prop_of(vals), flags_of(arg(vals, 1), "PROP_"), False
+    )
 
     def subtype(ip, vals, toks, pos):
         p = prop_of(vals)
@@ -699,6 +743,7 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
             if p is not None and lo is not None and hi is not None:
                 setattr(p, attr_lo, float(lo))
                 setattr(p, attr_hi, float(hi))
+
         return h
 
     H["RNA_def_property_range"] = rng("hard_min", "hard_max")
@@ -753,6 +798,7 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
             v = arg(vals, k)
             if p is not None and v is not None:
                 setattr(p, attr, v if isinstance(v, str) else _name(v))
+
         return h
 
     H["RNA_def_property_editable_func"] = str_attr("editable_func")
@@ -816,17 +862,18 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
                     p.typef = _name(v)
                 elif k == "poll" and p.type in {"pointer", "collection"}:
                     p.poll = _name(v)
-                elif k == "length" and p.type != "string" and False:
-                    pass
             if runtime and getter is not None and setter is None and p.type not in {"pointer", "collection"}:
                 b.set_flag(p, ["PROP_EDITABLE"], False)
             if runtime and p.type in {"boolean", "int", "float"} and "array" in fname:
                 pass
+
         return h
 
     for fname, params in b.decl_params.items():
         if re.match(r"RNA_def_property_\w+_funcs(_runtime)?$", fname) or fname in {
-            "RNA_def_property_pointer_funcs", "RNA_def_property_collection_funcs"}:
+            "RNA_def_property_pointer_funcs",
+            "RNA_def_property_collection_funcs",
+        }:
             H[fname] = funcs_handler(fname, params)
 
     # -- functions
@@ -834,8 +881,11 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
     def def_function(ip, vals, toks, pos):
         st = b.resolve_struct(arg(vals, 0), ip)
         name = arg(vals, 1)
-        func = RnaFunction(identifier=name if isinstance(name, str) else "", c_function=_name(arg(vals, 2)) if arg(vals, 2) is not None else "",
-                           src=ip.src(pos))
+        func = RnaFunction(
+            identifier=name if isinstance(name, str) else "",
+            c_function=_name(arg(vals, 2)) if arg(vals, 2) is not None else "",
+            src=ip.src(pos),
+        )
         if st is None:
             ip.warn("function on a struct the reader could not follow", ip.src(pos))
             return func
@@ -868,7 +918,7 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
         f = func_of(vals)
         if f is not None:
             for n in flags_of(arg(vals, 1), "FUNC_"):
-                fl = n[len("FUNC_"):].lower()
+                fl = n[len("FUNC_") :].lower()
                 if fl not in f.flags:
                     f.flags.append(fl)
 
@@ -889,11 +939,12 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
                 return
             b.set_flag(p, flags_of(arg(vals, 1), "PROP_"), on)
             for n in flags_of(arg(vals, 2), "PARM_"):
-                fl = n[len("PARM_"):].lower()
+                fl = n[len("PARM_") :].lower()
                 if on and fl not in p.parameter_flags:
                     p.parameter_flags.append(fl)
                 elif not on and fl in p.parameter_flags:
                     p.parameter_flags.remove(fl)
+
         return h
 
     H["RNA_def_parameter_flags"] = param_flags(True)

@@ -11,12 +11,13 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from common.model import Operator, RnaProperty, SourceModel
 from ctok import FuncDef, Tree
 from enums import EnumRegistry
-from interp import MISSING, Interp, Raw, flags_of
+from interp import Interp, Raw, flags_of
 from rna_area import make_global_lookup, make_initializer_hook
-from rnadef import OpH, OpSrna, RnaBuilder, make_handlers
+from rnadef import OpH, RnaBuilder, make_handlers
+
+from common.model import Operator, RnaProperty, SourceModel
 
 OT_RE = re.compile(r"^[A-Z][A-Z0-9_]*_OT_\w+$")
 
@@ -82,7 +83,7 @@ def extract_operators(tree: Tree, model: SourceModel, state: dict[str, Any]) -> 
         if len(vals) > 2 and isinstance(vals[2], str):
             op.description = vals[2]
         if len(vals) > 3:
-            op.flags = [f[len("OPTYPE_"):].lower() for f in flags_of(vals[3], "OPTYPE_")] + ["macro"]
+            op.flags = [f[len("OPTYPE_") :].lower() for f in flags_of(vals[3], "OPTYPE_")] + ["macro"]
         if idname and idname not in ops:
             ops[idname] = op
             order.append(idname)
@@ -90,13 +91,12 @@ def extract_operators(tree: Tree, model: SourceModel, state: dict[str, Any]) -> 
 
     def macro_define(ip_: Interp, vals: list[Any], toks: Any, pos: int) -> Any:
         oth, sub = (vals + [None, None])[:2]
-        if isinstance(oth, OpH) and isinstance(sub, str):
-            if not any(p.identifier == sub for p in oth.op.properties):
-                p = RnaProperty(identifier=sub, type="pointer", struct_type=sub, src=ip_.src(pos))
-                p.flags = []
-                p._final = True  # type: ignore[attr-defined]
-                p.readonly = True
-                oth.op.properties.append(p)
+        if isinstance(oth, OpH) and isinstance(sub, str) and not any(p.identifier == sub for p in oth.op.properties):
+            p = RnaProperty(identifier=sub, type="pointer", struct_type=sub, src=ip_.src(pos))
+            p.flags = []
+            p._final = True  # type: ignore[attr-defined]
+            p.readonly = True
+            oth.op.properties.append(p)
         return Raw([], ip_.file)
 
     handlers["WM_operatortype_append_macro"] = append_macro

@@ -17,10 +17,10 @@ It never parses types or templates: callers read token runs. What it cannot foll
 from __future__ import annotations
 
 import bisect
-import warnings
 import os
 import re
-from dataclasses import dataclass, field
+import warnings
+from dataclasses import dataclass
 from pathlib import Path
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
@@ -64,7 +64,7 @@ _TOKEN_RE = re.compile(
 
 
 class Tok:
-    __slots__ = ("kind", "text", "pos")
+    __slots__ = ("kind", "pos", "text")
 
     def __init__(self, kind: str, text: str, pos: int) -> None:
         self.kind = kind  # id, num, str, chr, op
@@ -90,7 +90,7 @@ def tokens_text(toks: list[Tok]) -> str:
     return " ".join(t.text for t in toks)
 
 
-_STR_BODY = re.compile(r'^(?:u8|[LuU])?"((?:[^"\\\n]|\\.)*)"', re.S)
+_STR_BODY = re.compile(r'^(?:u8|[LuU])?"((?:[^"\\\n]|\\.)*)"', re.DOTALL)
 _RAW_BODY = re.compile(r'^(?:u8|[LuU])?R"([^(\s"]*)\(([\s\S]*?)\)\1"')
 
 
@@ -196,9 +196,22 @@ class Assume:
         }
         if rna_runtime:
             self.values["RNA_RUNTIME"] = 1
-        self.undefined = {"_WIN32", "WIN32", "__APPLE__", "_MSC_VER", "__clang__", "DEBUG", "MATH_STANDALONE",
-                          "__BIG_ENDIAN__", "WITH_HEADLESS", "WITH_GHOST_SDL", "WITH_CYCLES_DEBUG",
-                          "BUILD_DATE", "WITH_ASSERT_ABORT", "RNA_RUNTIME" if not rna_runtime else ""}
+        self.undefined = {
+            "_WIN32",
+            "WIN32",
+            "__APPLE__",
+            "_MSC_VER",
+            "__clang__",
+            "DEBUG",
+            "MATH_STANDALONE",
+            "__BIG_ENDIAN__",
+            "WITH_HEADLESS",
+            "WITH_GHOST_SDL",
+            "WITH_CYCLES_DEBUG",
+            "BUILD_DATE",
+            "WITH_ASSERT_ABORT",
+            "RNA_RUNTIME" if not rna_runtime else "",
+        }
 
     def lookup(self, name: str, local: dict[str, str]) -> tuple[bool, int | None]:
         """(defined, value) of ``name``."""
@@ -230,7 +243,7 @@ def eval_condition(expr: str, assume: Assume, local: dict[str, str]) -> bool | N
         name = m.group(0)
         if name in {"and", "or", "not"}:
             return name
-        defined, value = assume.lookup(name, local)
+        _defined, value = assume.lookup(name, local)
         if value is None:
             raise ValueError(name)
         return str(value)
@@ -243,13 +256,13 @@ def eval_condition(expr: str, assume: Assume, local: dict[str, str]) -> bool | N
     expr = expr.replace("&&", " and ").replace("||", " or ")
     expr = re.sub(r"!(?!=)", " not ", expr)
     try:
-        return bool(eval(expr, {"__builtins__": {}}, {}))  # noqa: S307 - arithmetic on digits only
+        return bool(eval(expr, {"__builtins__": {}}, {}))
     except Exception:
         return None
 
 
-_DIRECTIVE_RE = re.compile(r"^\s*#\s*(\w+)\s*(.*)$", re.S)
-_DEFINE_RE = re.compile(r"^(\w+)(\(([^)]*)\))?\s?(.*)$", re.S)
+_DIRECTIVE_RE = re.compile(r"^\s*#\s*(\w+)\s*(.*)$", re.DOTALL)
+_DEFINE_RE = re.compile(r"^(\w+)(\(([^)]*)\))?\s?(.*)$", re.DOTALL)
 
 
 @dataclass
@@ -408,8 +421,25 @@ class EnumDef:
     pos: int
 
 
-KEYWORDS_NOT_FUNC = {"if", "for", "while", "switch", "return", "sizeof", "decltype", "alignas", "alignof",
-                     "__attribute__", "static_assert", "noexcept", "operator", "throw", "catch", "new", "delete"}
+KEYWORDS_NOT_FUNC = {
+    "if",
+    "for",
+    "while",
+    "switch",
+    "return",
+    "sizeof",
+    "decltype",
+    "alignas",
+    "alignof",
+    "__attribute__",
+    "static_assert",
+    "noexcept",
+    "operator",
+    "throw",
+    "catch",
+    "new",
+    "delete",
+}
 
 
 def parse_params(toks: list[Tok]) -> list[Param]:
@@ -524,9 +554,14 @@ class CFile:
             if s in {"(", "["}:
                 close_ = match_close(toks, i)
                 # A macro invocation without a semicolon: ``NODE_STORAGE_FUNCS(NodeSwitch)`` before a function.
-                if (s == "(" and i == start + 1 and _MACRO_NAME.match(toks[start].text)
-                        and close_ + 1 < n and toks[close_ + 1].kind == "id"
-                        and toks[close_ + 1].text not in {"const", "override", "noexcept", "final"}):
+                if (
+                    s == "("
+                    and i == start + 1
+                    and _MACRO_NAME.match(toks[start].text)
+                    and close_ + 1 < n
+                    and toks[close_ + 1].kind == "id"
+                    and toks[close_ + 1].text not in {"const", "override", "noexcept", "final"}
+                ):
                     self._statement(start, close_ + 1)
                     i = close_ + 1
                     start = i
@@ -539,7 +574,9 @@ class CFile:
             decl = toks[start:i]
             words = [d.text for d in decl]
             # namespace / extern "C" blocks are transparent.
-            if (words and words[0] == "namespace") or (len(words) >= 2 and words[0] == "extern" and decl[1].kind == "str"):
+            if (words and words[0] == "namespace") or (
+                len(words) >= 2 and words[0] == "extern" and decl[1].kind == "str"
+            ):
                 i += 1
                 start = i
                 continue
@@ -573,8 +610,16 @@ class CFile:
                     k -= 2
                 pclose = match_close(decl, paren)
                 params = parse_params(decl[paren + 1 : pclose])
-                fd = FuncDef(name_tok.text, "::".join(qual), params, self, i + 1, close,
-                             decl[0].pos if decl else t.pos, is_static="static" in words[:paren])
+                fd = FuncDef(
+                    name_tok.text,
+                    "::".join(qual),
+                    params,
+                    self,
+                    i + 1,
+                    close,
+                    decl[0].pos if decl else t.pos,
+                    is_static="static" in words[:paren],
+                )
                 self.functions.setdefault(fd.name, []).append(fd)
                 i = close + 1
                 start = i
@@ -698,9 +743,13 @@ class Tree:
         self.global_consts: dict[str, int | float] = {}
 
     def load_global_constants(self) -> None:
-        for pattern in ("source/blender/makesdna/DNA_*.h", "source/blender/makesrna/RNA_types.hh",
-                        "source/blender/windowmanager/WM_types.hh", "source/blender/editors/include/*.hh",
-                        "source/blender/blenkernel/BKE_*.hh"):
+        for pattern in (
+            "source/blender/makesdna/DNA_*.h",
+            "source/blender/makesrna/RNA_types.hh",
+            "source/blender/windowmanager/WM_types.hh",
+            "source/blender/editors/include/*.hh",
+            "source/blender/blenkernel/BKE_*.hh",
+        ):
             for rel in self.glob(pattern):
                 try:
                     for k, v in self._own_constants(self.header(rel)).items():
@@ -752,6 +801,7 @@ class Tree:
             cands = [c for c in cands if c.as_posix().endswith(name)] or cands
         # Prefer the header closest to the including file.
         from_parts = Path(from_rel).parts
+
         def score(p: Path) -> tuple[int, int]:
             parts = Path(self.rel(p)).parts
             common = 0
@@ -760,6 +810,7 @@ class Tree:
                     break
                 common += 1
             return (-common, len(parts))
+
         return self.rel(min(cands, key=score))
 
     def header(self, rel: str) -> CFile:
@@ -879,7 +930,14 @@ def field_names(body: list[Tok]) -> list[str]:
             decl = []
             if not d or d[0].text in {"static", "using", "typedef", "friend", "template"}:
                 continue
-            fp = next((d[k + 2].text for k in range(len(d) - 2) if d[k].text == "(" and d[k + 1].text == "*" and d[k + 2].kind == "id"), None)
+            fp = next(
+                (
+                    d[k + 2].text
+                    for k in range(len(d) - 2)
+                    if d[k].text == "(" and d[k + 1].text == "*" and d[k + 2].kind == "id"
+                ),
+                None,
+            )
             if fp:
                 names.append(fp)
                 continue
@@ -951,7 +1009,9 @@ def eval_number(expr: str, consts: dict[str, int | float] | None = None) -> int 
     consts = consts or {}
     expr = _CAST_RE.sub("", expr)
     expr = _FUNC_CAST_RE.sub("", expr)
-    expr = _DEG_RE.sub(lambda m: "(3.141592653589793/180.0)*(" if m.group(1).startswith("DEG") else "(180.0/3.141592653589793)*(", expr)
+    expr = _DEG_RE.sub(
+        lambda m: "(3.141592653589793/180.0)*(" if m.group(1).startswith("DEG") else "(180.0/3.141592653589793)*(", expr
+    )
     expr = re.sub(r"\s*::\s*", "::", expr)
 
     def num(m: re.Match[str]) -> str:
@@ -984,14 +1044,13 @@ def eval_number(expr: str, consts: dict[str, int | float] | None = None) -> int 
         expr = re.sub(r"(?<![\d.])[A-Za-z_][\w]*(?:::[A-Za-z_]\w*)*", ident, expr)
     except ValueError:
         return None
-    if re.search(r"[^\d\s.+\-*/%()<>&|^~eE]", expr):
-        if not re.fullmatch(r"[\d\s.+\-*/%()<>&|^~eE!=?:]*", expr):
-            return None
+    if re.search(r"[^\d\s.+\-*/%()<>&|^~eE]", expr) and not re.fullmatch(r"[\d\s.+\-*/%()<>&|^~eE!=?:]*", expr):
+        return None
     expr = expr.replace("&&", " and ").replace("||", " or ")
     if "?" in expr or "!" in expr:
         return None
     try:
-        v = eval(expr, {"__builtins__": {}}, {})  # noqa: S307 - digits and operators only
+        v = eval(expr, {"__builtins__": {}}, {})
     except Exception:
         return None
     if isinstance(v, bool):

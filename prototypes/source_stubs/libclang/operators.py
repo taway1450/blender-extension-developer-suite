@@ -16,8 +16,19 @@ from common.model import Operator, RnaProperty
 from .interp import UNKNOWN, FuncRef, Interp, Lambda, Obj
 from .rna import Rna, finalize
 
-CALLBACKS = ("exec", "invoke", "modal", "poll", "poll_property", "ui", "cancel", "check", "get_name",
-             "get_description", "pyop_poll")
+CALLBACKS = (
+    "exec",
+    "invoke",
+    "modal",
+    "poll",
+    "poll_property",
+    "ui",
+    "cancel",
+    "check",
+    "get_name",
+    "get_description",
+    "pyop_poll",
+)
 OT_NAME = re.compile(r"^[A-Z0-9_]+_OT_\w+$")
 
 
@@ -33,9 +44,14 @@ class Operators:
         self.model = model
         interp.intrinsics["WM_operatortype_append_macro"] = self.append_macro
         interp.intrinsics["WM_operatortype_macro_define"] = self.macro_define
-        for name in ("WM_operatortype_append", "WM_operatortype_append_ptr", "WM_operatortype_append_macro_ptr",
-                     "WM_operatortype_find", "WM_operatortype_props_advanced_begin",
-                     "WM_operatortype_props_advanced_end"):
+        for name in (
+            "WM_operatortype_append",
+            "WM_operatortype_append_ptr",
+            "WM_operatortype_append_macro_ptr",
+            "WM_operatortype_find",
+            "WM_operatortype_props_advanced_begin",
+            "WM_operatortype_props_advanced_end",
+        ):
             interp.intrinsics.setdefault(name, lambda i, a, e, c: UNKNOWN)
 
     def apply(self, op: Operator, h: Obj) -> None:
@@ -89,9 +105,14 @@ class Operators:
         for op in self.model.operators:
             if op.idname == idname:
                 return Obj("optype", op, {"srna": Obj("struct", op)})
-        op = Operator(idname=idname, name=a[1] if len(a) > 1 and isinstance(a[1], str) else "",
-                      description=a[2] if len(a) > 2 and isinstance(a[2], str) else "",
-                      flags=[*_flags(a[3] if len(a) > 3 else 0), "macro"], callbacks=["macro"], src=i.src(call[4]))
+        op = Operator(
+            idname=idname,
+            name=a[1] if len(a) > 1 and isinstance(a[1], str) else "",
+            description=a[2] if len(a) > 2 and isinstance(a[2], str) else "",
+            flags=[*_flags(a[3] if len(a) > 3 else 0), "macro"],
+            callbacks=["macro"],
+            src=i.src(call[4]),
+        )
         self.model.operators.append(op)
         return Obj("optype", op, {"srna": Obj("struct", op)})
 
@@ -101,7 +122,8 @@ class Operators:
         op: Operator = a[0].data
         sub = a[1] if len(a) > 1 and isinstance(a[1], str) else ""
         if sub and not any(p.identifier == sub for p in op.properties):
-            p = RnaProperty(identifier=sub, type="pointer", struct_type="OperatorProperties", src=i.src(call[4]),
-                            flags=["editable"])
+            p = RnaProperty(
+                identifier=sub, type="pointer", struct_type="OperatorProperties", src=i.src(call[4]), flags=["editable"]
+            )
             op.properties.append(p)
         return Obj("macro", sub, {"ptr": UNKNOWN})

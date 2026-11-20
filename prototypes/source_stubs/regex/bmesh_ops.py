@@ -12,14 +12,22 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from common.model import BmeshOp, BmeshSlot, SourceModel
 from ctok import CFile, Tok, Tree, match_close, split_commas, string_value
 
+from common.model import BmeshOp, BmeshSlot, SourceModel
+
 REL = "source/blender/bmesh/intern/bmesh_opdefines.cc"
-ELEM = {"BM_VERT": "vert", "BM_EDGE": "edge", "BM_FACE": "face", "BM_LOOP": "loop",
-        "BMO_OP_SLOT_SUBTYPE_ELEM_VERT": "vert", "BMO_OP_SLOT_SUBTYPE_ELEM_EDGE": "edge",
-        "BMO_OP_SLOT_SUBTYPE_ELEM_FACE": "face", "BMO_OP_SLOT_SUBTYPE_ELEM_IS_SINGLE": "single"}
-_COMMENT = re.compile(r"/\*(.*?)\*/|//([^\n]*)", re.S)
+ELEM = {
+    "BM_VERT": "vert",
+    "BM_EDGE": "edge",
+    "BM_FACE": "face",
+    "BM_LOOP": "loop",
+    "BMO_OP_SLOT_SUBTYPE_ELEM_VERT": "vert",
+    "BMO_OP_SLOT_SUBTYPE_ELEM_EDGE": "edge",
+    "BMO_OP_SLOT_SUBTYPE_ELEM_FACE": "face",
+    "BMO_OP_SLOT_SUBTYPE_ELEM_IS_SINGLE": "single",
+}
+_COMMENT = re.compile(r"/\*(.*?)\*/|//([^\n]*)", re.DOTALL)
 
 
 def _clean_comment(text: str) -> str:
@@ -28,8 +36,7 @@ def _clean_comment(text: str) -> str:
         line = line.strip()
         if line.startswith("*"):
             line = line[1:]
-            if line.startswith(" "):
-                line = line[1:]
+            line = line.removeprefix(" ")
         lines.append(line.rstrip())
     out = "\n".join(lines).strip()
     if out.startswith('"""') and out.endswith('"""'):
@@ -105,7 +112,7 @@ class BmeshReader:
                     rest = t.text.removeprefix("BMO_OP_SLOT_SUBTYPE_")
                     for prefix in ("MAP_", "PTR_", "INT_"):
                         if rest.startswith(prefix):
-                            sub.append(rest[len(prefix):].lower())
+                            sub.append(rest[len(prefix) :].lower())
         items: list[str] = []
         if len(row) > 3:
             items_var = next((t.text for t in row[3] if t.kind == "id"), "")
@@ -113,7 +120,9 @@ class BmeshReader:
                 items = self.enums[items_var]
                 self.enum_slots[f"{op}.{name}"] = items
         line = self.f.line(row[0][0].pos)
-        return BmeshSlot(name=name, type=typ, subtype="|".join(sub), doc=self.comment_above(line, stop_line), items=items)
+        return BmeshSlot(
+            name=name, type=typ, subtype="|".join(sub), doc=self.comment_above(line, stop_line), items=items
+        )
 
     def slots(self, op: str, toks: list[Tok], stop_line: int) -> list[BmeshSlot]:
         out = []
@@ -137,9 +146,12 @@ class BmeshReader:
         var = self.f.variables.get("bmo_opdefines")
         if var is not None:
             exposed = [t.text for t in var.init if t.kind == "id"]
-        defs = {name: v for name, v in self.f.variables.items() if "BMOpDefine" in v.type_text and v.braced and name != "bmo_opdefines"}
+        defs = {
+            name: v
+            for name, v in self.f.variables.items()
+            if "BMOpDefine" in v.type_text and v.braced and name != "bmo_opdefines"
+        }
         order = exposed or list(defs)
-        prev_end = 0
         for name in order:
             v = defs.get(name)
             if v is None:

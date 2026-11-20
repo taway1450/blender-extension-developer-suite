@@ -14,15 +14,15 @@ receive the builder are followed.
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
-from common.model import NodeDecl, NodeSocket, RnaStruct, SourceModel
-from ctok import CFile, FuncDef, Tok, Tree, call_args, match_close, string_value
+from ctok import CFile, FuncDef, Tok, Tree, call_args, string_value
 from enums import EnumRegistry
-from interp import MISSING, FuncRef, Interp, Raw, parse_statements
+from interp import FuncRef, Interp, parse_statements
 from rna_area import make_global_lookup, make_initializer_hook
 from rnadef import RnaBuilder, make_handlers
+
+from common.model import NodeDecl, NodeSocket, RnaStruct, SourceModel
 
 BASES = {
     "geo_node_type_base": "GeometryNode",
@@ -36,11 +36,26 @@ BASES = {
     "common_node_type_base": "",
     "node_type_base": "",
 }
-SOCK_DECL = {"SOCK_FLOAT": "Float", "SOCK_INT": "Int", "SOCK_BOOLEAN": "Bool", "SOCK_VECTOR": "Vector",
-             "SOCK_RGBA": "Color", "SOCK_ROTATION": "Rotation", "SOCK_MATRIX": "Matrix", "SOCK_STRING": "String",
-             "SOCK_MENU": "Menu", "SOCK_SHADER": "Shader", "SOCK_GEOMETRY": "Geometry", "SOCK_OBJECT": "Object",
-             "SOCK_IMAGE": "Image", "SOCK_COLLECTION": "Collection", "SOCK_MATERIAL": "Material",
-             "SOCK_TEXTURE": "Texture", "SOCK_BUNDLE": "Bundle", "SOCK_CLOSURE": "Closure"}
+SOCK_DECL = {
+    "SOCK_FLOAT": "Float",
+    "SOCK_INT": "Int",
+    "SOCK_BOOLEAN": "Bool",
+    "SOCK_VECTOR": "Vector",
+    "SOCK_RGBA": "Color",
+    "SOCK_ROTATION": "Rotation",
+    "SOCK_MATRIX": "Matrix",
+    "SOCK_STRING": "String",
+    "SOCK_MENU": "Menu",
+    "SOCK_SHADER": "Shader",
+    "SOCK_GEOMETRY": "Geometry",
+    "SOCK_OBJECT": "Object",
+    "SOCK_IMAGE": "Image",
+    "SOCK_COLLECTION": "Collection",
+    "SOCK_MATERIAL": "Material",
+    "SOCK_TEXTURE": "Texture",
+    "SOCK_BUNDLE": "Bundle",
+    "SOCK_CLOSURE": "Closure",
+}
 
 
 class NodeTypeH:
@@ -80,7 +95,11 @@ class NodeTypeH:
 
 
 def node_files(tree: Tree) -> list[str]:
-    return [r for r in tree.glob("source/blender/nodes/**/*.cc") if "/tests/" not in r and not r.endswith("_test.cc") and not r.endswith("_tests.cc")]
+    return [
+        r
+        for r in tree.glob("source/blender/nodes/**/*.cc")
+        if "/tests/" not in r and not r.endswith("_test.cc") and not r.endswith("_tests.cc")
+    ]
 
 
 def extract_nodes(tree: Tree, model: SourceModel, state: dict[str, Any], extra: dict[str, Any]) -> Interp:
@@ -132,6 +151,7 @@ def extract_nodes(tree: Tree, model: SourceModel, state: dict[str, Any], extra: 
             nt.struct = st
             registered.append(nt)
             return None
+
         return h
 
     for fname in BASES:
@@ -145,17 +165,26 @@ def extract_nodes(tree: Tree, model: SourceModel, state: dict[str, Any], extra: 
     ip.compute_relevance()
 
     # Registration functions: those calling a ``*_node_type_base``.
-    utils = {"node_composite_util.cc", "node_function_util.cc", "node_geometry_util.cc", "node_shader_util.cc",
-             "node_texture_util.cc", "node_util.cc"}
+    utils = {
+        "node_composite_util.cc",
+        "node_function_util.cc",
+        "node_geometry_util.cc",
+        "node_shader_util.cc",
+        "node_texture_util.cc",
+        "node_util.cc",
+    }
     for f in files:
         if f.rel.rsplit("/", 1)[-1] in utils:
             continue
-        for name, defs in f.functions.items():
+        for defs in f.functions.values():
             for fd in defs:
                 if fd.params and not all(p.name == "" for p in fd.params):
                     continue  # registration functions take no arguments
                 body = fd.body
-                if any(t.kind == "id" and t.text in BASES and k + 1 < len(body) and body[k + 1].text == "(" for k, t in enumerate(body)):
+                if any(
+                    t.kind == "id" and t.text in BASES and k + 1 < len(body) and body[k + 1].text == "("
+                    for k, t in enumerate(body)
+                ):
                     ip.run(fd, [])
 
     # Socket declarations.
@@ -226,8 +255,13 @@ class DeclReader:
                 k = self.socket(f, toks, k, dynamic or in_lambda)
                 continue
             # Helpers receiving the builder: ``node_declare_common(b)``.
-            if t.kind == "id" and k + 1 < n and toks[k + 1].text == "(" and (k == 0 or toks[k - 1].text not in {".", "->"}):
-                args, close = call_args(toks, k + 1)
+            if (
+                t.kind == "id"
+                and k + 1 < n
+                and toks[k + 1].text == "("
+                and (k == 0 or toks[k - 1].text not in {".", "->"})
+            ):
+                args, _close = call_args(toks, k + 1)
                 if any(len(a) == 1 and a[0].text in builders for a in args):
                     callee = self.ip.lookup_function(t.text, f)
                     if callee is not None:
@@ -272,8 +306,9 @@ class DeclReader:
             name = self.string(args[0])
             if len(args) > 1:
                 ident = self.string(args[1]) or ""
-        sock = NodeSocket(name=name or "", type=typ, identifier=ident, dynamic=dynamic or name is None,
-                          src=f.src(toks[k].pos))
+        sock = NodeSocket(
+            name=name or "", type=typ, identifier=ident, dynamic=dynamic or name is None, src=f.src(toks[k].pos)
+        )
         # Chained modifiers.
         m = close + 1
         while m + 2 < n and toks[m].text == "." and toks[m + 1].kind == "id":

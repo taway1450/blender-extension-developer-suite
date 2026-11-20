@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from common.model import EnumItem
 from ctok import CFile, Tok, Tree, VarDef, eval_number, match_close, split_commas, string_value, tokens_text
 from macro import expand
+
+from common.model import EnumItem
 
 
 @dataclass

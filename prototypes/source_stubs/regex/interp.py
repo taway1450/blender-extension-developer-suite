@@ -20,13 +20,35 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from ctok import CFile, FuncDef, Tok, Tree, call_args, eval_number, match_close, parse_params, split_commas, string_value
+from ctok import (
+    CFile,
+    FuncDef,
+    Tok,
+    Tree,
+    call_args,
+    eval_number,
+    match_close,
+    parse_params,
+    split_commas,
+    string_value,
+)
 
-I18N = {"N_": -1, "CTX_N_": -1, "IFACE_": -1, "TIP_": -1, "DATA_": -1, "RPT_": -1, "CTX_IFACE_": -1,
-        "CTX_TIP_": -1, "CTX_DATA_": -1, "CTX_RPT_": -1, "BLT_I18N_MSGID_MULTI_CTXT": 0}
+I18N = {
+    "N_": -1,
+    "CTX_N_": -1,
+    "IFACE_": -1,
+    "TIP_": -1,
+    "DATA_": -1,
+    "RPT_": -1,
+    "CTX_IFACE_": -1,
+    "CTX_TIP_": -1,
+    "CTX_DATA_": -1,
+    "CTX_RPT_": -1,
+    "BLT_I18N_MSGID_MULTI_CTXT": 0,
+}
 BINARY_OPS = {"||", "&&", "|", "^", "&", "==", "!=", "<", ">", "<=", ">=", "<<", ">>", "+", "-", "*", "/", "%", "?"}
 CASTS = {"static_cast", "reinterpret_cast", "const_cast", "dynamic_cast"}
 
@@ -34,7 +56,7 @@ CASTS = {"static_cast", "reinterpret_cast", "const_cast", "dynamic_cast"}
 class Raw:
     """An expression the executor could not compute: its tokens (flags, numbers, unknown names)."""
 
-    __slots__ = ("toks", "file")
+    __slots__ = ("file", "toks")
 
     def __init__(self, toks: list[Tok], file: CFile | None) -> None:
         self.toks = toks
@@ -299,7 +321,9 @@ class Frame:
 class Interp:
     """Executes function bodies of the files in ``index`` with ``handlers`` for the calls an area cares about."""
 
-    def __init__(self, tree: Tree, handlers: dict[str, Callable[..., Any]], relevant: Callable[[FuncDef], bool]) -> None:
+    def __init__(
+        self, tree: Tree, handlers: dict[str, Callable[..., Any]], relevant: Callable[[FuncDef], bool]
+    ) -> None:
         self.tree = tree
         self.handlers = handlers
         self.index: dict[str, list[FuncDef]] = {}
@@ -558,7 +582,7 @@ class Interp:
             var = ""
             if eq is not None:
                 var = next((t.text for t in reversed(init[:eq]) if t.kind == "id"), "")
-                found, value = env.find(var)
+                _found, value = env.find(var)
                 if isinstance(value, list):
                     env.assign(var, ArrayPtr(value), False)
             first = self.condition(cond) if cond else None
@@ -689,9 +713,22 @@ class Interp:
     def exec_simple(self, toks: list[Tok]) -> None:
         if not toks:
             return
-        while toks and toks[0].text in {"static", "const", "constexpr", "inline", "else", "typedef", "using",
-                                         "struct", "enum"}:
-            if toks[0].text in {"typedef", "using", "struct", "enum"} and "=" not in [t.text for t in toks] and "(" not in [t.text for t in toks]:
+        while toks and toks[0].text in {
+            "static",
+            "const",
+            "constexpr",
+            "inline",
+            "else",
+            "typedef",
+            "using",
+            "struct",
+            "enum",
+        }:
+            if (
+                toks[0].text in {"typedef", "using", "struct", "enum"}
+                and "=" not in [t.text for t in toks]
+                and "(" not in [t.text for t in toks]
+            ):
                 return
             toks = toks[1:]
         if not toks:
@@ -713,10 +750,13 @@ class Interp:
                 self.frame.env.assign(toks[k - 1].text, {}, True)
                 return
         # Declaration without initializer: ``PropertyRNA *prop;`` / ``bNodeType ntype;``
-        if len(toks) >= 2 and toks[-1].kind == "id" and all(t.kind == "id" or t.text in {"*", "&", "::", "<", ">", ","} for t in toks):
-            if toks[-2].kind == "id" or toks[-2].text in {"*", "&", ">"}:
-                self.frame.env.assign(toks[-1].text, self.declared(toks[:-1], toks[-1].text), True)
-                return
+        if (
+            len(toks) >= 2
+            and toks[-1].kind == "id"
+            and all(t.kind == "id" or t.text in {"*", "&", "::", "<", ">", ","} for t in toks)
+        ) and (toks[-2].kind == "id" or toks[-2].text in {"*", "&", ">"}):
+            self.frame.env.assign(toks[-1].text, self.declared(toks[:-1], toks[-1].text), True)
+            return
         # A macro standing for statements: ``SCULPT_BRUSH_CAPABILITY(has_accumulate, "Has Accumulate");``
         if toks[0].kind == "id" and toks[0].text not in self.handlers and toks[0].text not in self.index:
             m = self.tree.macro(self.file, toks[0].text, toks[0].pos)
@@ -790,7 +830,14 @@ class Interp:
 
     def array_init(self, type_toks: list[Tok], inner: list[Tok], file: CFile | None = None) -> list[Any]:
         """The elements of an array initializer; braced elements become ``StructInit`` (fields from the type)."""
-        type_name = next((t.text for t in reversed(type_toks) if t.kind == "id" and t.text not in {"const", "static", "struct", "constexpr"}), "")
+        type_name = next(
+            (
+                t.text
+                for t in reversed(type_toks)
+                if t.kind == "id" and t.text not in {"const", "static", "struct", "constexpr"}
+            ),
+            "",
+        )
         fields: list[str] | None = None
         brace = next((k for k, t in enumerate(type_toks) if t.text == "{"), None)
         if brace is not None:  # ``struct { ... } info[] = {...}``
@@ -841,7 +888,12 @@ class Interp:
         if t0.text == "(":
             close = match_close(toks, 0)
             inner = toks[1:close]
-            if close < n - 1 and inner and all(t.kind == "id" or t.text in {"*", "&", "::"} for t in inner) and toks[close + 1].text not in BINARY_OPS:
+            if (
+                close < n - 1
+                and inner
+                and all(t.kind == "id" or t.text in {"*", "&", "::"} for t in inner)
+                and toks[close + 1].text not in BINARY_OPS
+            ):
                 return self.eval(toks[close + 1 :])  # C cast
         # Adjacent string literals and macros: ``"a" "b" MACRO``
         if any(t.kind == "str" for t in toks) and all(t.kind in {"str", "id"} for t in toks):
@@ -1031,7 +1083,11 @@ class Interp:
                 elif isinstance(value, str) and isinstance(idx, int):
                     value = ord(value[idx]) if 0 <= idx < len(value) else 0
                 elif hasattr(value, "raw_values") and isinstance(idx, int):  # an EnumArray
-                    value = ItemView(value.items[idx], value.raw_values[idx]) if 0 <= idx < len(value.items) else ItemView(None, "")
+                    value = (
+                        ItemView(value.items[idx], value.raw_values[idx])
+                        if 0 <= idx < len(value.items)
+                        else ItemView(None, "")
+                    )
                 elif isinstance(value, dict) and isinstance(idx, int):
                     value = value.get(idx)
                 elif isinstance(value, ArrayPtr) and isinstance(idx, int):
@@ -1090,7 +1146,7 @@ class Interp:
         if len(target) == 1 and target[0].kind == "id":
             self.frame.env.assign(target[0].text, text, False)
         elif len(target) >= 4 and target[0].kind == "id" and target[1].text == "[":
-            found, arr = self.frame.env.find(target[0].text)
+            _found, arr = self.frame.env.find(target[0].text)
             idx = self.number(self.eval(target[2 : match_close(target, 1)]))
             if isinstance(arr, dict) and isinstance(idx, int):
                 arr[idx] = text

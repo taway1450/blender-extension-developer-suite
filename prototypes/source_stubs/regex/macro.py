@@ -15,7 +15,9 @@ def _retag(toks: list[Tok], pos: int) -> list[Tok]:
     return [Tok(t.kind, t.text, pos) for t in toks]
 
 
-def expand(toks: list[Tok], lookup: Callable[[str], Macro | None], hide: set[str], pos: int, depth: int = 0) -> list[Tok]:
+def expand(
+    toks: list[Tok], lookup: Callable[[str], Macro | None], hide: set[str], pos: int, depth: int = 0
+) -> list[Tok]:
     if depth > 24:
         return toks
     out: list[Tok] = []

@@ -40,7 +40,7 @@ def decode_c_string(body: str) -> str:
     return "".join(out)
 
 
-_LITERAL = re.compile(r'(?:u8|L|u|U)?"((?:[^"\\\n]|\\.)*)"', re.S)
+_LITERAL = re.compile(r'(?:u8|L|u|U)?"((?:[^"\\\n]|\\.)*)"', re.DOTALL)
 
 
 def concat_literals(text: str, macros: dict[str, str] | None = None) -> str:
@@ -48,7 +48,7 @@ def concat_literals(text: str, macros: dict[str, str] | None = None) -> str:
     macros = macros or {}
     out = []
     pos = 0
-    token = re.compile(r'\s+|//[^\n]*|/\*.*?\*/|(?:u8|L|u|U)?"(?:[^"\\\n]|\\.)*"|[A-Za-z_]\w*|.', re.S)
+    token = re.compile(r'\s+|//[^\n]*|/\*.*?\*/|(?:u8|L|u|U)?"(?:[^"\\\n]|\\.)*"|[A-Za-z_]\w*|.', re.DOTALL)
     while pos < len(text):
         m = token.match(text, pos)
         if not m:
@@ -135,7 +135,7 @@ def rst_type_to_python(text: str) -> str:
 
 _DIRECTIVE = re.compile(
     r"^\s*\.\.\s+(function|method|classmethod|staticmethod|class|attribute|data|property)::\s*(\w+)\s*(\((.*)\))?\s*$",
-    re.M,
+    re.MULTILINE,
 )
 _FIELD = re.compile(r"^\s*:(arg|param|type|rtype|return|returns|raises|kwarg|keyword)\b\s*([\w*]*)\s*:(.*)$")
 

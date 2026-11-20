@@ -1,0 +1,7 @@
+# Ruff settings for the prototypes: the same as the tooling in scripts/ (see .pre-commit-config.yaml).
+extend = "../../scripts/ruff.toml"
+target-version = "py313"
+
+[lint]
+# The readers skip a translation unit or a definition they cannot read and go on with the rest.
+extend-per-file-ignores = { "regex/*.py" = ["BLE001"], "libclang/*.py" = ["BLE001"] }

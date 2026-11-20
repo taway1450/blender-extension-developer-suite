@@ -38,8 +38,12 @@ class Context:
         I["CTX_data_type_set"] = self.type_set
         I["CTX_data_prop_set"] = self.prop_set
         I["CTX_data_dir_set"] = lambda i, a, e, c: None
-        for name in ("RNA_pointer_create_discrete", "RNA_pointer_create_with_parent", "RNA_pointer_create",
-                     "RNA_pointer_create_id_subdata"):
+        for name in (
+            "RNA_pointer_create_discrete",
+            "RNA_pointer_create_with_parent",
+            "RNA_pointer_create",
+            "RNA_pointer_create_id_subdata",
+        ):
             I[name] = self.pointer_create
         I["RNA_id_pointer_create"] = self.id_pointer_create
         I["RNA_main_pointer_create"] = lambda i, a, e, c: Obj("ptr", "BlendData")
@@ -163,7 +167,9 @@ class Context:
 
     # ----------------------------------------------------------------------------------------------------------------
     def run(self, files: set[str]) -> None:
-        fns = [f for f in self.i.p.functions.values() if f.file in files and f.file.startswith("source/blender/editors/")]
+        fns = [
+            f for f in self.i.p.functions.values() if f.file in files and f.file.startswith("source/blender/editors/")
+        ]
         for fn in fns:
             names = [p[0] for p in fn.params]
             if "member" in names and any("bContextDataResult" in p[1] for p in fn.params):

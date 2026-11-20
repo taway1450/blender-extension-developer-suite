@@ -19,8 +19,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.driver import CACHE_DIR, REPO_ROOT  # noqa: E402
-from common.model import SourceModel  # noqa: E402
+from common.driver import CACHE_DIR, REPO_ROOT
+from common.model import SourceModel
 
 PLACEHOLDERS = ({"DEFAULT"}, {"PLACEHOLDER"}, {"UNSUPPORTED"})
 
@@ -71,8 +71,10 @@ def main() -> int:
         "",
         "## Only in the source facts: static items + callback, not in the table",
         "",
-        "Candidates: the callback may give other items than the static ones (or only filter them, which the stubs "
-        "can keep as a `Literal`). Each needs a look at the callback.",
+        (
+            "Candidates: the callback may give other items than the static ones (or only filter them, which the "
+            "stubs can keep as a `Literal`). Each needs a look at the callback."
+        ),
         "",
     ]
     for (s, p), (itemf, items) in sorted(found.items()):
@@ -81,8 +83,10 @@ def main() -> int:
             lines.append(f"- `{s}.{p}`: `{itemf}` ({len(items)} static: {shown})")
     out = CACHE_DIR / "source-stubs" / args.version / "audit.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Wrote {out}: {len(table & found.keys())} confirmed, {len(table - found.keys())} unsupported, "
-          f"{len(found.keys() - table)} candidates")
+    print(
+        f"Wrote {out}: {len(table & found.keys())} confirmed, {len(table - found.keys())} unsupported, "
+        f"{len(found.keys() - table)} candidates"
+    )
     return 0
 
 

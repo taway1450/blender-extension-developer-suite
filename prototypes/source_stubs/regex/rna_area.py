@@ -4,15 +4,23 @@ from __future__ import annotations
 
 from typing import Any
 
-from common.model import SourceModel
 from ctok import CFile, FuncDef, Tok, Tree, VarDef, eval_number, split_commas, tokens_text
-from enums import EnumRegistry, is_enum_item_var, parse_items, EnumArray
+from enums import EnumArray, EnumRegistry, is_enum_item_var, parse_items
 from interp import MISSING, Interp
 from rnadef import BRNA, RnaBuilder, make_handlers
 
+from common.model import SourceModel
+
 RNA_DIR = "source/blender/makesrna/intern"
-SKIP = {"rna_access.cc", "rna_access_compare_override.cc", "rna_define.cc", "rna_path.cc", "makesrna.cc",
-        "makesrna_utils.cc", "makesrna_test.cc"}
+SKIP = {
+    "rna_access.cc",
+    "rna_access_compare_override.cc",
+    "rna_define.cc",
+    "rna_path.cc",
+    "makesrna.cc",
+    "makesrna_utils.cc",
+    "makesrna_test.cc",
+}
 
 
 def make_global_lookup(tree: Tree, enums: EnumRegistry, ip: Interp):
@@ -39,15 +47,37 @@ def make_global_lookup(tree: Tree, enums: EnumRegistry, ip: Interp):
         if value is MISSING and name in enums.global_vars:
             gf, gvar = enums.global_vars[name]
             if gvar.is_array:
-                value = _number_list(tree, gf, gvar) if _numeric_type(gvar) else ip.array_init(gvar.type_toks, gvar.init, gf)
+                value = (
+                    _number_list(tree, gf, gvar)
+                    if _numeric_type(gvar)
+                    else ip.array_init(gvar.type_toks, gvar.init, gf)
+                )
         cache[key] = value
         return value
 
     return lookup
 
 
-NUMERIC = {"float", "int", "short", "char", "double", "bool", "uint", "uchar", "int8_t", "uint8_t", "int16_t",
-           "uint16_t", "int32_t", "uint32_t", "int64_t", "uint64_t", "size_t", "ushort"}
+NUMERIC = {
+    "float",
+    "int",
+    "short",
+    "char",
+    "double",
+    "bool",
+    "uint",
+    "uchar",
+    "int8_t",
+    "uint8_t",
+    "int16_t",
+    "uint16_t",
+    "int32_t",
+    "uint32_t",
+    "int64_t",
+    "uint64_t",
+    "size_t",
+    "ushort",
+}
 
 
 def _numeric_type(var: VarDef) -> bool:

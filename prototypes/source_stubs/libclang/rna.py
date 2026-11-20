@@ -19,11 +19,32 @@ from common.model import EnumItem, Operator, RnaFunction, RnaProperty, RnaStruct
 
 from .interp import UNKNOWN, Flag, FuncRef, GlobalRef, Interp, Obj
 
-UNITS = {1: "length", 2: "area", 3: "volume", 4: "mass", 5: "rotation", 6: "time", 7: "time_absolute",
-         8: "velocity", 9: "acceleration", 10: "camera", 11: "power", 12: "temperature", 13: "wavelength",
-         14: "color_temperature", 15: "frequency"}
-TYPES = {"PROP_BOOLEAN": "boolean", "PROP_INT": "int", "PROP_FLOAT": "float", "PROP_STRING": "string",
-         "PROP_ENUM": "enum", "PROP_POINTER": "pointer", "PROP_COLLECTION": "collection"}
+UNITS = {
+    1: "length",
+    2: "area",
+    3: "volume",
+    4: "mass",
+    5: "rotation",
+    6: "time",
+    7: "time_absolute",
+    8: "velocity",
+    9: "acceleration",
+    10: "camera",
+    11: "power",
+    12: "temperature",
+    13: "wavelength",
+    14: "color_temperature",
+    15: "frequency",
+}
+TYPES = {
+    "PROP_BOOLEAN": "boolean",
+    "PROP_INT": "int",
+    "PROP_FLOAT": "float",
+    "PROP_STRING": "string",
+    "PROP_ENUM": "enum",
+    "PROP_POINTER": "pointer",
+    "PROP_COLLECTION": "collection",
+}
 TYPE_VALUES = {0: "boolean", 1: "int", 2: "float", 3: "string", 4: "enum", 5: "pointer", 6: "collection"}
 
 
@@ -31,7 +52,7 @@ def _names(value, prefix: str) -> list[str]:
     names = getattr(value, "names", None)
     if not names:
         return []
-    return sorted(n[len(prefix):].lower() for n in names if n.startswith(prefix))
+    return sorted(n[len(prefix) :].lower() for n in names if n.startswith(prefix))
 
 
 def _str(value) -> str:
@@ -256,7 +277,9 @@ class Rna:
                     return Obj("prop", p, {"owner": owner})
         t = a[2] if len(a) > 2 else UNKNOWN
         names = getattr(t, "names", ())
-        ptype = next((TYPES[n] for n in names if n in TYPES), None) or TYPE_VALUES.get(t if isinstance(t, int) else -1, "int")
+        ptype = next((TYPES[n] for n in names if n in TYPES), None) or TYPE_VALUES.get(
+            t if isinstance(t, int) else -1, "int"
+        )
         sub = a[3] if len(a) > 3 else 0
         subnames = [n for n in getattr(sub, "names", ()) if n.startswith("PROP_")]
         subtype = subnames[0][5:].lower() if subnames else "none"
@@ -280,7 +303,11 @@ class Rna:
         else:
             self.dynamic_props += 1
         h = Obj("prop", p, {"owner": owner})
-        if isinstance(owner, RnaStruct) and i.where.startswith("source/blender/makesrna/intern/") and ptype != "collection":
+        if (
+            isinstance(owner, RnaStruct)
+            and i.where.startswith("source/blender/makesrna/intern/")
+            and ptype != "collection"
+        ):
             # makesrna's RNA_def_property looks the identifier up in the struct's DNA (silently).
             self._sdna(i, [h, None, None, 0], call, "enum" if ptype == "enum" else ptype)
         return h
@@ -317,7 +344,12 @@ class Rna:
             p.array = [total] if total > 1 else []
         if kind == "string" and dims and p.max_length is None:
             p.max_length = total
-        if kind in ("pointer", "collection") and not p.struct_type and level >= 1 and record not in ("ListBase", "void", ""):
+        if (
+            kind in ("pointer", "collection")
+            and not p.struct_type
+            and level >= 1
+            and record not in ("ListBase", "void", "")
+        ):
             self._extra(p)["dna_struct"] = record
 
     def dna_field(self, struct: str, path: str):
@@ -612,9 +644,8 @@ class Rna:
                 a[1].data.parameter_flags.append("output")
 
     def RNA_def_function_output(self, i, a, e, call):
-        if len(a) > 1 and isinstance(a[1], Obj) and a[1].kind == "prop":
-            if "output" not in a[1].data.parameter_flags:
-                a[1].data.parameter_flags.append("output")
+        if len(a) > 1 and isinstance(a[1], Obj) and a[1].kind == "prop" and "output" not in a[1].data.parameter_flags:
+            a[1].data.parameter_flags.append("output")
 
     def RNA_def_function_flag(self, i, a, e, call):
         f = self._f(a)
@@ -636,8 +667,9 @@ class Rna:
             if "dna_struct" in extra and not p.struct_type:
                 dna = extra["dna_struct"]
                 # makesrna looks the DNA type name up as an RNA struct identifier.
-                p.struct_type = dna if dna in self.structs else next(
-                    (s for s, d in self.dna_of.items() if d == dna), dna)
+                p.struct_type = (
+                    dna if dna in self.structs else next((s for s, d in self.dna_of.items() if d == dna), dna)
+                )
             if "default" in extra:
                 p.default = resolve_default(p, extra["default"], self.model.enum_items)
         for s in self.model.structs:
@@ -695,8 +727,15 @@ def enum_items(values: list) -> list[EnumItem]:
         if isinstance(icon, Flag) and icon.names:
             icon_name = next(iter(icon.names)).removeprefix("ICON_")
         value = v.get("value")
-        out.append(EnumItem(identifier=ident, name=_str(v.get("name")), description=_str(v.get("description")),
-                            value=int(value) if isinstance(value, int) else None, icon=icon_name))
+        out.append(
+            EnumItem(
+                identifier=ident,
+                name=_str(v.get("name")),
+                description=_str(v.get("description")),
+                value=int(value) if isinstance(value, int) else None,
+                icon=icon_name,
+            )
+        )
     return out
 
 
