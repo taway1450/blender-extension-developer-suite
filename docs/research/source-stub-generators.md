@@ -123,7 +123,8 @@ keywords"), and as builtin already did.
   of its C function (`refine`, `itemf`, `typef`, `poll`, `editable`, get/set), each property's DNA field and each
   struct's file. It throws these away when it writes C. The patch dumps them as JSON when `RNA_JSON_DUMP` is set
   and changes nothing otherwise. It is recorded as the local branch `source-facts-makesrna` in
-  `.cache/blender-src/5.2-src` (not pushed).
+  `.cache/blender-src/5.2-src`, pushed to `projects.blender.org/Simon-Sak/blender` as `source-facts-makesrna`
+  (on `v5.2.0`).
 - **`doc/python_api/rst_from_bmesh_opdefines.py`**. A regex reader of `bmesh_opdefines.cc` that writes the bmesh
   ops rst. Its header says it "makes assumptions about formatting" and should be rewritten "using a real parser or
   add introspection into `bmesh.ops`". The regex prototype's bmesh reader is that rewrite: tokenized, with enum
