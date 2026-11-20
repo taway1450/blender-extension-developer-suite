@@ -46,9 +46,14 @@ flag "--build-type <type>" default="Release" help="CMake build type" {
   choices "Release" "RelWithDebInfo" "Debug"
 }
 flag "--force" help="Delete the build directory and build from scratch"
+flag "--target <target>" default="install" help="CMake target to build instead of installing Blender (e.g. makesrna, which the source-stub prototypes use)"
+flag "--system-libs" help="Configure without the precompiled libraries (for a target that needs none of them)"
+flag "--define <define>" var=#true help="Extra CMake cache entry VAR=VALUE (repeatable)"
 '''
 run = '''
-uv run scripts/build_blender.py {{usage.name}} --config "{{usage.config}}" --build-type "{{usage.build_type}}"
+uv run scripts/build_blender.py {{usage.name}} --config "{{usage.config}}" --build-type "{{usage.build_type}}" --target "{{usage.target}}"
+{%- if usage.system_libs %} --system-libs{% endif %}
+{%- if usage.define %}{%- for d in usage.define %} --define "{{d}}"{% endfor %}{% endif %}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.update %} --update{% endif %}
 {%- if usage.force %} --force{% endif %}

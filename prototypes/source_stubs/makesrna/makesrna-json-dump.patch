@@ -1,0 +1,483 @@
+diff --git a/source/blender/makesrna/intern/makesrna.cc b/source/blender/makesrna/intern/makesrna.cc
+index e6010a0c2c3..839417ceafe 100644
+--- a/source/blender/makesrna/intern/makesrna.cc
++++ b/source/blender/makesrna/intern/makesrna.cc
+@@ -4234,6 +4234,467 @@ static void make_bad_file(const char *file, int line)
+  * \param public_header_outfile: Directory to put public headers into.
+  * Can be nullptr, in which case everything is put into \a outfile.
+  */
++/* -------------------------------------------------------------------- */
++/** \name JSON Dump
++ *
++ * With `$RNA_JSON_DUMP` set to a file path, `makesrna` writes every struct, property and function
++ * it defined into that file as JSON, after the definitions ran and before code is generated.
++ * Unlike the runtime (`bpy.types` introspection), the definitions still hold the names of the
++ * callback functions (refine, enum item, pointer type and editable functions), the DNA each
++ * property reads and the source file of each struct: facts a stub generator can't get otherwise.
++ * \{ */
++
++static void rna_json_string(FILE *f, const char *str)
++{
++  if (str == nullptr) {
++    fputs("null", f);
++    return;
++  }
++  fputc('"', f);
++  for (const unsigned char *c = reinterpret_cast<const unsigned char *>(str); *c; c++) {
++    switch (*c) {
++      case '"':
++        fputs("\\\"", f);
++        break;
++      case '\\':
++        fputs("\\\\", f);
++        break;
++      case '\n':
++        fputs("\\n", f);
++        break;
++      case '\t':
++        fputs("\\t", f);
++        break;
++      case '\r':
++        fputs("\\r", f);
++        break;
++      default:
++        if (*c < 0x20) {
++          fprintf(f, "\\u%04x", *c);
++        }
++        else {
++          fputc(*c, f);
++        }
++    }
++  }
++  fputc('"', f);
++}
++
++static void rna_json_key(FILE *f, const char *key, const char *str)
++{
++  fprintf(f, ",\"%s\":", key);
++  rna_json_string(f, str);
++}
++
++/** A callback in define mode is the name of its function (see `rna_function_string`). */
++template<typename T> static void rna_json_func(FILE *f, const char *key, T *func)
++{
++  if (func) {
++    rna_json_key(f, key, reinterpret_cast<const char *>(func));
++  }
++}
++
++static void rna_json_float(FILE *f, const char *key, float value)
++{
++  if (std::isfinite(value)) {
++    fprintf(f, ",\"%s\":%.9g", key, value);
++  }
++  else {
++    fprintf(f, ",\"%s\":\"%s\"", key, value > 0 ? "inf" : (value < 0 ? "-inf" : "nan"));
++  }
++}
++
++struct RNAJsonFlag {
++  uint32_t value;
++  const char *name;
++};
++
++#define RNA_JSON_FLAG(x) {uint32_t(x), #x}
++
++static const RNAJsonFlag rna_json_prop_flags[] = {
++    RNA_JSON_FLAG(PROP_EDITABLE),
++    RNA_JSON_FLAG(PROP_LIB_EXCEPTION),
++    RNA_JSON_FLAG(PROP_ANIMATABLE),
++    RNA_JSON_FLAG(PROP_TEXTEDIT_UPDATE),
++    RNA_JSON_FLAG(PROP_ICONS_CONSECUTIVE),
++    RNA_JSON_FLAG(PROP_ICONS_REVERSE),
++    RNA_JSON_FLAG(PROP_HIDDEN),
++    RNA_JSON_FLAG(PROP_SKIP_SAVE),
++    RNA_JSON_FLAG(PROP_PROPORTIONAL),
++    RNA_JSON_FLAG(PROP_ID_REFCOUNT),
++    RNA_JSON_FLAG(PROP_ID_SELF_CHECK),
++    RNA_JSON_FLAG(PROP_NEVER_NULL),
++    RNA_JSON_FLAG(PROP_NEVER_UNLINK),
++    RNA_JSON_FLAG(PROP_PTR_NO_OWNERSHIP),
++    RNA_JSON_FLAG(PROP_ENUM_FLAG),
++    RNA_JSON_FLAG(PROP_CONTEXT_UPDATE),
++    RNA_JSON_FLAG(PROP_CONTEXT_PROPERTY_UPDATE),
++    RNA_JSON_FLAG(PROP_REGISTER),
++    RNA_JSON_FLAG(PROP_REGISTER_OPTIONAL),
++    RNA_JSON_FLAG(PROP_THICK_WRAP),
++    RNA_JSON_FLAG(PROP_IDPROPERTY),
++    RNA_JSON_FLAG(PROP_DYNAMIC),
++    RNA_JSON_FLAG(PROP_ENUM_NO_CONTEXT),
++    RNA_JSON_FLAG(PROP_ENUM_NO_TRANSLATE),
++    RNA_JSON_FLAG(PROP_NO_DEG_UPDATE),
++    RNA_JSON_FLAG(PROP_DEG_SYNC_ONLY),
++    RNA_JSON_FLAG(PROP_PATH_OUTPUT),
++    RNA_JSON_FLAG(PROP_PATH_SUPPORTS_BLEND_RELATIVE),
++    RNA_JSON_FLAG(PROP_PATH_SUPPORTS_TEMPLATES),
++    RNA_JSON_FLAG(PROP_SKIP_PRESET),
++    RNA_JSON_FLAG(PROP_FORCE_GEOMETRY_EVAL),
++};
++
++static const RNAJsonFlag rna_json_parm_flags[] = {
++    RNA_JSON_FLAG(PARM_REQUIRED),
++    RNA_JSON_FLAG(PARM_OUTPUT),
++    RNA_JSON_FLAG(PARM_RNAPTR),
++    RNA_JSON_FLAG(PARM_PYFUNC_REGISTER_OPTIONAL),
++};
++
++static const RNAJsonFlag rna_json_func_flags[] = {
++    RNA_JSON_FLAG(FUNC_USE_SELF_ID),
++    RNA_JSON_FLAG(FUNC_SELF_AS_RNA),
++    RNA_JSON_FLAG(FUNC_NO_SELF),
++    RNA_JSON_FLAG(FUNC_USE_SELF_TYPE),
++    RNA_JSON_FLAG(FUNC_USE_MAIN),
++    RNA_JSON_FLAG(FUNC_USE_CONTEXT),
++    RNA_JSON_FLAG(FUNC_USE_REPORTS),
++    RNA_JSON_FLAG(FUNC_REGISTER),
++    RNA_JSON_FLAG(FUNC_REGISTER_OPTIONAL),
++    RNA_JSON_FLAG(FUNC_ALLOW_WRITE),
++    RNA_JSON_FLAG(FUNC_BUILTIN),
++    RNA_JSON_FLAG(FUNC_EXPORT),
++    RNA_JSON_FLAG(FUNC_RUNTIME),
++};
++
++static const RNAJsonFlag rna_json_struct_flags[] = {
++    RNA_JSON_FLAG(STRUCT_ID),
++    RNA_JSON_FLAG(STRUCT_ID_REFCOUNT),
++    RNA_JSON_FLAG(STRUCT_UNDO),
++    RNA_JSON_FLAG(STRUCT_RUNTIME),
++    RNA_JSON_FLAG(STRUCT_NO_IDPROPERTIES),
++    RNA_JSON_FLAG(STRUCT_NO_DATABLOCK_IDPROPERTIES),
++    RNA_JSON_FLAG(STRUCT_CONTAINS_DATABLOCK_IDPROPERTIES),
++    RNA_JSON_FLAG(STRUCT_PUBLIC_NAMESPACE),
++    RNA_JSON_FLAG(STRUCT_PUBLIC_NAMESPACE_INHERIT),
++    RNA_JSON_FLAG(STRUCT_NO_CONTEXT_WITHOUT_OWNER_ID),
++};
++
++#undef RNA_JSON_FLAG
++
++template<size_t N>
++static void rna_json_flags(FILE *f, const char *key, const int flag_signed, const RNAJsonFlag (&names)[N])
++{
++  const uint32_t flag = uint32_t(flag_signed);
++  fprintf(f, ",\"%s\":[", key);
++  bool first = true;
++  for (const RNAJsonFlag &item : names) {
++    if (item.value && (flag & item.value) == item.value) {
++      fprintf(f, "%s\"%s\"", first ? "" : ",", item.name);
++      first = false;
++    }
++  }
++  fputc(']', f);
++}
++
++static const char *rna_json_type_name(PropertyType type)
++{
++  switch (type) {
++    case PROP_BOOLEAN:
++      return "boolean";
++    case PROP_INT:
++      return "int";
++    case PROP_FLOAT:
++      return "float";
++    case PROP_STRING:
++      return "string";
++    case PROP_ENUM:
++      return "enum";
++    case PROP_POINTER:
++      return "pointer";
++    case PROP_COLLECTION:
++      return "collection";
++  }
++  return "unknown";
++}
++
++static void rna_json_enum_items(FILE *f, const EnumPropertyItem *item, int totitem)
++{
++  fputs(",\"items\":[", f);
++  bool first = true;
++  for (int i = 0; item && (totitem ? i < totitem : item[i].identifier != nullptr); i++) {
++    if (item[i].identifier == nullptr) {
++      break;
++    }
++    fputs(first ? "{" : ",{", f);
++    first = false;
++    fprintf(f, "\"value\":%d,\"icon\":%d", item[i].value, item[i].icon);
++    rna_json_key(f, "identifier", item[i].identifier);
++    rna_json_key(f, "name", item[i].name);
++    rna_json_key(f, "description", item[i].description);
++    fputc('}', f);
++  }
++  fputc(']', f);
++}
++
++static void rna_json_property(FILE *f, PropertyDefRNA *dp, PropertyRNA *prop)
++{
++  fputc('{', f);
++  rna_json_string(f, "identifier");
++  fputc(':', f);
++  rna_json_string(f, prop->identifier);
++  rna_json_key(f, "type", rna_json_type_name(prop->type));
++  rna_json_key(f, "subtype", rna_property_subtypename(prop->subtype));
++  rna_json_key(f, "unit", rna_property_subtype_unit(PropertySubType(prop->subtype)));
++  rna_json_key(f, "name", prop->name);
++  rna_json_key(f, "description", prop->description);
++  rna_json_flags(f, "flag", prop->flag, rna_json_prop_flags);
++  rna_json_flags(f, "flag_parameter", prop->flag_parameter, rna_json_parm_flags);
++  fprintf(f, ",\"flag_raw\":%d", prop->flag);
++  fprintf(f, ",\"array\":[");
++  for (uint i = 0; i < prop->arraydimension; i++) {
++    fprintf(f, "%s%u", i ? "," : "", prop->arraylength[i]);
++  }
++  fputc(']', f);
++  rna_json_func(f, "getlength", prop->getlength);
++  rna_json_func(f, "editable", prop->editable);
++  rna_json_func(f, "update", prop->update);
++  if (prop->srna) {
++    rna_json_key(f, "srna", reinterpret_cast<const char *>(prop->srna));
++  }
++  if (prop->deprecated) {
++    rna_json_key(f, "deprecated", prop->deprecated->note ? prop->deprecated->note : "");
++  }
++  if (dp) {
++    if (!dp->dnastructname.is_empty()) {
++      rna_json_key(f, "dna_struct", dp->dnastructname.c_str());
++    }
++    if (!dp->dnaname.is_empty()) {
++      rna_json_key(f, "dna_name", dp->dnaname.c_str());
++    }
++    if (!dp->dnatype.is_empty()) {
++      rna_json_key(f, "dna_type", dp->dnatype.c_str());
++    }
++    if (dp->booleanbit) {
++      fprintf(f, ",\"boolean_bit\":%" PRId64, dp->booleanbit);
++    }
++  }
++
++  switch (prop->type) {
++    case PROP_BOOLEAN: {
++      BoolPropertyRNA *bprop = static_cast<BoolPropertyRNA *>(prop);
++      rna_json_func(f, "get", bprop->get);
++      rna_json_func(f, "set", bprop->set);
++      rna_json_func(f, "get_array", bprop->getarray);
++      rna_json_func(f, "set_array", bprop->setarray);
++      if (prop->arraydimension && bprop->defaultarray) {
++        fputs(",\"default\":[", f);
++        for (uint i = 0; i < prop->totarraylength; i++) {
++          fprintf(f, "%s%s", i ? "," : "", bprop->defaultarray[i] ? "true" : "false");
++        }
++        fputc(']', f);
++      }
++      else {
++        fprintf(f, ",\"default\":%s", bprop->defaultvalue ? "true" : "false");
++      }
++      break;
++    }
++    case PROP_INT: {
++      IntPropertyRNA *iprop = static_cast<IntPropertyRNA *>(prop);
++      rna_json_func(f, "get", iprop->get);
++      rna_json_func(f, "set", iprop->set);
++      rna_json_func(f, "range", iprop->range);
++      fprintf(f,
++              ",\"hard_min\":%d,\"hard_max\":%d,\"soft_min\":%d,\"soft_max\":%d",
++              iprop->hardmin,
++              iprop->hardmax,
++              iprop->softmin,
++              iprop->softmax);
++      if (prop->arraydimension && iprop->defaultarray) {
++        fputs(",\"default\":[", f);
++        for (uint i = 0; i < prop->totarraylength; i++) {
++          fprintf(f, "%s%d", i ? "," : "", iprop->defaultarray[i]);
++        }
++        fputc(']', f);
++      }
++      else {
++        fprintf(f, ",\"default\":%d", iprop->defaultvalue);
++      }
++      break;
++    }
++    case PROP_FLOAT: {
++      FloatPropertyRNA *fprop = static_cast<FloatPropertyRNA *>(prop);
++      rna_json_func(f, "get", fprop->get);
++      rna_json_func(f, "set", fprop->set);
++      rna_json_func(f, "range", fprop->range);
++      rna_json_float(f, "hard_min", fprop->hardmin);
++      rna_json_float(f, "hard_max", fprop->hardmax);
++      rna_json_float(f, "soft_min", fprop->softmin);
++      rna_json_float(f, "soft_max", fprop->softmax);
++      if (prop->arraydimension && fprop->defaultarray) {
++        fputs(",\"default\":[", f);
++        for (uint i = 0; i < prop->totarraylength; i++) {
++          fprintf(f, "%s%.9g", i ? "," : "", double(fprop->defaultarray[i]));
++        }
++        fputc(']', f);
++      }
++      else if (std::isfinite(fprop->defaultvalue)) {
++        fprintf(f, ",\"default\":%.9g", double(fprop->defaultvalue));
++      }
++      break;
++    }
++    case PROP_STRING: {
++      StringPropertyRNA *sprop = static_cast<StringPropertyRNA *>(prop);
++      rna_json_func(f, "get", sprop->get);
++      rna_json_func(f, "set", sprop->set);
++      rna_json_func(f, "search", sprop->search);
++      fprintf(f, ",\"max_length\":%d", sprop->maxlength);
++      rna_json_key(f, "default", sprop->defaultvalue);
++      break;
++    }
++    case PROP_ENUM: {
++      EnumPropertyRNA *eprop = static_cast<EnumPropertyRNA *>(prop);
++      rna_json_func(f, "get", eprop->get);
++      rna_json_func(f, "set", eprop->set);
++      rna_json_func(f, "itemf", eprop->item_fn);
++      rna_json_key(f, "native_enum_type", eprop->native_enum_type);
++      rna_json_key(f, "items_name", eprop->item ? rna_enum_id_from_pointer(eprop->item) : nullptr);
++      fprintf(f, ",\"default\":%d", eprop->defaultvalue);
++      rna_json_enum_items(f, eprop->item, eprop->totitem);
++      break;
++    }
++    case PROP_POINTER: {
++      PointerPropertyRNA *pprop = static_cast<PointerPropertyRNA *>(prop);
++      rna_json_func(f, "get", pprop->get);
++      rna_json_func(f, "set", pprop->set);
++      rna_json_func(f, "typef", pprop->type_fn);
++      rna_json_func(f, "poll", pprop->poll);
++      if (pprop->pointer_type) {
++        rna_json_key(f, "struct_type", reinterpret_cast<const char *>(pprop->pointer_type));
++      }
++      break;
++    }
++    case PROP_COLLECTION: {
++      CollectionPropertyRNA *cprop = static_cast<CollectionPropertyRNA *>(prop);
++      rna_json_func(f, "begin", cprop->begin);
++      rna_json_func(f, "lookup_string", cprop->lookupstring);
++      if (cprop->item_type) {
++        rna_json_key(f, "struct_type", reinterpret_cast<const char *>(cprop->item_type));
++      }
++      break;
++    }
++  }
++  fputc('}', f);
++}
++
++static void rna_dump_json(const char *filepath)
++{
++  FILE *f = fopen(filepath, "w");
++  if (!f) {
++    fprintf(stderr, "Unable to open file: %s\n", filepath);
++    DefRNA.error = true;
++    return;
++  }
++  fputs("{\"structs\":[\n", f);
++  bool first_struct = true;
++  for (StructDefRNA *ds = static_cast<StructDefRNA *>(DefRNA.structs.first); ds;
++       ds = static_cast<StructDefRNA *>(ds->cont.next))
++  {
++    StructRNA *srna = ds->srna;
++    fputs(first_struct ? "{" : ",\n{", f);
++    first_struct = false;
++    rna_json_string(f, "identifier");
++    fputc(':', f);
++    rna_json_string(f, srna->identifier);
++    rna_json_key(f, "base", srna->base ? srna->base->identifier : nullptr);
++    rna_json_key(f, "nested", srna->nested ? srna->nested->identifier : nullptr);
++    rna_json_key(f, "name", srna->name);
++    rna_json_key(f, "description", srna->description);
++    rna_json_key(f, "name_property", srna->nameproperty ? srna->nameproperty->identifier : nullptr);
++    rna_json_key(f, "filename", ds->filename.is_empty() ? nullptr : ds->filename.c_str());
++    rna_json_key(f, "dna", ds->dnaname.is_empty() ? nullptr : ds->dnaname.c_str());
++    rna_json_flags(f, "flag", srna->flag, rna_json_struct_flags);
++    rna_json_func(f, "refine", srna->refine);
++    rna_json_func(f, "path", srna->path);
++    rna_json_func(f, "register", srna->reg);
++    rna_json_func(f, "unregister", srna->unreg);
++    rna_json_func(f, "instance", srna->instance);
++    rna_json_func(f, "idproperties", srna->idproperties);
++    rna_json_func(f, "system_idproperties", srna->system_idproperties);
++    if (srna->prop_tag_defines) {
++      rna_json_enum_items(f, srna->prop_tag_defines, 0);
++    }
++
++    fputs(",\"properties\":[", f);
++    bool first = true;
++    for (PropertyDefRNA &dp : ds->cont.properties) {
++      if (dp.prop->flag_internal & PROP_INTERN_BUILTIN) {
++        continue;
++      }
++      if (!first) {
++        fputc(',', f);
++      }
++      first = false;
++      rna_json_property(f, &dp, dp.prop);
++    }
++    fputc(']', f);
++
++    fputs(",\"functions\":[", f);
++    first = true;
++    for (FunctionDefRNA *dfunc = static_cast<FunctionDefRNA *>(ds->functions.first); dfunc;
++         dfunc = static_cast<FunctionDefRNA *>(dfunc->cont.next))
++    {
++      FunctionRNA *func = dfunc->func;
++      fputs(first ? "{" : ",{", f);
++      first = false;
++      rna_json_string(f, "identifier");
++      fputc(':', f);
++      rna_json_string(f, func->identifier);
++      rna_json_key(f, "description", func->description);
++      rna_json_key(f, "call", dfunc->call);
++      rna_json_flags(f, "flag", func->flag, rna_json_func_flags);
++      rna_json_key(f, "return", func->c_ret ? func->c_ret->identifier : nullptr);
++      fputs(",\"parameters\":[", f);
++      bool first_parm = true;
++      for (PropertyDefRNA &dparm : dfunc->cont.properties) {
++        if (!first_parm) {
++          fputc(',', f);
++        }
++        first_parm = false;
++        rna_json_property(f, &dparm, dparm.prop);
++      }
++      fputs("]}", f);
++    }
++    fputs("]}", f);
++  }
++  fputs("\n],\"enums\":{\n", f);
++  /* The shared item arrays (`rna_enum_*_items`), which properties reference by name above. */
++  struct RNAJsonEnum {
++    const char *name;
++    const EnumPropertyItem *items;
++  };
++  static const RNAJsonEnum shared_enums[] = {
++#define RNA_MAKESRNA
++#define DEF_ENUM(id) {STRINGIFY(id), id},
++#include "RNA_enum_items.hh"
++#undef RNA_MAKESRNA
++  };
++  bool first_enum = true;
++  for (const RNAJsonEnum &item : shared_enums) {
++    fputs(first_enum ? "" : ",\n", f);
++    first_enum = false;
++    rna_json_string(f, item.name);
++    fputs(":{\"_\":0", f);
++    rna_json_enum_items(f, item.items, 0);
++    fputc('}', f);
++  }
++  fputs("\n}}\n", f);
++  fclose(f);
++}
++
++/** \} */
++
+ static int rna_preprocess(const char *outfile, const char *public_header_outfile)
+ {
+   BlenderRNA *brna;
+@@ -4281,6 +4742,10 @@ static int rna_preprocess(const char *outfile, const char *public_header_outfile
+     status = EXIT_FAILURE;
+   }
+ 
++  if (const char *json_path = getenv("RNA_JSON_DUMP")) {
++    rna_dump_json(json_path);
++  }
++
+   /* Create external rna struct prototype header file RNA_prototypes.hh. */
+   SNPRINTF(deffile, "%s%s", public_header_outfile, "RNA_prototypes.hh" TMP_EXT);
+   if (status != EXIT_SUCCESS) {

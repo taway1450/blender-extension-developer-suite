@@ -296,6 +296,8 @@ class Renderer:
                 c.bases = [s.base or "bpy_struct"]
             c.doc = s.description
             for p in s.properties:
+                if p.identifier == "rna_type" and s.base:
+                    continue  # every struct's builtin ``rna_type``, declared once on its root
                 self.render_property(c, p, "bpy.types")
             for f in s.functions:
                 self.render_function(c, f, "bpy.types")

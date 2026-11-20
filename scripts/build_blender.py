@@ -23,6 +23,11 @@ Usage:
   uv run scripts/build_blender.py main --update                 # fetch main again and rebuild
   uv run scripts/build_blender.py my-feature --ref my-feature-branch
   uv run scripts/build_blender.py pr-12345 --ref refs/pull/12345/head --config lite
+  uv run scripts/build_blender.py 5.2 --ref v5.2.0 --target makesrna --system-libs --config lite
+
+``--target`` builds one CMake target instead of installing Blender (``makesrna`` for the source-stub prototypes,
+which also leaves ``compile_commands.json`` in the build directory). ``--system-libs`` configures without the
+precompiled libraries, for a target that needs none of them.
 
 See https://developer.blender.org/docs/handbook/building_blender/ for the prerequisites (Visual
 Studio with the C++ workload on Windows, Xcode on macOS, the build dependencies on Linux, plus
@@ -175,10 +180,12 @@ def configure_command(
     build_dir: Path,
     config: str,
     build_type: str,
-    libs: Path,
+    libs: Path | None,
     install_dir: Path,
+    defines: tuple[str, ...] = (),
 ) -> list[str | Path]:
-    """The CMake command that configures the build of ``source`` with the preset ``config``."""
+    """The CMake command that configures the build of ``source`` with the preset ``config`` (``libs`` None: system
+    libraries)."""
     return [
         cmake,
         "-G",
@@ -189,14 +196,25 @@ def configure_command(
         build_dir,
         f"-C{preset_file(source, config)}",
         *PRESET_OPTIONS.get(config, []),
+        *(f"-D{define}" for define in defines),
         f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
         f"-DCMAKE_BUILD_TYPE={build_type}",
-        f"-DLIBDIR={libs.as_posix()}",
+        *([f"-DLIBDIR={libs.as_posix()}"] if libs else []),
         f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
     ]
 
 
-def configure_hash(*, source: Path, build_dir: Path, config: str, build_type: str, install_dir: Path) -> str:
+def configure_hash(
+    *,
+    source: Path,
+    build_dir: Path,
+    config: str,
+    build_type: str,
+    install_dir: Path,
+    system_libs: bool = False,
+    defines: tuple[str, ...] = (),
+) -> str:
     """Hash of the arguments that configure the build, which ``.build-info`` records. CMake's and Ninja's own paths
     are left out: they come from uv's script environment, which moves when it is recreated."""
     cmd = configure_command(
@@ -206,8 +224,9 @@ def configure_hash(*, source: Path, build_dir: Path, config: str, build_type: st
         build_dir=build_dir,
         config=config,
         build_type=build_type,
-        libs=LIBS_DIR / lib_platform(),
+        libs=None if system_libs else LIBS_DIR / lib_platform(),
         install_dir=install_dir,
+        defines=defines,
     )
     return hashlib.sha256("\n".join(str(c) for c in cmd).encode()).hexdigest()[:16]
 
@@ -231,8 +250,12 @@ def build_blender(
     config: str = "full",
     build_type: str = "Release",
     force: bool = False,
+    target: str = "install",
+    system_libs: bool = False,
+    defines: tuple[str, ...] = (),
 ) -> Path:
-    """Build Blender ``name`` from source and return the installed binary."""
+    """Build Blender ``name`` from source and return the installed binary (or, for another ``target`` than
+    ``install``, the build directory)."""
     source = ensure_worktree(name, ref, update=update)
     commit = git_output(source, "rev-parse", "HEAD")
     install_dir = BLENDER_BIN_DIR / name
@@ -240,10 +263,17 @@ def build_blender(
     build_info = install_dir / BUILD_INFO
     build_dir = BUILD_DIR / name
     configure = configure_hash(
-        source=source, build_dir=build_dir, config=config, build_type=build_type, install_dir=install_dir
+        source=source,
+        build_dir=build_dir,
+        config=config,
+        build_type=build_type,
+        install_dir=install_dir,
+        system_libs=system_libs,
+        defines=defines,
     )
     if (
-        not force
+        target == "install"
+        and not force
         and blender.is_file()
         and build_info.is_file()
         and is_current_build(
@@ -260,7 +290,7 @@ def build_blender(
 
     log("Pulling git LFS files of the source worktree")
     run(["git", "-C", source, "lfs", "pull"])
-    libs = ensure_libraries(source)
+    libs = None if system_libs else ensure_libraries(source)
     env, cmake, ninja = build_env()
 
     if force:
@@ -276,6 +306,7 @@ def build_blender(
         build_type=build_type,
         libs=libs,
         install_dir=install_dir,
+        defines=defines,
     )
     configure_args = build_dir / CONFIGURE_ARGS
     configure_key = "\n".join(str(c) for c in configure_cmd)
@@ -292,6 +323,12 @@ def build_blender(
         (build_dir / "CMakeCache.txt").unlink(missing_ok=True)
         run(configure_cmd, env=env)
         configure_args.write_text(configure_key)
+
+    if target != "install":
+        log(f"Building the target {target} of Blender {name} ({commit[:10]})")
+        run([cmake, "--build", build_dir, "--target", target], env=env)
+        log(f"Built {target} in {build_dir}")
+        return build_dir
 
     log(f"Building Blender {name} ({commit[:10]}), this takes a while the first time")
     build_info.unlink(missing_ok=True)
@@ -321,9 +358,26 @@ def main() -> int:
     )
     parser.add_argument("--build-type", choices=BUILD_TYPES, default="Release", help="CMake build type")
     parser.add_argument("--force", action="store_true", help="Delete the build directory and build from scratch")
+    parser.add_argument(
+        "--target", default="install", help="CMake target to build instead of installing Blender (e.g. makesrna)"
+    )
+    parser.add_argument(
+        "--system-libs", action="store_true", help="Configure without the precompiled libraries (system libraries)"
+    )
+    parser.add_argument(
+        "--define", action="append", default=[], metavar="VAR=VALUE", help="Extra CMake cache entry (-DVAR=VALUE)"
+    )
     args = parser.parse_args()
     build_blender(
-        args.name, ref=args.ref, update=args.update, config=args.config, build_type=args.build_type, force=args.force
+        args.name,
+        ref=args.ref,
+        update=args.update,
+        config=args.config,
+        build_type=args.build_type,
+        force=args.force,
+        target=args.target,
+        system_libs=args.system_libs,
+        defines=tuple(args.define),
     )
     return 0
 
