@@ -290,12 +290,23 @@ class RnaBuilder:
             return
         m = self.dna.member(sname, pname)
         if m is None:
+            if bitset_length > 1:
+                p.array = [bitset_length]
             return
         p._dnatype = m.type  # type: ignore[attr-defined]
         p._dna = m  # type: ignore[attr-defined]
         if p.type in {"pointer", "collection"}:
             return
         length = m.length if not m.pointer else 0
+        indexed = pname.rstrip().endswith("]")
+        if indexed and m.dims:  # ``"to_max[0]"``: one element (of the remaining dimensions)
+            n_idx = pname.count("[")
+            rest = m.dims[n_idx:]
+            length = 1
+            for d in rest:
+                length *= d
+            if not rest:
+                length = 0
         if p.type == "string":
             if length > 1:
                 p.max_length = length

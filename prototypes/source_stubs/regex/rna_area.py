@@ -39,7 +39,7 @@ def make_global_lookup(tree: Tree, enums: EnumRegistry, ip: Interp):
         if value is MISSING and name in enums.global_vars:
             gf, gvar = enums.global_vars[name]
             if gvar.is_array:
-                value = _number_list(tree, gf, gvar)
+                value = _number_list(tree, gf, gvar) if _numeric_type(gvar) else ip.array_init(gvar.type_toks, gvar.init, gf)
         cache[key] = value
         return value
 

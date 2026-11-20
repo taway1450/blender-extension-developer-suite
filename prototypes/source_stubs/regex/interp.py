@@ -107,6 +107,23 @@ class ArrayPtr:
         return getter(name, ip) if getter is not None else None
 
 
+class ItemView:
+    """One row of an item array seen from code: ``items[i].identifier``."""
+
+    def __init__(self, item: Any, raw: str) -> None:
+        self.item = item
+        self.raw = raw
+
+    def getmember(self, name: str, ip: Any) -> Any:
+        if self.item is None:
+            return None
+        if name in {"value", "flag"}:
+            return self.item.value
+        if name == "icon":
+            return Raw([], None)
+        return getattr(self.item, name, None)
+
+
 class Env(dict):
     def __init__(self, parent: Env | None = None) -> None:
         super().__init__()
@@ -689,12 +706,27 @@ class Interp:
             if k is not None:
                 self.compound(toks[:k], op, toks[k + 1 :])
                 return
+        # Array declared without initializer: ``static char names[N][M];`` (filled by SNPRINTF/strcpy)
+        if len(toks) >= 4 and toks[-1].text == "]" and toks[0].kind == "id":
+            k = next((j for j, t in enumerate(toks) if t.text == "["), None)
+            if k is not None and k >= 2 and toks[k - 1].kind == "id":
+                self.frame.env.assign(toks[k - 1].text, {}, True)
+                return
         # Declaration without initializer: ``PropertyRNA *prop;`` / ``bNodeType ntype;``
         if len(toks) >= 2 and toks[-1].kind == "id" and all(t.kind == "id" or t.text in {"*", "&", "::", "<", ">", ","} for t in toks):
             if toks[-2].kind == "id" or toks[-2].text in {"*", "&", ">"}:
                 self.frame.env.assign(toks[-1].text, self.declared(toks[:-1], toks[-1].text), True)
                 return
-        # Brace / paren construction: ``StructRNA *srna(x)`` is rare; evaluate as an expression.
+        # A macro standing for statements: ``SCULPT_BRUSH_CAPABILITY(has_accumulate, "Has Accumulate");``
+        if toks[0].kind == "id" and toks[0].text not in self.handlers and toks[0].text not in self.index:
+            m = self.tree.macro(self.file, toks[0].text, toks[0].pos)
+            if m is not None and (m.params is None or (len(toks) > 1 and toks[1].text == "(")):
+                from macro import expand
+
+                expanded = expand(toks, lambda n_: self.tree.macro(self.file, n_, toks[0].pos), set(), toks[0].pos)
+                if [t.text for t in expanded] != [t.text for t in toks]:
+                    self.exec_nodes(parse_statements(expanded, 0, len(expanded)))
+                    return
         self.eval(toks)
 
     def declared(self, type_toks: list[Tok], name: str) -> Any:
@@ -760,6 +792,11 @@ class Interp:
         """The elements of an array initializer; braced elements become ``StructInit`` (fields from the type)."""
         type_name = next((t.text for t in reversed(type_toks) if t.kind == "id" and t.text not in {"const", "static", "struct", "constexpr"}), "")
         fields: list[str] | None = None
+        brace = next((k for k, t in enumerate(type_toks) if t.text == "{"), None)
+        if brace is not None:  # ``struct { ... } info[] = {...}``
+            from ctok import field_names
+
+            fields = field_names(type_toks[brace + 1 : match_close(type_toks, brace)])
         out: list[Any] = []
         for part in split_commas(inner):
             if part and part[0].text == "{":
@@ -771,6 +808,8 @@ class Interp:
                 for elem in split_commas(part[1:close]):
                     if len(elem) >= 3 and elem[0].text == "." and elem[2].text == "=":
                         named[elem[1].text] = self.eval(elem[3:])
+                    elif elem and elem[0].text == "{":
+                        values.append([self.eval(x) for x in split_commas(elem[1 : match_close(elem, 0)])])
                     else:
                         values.append(self.eval(elem))
                 out.append(StructInit(fields, values, named))
@@ -819,6 +858,18 @@ class Interp:
                     if cond is None:
                         self.warn("ternary with an unknown condition: first branch taken")
                     return self.eval(toks[k + 1 : k + 1 + colon])
+                return Raw(toks, self.file)
+            # Keep names (flags: ``PROP_A | PROP_B``) unless the expression reads local values.
+            env = self.frame.env
+            has_ids = False
+            reads_locals = False
+            for t in toks:
+                if t.kind == "id":
+                    has_ids = True
+                    if env.find(t.text)[0]:
+                        reads_locals = True
+                        break
+            if has_ids and not reads_locals:
                 return Raw(toks, self.file)
             v = self.number_with_env(toks)
             if v is not None:
@@ -957,8 +1008,13 @@ class Interp:
                     if method is not None:
                         value = method(member, [self.eval(a) for a in args], self, args)
                     else:
-                        self._side_effects(args)
-                        value = Raw(toks, self.file)
+                        getter = getattr(value, "getmember", None)
+                        target = getter(member, self) if getter is not None else None
+                        if isinstance(target, (FuncRef, Lambda)):
+                            value = self.call_value(target, args, toks[i])
+                        else:
+                            self._side_effects(args)
+                            value = Raw(toks, self.file)
                     i = close + 1
                 else:
                     getter = getattr(value, "getmember", None)
@@ -974,6 +1030,10 @@ class Interp:
                     value = value[idx]
                 elif isinstance(value, str) and isinstance(idx, int):
                     value = ord(value[idx]) if 0 <= idx < len(value) else 0
+                elif hasattr(value, "raw_values") and isinstance(idx, int):  # an EnumArray
+                    value = ItemView(value.items[idx], value.raw_values[idx]) if 0 <= idx < len(value.items) else ItemView(None, "")
+                elif isinstance(value, dict) and isinstance(idx, int):
+                    value = value.get(idx)
                 elif isinstance(value, ArrayPtr) and isinstance(idx, int):
                     value = ArrayPtr(value.items, value.index + idx).current
                 else:
@@ -1010,6 +1070,31 @@ class Interp:
             if any(t.kind == "id" and (t.text in self.handlers or t.text in self.index) for t in a):
                 self.eval(a)
 
+    def string_store(self, name: str, args: list[list[Tok]]) -> None:
+        """``SNPRINTF(buf, "x_%s", id)`` / ``STRNCPY(buf, src)``: store the string into ``buf``."""
+        if name.startswith(("SNPRINTF", "BLI_snprintf")):
+            fmt_k = 2 if name == "BLI_snprintf" else 1
+            fmt = self.eval(args[fmt_k]) if len(args) > fmt_k else None
+            vals = [self.eval(a) for a in args[fmt_k + 1 :]]
+            if not isinstance(fmt, str) or any(isinstance(v, Raw) or v is None for v in vals):
+                text = None
+            else:
+                try:
+                    text = re.sub(r"%(?:[-+ #0]*\d*(?:\.\d+)?)(?:z|l|ll|h)?([sdiufgxc])", "%\\1", fmt) % tuple(vals)
+                except (TypeError, ValueError):
+                    text = None
+        else:
+            src = self.eval(args[1]) if len(args) > 1 else None
+            text = src if isinstance(src, str) else None
+        target = args[0]
+        if len(target) == 1 and target[0].kind == "id":
+            self.frame.env.assign(target[0].text, text, False)
+        elif len(target) >= 4 and target[0].kind == "id" and target[1].text == "[":
+            found, arr = self.frame.env.find(target[0].text)
+            idx = self.number(self.eval(target[2 : match_close(target, 1)]))
+            if isinstance(arr, dict) and isinstance(idx, int):
+                arr[idx] = text
+
     def call_value(self, value: Any, args: list[list[Tok]], at: Tok) -> Any:
         vals = [self.eval(a) for a in args]
         if isinstance(value, Lambda):
@@ -1026,6 +1111,9 @@ class Interp:
             v = self.eval(args[0])
             if isinstance(v, list):
                 return len(v)
+        if name in {"SNPRINTF", "BLI_snprintf", "SNPRINTF_UTF8", "STRNCPY", "BLI_strncpy", "STRNCPY_UTF8"} and args:
+            self.string_store(name, args)
+            return None
         handler = self.handlers.get(name)
         if handler is not None:
             vals = [self.eval(a) for a in args]
@@ -1039,6 +1127,19 @@ class Interp:
         if fd is not None and self.is_relevant(fd):
             vals = [self.eval(a) for a in args]
             return self.run(fd, vals)
+        m = self.tree.macro(self.file, name, name_tok.pos)
+        if m is not None and m.params is not None:
+            from macro import expand
+
+            call_toks = [name_tok, Tok("op", "(", name_tok.pos)]
+            for k, a in enumerate(args):
+                if k:
+                    call_toks.append(Tok("op", ",", name_tok.pos))
+                call_toks += a
+            call_toks.append(Tok("op", ")", name_tok.pos))
+            expanded = expand(call_toks, lambda n_: self.tree.macro(self.file, n_, name_tok.pos), set(), name_tok.pos)
+            if expanded and [t.text for t in expanded] != [t.text for t in call_toks]:
+                return self.eval(expanded)
         fallback = self.handlers.get("__call__")
         if fallback is not None:
             result = fallback(self, name, args, name_tok.pos)
