@@ -353,7 +353,7 @@ class Returns:
                     self.eval(s[3], st, s[4]) if s[3] is not None else _one(UNKNOWN, self.where(s[4]), "uninitialized")
                 )
                 init, declared = s[3], _pointee(s[2])
-                if isinstance(init, list) and init[:1] == ["v"] and declared:
+                if isinstance(init, list) and init[:1] == ["v"] and declared and self.fn.unit_errors:
                     given = _pointee(init[2])
                     if given and given != declared:  # a call the lowering lost (a dependent template call)
                         st.env[s[1]] = _one(UNKNOWN, self.where(s[4]), f"{s[1]} initialized from a {init[2]}")
@@ -432,7 +432,10 @@ class Returns:
             self.rets.append((True, facts))
             self.rets.append((False, facts))
         declared = _pointee(self.fn.ret)
-        if isinstance(e, list) and e[:1] == ["v"] and declared and _pointee(e[2]) not in (None, declared):
+        # In a unit with clang errors, a lost call can read as one of its arguments; elsewhere a different
+        # pointer type is a conversion (a derived class returned as its base).
+        lost = self.fn.unit_errors and isinstance(e, list) and e[:1] == ["v"] and declared
+        if lost and _pointee(e[2]) not in (None, declared):
             self.outs.append(Outcome(UNKNOWN, self.where(line), f"returns a {e[2]} (a call the lowering lost)"))
             return
         for o in self.eval(e, st, line):

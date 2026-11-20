@@ -128,6 +128,7 @@ class Function:
     line: int
     static: bool = False
     ret: str = ""
+    unit_errors: int = 0  # clang errors in the unit it was lowered from
 
 
 Intrinsic = Callable[["Interp", list, list, list], Any]
@@ -158,6 +159,7 @@ class Program:
                     f["line"],
                     f.get("static", False),
                     f.get("ret", ""),
+                    max(unit.get("errors", 0), 0),
                 )
                 self.functions[fn.usr] = fn
                 self.by_name.setdefault(fn.name, []).append(fn)

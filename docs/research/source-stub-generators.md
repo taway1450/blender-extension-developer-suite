@@ -220,12 +220,15 @@ RNA has no flag for whether a function's pointer return can be NULL, so the answ
 `libclang/returns.py` reads it:
 
 1. **Parse the runtime halves.** The C implementations sit behind `#ifdef RNA_RUNTIME`, which the define-time parse
-   leaves out. Each `rna_*.cc` is parsed a second time the way Blender compiles it: with the flags of its generated
-   `rna_*_gen.cc` unit (target `bf_rna`, `-DRNA_RUNTIME`, the full include paths, `RNA_prototypes.hh` included
-   first) and no error limit (108 units, 3 minutes cold).
+   leaves out. They are parsed the way Blender compiles them: as the generated `rna_*_gen.cc` units (target
+   `bf_rna`), each including `RNA_prototypes.hh`, then `rna_X.cc` and `rna_X_api.cc`. These exist after the
+   build's code generation (`blender:build --target codegen`: makesrna, makesdna, the shader and data headers, no
+   object files of Blender; 1,303 build steps). The build is the full configuration, so every `#ifdef WITH_*`
+   branch matches a release build. Before, the `lite` configuration hid the real XR code behind `#else return
+   nullptr;` stubs.
 2. **Follow the callees.** Calls without a parsed body are looked up in a text index of definitions under
    `source/blender` (sources and headers, class bodies included), and their files are parsed, four rounds deep (156
-   more units, 3.5 minutes cold). Inline functions, function templates and class template methods in headers are
+   more units). Inline functions, function templates and class template methods in headers are
    lowered too.
 3. **Walk each return.** A small path-sensitive walk over the lowered AST classifies every `return`. Calls are
    followed with each argument's nullness bound to the callee's parameter, so `get(ob) { if (!ob) return nullptr; ...
@@ -246,23 +249,47 @@ RNA has no flag for whether a function's pointer return can be NULL, so the answ
    what holds on every true (false) return of a callee holds after the caller tests it. Loops forget what their body
    assigns.
 
+With the codegen build, 1 of 1,072 parsed units has a clang error (a signedness warning `string_utf8.cc` turns
+into an error itself), down from 69 of 1,097 on the partial `lite` build with a declaration shim. A cold run
+parses for about 24 minutes, with 2 processes.
+
 Results for 5.2 (1,389 RNA functions with a pointer return):
 
 | Verdict | Functions | Stub | Examples |
 |---|---|---|---|
-| never | 93 | `X` | `BlendDataMeshes.new` (the ID is dereferenced right after allocation), `UILayout.row`, `CurveSplines.new` (`MEM_new`), `KeyMap.active` (falls back to `self`) |
-| raises | 41 | `X` | `ActionChannelbagFCurves.new` / `ensure`, `BlendDataObjects.new`, `Nodes.new`, `KeyMaps.new`, `Object.shape_key_add`, `Window.event_simulate` (the callee re-tests the flag the caller reported on) |
-| null | 1,209 | `X \| None` | lookups (`FCurves.find`, `KeyMaps.find_match`, `Strip.strip_elem_from_frame`); `PaletteColors.new` (not editable, no report); `AssetTags.new` (only a warning); `NodeLinks.new` (sockets from another tree); `ID.copy`; 1,120 are `input_template` / `output_template` on every node type, which return an empty pointer past the last template |
-| unknown | 46 | `X \| None` | 22 with no C function in the facts (Python callbacks such as `AssetShelf.get_active_asset`, and node socket item collections whose function name the define-time reader does not resolve), `GreasePencilLayer::frame_at`, `ID.evaluated_get` (reads a depsgraph field) |
+| never | 102 | `X` | `BlendDataMeshes.new` (the ID is dereferenced right after allocation), `UILayout.row`, `CurveSplines.new` (`MEM_new`), `KeyMap.active` (falls back to `self`), `XrActionMaps.new`, `GreasePencilv3Layers.new` (a derived `Layer *` returned as its base) |
+| raises | 42 | `X` | `ActionChannelbagFCurves.new` / `ensure`, `BlendDataObjects.new`, `Nodes.new`, `KeyMaps.new`, `Object.shape_key_add`, `Window.event_simulate` (the callee re-tests the flag the caller reported on) |
+| null | 1,201 | `X \| None` | lookups (`FCurves.find`, `KeyMaps.find_match`, `Strip.strip_elem_from_frame`); `PaletteColors.new` (not editable, no report); `AssetTags.new` (only a warning); `NodeLinks.new` (sockets from another tree); `ID.copy`; 1,120 are `input_template` / `output_template` on every node type, which return an empty pointer past the last template |
+| unknown | 44 | `X \| None` | 22 with no C function in the facts (Python callbacks such as `AssetShelf.get_active_asset`, and node socket item collections whose function name the define-time reader does not resolve), `GreasePencilLayer::frame_at`, `ID.evaluated_get` (reads a depsgraph field) |
 
-Effect on the comparison: libclang's return nullability differs from builtin's on 1,239 members, down from
-1,355. Its overall agreement with builtin rises to 81%, and its return differences with fake-bpy drop from 77 to 23.
+Effect on the comparison: libclang's return nullability differs from builtin's on 1,233 members, down from
+1,355. Its overall agreement with builtin rises to 81%, and its return differences with fake-bpy drop from 77 to 22.
 
 Of the three fixes to the first version: parsing the runtime units as `bf_rna` does, keeping recovered calls and
 lowering headers settled 12 functions. Nine of those were `unknown`; the other three were a wrong `never` (`ID.evaluated_get`,
 where `return DEG_get_evaluated(depsgraph, id)` had been read as `return id`). Path facts settled one more
-(`Window.event_simulate`). The define-time facts did not change.
+(`Window.event_simulate`). The define-time facts did not change. The codegen build settled ten more: eight XR
+functions, and two returns the type guard against lost calls had distrusted (the guard now applies only to units
+with clang errors). It also adds what the full configuration compiles: 12 operators, 348 operator properties, 25
+RNA properties and 22 Python module functions.
 The remaining differences with builtin are almost all real NULL returns that builtin types as non-null.
+
+Cross-checks (`libclang/crosscheck.py`, written to `crosscheck.md`), on the same generated units:
+
+- **LLVM** (`clang -O1 -fno-inline -emit-llvm`): LLVM's attribute inference marks a raw pointer return `nonnull`
+  only when it proves it within the unit. It marked 10 functions, all classified `never`. It cannot read a
+  `PointerRNA` returned by value.
+- **Clang Static Analyzer**: a probe calls each RNA function with its never-null arguments and dereferences the
+  result; error reports end the path. It found a NULL path in 13 functions classified `null`, confirming them, and
+  in 2 others, both false positives from defensive checks of values that cannot be NULL:
+  - `AnnotationStrokes.new` tests the result of `MEM_new`, which aborts rather than return NULL;
+  - `KeyMaps.new` tests `keymap &&` after `WM_keymap_ensure`, which always returns one.
+- Five functions with overloaded names are not probed. Before the fixes above, the checks found 13 disagreements:
+  11 came from the probe itself, because the analyzer never inlines the variadic `BKE_reportf`, so its reports are
+  modelled as macros now. The 12th was `GreasePencilv3Layers.new`.
+
+Both tools see one unit, so callees elsewhere are opaque to them: they confirm or question a verdict, they do not
+replace the walk.
 
 Limits:
 
@@ -276,6 +303,9 @@ Limits:
 - **Missing C functions and bodies.** 22 functions have no C function in the define-time facts: registerable
   callbacks implemented in Python, and the node socket item `new` functions, whose name the reader does not resolve.
   About ten more end in a callee with no parsed body (`GreasePencilLayer::frame_at`, `RE_engine_begin_result`).
+- **Configuration.** The codegen build turns off three windowing features whose system packages the build machine
+  lacks (`WITH_X11_XINPUT`, `WITH_X11_XFIXES`, `WITH_GHOST_WAYLAND`). They touch no RNA, operator or Python API
+  code.
 
 ## 6. Hand tables checked against the facts
 

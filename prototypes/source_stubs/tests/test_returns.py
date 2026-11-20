@@ -48,8 +48,8 @@ def v(name: str) -> list:
     return ["v", name, "FCurve *", "FCurve"]
 
 
-def kinds(*functions: dict, entry: str, args: tuple[str, ...] = ()) -> str:
-    program = Program([{"tu": "t", "functions": list(functions)}])
+def kinds(*functions: dict, entry: str, args: tuple[str, ...] = (), errors: int = 0) -> str:
+    program = Program([{"tu": "t", "errors": errors, "functions": list(functions)}])
     return Returns(program).verdict(program.by_name[entry][0], args).kind
 
 
@@ -215,8 +215,9 @@ def test_a_failed_check_that_reports_raises() -> None:
     assert kinds(caller("rna_b", "quiet"), quiet, entry="rna_b") == "null"
 
 
-def test_a_value_of_another_pointer_type_is_unknown() -> None:
-    """A dependent template call can lower to its last argument (``add_item<A>(node, name)`` as ``name``)."""
+def test_a_value_of_another_pointer_type_is_unknown_in_a_unit_with_errors() -> None:
+    """In a unit with clang errors a call can lower to its last argument (``add_item<A>(node, name)`` as
+    ``name``)."""
     f = fn(
         "rna_new",
         [
@@ -225,7 +226,21 @@ def test_a_value_of_another_pointer_type_is_unknown() -> None:
         ],
         params=[["name", "const char *", "char"]],
     )
-    assert kinds(f, entry="rna_new", args=("never",)) == "unknown"
+    assert kinds(f, entry="rna_new", args=("never",), errors=1) == "unknown"
+
+
+def test_a_derived_pointer_returned_as_its_base_keeps_its_value() -> None:
+    """``Layer *layer = &add_layer(); return layer;`` from a ``GreasePencilLayer *`` function (``Layer`` derives from
+    ``GreasePencilLayer``): in a unit without errors a different pointer type is an upcast, not a lost call."""
+    f = fn(
+        "rna_new",
+        [
+            ["decl", "layer", "Layer *", ["u", "&", ["v", "x", "Layer", "Layer"]], 1, "Layer"],
+            ["ret", ["v", "layer", "Layer *", "Layer"], 2],
+        ],
+        ret="GreasePencilLayer *",
+    )
+    assert kinds(f, entry="rna_new") == "never"
 
 
 def test_a_null_the_callee_reported_raises_in_the_caller() -> None:

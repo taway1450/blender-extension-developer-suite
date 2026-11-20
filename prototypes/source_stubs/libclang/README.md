@@ -56,10 +56,12 @@ marked dynamic). Function pointers held in locals and lambda parameters are foll
 
 ## Numbers (5.2, compile_commands)
 
-1,725 RNA structs, 9,980 properties, 3,005 functions; 2,136 operators with 4,967 properties; 255 Python types,
-58 modules, 228 module functions; 104 context members (60 typed); 515 node declarations with 2,490 sockets;
-82 bmesh operators. Every `bpy.types` class of Blender's builtin stubs is found except the 55 registered from
-Python (`*_UL_*`, `*_AST_*`, `*_FH_*`). 48 of 832 units have clang errors (204), parsing continues.
+1,725 RNA structs, 10,005 properties, 3,004 functions; 2,148 operators with 5,315 properties; 255 Python types,
+59 modules, 250 module functions; 104 context members (60 typed); 515 node declarations with 2,490 sockets;
+83 bmesh operators. Every `bpy.types` class of Blender's builtin stubs is found except the 55 registered from
+Python (`*_UL_*`, `*_AST_*`, `*_FH_*`). With the full-configuration codegen build none of the 832 units has a clang
+error (on the earlier partial `lite` build with a declaration shim, 48 had 204). RNA pointer returns: 102 never,
+42 raises, 1,201 null, 44 unknown (`returns.md`); cross-checks in `crosscheck.md`.
 
 `--synthesize-flags` (every header directory except ones shadowing system headers, Blender's precompiled library
 headers, Python's): 1,289 units, 71 with errors, ~35 min cold; the same RNA counts, 4,909 operator properties
@@ -78,4 +80,4 @@ not seen. See `coverage.md` (`Not reachable`).
     uv run --no-project --python 3.13 --with libclang==18.1.1 python prototypes/source_stubs/libclang/run.py 5.2 \
         --source .cache/blender-src/5.2-src [--compile-commands PATH | --synthesize-flags] [--jobs 2]
 
-First run parses 833 units (~17 min with 2 processes); later runs reuse the cache (~20 s).
+First run parses 833 units, then the runtime units and their callees (~35 min with 2 processes), and runs the cross-checks (~6 min); later runs reuse both caches (a few minutes).

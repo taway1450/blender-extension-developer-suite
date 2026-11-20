@@ -9,8 +9,8 @@ Both need the real ``rna_X_gen.cc`` units (``blender:build --target codegen``) a
   attribute to read.
 - **Clang Static Analyzer** (``clang --analyze``): a probe file includes the unit and calls each RNA function with
   its never-null arguments (``rna_arguments``), then dereferences the result (``.data`` of a ``PointerRNA``). A
-  ``core.NullDereference`` there is a concrete path to a NULL return. The probe defines ``BKE_report`` /
-  ``BKE_reportf`` so that an error report ends the path: a NULL after one raises in Python, so it is no witness.
+  ``core.NullDereference`` there is a concrete path to a NULL return. The probe turns ``BKE_report`` /
+  ``BKE_reportf`` into a sink for error levels: a NULL after one raises in Python, so it is no witness.
   ``suppress-null-return-paths`` is off: by default the analyzer hides exactly these paths.
 
 Neither replaces the classifier: LLVM proves only what it sees in one unit, and the analyzer finds paths, never
@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 CLANG = "/usr/bin/clang++"
-CROSSCHECK_VERSION = 1
+CROSSCHECK_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -45,29 +45,27 @@ class Probe:
     kind: str  # "pointer" or "PointerRNA"
 
 
-PRELUDE = """
-#include <cstddef>
-#include <type_traits>
-#include <utility>
+# Before the unit: an error report ends the path (it raises in Python: pyrna_func_call -> BPy_reports_to_error).
+# The analyzer never inlines a variadic function, so ``BKE_reportf`` cannot be given a body: both become macros
+# calling a sink, after ``BKE_report.hh`` declared them (its ``#pragma once`` keeps the unit from redeclaring them).
+REPORTS = """
+#include "BKE_report.hh"
 namespace blender {
-/* An error report raises in Python (pyrna_func_call -> BPy_reports_to_error): end the path there. */
-void BKE_report(ReportList *reports, eReportType type, const char *message)
+inline void source_stubs_report(ReportList * /*reports*/, eReportType type)
 {
-  (void)reports;
-  (void)message;
-  if (type >= RPT_ERROR) {
-    __builtin_unreachable();
-  }
-}
-void BKE_reportf(ReportList *reports, eReportType type, const char *format, ...)
-{
-  (void)reports;
-  (void)format;
   if (type >= RPT_ERROR) {
     __builtin_unreachable();
   }
 }
 }  // namespace blender
+#define BKE_report(reports, type, ...) ::blender::source_stubs_report((reports), (type))
+#define BKE_reportf(reports, type, ...) ::blender::source_stubs_report((reports), (type))
+"""
+
+PRELUDE = """
+#include <cstddef>
+#include <type_traits>
+#include <utility>
 namespace source_stubs_probe {
 template<class T> T any();
 template<class T> T arg(bool nonnull)
@@ -95,7 +93,7 @@ template<unsigned long long Mask, class R, class... A> R call(R (*f)(A...))
 
 def probe_source(gen: str, probes: list[Probe]) -> tuple[str, dict[int, int]]:
     """The probe file for ``gen`` and, per line holding a dereference, the index of its probe."""
-    lines = [f'#include "{gen}"', *PRELUDE.strip("\n").splitlines()]
+    lines = [*REPORTS.strip("\n").splitlines(), f'#include "{gen}"', *PRELUDE.strip("\n").splitlines()]
     at: dict[int, int] = {}
     for i, p in enumerate(probes):
         call = f"source_stubs_probe::call<{p.mask}ull>(&{p.qual})"
@@ -172,11 +170,22 @@ def _command(entry: dict) -> list[str]:
     return out
 
 
+def failed_probes(stderr: str, probe_name: str, at: dict[int, int]) -> set[int]:
+    """The probes whose line has a compile error."""
+    lines = {int(m[1]) for m in re.finditer(rf"{re.escape(probe_name)}:(\d+):\d+: error:", stderr)}
+    return {at[n] for n in lines if n in at}
+
+
+def _first_errors(stderr: str) -> str:
+    errors = [line for line in stderr.splitlines() if " error: " in line or line.startswith("error:")]
+    return " | ".join(errors[:3])[:600] or stderr.strip()[-300:]
+
+
 def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -> dict:
     gen = entry["file"]
     stem = Path(gen).stem
     base = _command(entry)
-    result: dict = {"unit": gen, "llvm": {}, "csa": [], "probed": [p.qual for p in probes], "errors": []}
+    result: dict = {"unit": gen, "llvm": {}, "csa": [], "probed": [], "errors": []}
     ll = Path(work) / f"{stem}.ll"
     proc = subprocess.run(
         [*base, "-w", "-O1", "-fno-inline", "-emit-llvm", "-S", "-o", str(ll), gen],
@@ -188,8 +197,11 @@ def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -
         result["llvm"] = nonnull_returns(ll.read_text(errors="replace"), names)
         ll.unlink()
     else:
-        result["errors"].append(f"llvm: {proc.stderr.strip()[-400:]}")
-    if probes:
+        result["errors"].append(f"llvm: {_first_errors(proc.stderr)}")
+    # A probe that does not compile (a C function whose name is overloaded) is dropped, and the unit runs again.
+    for _attempt in range(3):
+        if not probes:
+            break
         text, at = probe_source(gen, probes)
         probe = Path(work) / f"{stem}_probe.cc"
         probe.write_text(text)
@@ -204,9 +216,17 @@ def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -
         )
         if proc.returncode == 0 and sarif.exists():
             result["csa"] = sorted(probes[i].qual for i in witnesses(sarif.read_text(), at, probe.name))
+            result["probed"] = [p.qual for p in probes]
             sarif.unlink()
-        else:
-            result["errors"].append(f"analyzer: {proc.stderr.strip()[-400:]}")
+            break
+        bad = failed_probes(proc.stderr, probe.name, at)
+        if not bad:
+            result["errors"].append(f"analyzer: {_first_errors(proc.stderr)}")
+            break
+        result["unprobed"] = result.get("unprobed", []) + [probes[i].qual for i in sorted(bad)]
+        probes = [p for i, p in enumerate(probes) if i not in bad]
+    else:
+        result["errors"].append("analyzer: probes kept failing to compile")
     return result
 
 
@@ -229,7 +249,9 @@ def run(units: list[tuple[dict, list[str], list[Probe], list[Path]]], cache: Pat
     work = cache / "work"
     work.mkdir(exist_ok=True)
     with ProcessPoolExecutor(max_workers=jobs) as pool:
-        futures = {pool.submit(_check_unit, units[i][0], units[i][1], units[i][2], str(work)): (i, out) for i, out in todo}
+        futures = {
+            pool.submit(_check_unit, units[i][0], units[i][1], units[i][2], str(work)): (i, out) for i, out in todo
+        }
         for done, fut in enumerate(futures, 1):
             i, out = futures[fut]
             res = fut.result()
@@ -309,8 +331,10 @@ def report(model, program, results: list[dict]) -> tuple[str, dict[str, int]]:
     lines = [
         "# Cross-checks of the RNA pointer returns",
         "",
-        "See `prototypes/source_stubs/libclang/crosscheck.py`. LLVM: `nonnull` inferred on the C function's return "
-        "(raw pointer returns only). Analyzer: a path to a NULL return that no error report ends.",
+        (
+            "See `prototypes/source_stubs/libclang/crosscheck.py`. LLVM: `nonnull` inferred on the C function's "
+            "return (raw pointer returns only). Analyzer: a path to a NULL return that no error report ends."
+        ),
         "",
         "| Verdict | Functions | LLVM checked | LLVM nonnull | Analyzer checked | Analyzer NULL path |",
         "|---|---|---|---|---|---|",
@@ -324,6 +348,11 @@ def report(model, program, results: list[dict]) -> tuple[str, dict[str, int]]:
     lines += ["", f"## Disagreements ({len(found)})", "", "| Function | C function | Finding |", "|---|---|---|"]
     c_of = {r[0]: r[4] for r in rows}
     lines += [f"| `{name}` | `{c_of[name]}` | {why} |" for name, why in sorted(found)]
+    unprobed = sorted({q for r in results for q in r.get("unprobed", [])})
+    lines += [
+        "",
+        f"Not probed (the probe did not compile, e.g. an overloaded name): {', '.join(f'`{q}`' for q in unprobed) or 'none'}",
+    ]
     lines += ["", f"## Units the tools could not compile ({len(errors)})", ""]
     lines += [f"- `{Path(u).name}`: {e.splitlines()[0][:200] if e else ''}" for u, e in errors]
     return "\n".join(lines) + "\n", counts
