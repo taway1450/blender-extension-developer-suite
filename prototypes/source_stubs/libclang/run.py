@@ -25,6 +25,7 @@ from _resources import default_jobs
 
 from common.driver import build_dir, main, out_dir
 from common.model import SourceModel
+from libclang import crosscheck
 from libclang.bmesh import read_bmesh
 from libclang.context import Context
 from libclang.flags import FlagSource
@@ -124,10 +125,22 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
             break
         parsed.update(todo)
         extra += parse_all(source, flags, [source / f for f in todo], cache, jobs=jobs)
-    classify(model, Program(extra + lowered))
+    final = Program(extra + lowered)
+    classify(model, final)
     out.mkdir(parents=True, exist_ok=True)
     (out / "returns.md").write_text(report(model), encoding="utf-8")
     timings["returns"] = time.perf_counter() - start
+    # 8. Cross-check the return verdicts with LLVM and the Clang Static Analyzer (needs the generated units)
+    start = time.perf_counter()
+    checks: dict[str, int] = {}
+    units = crosscheck.plan(model, final, cc, source) if cc else []
+    if units:
+        results = crosscheck.run(units, out / "crosscheck-cache", jobs)
+        text, checks = crosscheck.report(model, final, results)
+        (out / "crosscheck.md").write_text(text, encoding="utf-8")
+    else:
+        print("crosscheck: skipped (no generated rna_*_gen.cc units: run blender:build --target codegen)")
+    timings["crosscheck"] = time.perf_counter() - start
 
     # Coverage notes
     cov = model.coverage
@@ -162,6 +175,7 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
         "flags": flags.kind,
         "units": len(program.errors),
         "units_with_errors": len(errors),
+        "returns_crosscheck": checks,
         "nodes_registered": nodes.registered,
         "rna_struct_dna": dict(sorted(rna.dna_of.items())),
         "python_struct_sequences": sorted(pyapi.structseq),

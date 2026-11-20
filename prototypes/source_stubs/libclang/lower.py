@@ -136,6 +136,8 @@ class Lowerer:
     def __init__(self, tu: ci.TranslationUnit, files: set[str], root: str) -> None:
         self.tu = tu
         self.files = files  # absolute paths whose definitions we lower
+        self.real = {os.path.realpath(f): f for f in files}
+        self.spellings: dict[str, str | None] = {}
         self.root = root
         self.fields_cache: dict[str, list[str] | None] = {}
         self.functions: list[dict] = []
@@ -188,7 +190,13 @@ class Lowerer:
         if f is None:
             return None
         name = f.name
-        return name if name in self.files else None
+        if name in self.files:
+            return name
+        # A generated unit includes its sources by another spelling (``rna_object_gen.cc``:
+        # ``#include "../../../../source/blender/makesrna/intern/rna_object.cc"``).
+        if name not in self.spellings:
+            self.spellings[name] = self.real.get(os.path.realpath(name))
+        return self.spellings[name]
 
     def visit_scope(self, scope: ci.Cursor, ns: str) -> None:
         for c in scope.get_children():

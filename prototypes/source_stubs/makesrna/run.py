@@ -10,11 +10,17 @@ It reads RNA only. Operators, the Python C API, context members, node declaratio
 RNA definitions makesrna runs, so this prototype leaves them out (``coverage.md`` says so); the Python side
 (``scripts/``) comes from the shared ``ast`` reader as for the other prototypes.
 
-Prerequisites (once): apply the patch to the source tree and build the ``makesrna`` target:
+Prerequisites (once): apply the patch to the source tree and run the build's code generation (``--target
+codegen`` builds ``makesrna`` and every generated source, which the libclang prototype parses, but no object files
+of Blender itself):
 
     git -C .cache/blender-src/5.2-src apply prototypes/source_stubs/makesrna/makesrna-json-dump.patch
-    mise run blender:build 5.2-src --ref v5.2.0 --config lite --target makesrna \\
-        --define CMAKE_C_COMPILER=/usr/bin/clang --define CMAKE_CXX_COMPILER=/usr/bin/clang++ ...
+    mise run blender:build 5.2-src --ref v5.2.0 --target codegen \\
+        --define CMAKE_C_COMPILER=/usr/bin/clang --define CMAKE_CXX_COMPILER=/usr/bin/clang++ --define WITH_GTESTS=OFF \\
+        --define WITH_X11_XINPUT=OFF --define WITH_X11_XFIXES=OFF --define WITH_GHOST_WAYLAND=OFF
+
+(The last three turn off windowing features whose system development packages a minimal Linux lacks; they touch
+no RNA, operator or Python API code.)
 
 Then:
 

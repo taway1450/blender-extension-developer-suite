@@ -93,3 +93,26 @@ def test_build_info_without_configure_hash_is_stale():
     """Builds recorded before the configure hash say nothing about their options (e.g. PRESET_OPTIONS)."""
     old = "commit=abc\nconfig=headless\nbuild_type=Release\nsource=s\n"
     assert not is_current_build(old, commit="abc", config="headless", build_type="Release", configure="h1")
+
+
+def test_codegen_builds_only_the_generated_sources():
+    """``--target codegen``: the custom-command outputs a parser of the sources needs (generated headers and
+    sources), not the shader caches, dependency files, archives or utility stamps."""
+    from build_blender import generated_sources
+
+    build = Path("/b")
+    listing = """/b/source/blender/makesrna/RNA_prototypes.hh
+/b/source/blender/makesrna/intern/rna_object_gen.cc
+/b/source/blender/datatoc/startup.blend.c
+/b/source/blender/makesdna/intern/dna_type_offsets.h
+/b/source/blender/compositor/shaders/x.glsl.d
+/b/source/blender/compositor/shaders/x.glsl.tmp
+/b/release/Blender.tar.xz
+/b/CMakeFiles/generate_datamodels
+"""
+    assert generated_sources(listing, build) == [
+        "source/blender/datatoc/startup.blend.c",
+        "source/blender/makesdna/intern/dna_type_offsets.h",
+        "source/blender/makesrna/RNA_prototypes.hh",
+        "source/blender/makesrna/intern/rna_object_gen.cc",
+    ]

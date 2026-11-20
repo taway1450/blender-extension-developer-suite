@@ -5,9 +5,10 @@ headers). Unity builds (``Unity/unity_N_cxx.cxx``) list their sources as ``#incl
 parsed through its unity file, and the lowering keeps the definitions of each included file apart.
 
 Without a build, flags are synthesized: ``-x c++ -std=c++20``, ``-I`` for every directory holding headers under
-``source/blender``, ``intern`` and ``extern`` and a few feature defines. Missing generated headers
-(``RNA_prototypes.hh``, ``dna_type_offsets.h``) are replaced by a shim directory (only declarations; no facts are
-read from it): an undeclared ``RNA_Object`` would otherwise make clang drop the whole call that names it.
+``source/blender``, ``intern`` and ``extern`` and a few feature defines. Generated headers come from the build
+(``blender:build --target codegen``); while it has not made them (``RNA_prototypes.hh``, ``dna_type_offsets.h``)
+a shim directory stands in (only declarations; no facts are read from it): an undeclared ``RNA_Object`` would
+otherwise make clang drop the whole call that names it.
 """
 
 from __future__ import annotations
@@ -161,7 +162,9 @@ class FlagSource:
         """Declarations for generated headers the build has not produced (yet)."""
         self.shim.mkdir(parents=True, exist_ok=True)
         gen = self.build_dir / "source/blender/makesrna" if self.build_dir else None
-        if not (gen and (gen / "RNA_prototypes.hh").exists()):
+        if gen and (gen / "RNA_prototypes.hh").exists():
+            (self.shim / "RNA_prototypes.hh").unlink(missing_ok=True)  # written before the codegen ran
+        else:
             # Same shape as makesrna's output: ``extern StructRNA *RNA_X;`` and ``extern PropertyRNA &rna_X_y;``.
             names: set[str] = set()
             props: set[str] = set()
@@ -185,7 +188,9 @@ class FlagSource:
             lines.append("}  // namespace blender")
             (self.shim / "RNA_prototypes.hh").write_text("\n".join(lines) + "\n")
             self.missing_generated.append("RNA_prototypes.hh")
-        if not (self.build_dir and (self.build_dir / "source/blender/makesdna/intern/dna_type_offsets.h").exists()):
+        if self.build_dir and (self.build_dir / "source/blender/makesdna/intern/dna_type_offsets.h").exists():
+            (self.shim / "dna_type_offsets.h").unlink(missing_ok=True)
+        else:
             (self.shim / "dna_type_offsets.h").write_text("#pragma once\nenum eDNA_StructId { SDNA_TYPE_MAX };\n")
             self.missing_generated.append("dna_type_offsets.h")
 
@@ -195,10 +200,16 @@ class FlagSource:
 
     def runtime_unit(self, file: Path) -> Unit:
         """``rna_X.cc`` / ``rna_X_api.cc`` as bf_rna compiles them: through ``rna_X_gen.cc``, which defines
-        ``RNA_RUNTIME``, has the target's include paths and includes ``RNA_prototypes.hh`` before the file."""
+        ``RNA_RUNTIME``, has the target's include paths and includes ``RNA_prototypes.hh``, then both files.
+
+        With the codegen done (``blender:build --target codegen``) the generated unit itself is parsed, once for
+        both files. Without it, each file is parsed alone with the generated unit's flags and the shim."""
         stem = file.stem.removesuffix("_api")
         gen = self.build_dir / "source/blender/makesrna/intern" / f"{stem}_gen.cc" if self.build_dir else None
         unit = self.units.get(str(gen)) if gen else None
+        if unit is not None and gen is not None and gen.exists():
+            halves = [file.with_name(f"{stem}.cc"), file.with_name(f"{stem}_api.cc")]
+            return Unit(str(gen), [*unit.args, *self.tail()], [str(f) for f in halves if f.exists()])
         if unit is not None:
             args = list(unit.args)
         else:

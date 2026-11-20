@@ -24,9 +24,12 @@ Usage:
   uv run scripts/build_blender.py my-feature --ref my-feature-branch
   uv run scripts/build_blender.py pr-12345 --ref refs/pull/12345/head --config lite
   uv run scripts/build_blender.py 5.2 --ref v5.2.0 --target makesrna --system-libs --config lite
+  uv run scripts/build_blender.py 5.2 --ref v5.2.0 --target codegen
 
 ``--target`` builds one CMake target instead of installing Blender (``makesrna`` for the source-stub prototypes,
-which also leaves ``compile_commands.json`` in the build directory). ``--system-libs`` configures without the
+which also leaves ``compile_commands.json`` in the build directory). ``--target codegen`` builds only the generated
+sources (``RNA_prototypes.hh``, ``rna_*_gen.cc``, DNA and shader headers) and the tools that write them, so a
+parser of the sources sees the files the compiler would. ``--system-libs`` configures without the
 precompiled libraries, for a target that needs none of them.
 
 See https://developer.blender.org/docs/handbook/building_blender/ for the prerequisites (Visual
@@ -242,6 +245,21 @@ def is_current_build(build_info: str, *, commit: str, config: str, build_type: s
     return all(fields.get(key) == value for key, value in wanted.items())
 
 
+CODEGEN = "codegen"
+GENERATED_SUFFIXES = (".h", ".hh", ".hpp", ".c", ".cc", ".cpp", ".inc")
+
+
+def generated_sources(targets: str, build_dir: Path) -> list[str]:
+    """The outputs of the build's custom commands (``ninja -t targets rule CUSTOM_COMMAND``) that are C/C++
+    sources or headers, relative to ``build_dir``: what makesrna, makesdna, datatoc and the shader tools generate."""
+    out = []
+    for line in targets.splitlines():
+        path = Path(line.strip())
+        if path.suffix in GENERATED_SUFFIXES:
+            out.append(path.relative_to(build_dir).as_posix() if path.is_absolute() else path.as_posix())
+    return sorted(out)
+
+
 def build_blender(
     name: str,
     *,
@@ -312,6 +330,21 @@ def build_blender(
         run(configure_cmd, env=env)
         configure_args.write_text(configure_key)
 
+    if target == CODEGEN:
+        listing = subprocess.run(
+            [ninja, "-C", build_dir, "-t", "targets", "rule", "CUSTOM_COMMAND"],
+            env=env,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        outputs = generated_sources(listing, build_dir.resolve())
+        log(f"Generating the {len(outputs)} generated sources of Blender {name} ({commit[:10]}), no object files")
+        for i in range(0, len(outputs), 500):
+            run([ninja, "-C", build_dir, *outputs[i : i + 500]], env=env)
+        log(f"Generated sources in {build_dir}")
+        return build_dir
+
     if target != "install":
         log(f"Building the target {target} of Blender {name} ({commit[:10]})")
         run([cmake, "--build", build_dir, "--target", target], env=env)
@@ -347,7 +380,10 @@ def main() -> int:
     parser.add_argument("--build-type", choices=BUILD_TYPES, default="Release", help="CMake build type")
     parser.add_argument("--force", action="store_true", help="Delete the build directory and build from scratch")
     parser.add_argument(
-        "--target", default="install", help="CMake target to build instead of installing Blender (e.g. makesrna)"
+        "--target",
+        default="install",
+        help="CMake target to build instead of installing Blender (e.g. makesrna), or codegen: only the generated "
+        "sources and the tools that write them",
     )
     parser.add_argument(
         "--system-libs", action="store_true", help="Configure without the precompiled libraries (system libraries)"

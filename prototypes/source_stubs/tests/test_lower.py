@@ -56,3 +56,14 @@ def test_header_templates_and_inline_functions_are_lowered(tmp_path: Path) -> No
     functions = lowered(tmp_path, ["h.hh"])
     assert {"get", "first", "twice"} <= set(functions)
     assert functions["get"]["body"][-1][0] == "ret"
+
+
+def test_files_included_by_another_spelling_are_lowered(tmp_path: Path) -> None:
+    """``rna_object_gen.cc`` includes ``rna_object.cc`` through an include path: the definitions still count."""
+    (tmp_path / "h.hh").write_text(HEADER)
+    (tmp_path / "t.cc").write_text(SOURCE)
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "gen.cc").write_text('#include "sub/../t.cc"\n')
+    args = ["-x", "c++", "-std=c++20", f"-I{tmp_path}"]
+    data = lower_tu(str(tmp_path / "gen.cc"), args, [str(tmp_path / "t.cc")], str(tmp_path))
+    assert {"f", "g"} <= {f["name"] for f in data["functions"]}

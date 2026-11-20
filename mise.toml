@@ -46,7 +46,7 @@ flag "--build-type <type>" default="Release" help="CMake build type" {
   choices "Release" "RelWithDebInfo" "Debug"
 }
 flag "--force" help="Delete the build directory and build from scratch"
-flag "--target <target>" default="install" help="CMake target to build instead of installing Blender (e.g. makesrna, which the source-stub prototypes use)"
+flag "--target <target>" default="install" help="CMake target to build instead of installing Blender (e.g. makesrna), or codegen: only the generated sources (RNA_prototypes.hh, rna_*_gen.cc, DNA and shader headers) and the tools that write them"
 flag "--system-libs" help="Configure without the precompiled libraries (for a target that needs none of them)"
 flag "--define <define>" var=#true help="Extra CMake cache entry VAR=VALUE (repeatable)"
 '''
