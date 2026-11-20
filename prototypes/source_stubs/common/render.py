@@ -37,20 +37,17 @@ from .model import (
 OPERATOR_RETURN = "set[Literal['RUNNING_MODAL', 'CANCELLED', 'FINISHED', 'PASS_THROUGH', 'INTERFACE']]"
 # ``pyrna_math_object_from_array`` (python/intern/bpy_rna.cc): the mathutils class a float array becomes, by subtype
 # and length. Everything else is a ``bpy_prop_array``.
-MATH_SUBTYPES = {
-    "color": ({3}, "mathutils.Color"),
-    "color_gamma": ({3}, "mathutils.Color"),
-    "translation": ({2, 3, 4}, "mathutils.Vector"),
-    "direction": ({2, 3, 4}, "mathutils.Vector"),
-    "velocity": ({2, 3, 4}, "mathutils.Vector"),
-    "acceleration": ({2, 3, 4}, "mathutils.Vector"),
-    "xyz": ({2, 3, 4}, "mathutils.Vector"),
-    "xyz_length": ({2, 3, 4}, "mathutils.Vector"),
-    "coords": ({2, 3, 4}, "mathutils.Vector"),
-    "euler": ({3}, "mathutils.Euler"),
-    "quaternion": ({4}, "mathutils.Quaternion"),
-    "axisangle": ({4}, "mathutils.Quaternion"),
-    "matrix": ({9, 16}, "mathutils.Matrix"),
+_VECTOR = {2: "mathutils.Vector", 3: "mathutils.Vector", 4: "mathutils.Vector"}
+_ROTATION = {3: "mathutils.Euler", 4: "mathutils.Quaternion"}
+# subtype -> {array length: class}, as ``pyrna_math_object_from_array`` (bpy_rna.cc) converts a float array of one
+# dimension (two for a matrix). ``axisangle`` is not converted.
+MATH_SUBTYPES: dict[str, dict[int, str]] = {
+    **dict.fromkeys(("coords", "translation", "direction", "velocity", "acceleration", "xyz", "xyz_length"), _VECTOR),
+    "matrix": {9: "mathutils.Matrix", 16: "mathutils.Matrix"},
+    "euler": _ROTATION,
+    "quaternion": _ROTATION,
+    "color": {3: "mathutils.Color"},
+    "color_gamma": {3: "mathutils.Color"},
 }
 SCALAR = {"boolean": "bool", "int": "int", "float": "float", "string": "str"}
 DECL_SOCKETS = {
@@ -155,6 +152,15 @@ def py_ident(name: str) -> str:
     return name + "_" if keyword.iskeyword(name) else name
 
 
+def literal_default(source: str) -> str:
+    """A default from a docstring or C source as written when it is a short Python literal, else ``...``."""
+    try:
+        ast.literal_eval(source)
+    except (ValueError, SyntaxError, TypeError, MemoryError, RecursionError):
+        return "..."
+    return source if len(source) <= 40 else "..."
+
+
 def literal(values: list[str]) -> str:
     return "Literal[" + ", ".join(repr(v) for v in values) + "]"
 
@@ -243,12 +249,15 @@ class Renderer:
             return SCALAR[t]
         if t in {"boolean", "int", "float"}:
             if t == "float" and p.subtype in MATH_SUBTYPES:
-                lengths, cls = MATH_SUBTYPES[p.subtype]
+                by_length = MATH_SUBTYPES[p.subtype]
                 total = 1
                 for n in p.array:
                     total *= n
-                if total in lengths or (p.dynamic_array and p.subtype == "matrix"):
-                    return self.ref(cls, current)
+                dims_ok = len(p.array) <= 1 or (len(p.array) == 2 and p.subtype == "matrix")
+                if dims_ok and total in by_length:
+                    return self.ref(by_length[total], current)
+                if p.dynamic_array and p.subtype == "matrix":
+                    return self.ref("mathutils.Matrix", current)
             text = SCALAR[t]
             for _ in p.array or [0]:
                 text = f"{self.ref('bpy.types.bpy_prop_array', current)}[{text}]"
@@ -282,7 +291,11 @@ class Renderer:
         if isinstance(value, list) and p.type == "enum":
             return "{" + ", ".join(repr(v) for v in value) + "}" if value else "set()"
         if isinstance(value, list):
-            value = tuple(value)
+            if len(p.array) == 2 and len(value) == p.array[0] * p.array[1]:
+                rows, cols = p.array
+                value = tuple(tuple(value[r * cols : (r + 1) * cols]) for r in range(rows))
+            else:
+                value = tuple(value)
         if isinstance(value, (bool, int, float, str, tuple)) and not (isinstance(value, float) and value != value):
             text = repr(value)
             if len(text) <= 80:
@@ -445,7 +458,7 @@ class Renderer:
                 saw_kwonly = True
             text = f"{py_ident(p.name)}: {t}"
             if p.default is not None:
-                text += f" = {p.default if p.default in ('None', 'True', 'False') else '...'}"
+                text += f" = {literal_default(p.default)}"
             rendered.append(text)
             if index == last_posonly and not positional_only:
                 rendered.append("/")

@@ -109,3 +109,36 @@ def test_byte_strings_and_nested_arrays() -> None:
     text = rendered_types(model)
     assert "path: bytes" in text
     assert "box: bpy_prop_array[bpy_prop_array[float]]" in text
+
+
+def test_math_subtypes_follow_pyrna() -> None:
+    from common.model import RnaProperty, RnaStruct, SourceModel
+
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.structs.append(
+        RnaStruct(
+            identifier="Thing",
+            properties=[
+                RnaProperty(identifier="rot3", type="float", subtype="quaternion", array=[3]),
+                RnaProperty(identifier="rot4", type="float", subtype="euler", array=[4]),
+                RnaProperty(identifier="axis", type="float", subtype="axisangle", array=[4]),
+                RnaProperty(identifier="mat", type="float", subtype="matrix", array=[4, 4], default=[1.0, 0.0] * 8),
+            ],
+        )
+    )
+    text = rendered_types(model)
+    assert "rot3: mathutils.Euler" in text
+    assert "rot4: mathutils.Quaternion" in text
+    assert "axis: bpy_prop_array[float]" in text
+    assert "mat: mathutils.Matrix" in text
+
+
+def test_defaults() -> None:
+    from common.model import RnaProperty
+    from common.render import Renderer, literal_default
+
+    assert literal_default("0") == "0"
+    assert literal_default("'XYZ'") == "'XYZ'"
+    assert literal_default("Vector((0, 0, 0))") == "..."
+    p = RnaProperty(identifier="m", type="float", array=[2, 2], default=[1.0, 0.0, 0.0, 1.0])
+    assert Renderer.default_text(None, p) == "((1.0, 0.0), (0.0, 1.0))"  # type: ignore[arg-type]
