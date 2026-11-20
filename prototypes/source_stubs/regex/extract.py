@@ -55,7 +55,8 @@ def run_areas(tree: Tree, model: SourceModel, areas: list[str]) -> None:
             elif area == "pyapi":
                 from pyapi import extract_pyapi
 
-                extract_pyapi(tree, model, extra)
+                warnings = extract_pyapi(tree, model, extra)
+                model.coverage.warnings += [f"pyapi: {w}" for w in warnings[:80]]
             elif area == "context":
                 from context import extract_context
 
