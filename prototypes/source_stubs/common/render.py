@@ -252,13 +252,18 @@ class Renderer:
                 for n in p.array:
                     total *= n
                 dims_ok = len(p.array) <= 1 or (len(p.array) == 2 and p.subtype == "matrix")
-                if dims_ok and total in by_length:
-                    return self.ref(by_length[total], current)
-                if p.dynamic_array and p.subtype == "matrix":
-                    return self.ref("mathutils.Matrix", current)
+                cls = by_length.get(total) if dims_ok else None
+                if cls is None and p.dynamic_array and p.subtype == "matrix":
+                    cls = "mathutils.Matrix"
+                if cls:
+                    text = self.ref(cls, current)
+                    if param:  # pyrna_py_to_array takes any sequence of the right length
+                        nested = "Sequence[Sequence[float]]" if cls == "mathutils.Matrix" else "Sequence[float]"
+                        text = f"{text} | {nested}"
+                    return text
             text = SCALAR[t]
             for _ in p.array or [0]:
-                text = f"{self.ref('bpy.types.bpy_prop_array', current)}[{text}]"
+                text = f"Sequence[{text}]" if param else f"{self.ref('bpy.types.bpy_prop_array', current)}[{text}]"
             return text
         if t == "string":
             return "str"

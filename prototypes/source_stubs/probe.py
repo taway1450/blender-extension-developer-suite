@@ -14,7 +14,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "scripts"))
-from _resources import guarded  # noqa: E402
+from _resources import guarded
 
 TOOLS = ("regex", "libclang", "makesrna")
 PYTHON = ["uv", "run", "--no-project", "--python", "3.13"]

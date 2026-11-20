@@ -80,6 +80,13 @@ def annotation(node: ast.AST) -> str:
     return "?"
 
 
+def operator_class_call(node: ast.ClassDef) -> ast.FunctionDef | None:
+    """The ``__new__`` of a fake-bpy-module operator class (``class add(bpy.ops._BPyOpsSubModOp)``)."""
+    if not any(ast.unparse(base).endswith("_BPyOpsSubModOp") for base in node.bases):
+        return None
+    return next((i for i in node.body if isinstance(i, ast.FunctionDef) and i.name == "__new__"), None)
+
+
 def read_stubs(root: Path) -> dict[str, dict[str, dict[str, str]]]:
     """``module -> class -> member -> annotation`` (module level under class ``""``)."""
     modules: dict[str, dict[str, dict[str, str]]] = {}
@@ -92,7 +99,10 @@ def read_stubs(root: Path) -> dict[str, dict[str, dict[str, str]]]:
             continue
         classes: dict[str, dict[str, str]] = {"": {}}
         for node in tree.body:
-            if isinstance(node, ast.ClassDef):
+            if isinstance(node, ast.ClassDef) and (call := operator_class_call(node)):
+                # fake-bpy-module writes each operator as a class whose ``__new__`` is the call.
+                classes[""].setdefault(node.name, annotation(call))
+            elif isinstance(node, ast.ClassDef):
                 members = classes.setdefault(node.name, {})
                 for item in node.body:
                     if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
@@ -118,7 +128,9 @@ def type_aliases(root: Path) -> dict[str, str]:
         except (SyntaxError, UnicodeDecodeError):
             continue
         for node in tree.body:
-            if isinstance(node, ast.AnnAssign) and node.value and ast.unparse(node.annotation).endswith("TypeAlias"):
+            if isinstance(node, ast.TypeAlias):  # ``type X = Literal[...]`` (fake-bpy-module)
+                aliases[node.name.id] = ast.unparse(node.value)
+            elif isinstance(node, ast.AnnAssign) and node.value and ast.unparse(node.annotation).endswith("TypeAlias"):
                 aliases[ast.unparse(node.target)] = ast.unparse(node.value)
             elif (
                 isinstance(node, ast.Assign)
@@ -135,12 +147,14 @@ def expand_aliases(modules: dict[str, dict[str, dict[str, str]]], aliases: dict[
     if not aliases:
         return
     pattern = re.compile(
-        r"\b(?:_rna_enums\.)?(" + "|".join(map(re.escape, sorted(aliases, key=len, reverse=True))) + r")\b"
+        r"\b(?:[\w.]+\.)?(" + "|".join(map(re.escape, sorted(aliases, key=len, reverse=True))) + r")\b"
     )
     for classes in modules.values():
         for members in classes.values():
             for name, text in members.items():
-                members[name] = pattern.sub(lambda m: aliases[m.group(1)], text)
+                text = pattern.sub(lambda m: aliases[m.group(1)], text)
+                # ``Literal[Alias]`` with the alias itself a ``Literal[...]`` (fake-bpy-module)
+                members[name] = re.sub(r"(?:typing\.)?Literal\[\s*((?:typing\.)?Literal\[[^\[\]]*\])\s*\]", r"\1", text)
 
 
 _QUALIFIER = re.compile(

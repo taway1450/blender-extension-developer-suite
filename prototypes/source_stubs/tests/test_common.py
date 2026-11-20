@@ -164,3 +164,60 @@ def test_enum_aliases_are_spelled_out(tmp_path: Path) -> None:
     modules = {"bpy.types": {"T": {"p": "_rna_enums.rna_enum_x_items", "q": "set[rna_enum_x_items]"}}}
     expand_aliases(modules, type_aliases(tmp_path))
     assert modules["bpy.types"]["T"] == {"p": "Literal['A', 'B']", "q": "set[Literal['A', 'B']]"}
+
+
+def test_read_stubs_reads_fake_bpy_operator_classes_as_functions(tmp_path: Path) -> None:
+    (tmp_path / "bpy-stubs" / "ops" / "mesh").mkdir(parents=True)
+    (tmp_path / "bpy-stubs" / "ops" / "mesh" / "__init__.pyi").write_text(
+        "import bpy\n"
+        "class beautify_fill(bpy.ops._BPyOpsSubModOp):\n"
+        "    def __new__(cls, execution_context: int | str | None = None, undo: bool | None = None, /, *,"
+        " angle_limit: float | None = 3.14) -> set[str]: ...\n"
+    )
+    stubs = read_stubs(tmp_path)
+    assert "beautify_fill" not in stubs["bpy.ops.mesh"]
+    assert stubs["bpy.ops.mesh"][""]["beautify_fill"].startswith("(execution_context:")
+
+
+def test_fake_bpy_type_statement_aliases(tmp_path: Path) -> None:
+    (tmp_path / "rna_enums.pyi").write_text("import typing\ntype OperatorReturnItems = typing.Literal['A', 'B']\n")
+    modules = {"bpy.ops.x": {"": {"op": "() -> set[typing.Literal[bpy.stub_internal.rna_enums.OperatorReturnItems]]"}}}
+    expand_aliases(modules, type_aliases(tmp_path))
+    assert modules["bpy.ops.x"][""]["op"] == "() -> set[typing.Literal['A', 'B']]"
+
+
+def test_array_arguments_take_sequences() -> None:
+    from common.model import RnaFunction, RnaProperty, RnaStruct, SourceModel
+
+    f = RnaFunction(identifier="f")
+    f.parameters = [
+        RnaProperty(identifier="loc", type="float", subtype="translation", array=[3], parameter_flags=["required"]),
+        RnaProperty(identifier="m", type="float", subtype="matrix", array=[4, 4], parameter_flags=["required"]),
+        RnaProperty(identifier="flags", type="boolean", array=[4], parameter_flags=["required"]),
+    ]
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.structs.append(RnaStruct(identifier="Thing", functions=[f]))
+    text = rendered_types(model)
+    assert (
+        "def f(self, loc: mathutils.Vector | Sequence[float], m: mathutils.Matrix | Sequence[Sequence[float]],"
+        " flags: Sequence[bool]) -> None: ..." in text
+    )
+
+
+def test_entry_points_import() -> None:
+    """Each reader's ``run.py`` and the probe import (a linter once dropped an import one of them needed)."""
+    import importlib.util
+
+    import pytest
+
+    root = Path(__file__).resolve().parents[1]
+    scripts = [root / "probe.py", root / "regex" / "run.py", root / "makesrna" / "run.py"]
+    if importlib.util.find_spec("clang") is not None:
+        scripts.append(root / "libclang" / "run.py")
+    for path in scripts:
+        spec = importlib.util.spec_from_file_location(f"_entry_{path.parent.name}", path)
+        module = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(module)
+        except ImportError as ex:
+            pytest.fail(f"{path.relative_to(root)}: {ex}")

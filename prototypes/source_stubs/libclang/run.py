@@ -19,8 +19,11 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
-from common.driver import CACHE_DIR, default_jobs, main
+from _resources import default_jobs
+
+from common.driver import CACHE_DIR, main
 from common.model import SourceModel
 from libclang.bmesh import read_bmesh
 from libclang.context import Context
