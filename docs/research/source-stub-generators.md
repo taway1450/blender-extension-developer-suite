@@ -220,9 +220,13 @@ RNA has no flag for whether a function's pointer return can be NULL, so the answ
 `libclang/returns.py` reads it:
 
 1. **Parse the runtime halves.** The C implementations sit behind `#ifdef RNA_RUNTIME`, which the define-time parse
-   leaves out. Each `rna_*.cc` is parsed a second time with `-DRNA_RUNTIME` (109 units, 3 minutes cold).
+   leaves out. Each `rna_*.cc` is parsed a second time the way Blender compiles it: with the flags of its generated
+   `rna_*_gen.cc` unit (target `bf_rna`, `-DRNA_RUNTIME`, the full include paths, `RNA_prototypes.hh` included
+   first) and no error limit (108 units, 3 minutes cold).
 2. **Follow the callees.** Calls without a parsed body are looked up in a text index of definitions under
-   `source/blender`, and their files are parsed, three rounds deep (118 more units, 3 minutes cold).
+   `source/blender` (sources and headers, class bodies included), and their files are parsed, four rounds deep (156
+   more units, 3.5 minutes cold). Inline functions, function templates and class template methods in headers are
+   lowered too.
 3. **Walk each return.** A small path-sensitive walk over the lowered AST classifies every `return`. Calls are
    followed with each argument's nullness bound to the callee's parameter, so `get(ob) { if (!ob) return nullptr; ...
    }` called with the never-null `self` gives `never`.
@@ -236,31 +240,42 @@ RNA has no flag for whether a function's pointer return can be NULL, so the answ
      `pyrna_func_call` turns such reports into a `RuntimeError` (`BPy_reports_to_error`), so the NULL never reaches
      Python.
    - `unknown`: a callee without a body, a call through a pointer, or a field read never checked.
+4. **Remember conditions.** Each condition the path took is a fact (`supported(ob)` held, `ob->type == OB_MESH` did
+   not), keyed by its canonical form, with locals standing for their initializer until assigned. A test the path
+   already decided takes only its feasible side. Facts naming only a callee's arguments follow the call into it, and
+   what holds on every true (false) return of a callee holds after the caller tests it. Loops forget what their body
+   assigns.
 
-Results for 5.2 (1,389 RNA functions with a pointer return; distinct C functions in brackets):
+Results for 5.2 (1,389 RNA functions with a pointer return):
 
 | Verdict | Functions | Stub | Examples |
 |---|---|---|---|
-| never | 91 (91) | `X` | `BlendDataMeshes.new` (the ID is dereferenced right after allocation), `UILayout.row`, `CurveSplines.new` (`MEM_new`), `KeyMap.active` (falls back to `self`) |
-| raises | 36 (35) | `X` | `ActionChannelbagFCurves.new` / `ensure`, `BlendDataObjects.new`, `Nodes.new`, `KeyMaps.new` |
-| null | 1,206 (84) | `X \| None` | lookups (`FCurves.find`, `KeyMaps.find_match`, `Strip.strip_elem_from_frame`); `PaletteColors.new` (not editable, no report); `AssetTags.new` (only a warning); `NodeLinks.new` (sockets from another tree); `ID.copy`; 1,120 are `input_template` / `output_template` on every node type, which return an empty pointer past the last template |
-| unknown | 56 (35) | `X \| None` | callees in headers or in unparsed files (`DEG_get_evaluated`, `GreasePencilLayer::frame_at`) |
+| never | 93 | `X` | `BlendDataMeshes.new` (the ID is dereferenced right after allocation), `UILayout.row`, `CurveSplines.new` (`MEM_new`), `KeyMap.active` (falls back to `self`) |
+| raises | 41 | `X` | `ActionChannelbagFCurves.new` / `ensure`, `BlendDataObjects.new`, `Nodes.new`, `KeyMaps.new`, `Object.shape_key_add`, `Window.event_simulate` (the callee re-tests the flag the caller reported on) |
+| null | 1,209 | `X \| None` | lookups (`FCurves.find`, `KeyMaps.find_match`, `Strip.strip_elem_from_frame`); `PaletteColors.new` (not editable, no report); `AssetTags.new` (only a warning); `NodeLinks.new` (sockets from another tree); `ID.copy`; 1,120 are `input_template` / `output_template` on every node type, which return an empty pointer past the last template |
+| unknown | 46 | `X \| None` | 22 with no C function in the facts (Python callbacks such as `AssetShelf.get_active_asset`, and node socket item collections whose function name the define-time reader does not resolve), `GreasePencilLayer::frame_at`, `ID.evaluated_get` (reads a depsgraph field) |
 
-Effect on the comparison: libclang's return nullability differs from builtin's on 1,243 members, down from
-1,355. Its overall agreement with builtin rises to 81%, and its return differences with fake-bpy drop from 77 to 24.
+Effect on the comparison: libclang's return nullability differs from builtin's on 1,239 members, down from
+1,355. Its overall agreement with builtin rises to 81%, and its return differences with fake-bpy drop from 77 to 23.
+
+Of the three fixes to the first version: parsing the runtime units as `bf_rna` does, keeping recovered calls and
+lowering headers settled 12 functions. Nine of those were `unknown`; the other three were a wrong `never` (`ID.evaluated_get`,
+where `return DEG_get_evaluated(depsgraph, id)` had been read as `return id`). Path facts settled one more
+(`Window.event_simulate`). The define-time facts did not change.
 The remaining differences with builtin are almost all real NULL returns that builtin types as non-null.
 
 Limits:
 
-- **Path correlation.** A NULL path the caller has already ruled out still counts.
-  - `VertexGroups.new` checks support before calling `BKE_object_defgroup_add_name`, which checks it again.
-  - `BKE_attribute_new` ends in `(index == -1) ? nullptr : ...` right after adding that layer.
-- **Lowering losses.** In units with clang errors (the shims), a dependent template call can become a recovery
-  expression. The lowering keeps only its last argument (`add_item_with_name<A>(*node, name)` becomes `name`). The
-  walk distrusts a local or return whose pointer type differs from the declared one. A same-type case
-  (`return DEG_get_evaluated(depsgraph, id)` read as `return id`) still slips through. Lowering such calls as calls
-  needs a `LOWER_VERSION` bump, which re-parses everything.
-- **Header functions.** Inline functions and templates in headers are not lowered, so their callers are `unknown`.
+- **Invariants the code does not state.** `VertexGroups.new` checks `BKE_id_supports_vertex_groups(ob->data)`, then
+  calls `BKE_object_defgroup_add_name`, which returns NULL unless `OB_TYPE_SUPPORT_VGROUP(ob->type)`. Both test the
+  same thing only because an object's type always matches its data's ID type, which no line of code asserts.
+  `BKE_attribute_new` ends in `(index == -1) ? nullptr : ...` right after `BM_data_layer_add_named` added that
+  layer: the NULL is ruled out by what the callee did, not by a condition. Both stay `null`.
+- **Fields are not invalidated by calls.** A fact about `ob->type` survives a call that could change it. RNA
+  functions do not do this, but the walk would not notice one that did.
+- **Missing C functions and bodies.** 22 functions have no C function in the define-time facts: registerable
+  callbacks implemented in Python, and the node socket item `new` functions, whose name the reader does not resolve.
+  About ten more end in a callee with no parsed body (`GreasePencilLayer::frame_at`, `RE_engine_begin_result`).
 
 ## 6. Hand tables checked against the facts
 
