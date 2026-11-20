@@ -683,6 +683,20 @@ class Tree:
         self._reach: dict[str, list[str]] = {}
         self._const_cache: dict[str, dict[str, int | float]] = {}
         self._macro_cache: dict[str, dict[str, Macro]] = {}
+        # Constants of every DNA header and of the RNA/WM type headers, for files that include them only in
+        # regions the preprocessor-lite dropped (``#ifdef RNA_RUNTIME``).
+        self.global_consts: dict[str, int | float] = {}
+
+    def load_global_constants(self) -> None:
+        for pattern in ("source/blender/makesdna/DNA_*.h", "source/blender/makesrna/RNA_types.hh",
+                        "source/blender/windowmanager/WM_types.hh", "source/blender/editors/include/*.hh",
+                        "source/blender/blenkernel/BKE_*.hh"):
+            for rel in self.glob(pattern):
+                try:
+                    for k, v in self._own_constants(self.header(rel)).items():
+                        self.global_consts.setdefault(k, v)
+                except OSError:
+                    continue
 
     def rel(self, path: Path) -> str:
         return path.relative_to(self.root).as_posix()
@@ -804,6 +818,9 @@ class Tree:
             h = self.header(r)
             table.update(self._own_constants(h))
         table.update(self._own_constants(f))
+        from collections import ChainMap
+
+        table = ChainMap(table, self.global_consts)  # type: ignore[assignment]
         self._const_cache[f.rel] = table
         return table
 

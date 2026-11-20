@@ -583,7 +583,16 @@ def make_handlers(b: RnaBuilder) -> dict[str, Any]:
 
         def h(ip: Interp, vals: list[Any], toks: Any, pos: int) -> Any:
             by = {names[k]: vals[k] for k in range(min(len(names), len(vals)))}
-            p = b.new_prop(ip, arg(vals, 0), by.get("identifier"), spec.type, spec.subtype, pos)
+            subtype = spec.subtype
+            m = re.match(r"^\(?\s*(\w+)\s*(>=|<=|==|>|<)\s*(\d+)\s*\)?\s*\?\s*(\w+)\s*:\s*(\w+)$", subtype)
+            if m:  # ``(len >= 3) ? PROP_EULER : PROP_ANGLE``
+                n = ip.number(by.get(m.group(1)))
+                if isinstance(n, (int, float)):
+                    ok = eval(f"{n} {m.group(2)} {m.group(3)}")  # noqa: S307 - digits and a comparison
+                    subtype = m.group(4) if ok else m.group(5)
+                else:
+                    subtype = m.group(4)
+            p = b.new_prop(ip, arg(vals, 0), by.get("identifier"), spec.type, subtype, pos)
             if spec.enum_flag:
                 p.enum_flag = True
                 if "enum_flag" not in p.flags:

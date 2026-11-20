@@ -32,6 +32,7 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     from extract import run_areas
 
     tree = Tree(source)
+    tree.load_global_constants()
     areas = [a.strip() for a in args.areas.split(",") if a.strip()]
     run_areas(tree, model, areas)
 
