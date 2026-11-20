@@ -130,6 +130,12 @@ class Function:
     ret: str = ""
     unit_errors: int = 0  # clang errors in the unit it was lowered from
 
+    @property
+    def lossy(self) -> bool:
+        """Whether the lowering may have lost a call, reading it as one of its arguments: in a unit with clang
+        errors, or in a template, whose dependent calls clang leaves unresolved."""
+        return bool(self.unit_errors) or "@FT@" in self.usr or "@ST>" in self.usr
+
 
 Intrinsic = Callable[["Interp", list, list, list], Any]
 
@@ -159,7 +165,7 @@ class Program:
                     f["line"],
                     f.get("static", False),
                     f.get("ret", ""),
-                    max(unit.get("errors", 0), 0),
+                    abs(unit.get("errors", 0)),  # -1: the unit failed to parse
                 )
                 self.functions[fn.usr] = fn
                 self.by_name.setdefault(fn.name, []).append(fn)

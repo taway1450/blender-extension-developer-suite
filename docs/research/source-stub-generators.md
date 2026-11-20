@@ -249,7 +249,7 @@ RNA has no flag for whether a function's pointer return can be NULL, so the answ
    what holds on every true (false) return of a callee holds after the caller tests it. Loops forget what their body
    assigns.
 
-With the codegen build, 1 of 1,072 parsed units has a clang error (a signedness warning `string_utf8.cc` turns
+With the codegen build, 1 of the 1,072 parsed units (define-time, runtime and the callees' units) has a clang error (a signedness warning `string_utf8.cc` turns
 into an error itself), down from 69 of 1,097 on the partial `lite` build with a declaration shim. A cold run
 parses for about 24 minutes, with 2 processes.
 
@@ -270,14 +270,16 @@ lowering headers settled 12 functions. Nine of those were `unknown`; the other t
 where `return DEG_get_evaluated(depsgraph, id)` had been read as `return id`). Path facts settled one more
 (`Window.event_simulate`). The define-time facts did not change. The codegen build settled ten more: eight XR
 functions, and two returns the type guard against lost calls had distrusted (the guard now applies only to units
-with clang errors). It also adds what the full configuration compiles: 12 operators, 348 operator properties, 25
+with clang errors and to templates, whose dependent calls clang leaves unresolved). It also adds what the full configuration compiles: 12 operators, 348 operator properties, 25
 RNA properties and 22 Python module functions.
 The remaining differences with builtin are almost all real NULL returns that builtin types as non-null.
 
 Cross-checks (`libclang/crosscheck.py`, written to `crosscheck.md`), on the same generated units:
 
 - **LLVM** (`clang -O1 -fno-inline -emit-llvm`): LLVM's attribute inference marks a raw pointer return `nonnull`
-  only when it proves it within the unit. It marked 10 functions, all classified `never`. It cannot read a
+  only when it proves it within the unit, or marks the argument it returns `returned` (counted when that argument
+  is never NULL). `-fno-inline` keeps the static RNA functions from being inlined into the generated wrappers,
+  which would leave no definition to read. It marked 10 functions, all classified `never`. It cannot read a
   `PointerRNA` returned by value.
 - **Clang Static Analyzer**: a probe calls each RNA function with its never-null arguments and dereferences the
   result; error reports end the path. It found a NULL path in 13 functions classified `null`, confirming them, and
@@ -288,7 +290,7 @@ Cross-checks (`libclang/crosscheck.py`, written to `crosscheck.md`), on the same
   11 came from the probe itself, because the analyzer never inlines the variadic `BKE_reportf`, so its reports are
   modelled as macros now. The 12th was `GreasePencilv3Layers.new`.
 
-Both tools see one unit, so callees elsewhere are opaque to them: they confirm or question a verdict, they do not
+Only functions with a parsed C body are checked (the 22 `unknown` ones with no C function are not). Both tools see one unit, so callees elsewhere are opaque to them: they confirm or question a verdict, they do not
 replace the walk.
 
 Limits:

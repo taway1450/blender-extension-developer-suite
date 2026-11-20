@@ -229,6 +229,25 @@ def test_a_value_of_another_pointer_type_is_unknown_in_a_unit_with_errors() -> N
     assert kinds(f, entry="rna_new", args=("never",), errors=1) == "unknown"
 
 
+def test_a_value_of_another_pointer_type_is_unknown_in_a_template() -> None:
+    """Clang leaves a template's dependent calls unresolved, errors or not."""
+    f = fn(
+        "rna_new",
+        [
+            ["decl", "item", "NodeEnumItem *", ["v", "name", "const char *", "char"], 1, "NodeEnumItem"],
+            ["ret", ["v", "item", "NodeEnumItem *", "NodeEnumItem"], 2],
+        ],
+        params=[["name", "const char *", "char"]],
+        usr="c:@N@blender@FT@>1#Trna_new#*1C#",
+    )
+    assert kinds(f, entry="rna_new", args=("never",)) == "unknown"
+
+
+def test_a_unit_that_failed_to_parse_counts_as_one_with_errors() -> None:
+    f = fn("rna_new", [["ret", ["v", "name", "const char *", "char"], 1]], params=[["name", "const char *", "char"]])
+    assert kinds(f, entry="rna_new", args=("never",), errors=-1) == "unknown"
+
+
 def test_a_derived_pointer_returned_as_its_base_keeps_its_value() -> None:
     """``Layer *layer = &add_layer(); return layer;`` from a ``GreasePencilLayer *`` function (``Layer`` derives from
     ``GreasePencilLayer``): in a unit without errors a different pointer type is an upcast, not a lost call."""

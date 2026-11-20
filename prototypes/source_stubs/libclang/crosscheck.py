@@ -30,19 +30,35 @@ import json
 import re
 import shlex
 import subprocess
-from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from dataclasses import dataclass, field
 from pathlib import Path
 
+from libclang.returns import NEVER, NULL, RAISES, UNKNOWN, rna_arguments
+
 CLANG = "/usr/bin/clang++"
-CROSSCHECK_VERSION = 3
+CROSSCHECK_VERSION = 4
+POINTER, POINTER_RNA = "pointer", "PointerRNA"  # how a C function returns: a raw pointer, or a PointerRNA by value
 
 
 @dataclass(frozen=True)
 class Probe:
     qual: str  # the C function, qualified (``blender::rna_Palette_color_new``)
     mask: int  # bit i: argument i is never NULL
-    kind: str  # "pointer" or "PointerRNA"
+    kind: str  # POINTER or POINTER_RNA
+
+    @property
+    def name(self) -> str:
+        return self.qual.split("::")[-1]
+
+
+@dataclass
+class CheckUnit:
+    """One generated unit to check: its compile entry, a probe per C function, the sources it compiles."""
+
+    entry: dict
+    probes: list[Probe] = field(default_factory=list)
+    sources: list[Path] = field(default_factory=list)
 
 
 # Before the unit: an error report ends the path (it raises in Python: pyrna_func_call -> BPy_reports_to_error).
@@ -97,27 +113,28 @@ def probe_source(gen: str, probes: list[Probe]) -> tuple[str, dict[int, int]]:
     at: dict[int, int] = {}
     for i, p in enumerate(probes):
         call = f"source_stubs_probe::call<{p.mask}ull>(&{p.qual})"
-        target = f"{call}.data" if p.kind == "PointerRNA" else call
+        target = f"{call}.data" if p.kind == POINTER_RNA else call
         lines.append(f"void source_stubs_probe_{i}() {{ (void)*(volatile const char *)({target}); }}")
         at[len(lines)] = i
     return "\n".join(lines) + "\n", at
 
 
-def nonnull_returns(ll: str, names: list[str]) -> dict[str, bool]:
-    """For each name defined in the IR with a pointer return: whether LLVM marked the return ``nonnull``. In a
-    mangled symbol the name follows its length (``L17rna_Curve_spl_new``), which delimits it."""
-    out: dict[str, bool] = {}
+def nonnull_returns(ll: str, names: list[str]) -> dict[str, tuple[bool, int | None]]:
+    """For each name defined in the IR with a pointer return: whether LLVM marked the return ``nonnull``, and which
+    argument it marked ``returned`` (the function returns that argument), if any.
+
+    In a mangled symbol the name follows its length (``L17rna_Curve_spl_new``), which delimits it. Entities local to
+    a function (``_ZZ...``: its lambdas, its statics) carry the function's name too and are skipped."""
+    out: dict[str, tuple[bool, int | None]] = {}
     wanted = {n: re.compile(rf"(?<![0-9]){len(n)}{re.escape(n)}|^{re.escape(n)}$") for n in names}
     for line in ll.splitlines():
-        if not line.startswith("define "):
+        m = re.match(r"define (.*?)@([\w.$]+)\((.*)\)", line)
+        if not m or not re.search(r"\bptr\s*$", m[1]) or m[2].startswith("_ZZ"):
             continue
-        m = re.match(r"define (.*?)@([\w.$]+)\(", line)
-        if not m or not re.search(r"\bptr\s*$", m[1]):
-            continue
-        symbol = m[2]
+        returned = next((k for k, param in enumerate(m[3].split(", ")) if " returned " in f" {param} "), None)
         for n, pat in wanted.items():
-            if pat.search(symbol):
-                out[n] = "nonnull" in m[1].split()
+            if n not in out and pat.search(m[2]):
+                out[n] = ("nonnull" in m[1].split(), returned)
     return out
 
 
@@ -142,9 +159,9 @@ def disagreements(rows: list[tuple[str, str, bool | None, bool | None]]) -> list
     """``(function, verdict, llvm nonnull, analyzer witness)`` rows -> the findings that contradict the verdict."""
     out = []
     for name, verdict, llvm, csa in rows:
-        if llvm and verdict in ("null", "unknown"):
+        if llvm and verdict in (NULL, UNKNOWN):
             out.append((name, f"LLVM proves the return non-null; classified {verdict}"))
-        if csa and verdict in ("never", "raises"):
+        if csa and verdict in (NEVER, RAISES):
             out.append((name, f"the analyzer found a path to a NULL return; classified {verdict}"))
     return out
 
@@ -161,10 +178,10 @@ def _command(entry: dict) -> list[str]:
         if skip:
             skip = False
             continue
-        if a in ("-o", "-c", "-MF", "-MT", "-MQ"):
+        if a in ("-o", "-MF", "-MT", "-MQ"):
             skip = True
             continue
-        if a == entry["file"] or a.startswith(("-O", "-g")) or a in ("-MD", "-MMD"):
+        if a == entry["file"] or a.startswith(("-O", "-g")) or a in ("-c", "-MD", "-MMD"):
             continue
         out.append(a)
     return out
@@ -181,7 +198,7 @@ def _first_errors(stderr: str) -> str:
     return " | ".join(errors[:3])[:600] or stderr.strip()[-300:]
 
 
-def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -> dict:
+def _check_unit(entry: dict, probes: list[Probe], work: str) -> dict:
     gen = entry["file"]
     stem = Path(gen).stem
     base = _command(entry)
@@ -194,8 +211,13 @@ def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -
         text=True,
     )
     if proc.returncode == 0:
-        result["llvm"] = nonnull_returns(ll.read_text(errors="replace"), names)
+        found = nonnull_returns(ll.read_text(errors="replace"), [p.name for p in probes])
         ll.unlink()
+        for p in probes:
+            if p.name in found:
+                nonnull, returned = found[p.name]
+                # Returning an argument the caller guarantees non-null is a non-null return too (``return self``).
+                result["llvm"][p.qual] = nonnull or (returned is not None and bool(p.mask >> returned & 1))
     else:
         result["errors"].append(f"llvm: {_first_errors(proc.stderr)}")
     # A probe that does not compile (a C function whose name is overloaded) is dropped, and the unit runs again.
@@ -218,6 +240,7 @@ def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -
             result["csa"] = sorted(probes[i].qual for i in witnesses(sarif.read_text(), at, probe.name))
             result["probed"] = [p.qual for p in probes]
             sarif.unlink()
+            probe.unlink()
             break
         bad = failed_probes(proc.stderr, probe.name, at)
         if not bad:
@@ -230,16 +253,18 @@ def _check_unit(entry: dict, names: list[str], probes: list[Probe], work: str) -
     return result
 
 
-def run(units: list[tuple[dict, list[str], list[Probe], list[Path]]], cache: Path, jobs: int, log=print) -> list[dict]:
-    """Check each ``(compile entry, C function names, probes, source files)``; cached per unit and content."""
+def run(units: list[CheckUnit], cache: Path, jobs: int, log=print) -> list[dict]:
+    """Check each unit, cached per its compile command, probes and the content of the files it compiles (the
+    headers they include are not part of the key)."""
     cache.mkdir(parents=True, exist_ok=True)
     results: list[dict | None] = []
     todo = []
-    for i, (entry, names, probes, sources) in enumerate(units):
-        h = hashlib.sha1(f"{CROSSCHECK_VERSION}\0{entry.get('command')}\0{names}\0{probes}".encode())
-        for f in [Path(entry["file"]), *sources]:
+    for i, unit in enumerate(units):
+        command = json.dumps(unit.entry.get("command") or unit.entry.get("arguments"))
+        h = hashlib.sha1(f"{CROSSCHECK_VERSION}\0{CLANG}\0{command}\0{unit.probes}".encode())
+        for f in [Path(unit.entry["file"]), *unit.sources]:
             h.update(f.read_bytes() if f.exists() else b"")
-        out = cache / f"{Path(entry['file']).stem}-{h.hexdigest()[:20]}.json.gz"
+        out = cache / f"{Path(unit.entry['file']).stem}-{h.hexdigest()[:20]}.json.gz"
         if out.exists():
             results.append(json.loads(gzip.decompress(out.read_bytes())))
         else:
@@ -249,13 +274,15 @@ def run(units: list[tuple[dict, list[str], list[Probe], list[Path]]], cache: Pat
     work = cache / "work"
     work.mkdir(exist_ok=True)
     with ProcessPoolExecutor(max_workers=jobs) as pool:
-        futures = {
-            pool.submit(_check_unit, units[i][0], units[i][1], units[i][2], str(work)): (i, out) for i, out in todo
-        }
-        for done, fut in enumerate(futures, 1):
+        futures = {pool.submit(_check_unit, units[i].entry, units[i].probes, str(work)): (i, out) for i, out in todo}
+        for done, fut in enumerate(as_completed(futures), 1):
             i, out = futures[fut]
-            res = fut.result()
-            out.write_bytes(gzip.compress(json.dumps(res).encode()))
+            try:
+                res = fut.result()
+            except Exception as exc:  # one unit failing is a finding, not the end of the run
+                res = {"unit": units[i].entry["file"], "llvm": {}, "csa": [], "probed": [], "errors": [repr(exc)]}
+            else:
+                out.write_bytes(gzip.compress(json.dumps(res).encode()))
             results[i] = res
             if done % 10 == 0 or done == len(todo):
                 log(f"  checked {done}/{len(todo)}")
@@ -266,43 +293,42 @@ def run(units: list[tuple[dict, list[str], list[Probe], list[Path]]], cache: Pat
 # Driving it over the classified RNA functions
 
 
-def plan(model, program, compile_commands: Path, source: Path) -> list[tuple[dict, list[str], list[Probe], list[Path]]]:
-    """Group the classified RNA functions by the generated unit that compiles their C function."""
-    from libclang.returns import NEVER, rna_arguments
-
-    by_file = {e["file"]: e for e in json.loads(compile_commands.read_text())}
-    gen_dir = compile_commands.parent / "source/blender/makesrna/intern"
-    units: dict[str, tuple[dict, list[str], list[Probe], list[Path]]] = {}
+def classified(model, program):
+    """``(struct, function, C function)`` for every RNA function the classifier gave a verdict with a C body."""
     for s in model.structs:
         for f in s.functions:
-            if not f.returns_null or not f.c_function:
-                continue
-            fn = program.function(f.c_function, "")
-            if fn is None or "/makesrna/intern/rna_" not in fn.file:
-                continue
-            stem = Path(fn.file).stem.removesuffix("_api")
-            gen = gen_dir / f"{stem}_gen.cc"
-            entry = by_file.get(str(gen))
-            if entry is None or not gen.exists():
-                continue
-            if str(gen) not in units:
-                halves = [source / Path(fn.file).with_name(f"{stem}{x}.cc") for x in ("", "_api")]
-                units[str(gen)] = (entry, [], [], halves)
-            _entry, names, probes, _halves = units[str(gen)]
-            if fn.name in names:
-                continue
-            names.append(fn.name)
-            kind = "pointer" if fn.ret.rstrip().endswith("*") else "PointerRNA" if "PointerRNA" in fn.ret else ""
-            if kind:
-                args = rna_arguments(f, fn.params)
-                mask = sum(1 << i for i, a in enumerate(args) if a == NEVER)
-                probes.append(Probe(fn.qual, mask, kind))
+            fn = program.function(f.c_function, "") if f.returns_null and f.c_function else None
+            if fn is not None:
+                yield s, f, fn
+
+
+def plan(model, program, compile_commands: Path, source: Path) -> list[CheckUnit]:
+    """Group the classified RNA functions by the generated unit that compiles their C function."""
+    by_file = {e["file"]: e for e in json.loads(compile_commands.read_text())}
+    gen_dir = compile_commands.parent / "source/blender/makesrna/intern"
+    units: dict[str, CheckUnit] = {}
+    for _s, f, fn in classified(model, program):
+        if "/makesrna/intern/rna_" not in fn.file:
+            continue
+        stem = Path(fn.file).stem.removesuffix("_api")
+        gen = gen_dir / f"{stem}_gen.cc"
+        entry = by_file.get(str(gen))
+        kind = POINTER if fn.ret.rstrip().endswith("*") else POINTER_RNA if "PointerRNA" in fn.ret else ""
+        if entry is None or not gen.exists() or not kind:
+            continue
+        unit = units.setdefault(
+            str(gen), CheckUnit(entry, [], [source / Path(fn.file).with_name(f"{stem}{x}.cc") for x in ("", "_api")])
+        )
+        if any(p.qual == fn.qual for p in unit.probes):
+            continue
+        never_null = rna_arguments(f, fn.params)
+        unit.probes.append(Probe(fn.qual, sum(1 << i for i, a in enumerate(never_null) if a == NEVER), kind))
     return [units[k] for k in sorted(units)]
 
 
 def report(model, program, results: list[dict]) -> tuple[str, dict[str, int]]:
     """``crosscheck.md``, and its counts for the coverage table."""
-    llvm: dict[str, bool] = {}
+    llvm: dict[str, bool] = {}  # by qualified C function: static functions of the same name differ per unit
     csa: set[str] = set()
     checked: set[str] = set()
     errors = [(r["unit"], e) for r in results for e in r.get("errors", [])]
@@ -312,14 +338,9 @@ def report(model, program, results: list[dict]) -> tuple[str, dict[str, int]]:
         if not any(e.startswith("analyzer") for e in r.get("errors", [])):
             checked.update(r.get("probed", []))
     rows = []
-    for s in model.structs:
-        for f in s.functions:
-            fn = program.function(f.c_function, "") if f.returns_null and f.c_function else None
-            if fn is None:
-                continue
-            in_llvm = llvm.get(fn.name)
-            witness = fn.qual in csa if fn.qual in checked else None
-            rows.append((f"{s.identifier}.{f.identifier}", f.returns_null, in_llvm, witness, f.c_function))
+    for s, f, fn in classified(model, program):
+        witness = fn.qual in csa if fn.qual in checked else None
+        rows.append((f"{s.identifier}.{f.identifier}", f.returns_null, llvm.get(fn.qual), witness, f.c_function))
     found = disagreements([r[:4] for r in rows])
     counts = {
         "rna_returns_llvm_nonnull": sum(1 for r in rows if r[2]),
@@ -333,13 +354,14 @@ def report(model, program, results: list[dict]) -> tuple[str, dict[str, int]]:
         "",
         (
             "See `prototypes/source_stubs/libclang/crosscheck.py`. LLVM: `nonnull` inferred on the C function's "
-            "return (raw pointer returns only). Analyzer: a path to a NULL return that no error report ends."
+            "return (raw pointer returns only). Analyzer: a path to a NULL return that no error report ends. "
+            "Only RNA functions whose C body was parsed have a row."
         ),
         "",
         "| Verdict | Functions | LLVM checked | LLVM nonnull | Analyzer checked | Analyzer NULL path |",
         "|---|---|---|---|---|---|",
     ]
-    for kind in ("never", "raises", "null", "unknown"):
+    for kind in (NEVER, RAISES, NULL, UNKNOWN):
         mine = [r for r in rows if r[1] == kind]
         lines.append(
             f"| {kind} | {len(mine)} | {sum(r[2] is not None for r in mine)} | {sum(bool(r[2]) for r in mine)} "

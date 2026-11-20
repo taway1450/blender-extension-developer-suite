@@ -10,7 +10,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
-from libclang.crosscheck import Probe, disagreements, failed_probes, nonnull_returns, probe_source, witnesses
+from libclang.crosscheck import (
+    Probe,
+    _command,
+    disagreements,
+    failed_probes,
+    nonnull_returns,
+    probe_source,
+    witnesses,
+)
 
 LL = """
 define internal fastcc noundef nonnull ptr @_ZN7blenderL17rna_Curve_spl_newEPNS_5CurveE(ptr noundef %0) #0 {
@@ -23,10 +31,30 @@ define dso_local noundef nonnull ptr @rna_extern_c(ptr noundef %0) #0 {
 def test_llvm_nonnull_return_attributes_are_read_per_function() -> None:
     names = ["rna_Curve_spl_new", "rna_Palette_color_new", "rna_Object_shape_get", "rna_extern_c", "rna_absent"]
     assert nonnull_returns(LL, names) == {
-        "rna_Curve_spl_new": True,
-        "rna_Palette_color_new": False,
-        "rna_extern_c": True,
+        "rna_Curve_spl_new": (True, None),
+        "rna_Palette_color_new": (False, None),
+        "rna_extern_c": (True, None),
     }
+
+
+def test_the_argument_a_function_returns_is_read() -> None:
+    """``return self``: LLVM marks the parameter ``returned`` instead of the return ``nonnull``."""
+    ll = "define internal ptr @_ZN7blenderL7rna_getEPvS0_(ptr noundef %0, ptr noundef returned %1) {\n"
+    assert nonnull_returns(ll, ["rna_get"]) == {"rna_get": (False, 1)}
+
+
+def test_entities_local_to_a_function_are_not_the_function() -> None:
+    """A lambda inside ``rna_Curve_spl_new`` mangles as ``_ZZ...L17rna_Curve_spl_new...``."""
+    ll = (
+        "define internal nonnull ptr @_ZZN7blenderL17rna_Curve_spl_newEPNS_5CurveEENK3$_0clEv(ptr %0) {\n"
+        "define internal ptr @_ZN7blenderL17rna_Curve_spl_newEPNS_5CurveE(ptr %0) {\n"
+    )
+    assert nonnull_returns(ll, ["rna_Curve_spl_new"]) == {"rna_Curve_spl_new": (False, None)}
+
+
+def test_the_compile_command_keeps_what_follows_a_bare_dash_c() -> None:
+    entry = {"file": "/b/x.cc", "directory": "/b", "command": "/usr/bin/c++ -DX -c /b/x.cc -o x.o -I/inc -O2 -g"}
+    assert _command(entry)[1:] == ["-DX", "-I/inc"]
 
 
 def test_a_function_name_must_match_whole() -> None:

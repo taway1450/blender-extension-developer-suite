@@ -255,8 +255,13 @@ def generated_sources(targets: str, build_dir: Path) -> list[str]:
     out = []
     for line in targets.splitlines():
         path = Path(line.strip())
-        if path.suffix in GENERATED_SUFFIXES:
-            out.append(path.relative_to(build_dir).as_posix() if path.is_absolute() else path.as_posix())
+        if path.suffix not in GENERATED_SUFFIXES:
+            continue
+        if path.is_absolute():
+            if not path.is_relative_to(build_dir):
+                continue  # a file a custom command writes outside the build (none today): not a ninja target here
+            path = path.relative_to(build_dir)
+        out.append(path.as_posix())
     return sorted(out)
 
 

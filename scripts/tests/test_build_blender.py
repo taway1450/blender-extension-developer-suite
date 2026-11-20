@@ -109,6 +109,7 @@ def test_codegen_builds_only_the_generated_sources():
 /b/source/blender/compositor/shaders/x.glsl.tmp
 /b/release/Blender.tar.xz
 /b/CMakeFiles/generate_datamodels
+/elsewhere/written_outside.h
 """
     assert generated_sources(listing, build) == [
         "source/blender/datatoc/startup.blend.c",

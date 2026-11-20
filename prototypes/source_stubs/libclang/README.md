@@ -13,7 +13,7 @@ every call resolved to its declaration, constant expressions evaluated by clang 
    The build should be the full configuration with its code generation done (`blender:build --target codegen`,
    see `makesrna/run.py`): then the generated headers (`RNA_prototypes.hh`, `dna_type_offsets.h`) and the
    `rna_*_gen.cc` units exist, and every `#ifdef WITH_*` branch matches a release build. Without them a
-   declaration shim stands in for the generated headers (clang drops a whole call that names an undeclared
+   declaration shim, kept only as this fallback, stands in for the generated headers (clang drops a whole call that names an undeclared
    `RNA_Object`, so without it context members lose their types).
 3. **Lower** (`lower.py`, 2 processes, cached per unit in `.cache/source-stubs/5.2/libclang/cache/`): each function
    body and global initializer becomes a small JSON AST: calls carry the callee's USR (static helpers of the same
@@ -59,8 +59,8 @@ marked dynamic). Function pointers held in locals and lambda parameters are foll
 1,725 RNA structs, 10,005 properties, 3,004 functions; 2,148 operators with 5,315 properties; 255 Python types,
 59 modules, 250 module functions; 104 context members (60 typed); 515 node declarations with 2,490 sockets;
 83 bmesh operators. Every `bpy.types` class of Blender's builtin stubs is found except the 55 registered from
-Python (`*_UL_*`, `*_AST_*`, `*_FH_*`). With the full-configuration codegen build none of the 832 units has a clang
-error (on the earlier partial `lite` build with a declaration shim, 48 had 204). RNA pointer returns: 102 never,
+Python (`*_UL_*`, `*_AST_*`, `*_FH_*`). With the full-configuration codegen build none of the 832 define-time units
+has a clang error (on the earlier partial `lite` build with a declaration shim, 48 had 204). RNA pointer returns: 102 never,
 42 raises, 1,201 null, 44 unknown (`returns.md`); cross-checks in `crosscheck.md`.
 
 `--synthesize-flags` (every header directory except ones shadowing system headers, Blender's precompiled library
