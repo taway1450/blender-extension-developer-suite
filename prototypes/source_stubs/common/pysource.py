@@ -270,9 +270,20 @@ class StubWriter:
 
     def registrations(self) -> list[Registration]:
         regs = []
+        # ``bpy.types.X.y = PointerProperty(type=cls)`` inside a classmethod of class C means ``type=C``.
+        owner_class: dict[int, str] = {}
+        for cls_node in ast.walk(self.tree):
+            if isinstance(cls_node, ast.ClassDef):
+                for inner in ast.walk(cls_node):
+                    owner_class[id(inner)] = cls_node.name  # ast.walk reaches inner classes last
         for node in ast.walk(self.tree):
             if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
                 continue
+            enclosing = owner_class.get(id(node))
+            if enclosing:
+                for kw in node.value.keywords:
+                    if kw.arg == "type" and isinstance(kw.value, ast.Name) and kw.value.id == "cls":
+                        kw.value = ast.Name(id=enclosing, ctx=ast.Load())
             for target in node.targets:
                 if not isinstance(target, ast.Attribute):
                     continue
