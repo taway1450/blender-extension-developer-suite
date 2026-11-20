@@ -172,7 +172,9 @@ class FlagSource:
                     text = path.read_text(errors="replace")
                 except OSError:
                     continue
-                if "RNA_prototypes.hh" not in text:
+                # The makesrna files name RNA_X without including the header: their runtime halves are compiled
+                # through rna_*_gen.cc, which includes it first.
+                if "RNA_prototypes.hh" not in text and "/makesrna/" not in str(path):
                     continue
                 names.update(pat.findall(text))
                 if "/makesrna/" not in str(path):
@@ -187,20 +189,42 @@ class FlagSource:
             (self.shim / "dna_type_offsets.h").write_text("#pragma once\nenum eDNA_StructId { SDNA_TYPE_MAX };\n")
             self.missing_generated.append("dna_type_offsets.h")
 
+    def tail(self) -> list[str]:
+        # Clang's default error limit (20) is fatal: everything after it in the unit would be lost.
+        return ["-isystem", RESOURCE_INCLUDE, f"-I{self.shim}", "-Wno-everything", "-ferror-limit=0"]
+
+    def runtime_unit(self, file: Path) -> Unit:
+        """``rna_X.cc`` / ``rna_X_api.cc`` as bf_rna compiles them: through ``rna_X_gen.cc``, which defines
+        ``RNA_RUNTIME``, has the target's include paths and includes ``RNA_prototypes.hh`` before the file."""
+        stem = file.stem.removesuffix("_api")
+        gen = self.build_dir / "source/blender/makesrna/intern" / f"{stem}_gen.cc" if self.build_dir else None
+        unit = self.units.get(str(gen)) if gen else None
+        if unit is not None:
+            args = list(unit.args)
+        else:
+            args = [*self.unit_for(file).args, "-DRNA_RUNTIME"]
+        args += ["-include", "RNA_prototypes.hh", *self.tail()]
+        args += [f"-DSOURCE_STUBS_SHIM_{name.replace('.', '_')}" for name in self.missing_generated]
+        return Unit(str(file), args, [str(file)])
+
     def units_for(self, file: Path) -> list[Unit]:
-        tail = ["-isystem", RESOURCE_INCLUDE, f"-I{self.shim}", "-Wno-everything"]
+        tail = self.tail()
         alts = [Unit(u.path, [*u.args, *tail], list(u.files)) for u in self.alt_units.get(str(file), [])]
         return [self.unit_for(file), *alts]
 
     def unit_for(self, file: Path) -> Unit:
         key = str(file)
-        tail = ["-isystem", RESOURCE_INCLUDE, f"-I{self.shim}", "-Wno-everything"]
+        tail = self.tail()
         tail += [f"-DSOURCE_STUBS_SHIM_{name.replace('.', '_')}" for name in self.missing_generated]
         unit = self.units.get(key)
         if unit is not None:
             return Unit(unit.path, [*unit.args, *tail], list(unit.files))
         # Not built in this configuration: borrow a sibling's flags, else synthesize.
         args = self.by_dir.get(str(file.parent)) or self.by_dir.get(str(file.parent.parent))
+        if args is None:  # a header above its sources (DEG_depsgraph_query.hh over depsgraph/intern/)
+            below = sorted(d for d in self.by_dir if d.startswith(f"{file.parent}/"))
+            if below:
+                args = self.by_dir[below[0]]
         if args is None:
             args = self.synthesized_args()
         if not any(a == "-x" for a in args):

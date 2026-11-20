@@ -244,3 +244,31 @@ def test_a_null_the_callee_reported_raises_in_the_caller() -> None:
         ],
     )
     assert kinds(f, make, entry="rna_new") == "raises"
+
+
+def test_the_definition_index_reads_headers_and_skips_declarations(tmp_path: Path) -> None:
+    from libclang.returns import callee_files, definition_index
+
+    blender = tmp_path / "source/blender/deg"
+    blender.mkdir(parents=True)
+    (blender / "query.cc").write_text("ID *DEG_get_evaluated_id(const Depsgraph *g, ID *id)\n{\n  return id;\n}\n")
+    (blender / "DEG_query.hh").write_text(
+        "ID *DEG_get_evaluated_id(const Depsgraph *g, ID *id);\n"
+        "template<typename T> T *DEG_get_evaluated(const Depsgraph *g, T *id)\n{\n  return id;\n}\n"
+        "class Layer : public Base {\n public:\n  Frame *frame_at(int f) const;\n};\n"
+    )
+    index = definition_index(tmp_path)
+    assert callee_files({("", "DEG_get_evaluated_id")}, index) == {"source/blender/deg/query.cc"}
+    assert callee_files({("", "DEG_get_evaluated")}, index) == {"source/blender/deg/DEG_query.hh"}
+    # A method of a class without an out-of-class definition: the header that defines the class.
+    assert callee_files({("Layer", "frame_at")}, index) == {"source/blender/deg/DEG_query.hh"}
+
+
+def test_unresolved_calls_and_class_template_methods_resolve_by_name() -> None:
+    get = fn("get", [["ret", ["null"], 1]], params=[["x", "T *", ""]], usr="c:@FT@>1#Tget#*t0.0#S0_#")
+    first = fn("first", [["ret", ["null"], 1]], usr="c:@ST>1#T@Box@F@first#1")
+    caller = fn("rna_get", [["ret", ["c", None, "get", [v("x")], 1], 1]])
+    base = ["v", "box", "Box<Item> &", "Box"]
+    member = fn("rna_first", [["ret", ["mc", "first", base, [], 1, "first()", "Item"], 1]])
+    assert kinds(caller, get, entry="rna_get") == "null"
+    assert kinds(member, first, entry="rna_first") == "null"

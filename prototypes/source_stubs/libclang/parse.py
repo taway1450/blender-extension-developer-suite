@@ -103,15 +103,15 @@ def parse_all(
     cache: Path,
     jobs: int = 2,
     log=print,
-    extra_args: tuple[str, ...] = (),
+    units_for=None,
 ) -> list[dict]:
-    """Lower ``files`` (cached per unit and arguments); ``extra_args`` go after each unit's own (``-DRNA_RUNTIME``)."""
+    """Lower ``files`` (cached per unit and arguments); ``units_for`` picks each file's units (default:
+    ``flags.units_for``; ``flags.runtime_unit`` for the runtime halves of the makesrna files)."""
     cache.mkdir(parents=True, exist_ok=True)
     units: dict[str, Unit] = {}
     wanted: dict[str, set[str]] = {}
     for f in files:
-        for i, unit in enumerate(flags.units_for(f)):
-            unit.args = [*unit.args, *extra_args]
+        for i, unit in enumerate((units_for or flags.units_for)(f)):
             ukey = unit.path if i == 0 else f"{unit.path}#{i}"
             units.setdefault(ukey, unit)
             wanted.setdefault(ukey, set()).add(str(f))

@@ -114,10 +114,10 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     start = time.perf_counter()
     jobs = max(1, min(args.jobs or default_jobs(), default_jobs()))
     runtime = sorted((source / "source/blender/makesrna/intern").glob("rna_*.cc"))
-    extra = parse_all(source, flags, runtime, cache, jobs=jobs, extra_args=("-DRNA_RUNTIME",))
+    extra = parse_all(source, flags, runtime, cache, jobs=jobs, units_for=lambda f: [flags.runtime_unit(f)])
     index = definition_index(source)
     parsed = {str(f.relative_to(source)) for f in files}
-    for _round in range(3):
+    for _round in range(4):
         _counts, returns = classify(model, Program(extra + lowered))
         todo = sorted(callee_files(returns.unresolved, index) - parsed)
         if not todo:

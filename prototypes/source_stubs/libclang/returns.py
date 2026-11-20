@@ -126,7 +126,7 @@ class Returns:
         self.unresolved: set[tuple[str, str]] = set()  # (record or "", name) of callees without a body
         self.methods: dict[str, list[Function]] = {}
         for f in program.functions.values():
-            if "@S@" in f.usr or "::" in f.qual:
+            if "@S@" in f.usr or "@ST>" in f.usr or "::" in f.qual:
                 self.methods.setdefault(f.name, []).append(f)
 
     # ------------------------------------------------------------------------------------------------------------
@@ -410,9 +410,10 @@ class Returns:
             return _one(NEVER, where, f"allocation ({name})")
         if name in POINTER_RNA_DATA and len(args) > POINTER_RNA_DATA[name]:
             return self.eval(args[POINTER_RNA_DATA[name]], st, line)
-        if usr is None:
+        if usr is None and not (name or "").isidentifier():
             return _one(UNKNOWN, where, f"call through a pointer ({name})")
-        fn = self.program.resolve(usr, name, len(args), self.fn.file)
+        # usr None: a call clang could not resolve (lower.recovered_call) or a dependent call in a template.
+        fn = self.program.resolve(usr or "", name, len(args), self.fn.file)
         if fn is None:
             self.unresolved.add(("", name))
             return _one(UNKNOWN, where, f"no body for {name}")
@@ -423,7 +424,8 @@ class Returns:
         name, base, args = e[1], e[2], e[3]
         record = base[-1] if isinstance(base, list) and base and isinstance(base[-1], str) else ""
         record = record.split("::")[-1]
-        cands = [f for f in self.methods.get(name, []) if record and f"@S@{record}@" in f.usr]
+        # ``@S@Channelbag@`` for a class, ``@ST>1#T@Box@`` for a class template.
+        cands = [f for f in self.methods.get(name, []) if record and f"@{record}@" in f.usr]
         cands = [f for f in cands if len(f.params) >= len(args)]
         if not cands:
             self.unresolved.add((record, name))
@@ -455,12 +457,17 @@ def rna_arguments(f, c_params: list) -> tuple[str, ...]:
 
 
 DEFINITION = re.compile(r"^(?![#/\s{}])(?!return\b)[^;=\n(]*?\b(?:(\w+)::)?(\w+)\s*\(", re.MULTILINE)
+CLASS = re.compile(r"^\s*(?:template\s*<[^;{]*>\s*)?(?:class|struct)\s+(?:\w+\s+)?(\w+)\b[^;{()]*\{", re.MULTILINE)
 
 
 def definition_index(source: Path) -> dict[str, set[tuple[str, str]]]:
-    """Function name -> {(class or "", file)} for every top-level definition-looking line under ``source/blender``."""
+    """Function name -> {(class or "", file)} for every top-level definition under ``source/blender`` (sources and
+    headers: inline functions and templates), and ``class <Name>`` -> {("", file)} for every class definition (its
+    methods may be defined in the class body)."""
     index: dict[str, set[tuple[str, str]]] = {}
-    for path in (source / "source" / "blender").rglob("*.cc"):
+    for path in (source / "source" / "blender").rglob("*"):
+        if path.suffix not in (".cc", ".hh", ".h") or not path.is_file():
+            continue
         rel = str(path.relative_to(source))
         if "/tests/" in rel or rel.endswith(("_test.cc", "_tests.cc")):
             continue
@@ -469,7 +476,13 @@ def definition_index(source: Path) -> dict[str, set[tuple[str, str]]]:
         except OSError:
             continue
         for m in DEFINITION.finditer(text):
-            index.setdefault(m.group(2), set()).add((m.group(1) or "", rel))
+            # A definition: its body opens before any ``;`` (a declaration ends first).
+            semi, brace = text.find(";", m.end()), text.find("{", m.end())
+            if brace != -1 and (semi == -1 or brace < semi):
+                index.setdefault(m.group(2), set()).add((m.group(1) or "", rel))
+        if path.suffix != ".cc":
+            for m in CLASS.finditer(text):
+                index.setdefault(f"class {m.group(1)}", set()).add(("", rel))
     return index
 
 
@@ -479,7 +492,7 @@ def callee_files(unresolved: set[tuple[str, str]], index: dict[str, set[tuple[st
     for record, name in unresolved:
         hits = index.get(name, set())
         if record:
-            hits = {h for h in hits if h[0] == record} or set()
+            hits = {h for h in hits if h[0] == record} or index.get(f"class {record}", set())
         if 0 < len({f for _c, f in hits}) <= limit:
             files.update(f for _c, f in hits)
     return files

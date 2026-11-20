@@ -25,7 +25,7 @@ import os
 import clang.cindex as ci
 from clang.cindex import CursorKind as K
 
-LOWER_VERSION = 10
+LOWER_VERSION = 11
 
 _lib = ci.conf.lib
 _lib.clang_Cursor_Evaluate.argtypes = [ci.Cursor]
@@ -199,13 +199,13 @@ class Lowerer:
             path = self.in_files(c)
             if path is None:
                 continue
-            if k in (K.FUNCTION_DECL, K.CXX_METHOD) and c.is_definition():
+            if k in (K.FUNCTION_DECL, K.CXX_METHOD, K.FUNCTION_TEMPLATE) and c.is_definition():
                 self.lower_function(c, ns, path)
             elif k == K.VAR_DECL:
                 self.lower_global(c, ns, path)
-            elif k in (K.STRUCT_DECL, K.CLASS_DECL) and c.is_definition():
+            elif k in (K.STRUCT_DECL, K.CLASS_DECL, K.CLASS_TEMPLATE) and c.is_definition():
                 for m in c.get_children():
-                    if m.kind == K.CXX_METHOD and m.is_definition():
+                    if m.kind in (K.CXX_METHOD, K.FUNCTION_TEMPLATE) and m.is_definition():
                         self.lower_function(m, f"{ns}{c.spelling}::", path)
 
     def lower_function(self, c: ci.Cursor, ns: str, path: str) -> None:
@@ -412,6 +412,10 @@ class Lowerer:
         if c is None:
             return None
         k = c.kind
+        if k == K.UNEXPOSED_EXPR:
+            recovered = self.recovered_call(c)
+            if recovered is not None:
+                return recovered
         if k in PASS_THROUGH:
             ch = [x for x in c.get_children() if x.kind.is_expression()]
             if k == K.UNEXPOSED_EXPR and len(ch) == 2 and ch[0].kind == K.MEMBER_REF:
@@ -535,6 +539,26 @@ class Lowerer:
         if len(ch) == 1 and k in (K.CXX_BOOL_LITERAL_EXPR,):
             return self.expr(ch[0])
         return ["x", k.name, self.text(c)]
+
+    def recovered_call(self, c: ci.Cursor):
+        """A call clang could not resolve (no matching overload, an undeclared callee, a template that failed to
+        compile): an expression of dependent type whose first child names the callee and the rest are the arguments.
+        Without this the pass-through would keep only the last argument."""
+        ch = [x for x in c.get_children() if x.kind.is_expression()]
+        if not ch or c.type.spelling != "<dependent type>":
+            return None
+        head, args = ch[0], [self.expr(a) for a in ch[1:]]
+        if head.type.spelling == "<overloaded function type>":
+            name = next(
+                (x.spelling for x in head.walk_preorder() if x.kind == K.OVERLOADED_DECL_REF and x.spelling),
+                head.spelling,
+            )
+            return ["c", None, name, args, c.location.line]
+        if head.kind == K.MEMBER_REF_EXPR and head.type.spelling == "<bound member function type>":
+            sub = [x for x in head.get_children() if x.kind.is_expression()]
+            base = self.expr(sub[0]) if sub else None
+            return ["mc", head.spelling, base, args, c.location.line, head.spelling, ""]
+        return None
 
     def call(self, c: ci.Cursor):
         ref = c.referenced
