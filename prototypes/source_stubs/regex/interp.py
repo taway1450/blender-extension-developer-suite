@@ -966,6 +966,9 @@ class Interp:
             toks = expand(m.tokens, lambda n_, p_=t.pos: self.tree.macro(self.file, n_, p_), {name}, t.pos)
             if toks:
                 return self.eval(toks)
+        if name.startswith("RNA_") and name[4:5].isupper():
+            # ``StructRNA &RNA_Object``: 5.x passes the generated structs by reference, without ``&``.
+            return StructRef(name[4:])
         return Raw([t], self.file)
 
     def concat(self, toks: list[Tok]) -> Any:

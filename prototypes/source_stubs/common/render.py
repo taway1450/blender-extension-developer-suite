@@ -14,10 +14,12 @@ from __future__ import annotations
 import ast
 import keyword
 import math
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from .model import (
+    PyClass,
     PyMethod,
     PySignature,
     RnaFunction,
@@ -25,6 +27,8 @@ from .model import (
     SourceModel,
 )
 
+# A macro step's pointer property names the step operator (``ACTION_OT_duplicate``).
+OPERATOR_IDNAME = re.compile(r"[A-Z0-9]+_OT_\w+")
 OPERATOR_RETURN = "set[Literal['RUNNING_MODAL', 'CANCELLED', 'FINISHED', 'PASS_THROUGH', 'INTERFACE']]"
 # ``pyrna_math_object_from_array`` (python/intern/bpy_rna.cc): the mathutils class a float array becomes, by subtype
 # and length. Everything else is a ``bpy_prop_array``.
@@ -201,6 +205,32 @@ class ModuleOut:
             self.order.append(name)
 
 
+def inheritance(cls: PyClass, index: dict[str, PyClass]) -> list[PyClass]:
+    """``cls`` and the Python classes it inherits from, nearest first (bases outside ``scripts/`` are skipped)."""
+    chain, todo, seen = [], [cls], set()
+    while todo:
+        c = todo.pop(0)
+        if id(c) in seen:
+            continue
+        seen.add(id(c))
+        chain.append(c)
+        for base in c.bases:
+            found = index.get(f"{c.module}.{base}") or index.get(base)
+            if found:
+                todo.append(found)
+    return chain
+
+
+def inherited_properties(chain: list[PyClass]) -> list[RnaProperty]:
+    """The ``bpy.props`` annotations of a class and its bases, the base's first and a subclass's overriding."""
+    merged: dict[str, RnaProperty] = {}
+    for c in reversed(chain):
+        for p in c.properties:
+            merged.pop(p.identifier, None)
+            merged[p.identifier] = p
+    return list(merged.values())
+
+
 class Renderer:
     def __init__(self, model: SourceModel) -> None:
         self.model = model
@@ -349,17 +379,15 @@ class Renderer:
             decorator = ["@staticmethod"]
         else:
             params = ["self"]
-        # pyrna_func_call takes the parameters in declaration order; a required one after an optional one can only be
-        # given by keyword, so it and the rest become keyword-only.
-        seen_optional = keyword_only = False
+        # pyrna_func_call (bpy_rna.cc) rejects an optional parameter given by position ("optional arguments must be
+        # keywords", since 2.8x), so everything from the first optional parameter on is keyword-only.
+        keyword_only = False
         for p in inputs:
             text = f"{py_ident(p.identifier)}: {self.prop_type(p, current, param=True)}"
-            if "required" in p.parameter_flags:
-                if seen_optional and not keyword_only:
+            if "required" not in p.parameter_flags:
+                if not keyword_only:
                     params.append("*")
                     keyword_only = True
-            else:
-                seen_optional = True
                 text += f" = {self.default_text(p)}"
             params.append(text)
         if not outputs:
@@ -406,7 +434,12 @@ class Renderer:
         for p in properties:
             if not p.identifier.isidentifier() or keyword.iskeyword(p.identifier):  # PROP_HIDDEN ones too
                 continue
-            params.append(f"{p.identifier}: {self.prop_type(p, mod_name, param=True)} = {self.default_text(p)}")
+            if p.type == "pointer" and OPERATOR_IDNAME.fullmatch(p.struct_type):
+                # A macro's step: the step operator's properties, set from a dict (pyrna_py_to_prop).
+                t = "dict[str, Any]"
+            else:
+                t = self.prop_type(p, mod_name, param=True)
+            params.append(f"{p.identifier}: {t} = {self.default_text(p)}")
         if params[-1] == "*":
             params.pop()
         m.block(func, f"def {func}({', '.join(params)}) -> {OPERATOR_RETURN}: ...")
@@ -679,17 +712,17 @@ class Renderer:
                     continue
                 if any(b.split(".")[-1] in REGISTRABLE for b in cls.bases):
                     types.block(cls.name, f"from {src.name} import {cls.name} as {cls.name}")
-        # Python operators.
+        # Python operators, with the properties their mixins declare (``AddPresetBase.name``).
+        index = {f"{c.module}.{c.name}": c for src in self.model.python for c in src.classes}
         for src in self.model.python:
             for cls in src.classes:
-                if (
-                    cls.bl_idname
-                    and "." in cls.bl_idname
-                    and any(b.split(".")[-1] in {"Operator", "Macro"} for b in cls.bases)
-                ):
+                if not cls.bl_idname or "." not in cls.bl_idname:
+                    continue
+                chain = inheritance(cls, index)
+                if any(b.split(".")[-1] in {"Operator", "Macro"} for c in chain for b in c.bases):
                     module, _, func = cls.bl_idname.partition(".")
                     if module.isidentifier() and func.isidentifier():
-                        self.render_operator(f"bpy.ops.{module}", func, cls.properties)
+                        self.render_operator(f"bpy.ops.{module}", func, inherited_properties(chain))
         # Registered properties.
         for reg in self.model.registrations:
             if reg.struct in types.classes and reg.property.identifier.isidentifier():

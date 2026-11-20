@@ -92,7 +92,7 @@ def test_rna_function_keeps_declaration_order_and_nullable_pointers() -> None:
     model = SourceModel(tool="t", source="s", commit="c")
     model.structs.append(RnaStruct(identifier="Thing", functions=[f]))
     text = rendered_types(model)
-    assert "def ensure(self, data_path: str, index: int = 0, *, target: Object | None, owner: ID) -> None: ..." in text
+    assert "def ensure(self, data_path: str, *, index: int = 0, target: Object | None, owner: ID) -> None: ..." in text
 
 
 def test_byte_strings_and_nested_arrays() -> None:
@@ -221,3 +221,41 @@ def test_entry_points_import() -> None:
             spec.loader.exec_module(module)
         except ImportError as ex:
             pytest.fail(f"{path.relative_to(root)}: {ex}")
+
+
+def test_python_operators_inherit_mixin_properties() -> None:
+    from common.model import PyClass, PyModuleSource, RnaProperty, SourceModel
+    from common.render import Renderer
+
+    base = PyClass(
+        module="bl_operators.presets", name="AddPresetBase", properties=[RnaProperty(identifier="name", type="string")]
+    )
+    op = PyClass(
+        module="bl_operators.presets",
+        name="AddPresetCamera",
+        bases=["AddPresetBase", "bpy.types.Operator"],
+        bl_idname="camera.preset_add",
+        properties=[RnaProperty(identifier="use_focal_length", type="boolean")],
+    )
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.python.append(
+        PyModuleSource(name="bl_operators.presets", path="p", group="modules", stub="", classes=[base, op])
+    )
+    text = Renderer(model).render()["bpy.ops.camera"]
+    assert "name: str = ..., use_focal_length: bool = ..." in text
+
+
+def test_macro_steps_are_dicts() -> None:
+    from common.model import Operator, RnaProperty, SourceModel
+    from common.render import Renderer
+
+    model = SourceModel(tool="t", source="s", commit="c")
+    model.operators.append(
+        Operator(
+            idname="ACTION_OT_duplicate_move",
+            properties=[
+                RnaProperty(identifier="ACTION_OT_duplicate", type="pointer", struct_type="ACTION_OT_duplicate")
+            ],
+        )
+    )
+    assert "ACTION_OT_duplicate: dict[str, Any] = ..." in Renderer(model).render()["bpy.ops.action"]
