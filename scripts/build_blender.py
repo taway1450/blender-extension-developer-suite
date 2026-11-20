@@ -43,6 +43,7 @@ import platform
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 from _common import CACHE_DIR, StepError, git_output, log, main_wrapper, run, validate_build_name
@@ -168,6 +169,17 @@ def build_env() -> tuple[dict[str, str], Path, Path]:
     return env, cmake, ninja
 
 
+@dataclass(frozen=True)
+class ConfigureOptions:
+    """What the command line asks of the CMake configuration: the preset ``config``, the build type, whether to use
+    the system libraries instead of the precompiled ones, and extra ``-D`` cache entries."""
+
+    config: str = "full"
+    build_type: str = "Release"
+    system_libs: bool = False
+    defines: tuple[str, ...] = ()
+
+
 def preset_file(source: Path, config: str) -> Path:
     return source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
 
@@ -178,14 +190,13 @@ def configure_command(
     *,
     source: Path,
     build_dir: Path,
-    config: str,
-    build_type: str,
+    options: ConfigureOptions,
     libs: Path | None,
     install_dir: Path,
-    defines: tuple[str, ...] = (),
 ) -> list[str | Path]:
-    """The CMake command that configures the build of ``source`` with the preset ``config`` (``libs`` None: system
-    libraries)."""
+    """The CMake command that configures the build of ``source`` with ``options`` (``libs`` None: system libraries).
+    Switching to the system libraries drops the cached ``LIBDIR`` too: a changed command reconfigures from a fresh
+    cache (``build_blender``)."""
     return [
         cmake,
         "-G",
@@ -194,27 +205,18 @@ def configure_command(
         source,
         "-B",
         build_dir,
-        f"-C{preset_file(source, config)}",
-        *PRESET_OPTIONS.get(config, []),
-        *(f"-D{define}" for define in defines),
+        f"-C{preset_file(source, options.config)}",
+        *PRESET_OPTIONS.get(options.config, []),
+        *(f"-D{define}" for define in options.defines),
         f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
-        f"-DCMAKE_BUILD_TYPE={build_type}",
+        f"-DCMAKE_BUILD_TYPE={options.build_type}",
         *([f"-DLIBDIR={libs.as_posix()}"] if libs else []),
         f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
     ]
 
 
-def configure_hash(
-    *,
-    source: Path,
-    build_dir: Path,
-    config: str,
-    build_type: str,
-    install_dir: Path,
-    system_libs: bool = False,
-    defines: tuple[str, ...] = (),
-) -> str:
+def configure_hash(*, source: Path, build_dir: Path, options: ConfigureOptions, install_dir: Path) -> str:
     """Hash of the arguments that configure the build, which ``.build-info`` records. CMake's and Ninja's own paths
     are left out: they come from uv's script environment, which moves when it is recreated."""
     cmd = configure_command(
@@ -222,11 +224,9 @@ def configure_hash(
         Path("ninja"),
         source=source,
         build_dir=build_dir,
-        config=config,
-        build_type=build_type,
-        libs=None if system_libs else LIBS_DIR / lib_platform(),
+        options=options,
+        libs=None if options.system_libs else LIBS_DIR / lib_platform(),
         install_dir=install_dir,
-        defines=defines,
     )
     return hashlib.sha256("\n".join(str(c) for c in cmd).encode()).hexdigest()[:16]
 
@@ -247,12 +247,9 @@ def build_blender(
     *,
     ref: str | None = None,
     update: bool = False,
-    config: str = "full",
-    build_type: str = "Release",
+    options: ConfigureOptions = ConfigureOptions(),
     force: bool = False,
     target: str = "install",
-    system_libs: bool = False,
-    defines: tuple[str, ...] = (),
 ) -> Path:
     """Build Blender ``name`` from source and return the installed binary (or, for another ``target`` than
     ``install``, the build directory)."""
@@ -262,15 +259,8 @@ def build_blender(
     blender = blender_executable(install_dir)
     build_info = install_dir / BUILD_INFO
     build_dir = BUILD_DIR / name
-    configure = configure_hash(
-        source=source,
-        build_dir=build_dir,
-        config=config,
-        build_type=build_type,
-        install_dir=install_dir,
-        system_libs=system_libs,
-        defines=defines,
-    )
+    config, build_type = options.config, options.build_type
+    configure = configure_hash(source=source, build_dir=build_dir, options=options, install_dir=install_dir)
     if (
         target == "install"
         and not force
@@ -290,7 +280,7 @@ def build_blender(
 
     log("Pulling git LFS files of the source worktree")
     run(["git", "-C", source, "lfs", "pull"])
-    libs = None if system_libs else ensure_libraries(source)
+    libs = None if options.system_libs else ensure_libraries(source)
     env, cmake, ninja = build_env()
 
     if force:
@@ -302,11 +292,9 @@ def build_blender(
         ninja,
         source=source,
         build_dir=build_dir,
-        config=config,
-        build_type=build_type,
+        options=options,
         libs=libs,
         install_dir=install_dir,
-        defines=defines,
     )
     configure_args = build_dir / CONFIGURE_ARGS
     configure_key = "\n".join(str(c) for c in configure_cmd)
@@ -372,12 +360,14 @@ def main() -> int:
         args.name,
         ref=args.ref,
         update=args.update,
-        config=args.config,
-        build_type=args.build_type,
+        options=ConfigureOptions(
+            config=args.config,
+            build_type=args.build_type,
+            system_libs=args.system_libs,
+            defines=tuple(args.define),
+        ),
         force=args.force,
         target=args.target,
-        system_libs=args.system_libs,
-        defines=tuple(args.define),
     )
     return 0
 

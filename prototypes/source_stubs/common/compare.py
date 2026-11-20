@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 warnings.filterwarnings("ignore", category=SyntaxWarning)  # escape sequences in parsed docstrings
 
-from common.driver import CACHE_DIR
+from common.driver import CACHE_DIR, TOOLS, outputs_root
 
 AREAS = (
     ("bpy.types", lambda m: m == "bpy.types"),
@@ -304,8 +304,8 @@ def stub_sets(version: str) -> dict[str, Path]:
         "builtin": CACHE_DIR / "bpy-stubs-builtin" / version,
         "fake-bpy": CACHE_DIR / "bpy-stubs" / version,
     }
-    for tool in ("regex", "libclang", "makesrna"):
-        sets[tool] = CACHE_DIR / "source-stubs" / version / tool / "stubs"
+    for tool in TOOLS:
+        sets[tool] = outputs_root(version) / tool / "stubs"
     return {name: path for name, path in sets.items() if path.is_dir()}
 
 
@@ -376,7 +376,7 @@ def main() -> int:
     data = {name: read_stubs(path) for name, path in sets.items()}
     for name, path in sets.items():
         expand_aliases(data[name], type_aliases(path))
-    prototypes = [n for n in sets if n in {"regex", "libclang", "makesrna"}]
+    prototypes = [n for n in sets if n in TOOLS]
     if args.pairs:
         wanted = [tuple(p.split(":")) for p in args.pairs.split(",")]
     else:
@@ -385,7 +385,7 @@ def main() -> int:
         if "builtin" in sets and "fake-bpy" in sets:
             wanted.append(("builtin", "fake-bpy"))
     pairs = {(a, b): compare_pair(data[a], data[b]) for a, b in wanted}
-    out = CACHE_DIR / "source-stubs" / args.version
+    out = outputs_root(args.version)
     out.mkdir(parents=True, exist_ok=True)
     (out / "comparison.md").write_text(markdown(args.version, sets, data, pairs), encoding="utf-8")
     (out / "comparison.json").write_text(

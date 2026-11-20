@@ -13,7 +13,7 @@ uv run --no-project --python 3.13 python prototypes/source_stubs/regex/run.py 5.
 ```
 
 The output lands in `.cache/source-stubs/5.2/regex/`. A full run takes about a minute on one process.
-`compare_ref.py [version] [module ...]` measures the stubs against `.cache/bpy-stubs-builtin/<version>`.
+`../common/compare.py <version>` measures the stubs against the builtin and fake-bpy-module stubs and the other readers.
 
 ## How it reads
 

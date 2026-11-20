@@ -2,10 +2,17 @@ from pathlib import Path
 
 import pytest
 
-from build_blender import PRESET_OPTIONS, build_info_text, configure_command, configure_hash, is_current_build
+from build_blender import (
+    PRESET_OPTIONS,
+    ConfigureOptions,
+    build_info_text,
+    configure_command,
+    configure_hash,
+    is_current_build,
+)
 
 
-def command(config: str) -> list[str]:
+def command(config: str, *, libs: Path | None = Path("libs"), defines: tuple[str, ...] = ()) -> list[str]:
     return [
         str(arg)
         for arg in configure_command(
@@ -13,9 +20,8 @@ def command(config: str) -> list[str]:
             Path("ninja"),
             source=Path("src"),
             build_dir=Path("build"),
-            config=config,
-            build_type="Release",
-            libs=Path("libs"),
+            options=ConfigureOptions(config=config, build_type="Release", defines=defines),
+            libs=libs,
             install_dir=Path("bin"),
         )
     ]
@@ -36,9 +42,12 @@ def test_other_presets_keep_their_options():
     assert not set(PRESET_OPTIONS["headless"]) & set(command("full"))
 
 
-def hash_of(build_type: str = "Release", config: str = "headless") -> str:
+def hash_of(build_type: str = "Release", config: str = "headless", **options) -> str:
     return configure_hash(
-        source=Path("src"), build_dir=Path("build"), config=config, build_type=build_type, install_dir=Path("bin")
+        source=Path("src"),
+        build_dir=Path("build"),
+        options=ConfigureOptions(config=config, build_type=build_type, **options),
+        install_dir=Path("bin"),
     )
 
 
@@ -49,6 +58,19 @@ def test_configure_hash_is_stable_and_follows_the_configure_arguments(monkeypatc
     before = hash_of()
     monkeypatch.setitem(PRESET_OPTIONS, "headless", [*PRESET_OPTIONS["headless"], "-DWITH_CYCLES=OFF"])
     assert hash_of() != before
+
+
+def test_system_libraries_drop_libdir_and_defines_follow_the_preset():
+    assert any(arg.startswith("-DLIBDIR=") for arg in command("full"))
+    assert not any(arg.startswith("-DLIBDIR=") for arg in command("full", libs=None))
+    cmd = command("headless", defines=("CMAKE_C_COMPILER=clang",))
+    assert cmd.index("-DCMAKE_C_COMPILER=clang") > max(cmd.index(o) for o in PRESET_OPTIONS["headless"])
+    assert "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" in cmd
+
+
+def test_configure_hash_follows_system_libs_and_defines():
+    assert hash_of(system_libs=True) != hash_of()
+    assert hash_of(defines=("A=1",)) != hash_of()
 
 
 INFO = build_info_text(commit="abc", config="headless", build_type="Release", configure="h1", source=Path("s"))

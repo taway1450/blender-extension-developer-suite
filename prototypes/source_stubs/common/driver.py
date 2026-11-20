@@ -27,8 +27,11 @@ from .render import write_stubs
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from _resources import guarded
+from build_blender import BUILD_DIR, LIBS_DIR, lib_platform
 
 CACHE_DIR = REPO_ROOT / ".cache"
+# The source readers, in the order they run and are compared.
+TOOLS = ("regex", "libclang", "makesrna")
 
 
 def source_tree(version: str) -> Path:
@@ -36,10 +39,27 @@ def source_tree(version: str) -> Path:
     return CACHE_DIR / "blender-src" / version
 
 
-def out_dir(version: str, tool: str) -> Path:
-    path = CACHE_DIR / "source-stubs" / version / tool
+def outputs_root(version: str) -> Path:
+    """``.cache/source-stubs/<version>``: every reader's outputs, the comparison and the audit."""
+    path = CACHE_DIR / "source-stubs" / version
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def out_dir(version: str, tool: str) -> Path:
+    path = outputs_root(version) / tool
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def build_dir(source: Path) -> Path:
+    """The CMake build ``blender:build`` made for a source worktree (``makesrna``, ``compile_commands.json``)."""
+    return BUILD_DIR / source.name
+
+
+def precompiled_libraries() -> Path:
+    """Blender's precompiled libraries for this machine (``.cache/blender-libs/<platform>``)."""
+    return LIBS_DIR / lib_platform()
 
 
 def count(model: SourceModel) -> dict[str, int]:

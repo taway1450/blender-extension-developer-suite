@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.driver import CACHE_DIR, REPO_ROOT
+from common.driver import REPO_ROOT, outputs_root
 from common.model import SourceModel
 
 PLACEHOLDERS = ({"DEFAULT"}, {"PLACEHOLDER"}, {"UNSUPPORTED"})
@@ -52,7 +52,7 @@ def main() -> int:
     parser.add_argument("version")
     parser.add_argument("--tool", default="makesrna")
     args = parser.parse_args()
-    facts = CACHE_DIR / "source-stubs" / args.version / args.tool / "facts.json"
+    facts = outputs_root(args.version) / args.tool / "facts.json"
     if not facts.is_file():
         print(f"audit: {facts} not found, run the {args.tool} reader first")
         return 1
@@ -84,7 +84,7 @@ def main() -> int:
         if (s, p) not in table:
             shown = ", ".join(items[:6]) + (", ..." if len(items) > 6 else "")
             lines.append(f"- `{s}.{p}`: `{itemf}` ({len(items)} static: {shown})")
-    out = CACHE_DIR / "source-stubs" / args.version / "audit.md"
+    out = outputs_root(args.version) / "audit.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(
         f"Wrote {out}: {len(table & found.keys())} confirmed, {len(table - found.keys())} unsupported, "

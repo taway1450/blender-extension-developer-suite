@@ -32,7 +32,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common.driver import CACHE_DIR, main, out_dir
+from common.driver import build_dir, main, out_dir, precompiled_libraries
 from common.model import EnumItem, RnaFunction, RnaProperty, RnaStruct, SourceModel
 
 PATCH = Path(__file__).resolve().parent / "makesrna-json-dump.patch"
@@ -158,7 +158,7 @@ def run_makesrna(source: Path, build: Path, work: Path) -> Path:
     gen = work / "gen" / "intern"
     gen.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, RNA_JSON_DUMP=str(out))
-    libs = CACHE_DIR / "blender-libs" / "linux_x64"
+    libs = precompiled_libraries()
     if libs.is_dir():
         env["LD_LIBRARY_PATH"] = os.pathsep.join(str(p) for p in sorted(libs.glob("*/lib")))
     proc = subprocess.run(
@@ -177,7 +177,7 @@ def run_makesrna(source: Path, build: Path, work: Path) -> Path:
 def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     work = out_dir(args.version, "makesrna") / "work"
     work.mkdir(parents=True, exist_ok=True)
-    path = args.json or run_makesrna(source, args.build or CACHE_DIR / "blender-build" / source.name, work)
+    path = args.json or run_makesrna(source, args.build or build_dir(source), work)
     convert(json.loads(path.read_text(encoding="utf-8")), model)
     model.coverage.unreachable.update(
         {

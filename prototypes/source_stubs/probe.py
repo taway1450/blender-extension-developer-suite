@@ -16,7 +16,9 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "scripts"))
 from _resources import guarded
 
-TOOLS = ("regex", "libclang", "makesrna")
+sys.path.insert(0, str(HERE))
+from common.driver import TOOLS
+
 PYTHON = ["uv", "run", "--no-project", "--python", "3.13"]
 WHEELS = {"libclang": ["--with", "libclang==18.1.1"]}
 

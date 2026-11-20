@@ -14,7 +14,13 @@ from __future__ import annotations
 import json
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from pathlib import Path
-from typing import Any, get_args, get_origin, get_type_hints
+from typing import Any, Literal, get_args, get_origin, get_type_hints
+
+# ``PROP_*`` types, lowercased (``RNA_types.hh``).
+PropType = Literal["boolean", "int", "float", "string", "enum", "pointer", "collection"]
+# ``BMO_OP_SLOT_*``, lowercased (``bmesh_operator_api.hh``).
+SlotType = Literal["bool", "int", "flt", "ptr", "mat", "vec", "elem_buf", "mapping"]
+ParamKind = Literal["positional_only", "normal", "keyword_only", "var_positional", "var_keyword"]
 
 # --------------------------------------------------------------------------------------------------------------------
 # RNA
@@ -35,7 +41,7 @@ class RnaProperty:
 
     identifier: str
     # boolean, int, float, string, enum, pointer, collection
-    type: str
+    type: PropType
     subtype: str = "none"  # color, translation, matrix, filepath, ... (``PROP_*`` subtype, lowercased)
     unit: str = "none"
     name: str = ""  # UI name
@@ -134,7 +140,7 @@ class PyParam:
     name: str
     type: str = ""  # Python syntax
     default: str | None = None  # source text; None: required
-    kind: str = "normal"  # positional_only, normal, keyword_only, var_positional, var_keyword
+    kind: ParamKind = "normal"
 
 
 @dataclass
@@ -240,7 +246,7 @@ class NodeDecl:
 @dataclass
 class BmeshSlot:
     name: str
-    type: str  # BMO_OP_SLOT_* lowercased: bool, int, flt, ptr, mat, vec, elem_buf, mapping
+    type: SlotType
     subtype: str = ""  # element types (vert|edge|face), map value type, pointer type
     doc: str = ""
     items: list[str] = field(default_factory=list)  # identifiers of an int enum / flag slot
@@ -365,6 +371,8 @@ def _convert(tp: Any, value: Any) -> Any:
     if value is None:
         return None
     origin = get_origin(tp)
+    if origin is Literal:
+        return value
     if origin is list:
         (inner,) = get_args(tp)
         return [_convert(inner, v) for v in value]

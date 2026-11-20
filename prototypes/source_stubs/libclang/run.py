@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 
 from _resources import default_jobs
 
-from common.driver import CACHE_DIR, main
+from common.driver import build_dir, main, out_dir
 from common.model import SourceModel
 from libclang.bmesh import read_bmesh
 from libclang.context import Context
@@ -49,11 +49,11 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     version = args.version
-    out = CACHE_DIR / "source-stubs" / version / "libclang"
+    out = out_dir(version, "libclang")
     timings = model.coverage.seconds
     cc = None
     if not args.synthesize_flags:
-        cc = args.compile_commands or CACHE_DIR / "blender-build" / source.name / "compile_commands.json"
+        cc = args.compile_commands or build_dir(source) / "compile_commands.json"
         if not cc.exists():
             cc = None
     flags = FlagSource(source, cc, out / ("shim" if cc else "shim-synth"))

@@ -19,6 +19,8 @@ import sysconfig
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from common.driver import precompiled_libraries
+
 RESOURCE_INCLUDE = "/usr/lib/llvm-18/lib/clang/18/include"
 SYNTH_DEFINES = [
     "WITH_PYTHON",
@@ -147,10 +149,10 @@ class FlagSource:
             args += [f"-I{d}" for d in sorted(dirs)]
             # Third-party headers (fmt, tbb, Python): Blender's precompiled libraries when present; else at least
             # this interpreter's Python headers.
-            libs = self.source.parent.parent / "blender-libs"
-            python = sorted(libs.glob("*/python/include/python3*"))
+            libs = precompiled_libraries()
+            python = sorted(libs.glob("python/include/python3*"))
             args += ["-isystem", str(python[-1]) if python else sysconfig.get_paths()["include"]]
-            for include in sorted(libs.glob("*/*/include")):
+            for include in sorted(libs.glob("*/include")):
                 args += ["-isystem", str(include)]
             self._synth = args
         return self._synth
