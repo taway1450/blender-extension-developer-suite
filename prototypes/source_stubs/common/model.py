@@ -88,6 +88,10 @@ class RnaFunction:
     parameters: list[RnaProperty] = field(default_factory=list)
     # Identifier of the parameter set with ``RNA_def_function_return`` (outputs are parameters flagged ``output``).
     returns: str = ""
+    # Whether the C function can return NULL for a pointer return (libclang only, ``libclang/returns.py``):
+    # "never", "raises" (NULL only after an error report, which pyrna raises), "null" or "unknown"; "" unread.
+    returns_null: str = ""
+    returns_null_why: str = ""  # file:line and the reason, for the verdict
     src: str = ""
 
 

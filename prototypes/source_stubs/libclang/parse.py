@@ -96,12 +96,22 @@ def _work(path: str, args: list[str], files: list[str], root: str, out: str) -> 
     return path, time.perf_counter() - start, data.get("errors", 0)
 
 
-def parse_all(source: Path, flags: FlagSource, files: list[Path], cache: Path, jobs: int = 2, log=print) -> list[dict]:
+def parse_all(
+    source: Path,
+    flags: FlagSource,
+    files: list[Path],
+    cache: Path,
+    jobs: int = 2,
+    log=print,
+    extra_args: tuple[str, ...] = (),
+) -> list[dict]:
+    """Lower ``files`` (cached per unit and arguments); ``extra_args`` go after each unit's own (``-DRNA_RUNTIME``)."""
     cache.mkdir(parents=True, exist_ok=True)
     units: dict[str, Unit] = {}
     wanted: dict[str, set[str]] = {}
     for f in files:
         for i, unit in enumerate(flags.units_for(f)):
+            unit.args = [*unit.args, *extra_args]
             ukey = unit.path if i == 0 else f"{unit.path}#{i}"
             units.setdefault(ukey, unit)
             wanted.setdefault(ukey, set()).add(str(f))

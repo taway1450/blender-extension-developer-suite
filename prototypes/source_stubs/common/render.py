@@ -392,12 +392,20 @@ class Renderer:
                     keyword_only = True
                 text += f" = {self.default_text(p)}"
             params.append(text)
+
+        def output_type(p: RnaProperty) -> str:
+            # libclang's reading of the C body (libclang/returns.py): it never returns NULL, or only after an error
+            # report, which pyrna raises.
+            if p.identifier == f.returns and p.type == "pointer" and f.returns_null in ("never", "raises"):
+                return self.struct_ref(p.struct_type, current)
+            return self.prop_type(p, current)
+
         if not outputs:
             ret = "None"
         elif len(outputs) == 1:
-            ret = self.prop_type(outputs[0], current)
+            ret = output_type(outputs[0])
         else:
-            ret = "tuple[" + ", ".join(self.prop_type(p, current) for p in outputs) + "]"
+            ret = "tuple[" + ", ".join(output_type(p) for p in outputs) + "]"
         c.add(name, [*decorator, f"def {name}({', '.join(params)}) -> {ret}: ..."])
 
     def render_context(self) -> None:

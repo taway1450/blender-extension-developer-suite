@@ -223,6 +223,25 @@ def test_dynamic_flag_makes_an_array() -> None:
     assert "def normals(self) -> bpy_prop_array[float]: ..." in text
 
 
+def test_pointer_returns_follow_the_classified_c_body() -> None:
+    from common.model import RnaFunction, RnaProperty, RnaStruct, SourceModel
+
+    def function(name: str, verdict: str) -> RnaFunction:
+        ret = RnaProperty(identifier="result", type="pointer", struct_type="FCurve", parameter_flags=["output"])
+        return RnaFunction(identifier=name, parameters=[ret], returns="result", returns_null=verdict)
+
+    model = SourceModel(tool="t", source="s", commit="c")
+    verdicts = {"new": "raises", "ensure": "never", "find": "null", "get": "unknown", "old": ""}
+    model.structs.append(RnaStruct(identifier="FCurves", functions=[function(n, v) for n, v in verdicts.items()]))
+    model.structs.append(RnaStruct(identifier="FCurve"))
+    text = rendered_types(model)
+    assert "def new(self) -> FCurve: ..." in text
+    assert "def ensure(self) -> FCurve: ..." in text
+    assert "def find(self) -> FCurve | None: ..." in text
+    assert "def get(self) -> FCurve | None: ..." in text
+    assert "def old(self) -> FCurve | None: ..." in text
+
+
 def test_entry_points_import() -> None:
     """Each reader's ``run.py`` and the probe import (a linter once dropped an import one of them needed)."""
     import importlib.util

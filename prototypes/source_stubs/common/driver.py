@@ -17,6 +17,7 @@ import argparse
 import subprocess
 import sys
 import time
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 
@@ -63,7 +64,9 @@ def precompiled_libraries() -> Path:
 
 
 def count(model: SourceModel) -> dict[str, int]:
+    returns = Counter(f.returns_null for s in model.structs for f in s.functions if f.returns_null)
     return {
+        **{f"rna_pointer_returns_{kind}": n for kind, n in sorted(returns.items())},
         "rna_structs": len(model.structs),
         "rna_properties": sum(len(s.properties) for s in model.structs),
         "rna_functions": sum(len(s.functions) for s in model.structs),

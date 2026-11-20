@@ -33,6 +33,7 @@ from libclang.nodes import Nodes
 from libclang.operators import Operators
 from libclang.parse import parse_all, select_files
 from libclang.pyapi import PyApi
+from libclang.returns import callee_files, classify, definition_index, report
 from libclang.rna import Rna
 
 
@@ -109,6 +110,24 @@ def extract(source: Path, model: SourceModel, args: argparse.Namespace) -> None:
     # 6. bmesh
     read_bmesh(interp, source, model)
     rna.finish()
+    # 7. RNA function returns: the runtime bodies, then their callees, a few rounds deep
+    start = time.perf_counter()
+    jobs = max(1, min(args.jobs or default_jobs(), default_jobs()))
+    runtime = sorted((source / "source/blender/makesrna/intern").glob("rna_*.cc"))
+    extra = parse_all(source, flags, runtime, cache, jobs=jobs, extra_args=("-DRNA_RUNTIME",))
+    index = definition_index(source)
+    parsed = {str(f.relative_to(source)) for f in files}
+    for _round in range(3):
+        _counts, returns = classify(model, Program(extra + lowered))
+        todo = sorted(callee_files(returns.unresolved, index) - parsed)
+        if not todo:
+            break
+        parsed.update(todo)
+        extra += parse_all(source, flags, [source / f for f in todo], cache, jobs=jobs)
+    classify(model, Program(extra + lowered))
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "returns.md").write_text(report(model), encoding="utf-8")
+    timings["returns"] = time.perf_counter() - start
 
     # Coverage notes
     cov = model.coverage
