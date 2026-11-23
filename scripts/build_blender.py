@@ -96,14 +96,37 @@ def ensure_libraries(source: Path) -> Path:
         log(f"Fetching library commit {commit[:10]}")
         run(["git", "-C", libs, "fetch", "origin"])
 
-    # Always check out: after `clone --no-checkout` HEAD already names the pinned commit while the
-    # working tree is still empty. Files that are already up to date are left alone.
-    log(f"Checking out precompiled libraries {name} at {commit[:10]} (downloads the changed git LFS files)")
-    run(["git", "-C", libs, "-c", "advice.detachedHead=false", "checkout", "--force", "--detach", commit])
+    # Check out only when needed: `checkout --force` rewrites every file whose timestamps differ from the index,
+    # even with the same content, and the newer timestamps make Ninja rebuild everything that includes them.
+    # (After `clone --no-checkout` HEAD already names the pinned commit, but the files show as deleted.)
+    if is_clean_checkout(libs, commit):
+        log(f"Precompiled libraries {name} are checked out at {commit[:10]}")
+    else:
+        log(f"Checking out precompiled libraries {name} at {commit[:10]} (downloads the changed git LFS files)")
+        run(["git", "-C", libs, "-c", "advice.detachedHead=false", "checkout", "--force", "--detach", commit])
     # A checkout interrupted while downloading leaves LFS pointer files behind; this completes it.
-    run(["git", "-C", libs, "lfs", "pull"])
+    pull_lfs_files(libs)
     log(f"Precompiled libraries: {libs} ({commit[:10]})")
     return libs
+
+
+def is_clean_checkout(repo: Path, commit: str) -> bool:
+    """Whether ``repo`` has ``commit`` checked out with no tracked file changed or missing."""
+    head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True)
+    return head.stdout.strip() == commit and not git_output(repo, "status", "--porcelain", "--untracked-files=no")
+
+
+def pull_lfs_files(repo: Path) -> None:
+    """Download the git LFS files of ``repo`` that are still pointer files, if any.
+
+    Not unconditionally: `git lfs pull` also rewrites the empty files of the checkout, and so their timestamps,
+    which made Ninja recompile what includes them (e.g. ``source/blender/render/hydra/settings.hh``) on every build.
+    """
+    # Each line is `<oid> <*|-> <path>`; `-` marks a file that is still a pointer.
+    listing = git_output(repo, "lfs", "ls-files")
+    if any(line.split(maxsplit=2)[1] == "-" for line in listing.splitlines() if line.strip()):
+        log(f"Pulling git LFS files of {repo}")
+        run(["git", "-C", repo, "lfs", "pull"])
 
 
 def visual_studio_env() -> dict[str, str]:
@@ -195,8 +218,7 @@ def build_blender(
         available = sorted(p.stem.removeprefix("blender_") for p in config_file.parent.glob("blender_*.cmake"))
         raise StepError(f"Unknown build configuration {config!r} (available: {', '.join(available)})")
 
-    log("Pulling git LFS files of the source worktree")
-    run(["git", "-C", source, "lfs", "pull"])
+    pull_lfs_files(source)
     libs = ensure_libraries(source)
     env, cmake, ninja = build_env()
 

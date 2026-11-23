@@ -1,12 +1,12 @@
 """When ``build_blender`` reuses the installed build: only for the same source, uncommitted edits included."""
 
 import pytest
+from test_stub_cache import git
 
 import build_blender
 import download_blender
 import generate_stubs
 from _common import StepError
-from test_stub_cache import git
 
 
 @pytest.fixture
