@@ -122,6 +122,33 @@ fresh session pays either way.
 
 ---
 
+### 0.6 From CI to a cloud session (measured)
+
+The `Blender build cache` workflow (`.github/workflows/blender-cache.yml`) built `main` at `faa17d9072` cold
+on a GitHub runner (4 vCPU, `SUITE_JOBS=4`) in **86 min**, packed it in 9 s (build dir + install 863 MB,
+ccache 290 MB), and a separate job published it in 1.5 min. In a cloud session, `mise run blender:restore
+main` then took **95 s** (290 MB in 13 s, 863 MB in 37 s, unpack, 0 files with differing timestamps), and:
+
+| Change | Time |
+| --- | --- |
+| Nothing changed (`blender:build` reuses the install) | 0 s |
+| One-line comment in `blenkernel/intern/object.cc` (8 Ninja steps: the file, buildinfo, links, install) | **69 s** |
+| Reverting it (ccache hit from CI's ccache) | 14 s |
+
+Two things broke on the way, both fixed:
+
+- **The release call 90 minutes into the build job was refused** (HTTP 403, "Resource not accessible by
+  integration") although the shorter ty cache job publishes with the same `contents: write`. The build job
+  now hands its archives to a separate `publish` job as a workflow artifact.
+- **CMake's path holds the Python version.** `build_blender.py` runs CMake from its uv script environment,
+  whose name (`build-blender-<hash>`) is the same everywhere, but whose packages are under
+  `lib/python3.<minor>/`. The runner's uv picked Python 3.12, the cloud session's 3.13, so `build.ninja`'s
+  CMake (and its modules) did not exist here, Ninja re-ran CMake and the build failed (`cmake: not found`).
+  The workflow now sets `UV_PYTHON=3.13`; pack records `CMAKE_COMMAND` in the manifest (format 2), and
+  restore creates the script environment first and refuses a cache whose CMake is missing. The 69 s above
+  was measured with `lib/python3.12` linked to `python3.13` in the local environment; with the path present,
+  nothing else differed between the CI build and the cloud session (no reconfigure, no other dirty step).
+
 ## 1. Summary
 
 - **Only one approach meets the hard requirement on the first build after a restore: restore the build
@@ -803,9 +830,8 @@ on demand (approach A + B).**
    `blender` relink. Measure in the first CI run (`ccache -s`, `du -sh`, `.ninja_log`).
 2. **Does the A-restore really rebuild only the edited file?** Check with `ninja -d explain -n` after a
    restore and one `touch`, both in a container that copies the cloud image and in a real cloud session.
-3. **uv's environment path for `scripts/build_blender.py`:** is the `cmake`/`ninja` path in
-   `configure-args.txt` stable between CI and the cloud? If not, does the forced reconfigure leave
-   compile commands unchanged?
+3. **uv's environment path for `scripts/build_blender.py`:** *answered in 0.6*: the environment's name is
+   stable, but the CMake path inside it holds the Python version, which CI now pins to the cloud's.
 4. **The environment snapshot:** does it keep `.cache/` inside the repo, or is the repo re-cloned per
    session? (Same as open question 2 of the earlier note.) That decides whether the restore can live in
    setup at all, and where it extracts to.

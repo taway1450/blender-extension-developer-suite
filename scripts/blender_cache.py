@@ -84,7 +84,7 @@ from build_blender import (
 from download_blender import BLENDER_BIN_DIR, read_build_info
 from generate_stubs import ensure_worktree, worktree_commit
 
-FORMAT = 1
+FORMAT = 2
 OUT_DIR = CACHE_DIR / "blender-cache"
 
 
@@ -117,6 +117,21 @@ def recorded_configuration(name: str) -> tuple[dict[str, str], str | None]:
             if line.startswith("CCACHE_PROGRAM:"):
                 ccache = line.split("=", 1)[1]
     return compilers, ccache
+
+
+def recorded_cmake(name: str) -> str:
+    """The CMake binary the build directory of ``name`` re-runs itself with (``build.ninja`` depends on it and its
+    modules). It lives in build_blender.py's uv script environment, under ``lib/python3.<minor>/``, so it moves
+    with the Python version uv picks for that script."""
+    for line in (BUILD_DIR / name / "CMakeCache.txt").read_text().splitlines():
+        if line.startswith("CMAKE_COMMAND:"):
+            return line.split("=", 1)[1]
+    raise StepError(f"No CMAKE_COMMAND in the CMake cache of {name}")
+
+
+def ensure_build_environment() -> None:
+    """Create (or update) build_blender.py's uv script environment, where the cache's CMake has to be."""
+    run(["uv", "sync", "--quiet", "--script", str(Path(__file__).with_name("build_blender.py"))])
 
 
 # --- pack ----------------------------------------------------------------------------------------------------------
@@ -168,6 +183,7 @@ def pack(name: str) -> Path:
             var: {"path": path, "version": first_line([path, "--version"])} for var, path in compilers.items()
         },
         "ccache": {"path": ccache, "version": first_line([ccache, "--version"])} if ccache else None,
+        "cmake": recorded_cmake(name),
         "suite_commit": git_output(REPO_ROOT, "rev-parse", "HEAD"),
         "created": datetime.now(UTC).isoformat(timespec="seconds"),
         "assets": assets,
@@ -205,6 +221,11 @@ def check_manifest(manifest: dict, name: str, *, ccache_only: bool) -> None:
         raise StepError(
             f"The cache's compile commands run ccache from {ccache['path']} ({ccache['version']}), which is missing"
         )
+    if (cmake := manifest.get("cmake")) and not Path(cmake).is_file():
+        raise StepError(
+            f"The cache's build re-runs CMake from {cmake}, which is missing: uv runs build_blender.py with another "
+            "Python here (the path has its version), so the build would fail"
+        )
 
 
 def ensure_blender_commit(commit: str, ref: str) -> None:
@@ -235,6 +256,8 @@ def restore(name: str, url: str | None = None, *, force: bool = False, ccache_on
     shutil.rmtree(downloads, ignore_errors=True)
     downloads.mkdir(parents=True)
     manifest, url = download_manifest(url or default_url(name), downloads)
+    if not ccache_only:
+        ensure_build_environment()
     check_manifest(manifest, name, ccache_only=ccache_only)
     log(
         f"Cache of {name}: Blender {manifest['commit'][:10]}, {manifest['config']} {manifest['build_type']}, "
