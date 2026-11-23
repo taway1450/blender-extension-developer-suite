@@ -245,7 +245,10 @@ def build_blender(
         # Configured from a fresh cache whenever this changes (see configure_key), so OFF needs no flag.
         configure_cmd.append("-DWITH_COMPILER_CCACHE=ON")
     configure_args = build_dir / CONFIGURE_ARGS
-    configure_key = "\n".join(str(c) for c in configure_cmd)
+    # CMake only reads CC/CXX when it configures from a fresh cache, so a different compiler needs a new one too
+    # (e.g. CC=gcc-14 on a system whose default GCC is older than Blender's minimum).
+    compilers = [f"{var}={env[var]}" for var in ("CC", "CXX") if env.get(var)]
+    configure_key = "\n".join([*(str(c) for c in configure_cmd), *compilers])
     if (
         (build_dir / "build.ninja").is_file()
         and configure_args.is_file()
