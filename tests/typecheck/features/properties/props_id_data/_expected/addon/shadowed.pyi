@@ -1,0 +1,9 @@
+from bpy.types import Curve, PropertyGroup
+
+class Text(PropertyGroup):
+    value: int
+    @property
+    def id_data(self) -> Curve: ...
+
+def register() -> None: ...
+def unregister() -> None: ...

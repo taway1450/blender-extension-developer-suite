@@ -54,6 +54,9 @@ A Property declaration used as the annotation of a class member on a Property ho
 **Registered property**:
 A Property declaration assigned to a Blender class at runtime (`bpy.types.Scene.x = IntProperty()`), giving every instance of that class the property.
 
+**External registration**:
+A Registered property that another add-on or package assigns, which a file reads when its own add-on gives the name nothing: from an add-on its manifest declares (`[tool.blender] uses = ["cycles"]`), a startup package Blender always loads (`bl_operators`), or an add-on Blender enables by default (`cycles`, reported as an assumption).
+
 **Property evaluator**:
 The part of the checker that reads which Property declarations an expression evaluates to, so that a module constant (`x: COMMON`), a dict or tuple item, a `functools.partial` or a small wrapper function (`x: color_property()`) counts as the property it gives. What it cannot read, but ty types as a `_PropertyDeferred` value, is an *opaque* property of any type.
 _Avoid_: interpreter
@@ -82,6 +85,19 @@ A member of `bpy.types.Context` that Blender always fills when it calls a given 
 **Type tag**:
 A property of a Blender instance whose value names the subclass that instance, or one of its pointers, really is: `Modifier.type` (`'SUBSURF'` is a `SubsurfModifier`), `Object.type` (`'MESH'` makes `Object.data` a `Mesh`), `Node.bl_idname`.
 _Avoid_: discriminator, kind
+
+**Value form**:
+A Type tag that names the subclass of its own instance: `md.type == 'SUBSURF'` makes `md` a `SubsurfModifier`. Each refined subclass declares its tag value in the stubs (`type: Literal['SUBSURF']`).
+
+**Sibling form**:
+A Type tag that decides the type of a sibling pointer on the same instance, with no subclass of its own: `ob.type == 'MESH'` makes `ob.data` a `Mesh`, `fluid.fluid_type == 'DOMAIN'` makes `fluid.domain_settings` non-None. The stubs state it with a Tag view.
+
+**Tag view**:
+A private class in the stubs, one per value of a sibling-form Type tag, that states what the value implies for the instance's other members: `class _Object_MESH(Object)` with `type: Literal['MESH']` and `data: Mesh`. It exists only in the stubs; Blender has no such class.
+_Avoid_: fake subclass
+
+**Refined base**:
+A `bpy.types` class whose instances Blender always hands out as one of its subclasses, picked from the instance's own data (`Modifier`, `Light`, `Node`, `Curve`). Most refined bases have a Type tag that names the subclass. `Curve` has none: only the constructor argument names it (`curves.new(type='FONT')` gives a `TextCurve`).
 
 ## Diagnostics
 

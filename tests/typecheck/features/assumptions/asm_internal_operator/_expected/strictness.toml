@@ -1,0 +1,12 @@
+# `[blender] strictness` sets the Assumptions category: lenient and default warn, strict makes it an error (spec #108).
+[lenient]
+blender-assumed-internal-operator = "warn"
+blender-narrowed-by-poll = "ignore"
+
+[default]
+blender-assumed-internal-operator = "warn"
+blender-narrowed-by-poll = "warn"
+
+[strict]
+blender-assumed-internal-operator = "error"
+blender-narrowed-by-poll = "error"

@@ -1,10 +1,10 @@
 """Feature test: overrides Blender accepts (the number of parameters is right) but whose types do not fit the
-parent. Explicit annotations that are incompatible are ty's invalid-method-override; an unannotated callback whose
-return value does not fit the parent's return type is invalid-return-type (Blender raises "incompatible return
-value" when it calls execute, invoke or modal; checked in Blender 5.4). Blender turns any poll result into a bool,
-so poll may return any value. Compatible annotations (a wider parameter, a narrower return) are fine: a set of
-fewer result names or a frozenset for execute, invoke and modal (Blender reads any set of the enum's names), lists
-for the two arrays UIList.filter_items returns."""
+parent. Explicit annotations that are incompatible are ty's incompatible-method-override; an unannotated callback whose
+return value does not fit the parent's return type is invalid-explicit-return, and one that returns nothing
+invalid-implicit-return (Blender raises "incompatible return value" when it calls execute, invoke or modal; checked
+in Blender 5.4). Blender turns any poll result into a bool, so poll may return any value. Compatible annotations (a
+wider parameter, a narrower return) are fine: a set of fewer result names or a frozenset for execute, invoke and
+modal (Blender reads any set of the enum's names), lists for the two arrays UIList.filter_items returns."""
 
 from typing import Literal
 
@@ -16,10 +16,10 @@ class INH_OVERRIDE_TYPES_OT_annotations(Operator):
     bl_idname = "inh_override_types.annotations"
     bl_label = "Annotations"
 
-    def execute(self, context: int):  # ty: ignore[invalid-method-override]  # bare-ok: stock ty's error must stay for an annotated override
+    def execute(self, context: int):  # ty: ignore[incompatible-method-override]  # bare-ok: stock ty's error must stay for an annotated override
         return {"FINISHED"}
 
-    def invoke(self, context, event) -> str:  # ty: ignore[invalid-method-override]  # bare-ok: stock ty's error must stay for an annotated override
+    def invoke(self, context, event) -> str:  # ty: ignore[incompatible-method-override]  # bare-ok: stock ty's error must stay for an annotated override
         return "FINISHED"
 
     def draw(self, context: Context | None):  # wider than the parent: fine
@@ -38,20 +38,20 @@ class INH_OVERRIDE_TYPES_OT_returns(Operator):
         return context.active_object  # any value: Blender takes its truth value
 
     def execute(self, context):
-        return {"DONE"}  # ty: ignore[invalid-return-type]
+        return {"DONE"}  # ty: ignore[invalid-explicit-return]
 
     def invoke(self, context, event):
-        return "FINISHED"  # ty: ignore[invalid-return-type]
+        return "FINISHED"  # ty: ignore[invalid-explicit-return]
 
     def modal(self, context, event):
-        return ["FINISHED"]  # ty: ignore[invalid-return-type]
+        return ["FINISHED"]  # ty: ignore[invalid-explicit-return]
 
 
 class INH_OVERRIDE_TYPES_OT_no_return(Operator):
     bl_idname = "inh_override_types.no_return"
     bl_label = "No return"
 
-    def execute(self, context):  # ty: ignore[invalid-return-type]
+    def execute(self, context):  # ty: ignore[invalid-implicit-return]
         print("forgot to return a set")
 
 
@@ -65,7 +65,7 @@ class INH_OVERRIDE_TYPES_OT_enum_sets(Operator):
     def invoke(self, context, event) -> frozenset[Literal["FINISHED", "CANCELLED"]]:  # a frozenset: fine
         return frozenset({"CANCELLED"})
 
-    def modal(self, context, event) -> set[Literal["FINSHED"]]:  # ty: ignore[invalid-method-override]  # bare-ok: a name that is not a result stays an error
+    def modal(self, context, event) -> set[Literal["FINSHED"]]:  # ty: ignore[incompatible-method-override]  # bare-ok: a name that is not a result stays an error
         return {"FINSHED"}
 
 

@@ -1,0 +1,4 @@
+[[probe]]
+code = "bpy.ops.mesh.primitive_cube_add() == {'FINISHED'} and bpy.context.object.name.startswith('Cube') and bpy.context.active_object == bpy.context.object"
+expect = true
+reason = "an `*_add` operator makes the new object the active one"

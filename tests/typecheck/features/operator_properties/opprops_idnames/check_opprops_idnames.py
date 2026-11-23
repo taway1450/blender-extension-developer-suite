@@ -39,7 +39,7 @@ def conditional(layout: UILayout, enabled: bool) -> None:
     props.owner_id = "my_addon"
     props.owner_id = 1  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the assert above needs the checker
     mixed = layout.operator("opprops_idnames.step" if enabled else "opprops_idnames_ot_odd.run")
-    mixed.factor  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: the odd operator has no factor
+    mixed.factor  # ty: ignore[missing-union-attribute]  # bare-ok: must stay missing: the odd operator has no factor
     layout.operator("opprops_idnames.step" if enabled else "opprops_idnames.missing")  # ty: ignore[blender-unknown-operator]
 
 

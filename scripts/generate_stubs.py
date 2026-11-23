@@ -2,12 +2,18 @@
 # requires-python = ">=3.12"
 # dependencies = ["pyyaml"]
 # ///
-"""Generate bpy stubs for a Blender version with ``fake-bpy-module`` and Blender's own stub generator.
+"""Generate bpy stubs for a Blender version with ``fake-bpy-module``, Blender's own stub generator or the runtime one.
 
-Both stub generators work from the rst API docs Blender generates:
-  fake-bpy-module  the ``fake-bpy-module`` submodule; stubs in ``.cache/bpy-stubs/<version>``
-  builtin          Blender's ``doc/python_api/sphinx_stub_gen.py`` (Blender 5.2 and later); stubs in
-                   ``.cache/bpy-stubs-builtin/<version>``
+The stub generators:
+  fake-bpy-module  the ``fake-bpy-module`` submodule, from the rst API docs Blender generates; stubs in
+                   ``.cache/bpy-stubs/<version>``
+  builtin          Blender's ``doc/python_api/sphinx_stub_gen.py`` (Blender 5.2 and later), from the same rst docs;
+                   stubs in ``.cache/bpy-stubs-builtin/<version>``
+  runtime          the fork's ``doc/python_api/runtime_stub_gen.py``, in a running Blender: the builtin stubs of
+                   that Blender with its default add-ons disabled, plus what only the runtime has (startup classes
+                   with their members, the Python source of the script folders); stubs in
+                   ``.cache/bpy-stubs-runtime/<version>``, its rst and facts in
+                   ``.cache/bpy-stubs-runtime-work/<version>``. ``all`` leaves it out.
 
 Steps:
   1. Create a git worktree of the ``blender`` submodule for the requested version
@@ -19,6 +25,8 @@ Steps:
   4. fake-bpy-module: run Blender to generate fake-bpy-module's mod files, then fake-bpy-module's
      ``gen.py`` to turn the rst docs into stubs.
      builtin: run ``sphinx_stub_gen.py`` of the source worktree on the rst docs.
+     runtime: instead of steps 3 and 4, run ``runtime_stub_gen.py`` of the source worktree in Blender, which writes
+     and parses its own rst (with ``docutils`` installed into ``.cache/runtime-stubs-site``).
 
 Usage:
   uv run scripts/generate_stubs.py 5.2                       # both generators (builtin where available)
@@ -46,6 +54,7 @@ from _common import (
     FAKE_BPY_MODULE,
     FAKE_BPY_SRC,
     StepError,
+    blender_script_command,
     exe,
     git_output,
     is_release,
@@ -54,13 +63,27 @@ from _common import (
     run,
     validate_version,
 )
-from download_blender import cached_blender, download_blender, read_build_info
+from download_blender import BUILD_INFO, cached_blender, download_blender
 
-FAKE_BPY, BUILTIN, ALL = "fake-bpy-module", "builtin", "all"
-GENERATORS = (FAKE_BPY, BUILTIN)
-STUBS_DIRS = {FAKE_BPY: CACHE_DIR / "bpy-stubs", BUILTIN: CACHE_DIR / "bpy-stubs-builtin"}
+FAKE_BPY, BUILTIN, RUNTIME, ALL = "fake-bpy-module", "builtin", "runtime", "all"
+GENERATORS = (FAKE_BPY, BUILTIN, RUNTIME)
+STUBS_DIRS = {
+    FAKE_BPY: CACHE_DIR / "bpy-stubs",
+    BUILTIN: CACHE_DIR / "bpy-stubs-builtin",
+    RUNTIME: CACHE_DIR / "bpy-stubs-runtime",
+}
 RST_DIR = CACHE_DIR / "bpy-rst"
-BUILTIN_STUB_GEN = Path("doc") / "python_api" / "sphinx_stub_gen.py"
+PYTHON_API_DIR = Path("doc") / "python_api"
+BUILTIN_STUB_GEN = PYTHON_API_DIR / "sphinx_stub_gen.py"
+RUNTIME_STUB_GEN = PYTHON_API_DIR / "runtime_stub_gen.py"
+RNA_INFO_MODULE = Path("scripts") / "modules" / "_rna_info.py"
+RUNTIME_WORK_DIR = CACHE_DIR / "bpy-stubs-runtime-work"
+# $BLENDER_USER_RESOURCES of the runtime generator: preferences without add-ons, per version.
+RUNTIME_USER_DIR = CACHE_DIR / "bpy-stubs-runtime-user"
+# docutils for the runtime generator, which parses rst in Blender's Python.
+RUNTIME_SITE_DIR = CACHE_DIR / "runtime-stubs-site"
+# Pinned, so that a fresh cache parses the rst as the recorded baselines did.
+RUNTIME_SITE_REQUIREMENT = "docutils==0.23"
 
 
 def resolve_git_ref(version: str, ref_override: str | None) -> str:
@@ -97,17 +120,6 @@ def resolve_commit(ref: str, fetch: bool = False) -> str:
 
 def worktree_path(version: str) -> Path:
     return CACHE_DIR / "blender-src" / version
-
-
-def blender_revision(version: str, source: Path | None = None) -> str | None:
-    """What the Blender binary for ``version`` was made from, which its rst docs and stubs are cached by: the
-    ``tree_revision`` a build from source recorded (the commit plus its uncommitted changes), or the commit of the
-    source worktree for a release. None when the worktree is missing."""
-    if revision := read_build_info(version).get("revision"):
-        return revision
-    if source is not None:
-        return git_output(source, "rev-parse", "HEAD")
-    return worktree_commit(version)
 
 
 def worktree_commit(version: str) -> str | None:
@@ -163,12 +175,27 @@ def blender_python_version(source: Path) -> str:
     return match.group(1)
 
 
+def blender_version_output(blender: Path) -> str:
+    return subprocess.run([str(blender), "--version"], capture_output=True, text=True).stdout
+
+
 def blender_binary_version(blender: Path) -> str:
-    output = subprocess.run([str(blender), "--version"], capture_output=True, text=True).stdout
+    output = blender_version_output(blender)
     match = re.search(r"^Blender (\d+\.\d+)", output, re.MULTILINE)
     if not match:
         raise StepError(f"Could not determine the version of {blender}:\n{output}")
     return match.group(1)
+
+
+def blender_fingerprint(blender: Path) -> str:
+    """One line naming the Blender build ``blender`` is, so caches made with it can tell a rebuild: a source build's
+    ``.build-info`` (commit, preset, configure hash; next to the binary, or above the macOS app bundle), a release's
+    version and build lines from ``--version``."""
+    for directory in list(blender.parents)[:4]:
+        if (build_info := directory / BUILD_INFO).is_file():
+            return ",".join(filter(None, build_info.read_text().splitlines()))
+    lines = [line.strip() for line in blender_version_output(blender).splitlines()]
+    return ", ".join(line for line in lines if re.match(r"Blender \d|build \w+:", line))
 
 
 def find_blender(version: str, explicit: Path | None) -> Path:
@@ -196,20 +223,7 @@ def find_blender(version: str, explicit: Path | None) -> Path:
 
 
 def run_blender_script(blender: Path, script: Path, *script_args: str | Path) -> None:
-    run(
-        [
-            blender,
-            "--background",
-            "--factory-startup",
-            "-noaudio",
-            "--python-exit-code",
-            "1",
-            "--python",
-            script,
-            "--",
-            *script_args,
-        ]
-    )
+    run(blender_script_command(blender, script, *script_args))
 
 
 def uv_python_cmd() -> list[str | Path]:
@@ -232,32 +246,33 @@ def has_builtin_generator(source: Path) -> bool:
 
 
 def resolve_generators(version: str, source: Path, generator: str) -> list[str]:
-    """The generators ``generator`` (one of GENERATORS or ALL) stands for; ALL leaves out the builtin
-    generator for Blender versions without one (``source`` is the version's source worktree)."""
+    """The generators ``generator`` (one of GENERATORS or ALL) stands for. ALL is fake-bpy-module and builtin, and
+    leaves out the builtin generator for Blender versions without one (``source`` is the version's source
+    worktree)."""
     if generator != ALL:
         return [generator]
     if has_builtin_generator(source):
-        return list(GENERATORS)
+        return [FAKE_BPY, BUILTIN]
     log(f"Blender {version} has no built-in stub generator ({BUILTIN_STUB_GEN.as_posix()}), using only {FAKE_BPY}")
     return [FAKE_BPY]
 
 
-def tree_revision(repo: Path, path: str | Path) -> str:
+def tree_revision(repo: Path, *paths: str | Path) -> str:
     """HEAD of the git repository ``repo``, plus a hash of the uncommitted changes (untracked files included)
-    under ``path`` when there are any: ``<commit>`` or ``<commit>+dirty.<hash>``."""
+    under ``paths`` when there are any: ``<commit>`` or ``<commit>+dirty.<hash>``."""
     if not (repo / ".git").exists():
         # Otherwise git would describe the enclosing repository, e.g. for a submodule that is not checked out.
         raise StepError(f"{repo} is not a git checkout (run `git submodule update --init {repo.name}`?)")
     commit = git_output(repo, "rev-parse", "HEAD")
-    pathspec = Path(path).as_posix()
-    if not git_output(repo, "status", "--porcelain", "--untracked-files=all", "--", pathspec):
+    pathspec = [Path(path).as_posix() for path in paths]
+    if not git_output(repo, "status", "--porcelain", "--untracked-files=all", "--", *pathspec):
         return commit
 
     def git_bytes(*args: str) -> bytes:
         return subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True).stdout
 
-    digest = hashlib.sha256(git_bytes("diff", "HEAD", "--binary", "--", pathspec))
-    untracked = git_bytes("ls-files", "--others", "--exclude-standard", "-z", "--", pathspec)
+    digest = hashlib.sha256(git_bytes("diff", "HEAD", "--binary", "--", *pathspec))
+    untracked = git_bytes("ls-files", "--others", "--exclude-standard", "-z", "--", *pathspec)
     for name in sorted(filter(None, untracked.split(b"\0"))):
         digest.update(b"\0" + name + b"\0" + (repo / name.decode()).read_bytes())
     return f"{commit}+dirty.{digest.hexdigest()[:12]}"
@@ -266,19 +281,29 @@ def tree_revision(repo: Path, path: str | Path) -> str:
 def generator_revision(generator: str, source: Path) -> str:
     """What ``generator``'s stubs are generated by: the fake-bpy-module submodule's ``src/``, or Blender's stub
     generator in the source worktree ``source`` (whose commit the marker records anyway, but which may be edited
-    in place)."""
+    in place). The runtime generator runs all of ``doc/python_api`` and the ``_rna_info`` module it reads RNA
+    with."""
     if generator == FAKE_BPY:
         return tree_revision(FAKE_BPY_MODULE, FAKE_BPY_SRC.relative_to(FAKE_BPY_MODULE))
+    if generator == RUNTIME:
+        return tree_revision(source, PYTHON_API_DIR, RNA_INFO_MODULE)
     return tree_revision(source, BUILTIN_STUB_GEN)
 
 
-def stale_reason(marker: str, commit: str | None, generator_rev: str | None) -> str | None:
-    """Why stubs whose ``.complete`` marker reads ``marker`` are out of date, given what the Blender binary was made
-    from, ``commit`` (``blender_revision``), and the stub generator's ``generator_rev`` (None when unknown); None if
-    they are current."""
-    fields = dict(line.split("=", 1) for line in marker.splitlines() if "=" in line)
+def marker_fields(marker: str) -> dict[str, str]:
+    """The ``key=value`` lines of a ``.complete`` marker."""
+    return dict(line.split("=", 1) for line in marker.splitlines() if "=" in line)
+
+
+def stale_reason(marker: str, commit: str | None, generator_rev: str | None, blender: str | None) -> str | None:
+    """Why stubs whose ``.complete`` marker reads ``marker`` are out of date, given the source worktree's
+    ``commit``, the stub generator's ``generator_rev`` and the ``blender_fingerprint`` of the Blender binary (None
+    when unknown); None if they are current."""
+    fields = marker_fields(marker)
     if commit is None or fields.get("commit") != commit:
-        return "were generated from another Blender commit or build"
+        return "were generated from another Blender commit"
+    if blender is None or fields.get("blender") != blender:
+        return "were generated from another Blender build"
     if generator_rev is None or fields.get("generator_rev") != generator_rev:
         return "were generated by another version of the stub generator"
     return None
@@ -289,19 +314,26 @@ def results_name(stem: str, generator: str) -> str:
     return f"{stem}.txt" if generator == FAKE_BPY else f"{stem}-{generator}.txt"
 
 
+def rst_is_current(marker: str, commit: str, blender: str) -> bool:
+    """Whether rst docs whose ``.complete`` marker reads ``marker`` came from the source ``commit`` and the Blender
+    build with the ``blender_fingerprint`` ``blender``."""
+    return marker_fields(marker) == {"commit": commit, "blender": blender}
+
+
 def generate_rst(version: str, blender: Path, source: Path, force: bool) -> Path:
     """Return the rst API docs (``sphinx-in``) for ``version``, generating them with Blender if needed."""
     rst_dir = RST_DIR / version
     marker = rst_dir / COMPLETE_MARKER
-    revision = blender_revision(version, source)
-    if marker.exists() and not force and marker.read_text() == revision:
+    commit = git_output(source, "rev-parse", "HEAD")
+    fingerprint = blender_fingerprint(blender)
+    if marker.exists() and not force and rst_is_current(marker.read_text(), commit, fingerprint):
         log(f"Reusing rst documentation {rst_dir / 'sphinx-in'}")
         return rst_dir / "sphinx-in"
     shutil.rmtree(rst_dir, ignore_errors=True)
     rst_dir.mkdir(parents=True)
     log("Generating rst documentation with Blender (sphinx_doc_gen.py)")
     run_blender_script(blender, source / "doc" / "python_api" / "sphinx_doc_gen.py", "--output", rst_dir)
-    marker.write_text(str(revision))
+    marker.write_text(f"commit={commit}\nblender={fingerprint}\n")
     return rst_dir / "sphinx-in"
 
 
@@ -336,6 +368,55 @@ def generate_builtin_stubs(source: Path, rst: Path, stubs_dir: Path) -> None:
     )
 
 
+def ensure_runtime_site() -> Path:
+    """A folder with ``docutils`` for Blender's Python, installed once per RUNTIME_SITE_REQUIREMENT."""
+    marker = RUNTIME_SITE_DIR / COMPLETE_MARKER
+    if not marker.exists() or marker.read_text(encoding="utf-8") != RUNTIME_SITE_REQUIREMENT:
+        shutil.rmtree(RUNTIME_SITE_DIR, ignore_errors=True)
+        log(f"Installing {RUNTIME_SITE_REQUIREMENT} for the runtime stub generator into {RUNTIME_SITE_DIR}")
+        run(["uv", "pip", "install", "--quiet", "--target", RUNTIME_SITE_DIR, RUNTIME_SITE_REQUIREMENT])
+        marker.write_text(RUNTIME_SITE_REQUIREMENT, encoding="utf-8")
+    return RUNTIME_SITE_DIR
+
+
+def runtime_user_resources(version: str, blender: Path, source: Path) -> Path:
+    """The user resources folder the runtime generator runs with: preferences with no add-on enabled, which its
+    ``--write-preferences`` run saves once per Blender build and generator revision."""
+    user = RUNTIME_USER_DIR / version
+    marker = user / COMPLETE_MARKER
+    fingerprint = f"{blender_fingerprint(blender)}\n{generator_revision(RUNTIME, source)}"
+    if marker.exists() and marker.read_text(encoding="utf-8") == fingerprint:
+        return user
+    shutil.rmtree(user, ignore_errors=True)
+    user.mkdir(parents=True)
+    log(f"Saving preferences without add-ons for the runtime stub generator into {user}")
+    command = blender_script_command(blender, source / RUNTIME_STUB_GEN, "--write-preferences")
+    run(command, env={**os.environ, "BLENDER_USER_RESOURCES": str(user)})
+    marker.write_text(fingerprint, encoding="utf-8")
+    return user
+
+
+def runtime_generator_command(
+    version: str, blender: Path, source: Path, stubs_dir: Path, work: Path, addon: Path | None = None
+) -> tuple[list[str], dict[str, str]]:
+    """The command and environment that run the fork's ``runtime_stub_gen.py`` (with the add-on folder ``addon``
+    enabled): from the preferences without add-ons, and without running the scripts of the files it opens."""
+    args: list[str | Path] = ["--output", stubs_dir, "--work", work, "--python-path", ensure_runtime_site()]
+    if addon is not None:
+        args += ["--addon", addon]
+    command = blender_script_command(blender, source / RUNTIME_STUB_GEN, *args, options=("-Y",), factory_startup=False)
+    env = {**os.environ, "BLENDER_USER_RESOURCES": str(runtime_user_resources(version, blender, source))}
+    return command, env
+
+
+def generate_runtime_stubs(version: str, blender: Path, source: Path, stubs_dir: Path) -> None:
+    work = RUNTIME_WORK_DIR / version
+    shutil.rmtree(work, ignore_errors=True)
+    log(f"Generating bpy stubs (the fork's {RUNTIME_STUB_GEN.as_posix()})")
+    command, env = runtime_generator_command(version, blender, source, stubs_dir, work)
+    run(command, env=env)
+
+
 def generate_stubs(
     version: str,
     *,
@@ -352,12 +433,14 @@ def generate_stubs(
     """
     stubs_dir = STUBS_DIRS[generator] / version
     marker = stubs_dir / COMPLETE_MARKER
+    blender = find_blender(version, blender)
     if marker.exists() and not force:
-        # Stubs go stale when the worktree moved to another commit (blender:build --update) or the stub generator
-        # changed (a new fake-bpy-module submodule commit, or uncommitted edits to its src/).
-        commit = blender_revision(version) if worktree_commit(version) else None
+        # Stubs go stale when the worktree moved to another commit (blender:build --update), Blender was rebuilt
+        # (e.g. with other configure options) or the stub generator changed (a new fake-bpy-module submodule
+        # commit, or uncommitted edits to its src/).
+        commit = worktree_commit(version)
         generator_rev = generator_revision(generator, worktree_path(version)) if commit else None
-        reason = stale_reason(marker.read_text(), commit, generator_rev)
+        reason = stale_reason(marker.read_text(), commit, generator_rev, blender_fingerprint(blender))
         if reason is None:
             log(f"Reusing {generator} bpy stubs {stubs_dir}")
             return stubs_dir
@@ -369,24 +452,38 @@ def generate_stubs(
             f"Blender {version} has no built-in stub generator ({BUILTIN_STUB_GEN.as_posix()}, "
             f"added in Blender 5.2); use --generator {FAKE_BPY}"
         )
-    blender = find_blender(version, blender)
+    if generator == RUNTIME and not (source / RUNTIME_STUB_GEN).is_file():
+        raise StepError(
+            f"The Blender {version} source has no runtime stub generator ({RUNTIME_STUB_GEN.as_posix()}, on the "
+            f"fork's branch); use --generator {BUILTIN}"
+        )
 
     # Taken before generating: fake-bpy-module writes its generated mod files into its own src/ (gitignored).
     generator_rev = generator_revision(generator, source)
     shutil.rmtree(stubs_dir, ignore_errors=True)
-    # The rst docs stay cached, so the other generator (or a retry after a failure) can reuse them.
-    rst = generate_rst(version, blender, source, force)
-    if generator == BUILTIN:
-        generate_builtin_stubs(source, rst, stubs_dir)
+    if generator == RUNTIME:
+        generate_runtime_stubs(version, blender, source, stubs_dir)
     else:
-        generate_fake_bpy_stubs(version, blender, source, rst, stubs_dir)
+        # The rst docs stay cached, so the other generator (or a retry after a failure) can reuse them.
+        rst = generate_rst(version, blender, source, force)
+        if generator == BUILTIN:
+            generate_builtin_stubs(source, rst, stubs_dir)
+        else:
+            generate_fake_bpy_stubs(version, blender, source, rst, stubs_dir)
 
     marker.write_text(
-        f"blender={blender}\nsource={source}\ncommit={blender_revision(version, source)}\n"
-        f"generator_rev={generator_rev}\n"
+        f"blender={blender_fingerprint(blender)}\nblender_path={blender}\nsource={source}\n"
+        f"commit={git_output(source, 'rev-parse', 'HEAD')}\ngenerator_rev={generator_rev}\n"
     )
     log(f"{generator} bpy stubs: {stubs_dir}")
     return stubs_dir
+
+
+def blender_declares_node_sockets(rst: Path) -> bool:
+    """Whether the rst docs state the socket each key of a built-in node gives (``bpy.types._ShaderNodeMath_inputs``,
+    written by Blender's fork over every state of the node). fake-bpy-module's own generator then stands aside: it
+    reads only a node's default state, and its classes would sit unused next to Blender's."""
+    return next(rst.glob("bpy.types._*_inputs.rst"), None) is not None
 
 
 def generate_fake_bpy_stubs(version: str, blender: Path, source: Path, rst: Path, stubs_dir: Path) -> None:
@@ -418,14 +515,15 @@ def generate_fake_bpy_stubs(version: str, blender: Path, source: Path, rst: Path
             "-f",
             "rst",
         )
-        run_blender_script(
-            blender,
-            gen_modfile / "gen_node_inputs_outputs_for_node_class.py",
-            "-o",
-            generated_mods / "gen_node_inputs_outputs_for_node_class",
-            "-f",
-            "rst",
-        )
+        if not blender_declares_node_sockets(rst):
+            run_blender_script(
+                blender,
+                gen_modfile / "gen_node_inputs_outputs_for_node_class.py",
+                "-o",
+                generated_mods / "gen_node_inputs_outputs_for_node_class",
+                "-f",
+                "rst",
+            )
         bgl_source = next(
             (
                 p
@@ -499,7 +597,7 @@ def add_stubs_arguments(parser: argparse.ArgumentParser) -> None:
         "--generator",
         choices=(*GENERATORS, ALL),
         default=ALL,
-        help=f"Stub generator (default: {ALL}, i.e. both where Blender has its own)",
+        help=f"Stub generator (default: {ALL}, i.e. {FAKE_BPY} and {BUILTIN} where Blender has its own)",
     )
 
 

@@ -1,7 +1,8 @@
 # context_members
 
-**The checker must:** drop `None` from a Guaranteed context member read inside a Blender callback, and type
-`context.space_data` by the `bl_space_type` of a Panel, Header or GizmoGroup.
+**The checker must:** drop `None` from a Guaranteed context member read inside a Blender callback, type
+`context.space_data` by the `bl_space_type` of a Panel, Header or GizmoGroup, and give a member passed to
+`context.temp_override(...)` the value passed, inside the block.
 
 ## What Blender does
 
@@ -16,6 +17,11 @@
   the editor's `Space` subclass (`'VIEW_3D'` gives `SpaceView3D`; `'TOPBAR'`, `'STATUSBAR'` and `'EMPTY'` have none
   and give `Space`). The subclass is the one whose Type tag (`SpaceView3D.type: Literal['VIEW_3D']`) names it.
   `GizmoGroup.setup_keymap` runs when the key map is set up, outside any editor, and gets nothing of this.
+- **Drawn inside a window:** Blender draws a Panel, Menu, Header or UIList only in a window's screen, so `window`,
+  `screen` and `workspace` are set in their draw callbacks (`draw`, `draw_header`, `draw_header_preset`, `draw_item`,
+  `draw_filter`). An operator may run in background mode, with no window.
+- **`temp_override`:** `Context.temp_override(**members)` puts the members passed in front of the context's own until
+  the `with` block ends (`bpy_rna_context.cc`), in any function.
 - **No editor:** a Menu (`wm.call_menu` from any editor), a UIList (drawn in any layout), an Operator (run from
   anywhere, a timer or `--background`) and a RenderEngine have no `bl_space_type`; their `area`, `space_data` and
   `region` may be None.
@@ -26,6 +32,11 @@ the callback (a lambda or comprehension in it too): a helper function, a nested 
 level keep the stub type, except for `scene`, `view_layer` and `tool_settings`, which are narrowed there as an
 Assumption and reported ([assumptions](../assumptions/README.md)).
 
+Inside `with <context>.temp_override(k=v, ...)`, `<context>.k` has `v`'s type (`<context>` being a context parameter or
+`bpy.context`, written the same way in the read), silently, as it is the code's own control flow. The block ends at the
+first statement in it that rebinds the context's name (`context = other`), or at the loop around that statement;
+a read in a nested `def`, lambda or generator, which may run after the block, gets nothing. `**members` is not read.
+
 Known unsoundness, not special-cased: a Panel opened as a popover (`layout.popover`, `wm.call_panel`) gets the
 opening editor's area, so its `space_data` may be another subclass; and `context.temp_override(scene=None)` around a
 call that reaches a callback breaks every guarantee. `Gizmo` callbacks are left out: they run in their group's
@@ -33,10 +44,12 @@ editor, but that was not confirmed.
 
 | Addon | Variant |
 | --- | --- |
-| `ctx_members` | the six members in `Panel.poll` / `draw`, `Operator.execute`, `Menu.draw`, `UIList.draw_item`; `bpy.context`, a renamed parameter, an alias, a comprehension; `blend_data` still `\| None` in a nested `def`, a helper and at module level |
+| `ctx_members` | the six members in `Panel.poll` / `draw`, `Operator.execute`, `Menu.draw`, `UIList.draw_item`; `window`, `screen` and `workspace` in `Panel.draw` / `draw_header`, `Menu.draw`, `UIList.draw_item`, `Header.draw` (still `\| None` in `Operator.execute`); `bpy.context`, a renamed parameter, an alias, a comprehension; `blend_data` still `\| None` in a nested `def`, a helper and at module level |
 | `ctx_spaces` | `space_data` / `area` / `region` in a `VIEW_3D` Panel, a Panel whose base sets `bl_space_type`, `PROPERTIES` and `TOPBAR` Headers, a GizmoGroup; still `\| None` in a Menu, a UIList and an Operator |
+| `ctx_temp_override` | `bpy.context` in a function, `context` in `execute`, a typed `Context` parameter; guards: a member not passed, a read after the block, a read after `context` is rebound in the block |
 
 The markers in the callbacks need the checker; the `| None` ones are guards (`bare-ok`). Only Blender main's stubs
 type the callbacks' `context` parameter `Context` (5.2's say `Context | None`, so every read in a callback is an
 error there) and declare the Type tags `space_data` is read from: 5.2 fails these markers, a named exception in
-spec #75.
+spec #75 (and in spec #123 for `ctx_temp_override`'s `execute`). The `temp_override` markers are `oracle-skip` and in
+`__init__.py`: the reference stubs cannot express a narrowing.

@@ -6,8 +6,8 @@ pointer poll() did not check stays an error. The assert_type calls in the bodies
 from typing import assert_type
 
 import bpy
-from bpy.types import (Area, EditBone, GizmoGroup, Light, Material, Menu, Mesh, Node, NodeTree, Object, Operator, Panel,
-                       PoseBone, SpaceNodeEditor, SpaceProperties, SpaceView3D)
+from bpy.types import (Area, EditBone, GizmoGroup, Lattice, Light, Material, Menu, Mesh, Node, NodeTree, Object, Operator,
+                       Panel, PoseBone, SpaceNodeEditor, SpaceProperties, SpaceView3D, TextCurve)
 
 from . import helpers
 
@@ -39,7 +39,7 @@ class NAR_POLL_PT_conjuncts(Panel):
         ob = context.object  # ty: ignore[blender-narrowed-by-poll]
         assert_type(ob.active_material, Material)  # ty: ignore[blender-narrowed-by-poll]
         assert_type(context.material, Material | None)  # bare-ok: the poll did not check it
-        context.scene.camera.name  # ty: ignore[unresolved-attribute]  # bare-ok: the poll did not check scene.camera
+        context.scene.camera.name  # ty: ignore[missing-union-attribute]  # bare-ok: the poll did not check scene.camera
 
     def draw_header(self, context):
         assert_type(context.pose_bone, PoseBone)  # ty: ignore[blender-narrowed-by-poll]
@@ -73,6 +73,27 @@ class NAR_POLL_PT_guards(Panel):
         self.layout.label(text=material.name)
 
 
+class NAR_POLL_PT_type_test(Panel):
+    bl_label = "Type test"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "data"
+
+    @classmethod
+    def poll(cls, context):
+        return (
+            (type(context.curve) is TextCurve)
+            and type(context.mesh) == Mesh
+            and type(context.lattice) in {Lattice}
+        )
+
+    def draw(self, context):
+        self.layout.prop(context.curve, "body")  # ty: ignore[blender-narrowed-by-poll]
+        self.layout.label(text=context.mesh.name)  # ty: ignore[blender-narrowed-by-poll]
+        self.layout.label(text=context.lattice.name)  # ty: ignore[blender-narrowed-by-poll]
+        self.layout.label(text=context.material.name)  # ty: ignore[missing-union-attribute]  # bare-ok: the poll did not check it
+
+
 class NarPollObjectMixin:
     @classmethod
     def poll(cls, context):
@@ -87,6 +108,24 @@ class NAR_POLL_PT_mixin(NarPollObjectMixin, Panel):
 
     def draw(self, context):
         assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+
+
+class NAR_POLL_OT_mixin_after(Operator, NarPollObjectMixin):
+    """Blender's Operator defines no poll, so the mixin's poll listed after it is the one Blender calls."""
+
+    bl_idname = "nar_poll.mixin_after"
+    bl_label = "Mixin after Operator"
+
+    def execute(self, context):
+        assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+        return {"FINISHED"}
+
+
+class NAR_POLL_MT_mixin_after(Menu, NarPollObjectMixin):
+    bl_label = "Mixin after Menu"
+
+    def draw(self, context):
+        self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
 
 
 class NAR_POLL_PT_super(NarPollObjectMixin, Panel):
@@ -159,13 +198,14 @@ class NAR_POLL_PT_no_poll(Panel):
     bl_label = "No poll"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "object"
+    bl_context = "data"
 
     def draw(self, context):
         assert_type(context.object, Object | None)  # bare-ok: no poll checked it
         assert_type(context.space_data, SpaceProperties)
 
 
-classes = (NAR_POLL_PT_conjuncts, NAR_POLL_PT_guards, NAR_POLL_PT_mixin, NAR_POLL_PT_super, NAR_POLL_OT_helpers,
-           NAR_POLL_MT_area, NAR_POLL_GGT_light, NAR_POLL_PT_no_poll)
+classes = (NAR_POLL_PT_conjuncts, NAR_POLL_PT_guards, NAR_POLL_PT_type_test, NAR_POLL_PT_mixin, NAR_POLL_PT_super,
+           NAR_POLL_OT_mixin_after, NAR_POLL_MT_mixin_after, NAR_POLL_OT_helpers, NAR_POLL_MT_area, NAR_POLL_GGT_light,
+           NAR_POLL_PT_no_poll)
 register, unregister = bpy.utils.register_classes_factory(classes)

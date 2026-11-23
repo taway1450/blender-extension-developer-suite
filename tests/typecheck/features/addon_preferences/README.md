@@ -5,14 +5,16 @@ without `None`, when the key names the add-on that is being checked, and check t
 classes. Spellings of the key: `__package__` in the add-on's `__init__.py` or a direct submodule (in a nested
 package it names that package), a constant holding it, `__name__` in a legacy add-on's `__init__.py`,
 `__name__.rpartition(".")[0]` in a direct submodule, `from .. import __package__`, the literal name of a legacy
-add-on. `.get(key)` keeps the stub type `Addon | None`; once narrowed, its `.preferences` is the add-on's class.
+add-on, and in a legacy add-on the first component of any of its module names (`__name__.split(".")[0]`,
+`.partition(".")[0]`). `.get(key)` keeps the stub type `Addon | None`; once narrowed, its `.preferences` is the add-on's class.
 Other keys keep the stub type `AddonPreferences | None`.
 
 | Addon | Variant |
 | --- | --- |
 | `prefs_ext` | every key spelling in an extension, through helper functions in submodules |
 | `prefs_legacy` | a `bl_info` add-on: `__name__` and the literal name |
-| `prefs_bad` | `blender-preferences-idname`: a wrong literal, `__name__` in a submodule, no `bl_idname`, a second class for the add-on (it replaces the first, so unregister fails) |
+| `prefs_split` | a legacy add-on's class in a submodule, `bl_idname = __name__.split(".")[0]` (as `ui_translate`), read in `register()` after registering it |
+| `prefs_bad` | `blender-preferences-idname`: a wrong literal, `__name__` in a submodule, `__name__.split(".")[0]` in an extension (`bl_ext`), no `bl_idname`, a second class for the add-on (it replaces the first, so unregister fails) |
 | `prefs_discovered` | `register()` picks its class at runtime: the preferences are either class that names the add-on (the give-up is reported, `blender-assumed-complete-registration`) |
 | `prefs_unregistered` | a preferences class that is never registered: the stub type |
 

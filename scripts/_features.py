@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -81,6 +82,15 @@ class Addon:
 
     def ide_test_files(self) -> list[Path]:
         return [p for p in self.python_files() if p.name.startswith(IDE_PREFIX)]
+
+    @property
+    def uses(self) -> list[str]:
+        """The add-ons the manifest declares under ``[tool.blender] uses``, whose registrations the checker adds."""
+        manifest = self.path / "blender_manifest.toml"
+        if not manifest.is_file():
+            return []
+        uses = tomllib.loads(manifest.read_text(encoding="utf-8")).get("tool", {}).get("blender", {}).get("uses", [])
+        return [name for name in uses if isinstance(name, str)]
 
     @property
     def expected_stubs(self) -> Path | None:

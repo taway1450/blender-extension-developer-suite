@@ -1,10 +1,12 @@
 """Sort check:blender's diagnostics into causes, each with a group, and into areas of the Blender source.
 
-A **cause** is why a diagnostic is reported; its **group** says where the fix belongs (spec #95):
+A **cause** is why a diagnostic is reported; its **group** says where the fix belongs (spec #95), and its **slice**
+the spec slice that addresses it. ``S*`` and ``BF*`` are the slices of spec #95, ``C*`` those of spec #123 (the
+Blender typechecker spec), so ``S6`` and ``C5`` are both Assumption slices, of the two specs:
 
 - ``blender-fix``: Blender's own Python code is wrong (slices BF1, BF2);
 - ``assumption`` / ``implied-narrowing`` / ``imprecise-annotation``: right code the typechecker accepts and reports
-  under a dedicated ``blender-*`` rule (S6, S5, S4);
+  under a dedicated ``blender-*`` rule (S6 and C5, C7; S5 and C6; S4);
 - ``typechecker-fix``: RNA flags, the stub generator or ``ty_blender`` (S1, S2, S3);
 - ``typing-debt``: out of scope (general typing debt, or a cause the spec leaves as it is);
 - ``unsorted``: recognised kinds with no slice, and everything else.
@@ -12,8 +14,9 @@ A **cause** is why a diagnostic is reported; its **group** says where the fix be
 ``CAUSES`` is a first-match table over a diagnostic's rule, message, the source line it points at (read from the
 worktree ty just checked, so message and line always belong together), its path and its enclosing class and
 function (``Scope``). Each cause names the slice that addresses it. The patterns come from the spec's slices and
-the research on the ``research/*`` branches (``blender-true-problems``, ``false-positive-fixes``,
-``candidate-assumptions``, ``imprecise-patterns``, ``silent-assumptions``, ``stub-gaps``, ``check-blender-setup``).
+the research for #88 (true problems), #92 (false-positive fixes), #90 (candidate Assumptions), #91 (Imprecise
+patterns), #89 (silent assumptions), #71 (stub gaps) and #73 (check:blender setup); the notes still useful are in
+``docs/research/``.
 The causes of the Imprecise annotations, Implied narrowings and Assumptions (S4-S6) are their dedicated rules
 (``blender-narrowed-by-poll``, ...): an error of the same shape is code the rule did not accept.
 ``area(path)`` names the part of the source tree a path is in.
@@ -109,6 +112,8 @@ class Cause:
 
 # --- facts read off a diagnostic -------------------------------------------------------------------------------
 
+MODIFIERS_NEW = r"\.modifiers\.new\("
+NULLABLE_MODIFIER = re.compile(r"`(?:\w*Modifier \| None|None \| \w*Modifier)`")
 NULLABLE = re.compile(r"\| None`|`None \||in union `[^`]*(?<!~)None|found `[^`]*\| None`")
 STRING_LITERAL = re.compile(r"""['"]""")
 CONTEXT = r"\b(?:context|ctx|C|_context)\."
@@ -147,14 +152,16 @@ SETTINGS_POINTER = re.compile(
 )
 # Sub-pointers that exist for one value of a type or mode enum, or a flag, read without a check: an armature's
 # `Object.pose`, a Grease Pencil material's `grease_pencil`, a paint mode's `tool_settings.<mode>`, the `node_tree`
-# of a material using nodes or of a group node (research `candidate-assumptions`, "not covered").
+# of a material using nodes or of a group node (research for #90, "not covered"), the `properties`
+# of a geometry-nodes modifier with a node group.
 SUB_POINTER = re.compile(
-    r"\b(?:Pose|MaterialGPencilStyle|VertexPaint|Sculpt|ImagePaint|UvSculpt|CurvesSculpt|ParticleEdit|Gp\w*Paint)"
+    r"\b(?:Pose|MaterialGPencilStyle|VertexPaint|Sculpt|ImagePaint|UvSculpt|CurvesSculpt|ParticleEdit|Gp\w*Paint"
+    r"|NodesModifierProperties)"
     r" \| None`"
 )
 # Functions and classes of Python code that is untyped as a whole (glTF's dicts and numpy, rigify's
 # `IdPropSequence` / `TypedObject`, Freestyle's functors, `_bl_i18n_utils`, `bl_app_override`): typing debt, out of
-# scope (research `blender-true-problems`, "Ruled out").
+# scope (research for #88, "Ruled out").
 UNTYPED_PACKAGES = (
     "scripts/addons_core/io_scene_gltf2/",
     "scripts/addons_core/rigify/",
@@ -167,7 +174,7 @@ NUMPY = re.compile(r"\bndarray\b|\bnumpy\.")
 # Optional settings Blender's stubs lack because the Blender that generated them was built without the feature.
 BUILD_OPTION_TYPE = re.compile(r"`FFmpegSettings`|`Literal\[\"FFMPEG\"\]` is not assignable")
 # Blender's code that reads a pointer its poll() does not check, or that has no poll() (research
-# `blender-true-problems`, cause 4): (path, enclosing class or "", enclosing function or "", text on the line).
+# for #88, cause 4): (path, enclosing class or "", enclosing function or "", text on the line).
 UNCHECKED_POINTER_BUGS = [
     ("scripts/addons_core/viewport_vr_preview/operators.py",
      "VIEW3D_OT_vr_location_scouting_active_camera_to_capture", "", ""),
@@ -196,6 +203,7 @@ NARROWED_IN_CALLER_SITES = [
 # A pointer implied by another check: a sibling enum or flag, the pointer the poll checks (`context.constraint` for
 # its owner), a structural invariant, or the same pointer checked through an alias.
 CORRELATED_SITES = [
+    ("scripts/addons_core/io_scene_fbx/import_fbx.py", "FbxImportHelperNode", "link_hierarchy", "arm.name"),
     (
         "scripts/addons_core/node_wrangler/operators/align_selected.py",
         "NODE_OT_align_selected",
@@ -214,9 +222,14 @@ CORRELATED_SITES = [
     ("scripts/startup/bl_operators/sequencer.py", "SequencerCrossfadeSounds", "execute", "sequence_editor"),
     ("scripts/startup/bl_operators/sequencer.py", "SequencerSplitMulticam", "execute", ""),
 ]
+# A struct's owner read through a collection of them (``objects = list({pose_bone.id_data for ...})``).
+ID_DATA_SITES = [
+    ("scripts/startup/bl_operators/anim.py", "NLA_OT_bake", "execute", "obj.animation_data"),
+]
 # The None test lives in a helper without a TypeGuard, or in the only caller.
 HELPER_CHECKS_SITES = [
     ("scripts/addons_core/pose_library/operators.py", "POSELIB_OT_paste_asset", "poll", ""),
+    ("scripts/addons_core/pose_library/asset_browser.py", "", "params", "return space_data.params"),
     (
         "scripts/addons_core/viewport_vr_preview/operators.py",
         "VIEW3D_OT_vr_location_scouting_add_marker_from_capture",
@@ -247,19 +260,24 @@ NEVER_NONE_CONTEXT_TYPE = re.compile(r"`(?:Preferences|WindowManager) \| None`")
 CALLBACK_PARAMETER_TYPE = re.compile(
     r"`(?:bpy_struct|AnyType|KeyingSet|AssetRepresentation|Depsgraph|ViewLayer) \| None`"
 )
+# The rules ty 0.0.103 split one rule into. The causes do not sort by what tells them apart (a union receiver, a
+# lost keyword, an implicit return), so a cause that names one names all of its split.
+MISSING_ATTRIBUTE_RULES = {"missing-attribute", "missing-union-attribute"}
+METHOD_OVERRIDE_RULES = {"incompatible-method-override", "lost-keyword-for-regular-parameter"}
+RETURN_RULES = {"invalid-explicit-return", "invalid-implicit-return", "invalid-generator-return-type"}
 STUB_GAP_RULES = {
     "not-iterable",
     "unsupported-operator",
     "not-subscriptable",
-    "call-non-callable",
-    "invalid-method-override",
-    "invalid-attribute-override",
-    "invalid-property-type-override",
-    "invalid-mutable-override",
+    "not-callable",
+    *METHOD_OVERRIDE_RULES,
+    "incompatible-attribute-override",
+    "incompatible-property-override",
+    "incompatible-mutable-override",
 }
 GENERAL_TYPING_RULES = {
     "deprecated",
-    "empty-body",
+    "invalid-implicit-return-in-function-with-stub-body",
     "unused-type-ignore-comment",
     "unused-ignore-comment",
     "unresolved-global",
@@ -286,6 +304,27 @@ POLL_HELPER_BASES = re.compile(r"\bNWBase\b")
 # a walrus or local alias, or `bpy.context` for the `context` parameter.
 POLL_ALIAS = re.compile(r"\b(?:getattr|hasattr)\(context, |:=|\bbpy\.context\.\w+|^\s+\w+ = context\.\w+", re.MULTILINE)
 POLL_MODE = re.compile(r"\bcontext\.mode == 'EDIT_")
+# Where Blender's stubs and its C API disagree about None: `Area.header_text_set(None)` clears the header text but the
+# parameter is typed `str`, and `GPUVertFormat.attr_add` returns the attribute's id but is typed `-> None` (so the id
+# passed to `attr_fill` is None). Fixed in the stubs by the Blender spec.
+STUB_NONE_MISMATCH = re.compile(
+    r"`(?:Area\.header_text_set|GPUVertBuf\.attr_fill)` is incorrect: Expected `[^`]*`, found `None`"
+)
+# Modules that import their submodules by name at runtime (`__import__(name=__name__, fromlist=_modules)`) and reload
+# them when the module is reloaded.
+DYNAMIC_IMPORT_MODULES = ("scripts/startup/bl_ui/__init__.py", "scripts/startup/bl_operators/__init__.py")
+# Modules whose names come at runtime: put into `globals()` from a parsed C header, or given by the program that runs
+# the script (`gdb` inside GDB).
+RUNTIME_NAME_MODULES = ("doc/python_api/rst_from_bmesh_opdefines.py", "tools/utils/gdb_struct_repr_c99.py")
+# A return annotation naming a private typeshed type (`hashlib._Hash`), which ty resolves to another private type.
+TYPESHED_PRIVATE = re.compile(r"found `_[A-Z]\w*`$")
+# Arguments ty checks against a third-party stub that is stricter than the library (`gdb.set_convenience_variable`
+# takes None to clear a variable).
+THIRD_PARTY_STUB = re.compile(r"`set_convenience_variable` is incorrect")
+# A base class method called on `self` whose every override gives the parameter a default.
+OVERRIDDEN_SIGNATURE_SITES = [
+    ("build_files/linux/install_linux_packages.py", "PackageInstaller", "package_find", "package_name_version_gen("),
+]
 # RNA pointers Blender always sets that lack PROP_NEVER_NULL (S1): embedded structs (`Bone.color`, a tracking
 # object's reconstruction, the XR viewfinder of a session), `wm.keyconfigs.active/user/default`, the active
 # tracking object, `SpaceView3D.region_3d`, `AssetRepresentation.metadata`.
@@ -302,6 +341,7 @@ NONE_ON_FAILURE = re.compile(
     r"|\bbegin_result\(|\.to_mesh\(|\bid_properties_ui\("
 )
 # Calls that make a context member or a pointer exist for the lines after them.
+ADDING_CALL = re.compile(r"\b(?:bpy\.)?ops\.\w+\.(?:\w+_)?add\(")
 CREATING_CALL = re.compile(r"\bbpy\.ops\.\w+\.(?:open|new|\w+_add)\(")
 SETTING_CALL = re.compile(r"\bbpy\.ops\.\w+\.\w+\(|animation_data_create\(\)|\bgenerate_rig\(|nodes\.active = ")
 SET_BY_UI_BUTTON_TYPE = re.compile(r"`(?:KeyMap|KeyMapItem|FreestyleModuleSettings) \| None`")
@@ -326,7 +366,12 @@ STUB_SIGNATURE = re.compile(
     r"|attribute `rect` on type `RenderPass`|Expected `bpy_struct`, found `(?:LayerObjects|KeyingSets\w*)`"
     r"|with key of type `BMLayerItem`|attribute `uv` on type `float`|has no attribute `rna_type`"
 )
-REGISTERED_CLASS = re.compile(r"Module `bpy\.types` has no member `\w+_(?:OT|MT|PT)_\w+`|^Class `\w+_(?:MT|OT|PT)_\w+`")
+# A registered class read through `bpy.types`: the builtin stubs lack it, and with fake-bpy-module, which declares it,
+# its method borrowed as another operator's callback takes the class as its unannotated first parameter.
+REGISTERED_CLASS = re.compile(
+    r"Module `bpy\.types` has no member `\w+_(?:OT|MT|PT)_\w+`|^Class `\w+_(?:MT|OT|PT)_\w+`"
+    r"|\(\w+_OT_\w+, Context \| None, /\) -> [^`]*`, found `def \w+\(_?self,"
+)
 # Plain Python typing: a record kept in a list or dict, a builtin or stdlib call, a deliberate monkeypatch, an
 # attribute set at runtime, a `hasattr` narrowing, a class-body helper call, an override of a Python method.
 GENERAL_TYPING = re.compile(
@@ -344,7 +389,117 @@ GENERAL_TYPING = re.compile(
     r"|`float\*`|No overload of function `dirname`|on type `<module '|Argument to function `(?P<cls>\w+)\.\w+` is "
     r"incorrect: Expected `(?P=cls)`"
 )
+# A string assigned to an enum property (`Object of type `str` is not assignable to attribute `operation``).
+STR_FOR_ENUM = re.compile(r"Object of type `str` is not assignable to attribute `\w+`")
+# A call of a `bpy.props` function, which makes a Registered property.
+PROPERTY_CALL = re.compile(r"\b\w*Property\(")
+# A class attribute that is not a property: `RENDER_PT_format._frame_rate_ret = ...`.
+CLASS_MONKEYPATCH = re.compile(r"Unresolved attribute `\w+` on type `<class")
+ASSERT_RAISES_BLOCK = re.compile(r"\s*with\b.*\bassertRaises\b")
 MONKEYPATCH = re.compile(r"^\s*(?:_bpy|pydoc(?:\.Helper)?)\.\w+ = ")
+
+
+# --- fake-bpy-module's stub shapes (docs/reports/fake-bpy-module-leftovers.md) ----------------------------------
+
+# fake-bpy-module types `Object.data` as the union of every object data type and None. ty prints it cut short;
+# it is the `ID | None` of Blender's own stubs (`ID` once a check removed None or some types), so the same causes
+# apply.
+OBJECT_DATA_UNION = re.compile(
+    r"`Armature \| (Camera \| Curve \| \.\.\. omitted 11|[^`]*\.\.\. omitted \d+) union elements`"
+)
+# The base `ID` (or `ID | None`): the type of `Object.data` and of `bpy_struct.id_data`.
+ID_TYPE = re.compile(r"`ID( \| None)?`")
+# fake-bpy-module writes stubs for Blender's own Python modules by inspecting them at runtime, and those come before the
+# source on the search path. They lose module constants, dataclass and instance attributes, `__init__`, base
+# classes (an exception class, a protocol), return annotations (`-> None`) and the context managers of functions
+# and classes.
+FAKE_BPY_PYTHON_MODULE = re.compile(
+    r"`object\.__init__`"
+    r"|^Module `(?:_bpy_internal|addon_utils|bl_ui|rna_prop_ui)\b[\w.]*`"
+    r" has no member"
+    r"|^Object of type `(?:I18n|AssetV1|FileV1|CatalogV1|AssetLibraryMeta|AssetLibraryIndexPageV1|FileHashInfo"
+    r"|BlendFileHeader|URLWithHash)\b[^`]*` has no attribute"
+    r"|^Object of type `(?:None|RestrictBlend|ProgressReport)` cannot be used with `with`"
+    r"|`<class 'BlendHeaderError'>`|found `ExtraFileMetadataProvider`|found `def asset_listing_main\("
+    r"|^Object of type `None` is not assignable to (?:`str \| URLWithHash`|attribute `enabled`)"
+    r"|between objects of type `Path` and `None`"
+    r"|function `ToolDef\.from_fn`"
+)
+# The values those lossy stubs return feed a builtin call or a nullable read: (path, enclosing class or "",
+# enclosing function or "", text on the line).
+FAKE_BPY_PYTHON_MODULE_SITES = [
+    ("scripts/addons_core/ui_translate/update_addon.py", "", "", "dict(utils_i18n.get_po_files_from_dir("),
+    ("scripts/addons_core/ui_translate/update_repo.py", "", "", "subprocess.run(cmmd"),
+    ("scripts/addons_core/ui_translate/update_repo.py", "", "", "languages_menu_lines"),
+    ("scripts/modules/_bpy_internal/assets/remote_library/listing_downloader.py", "", "", "path_to_load."),
+    ("scripts/modules/_bpy_internal/assets/remote_library/listing_downloader.py", "", "", "urljoin"),
+    ("scripts/modules/bl_app_template_utils.py", "", "", "app_template_paths("),
+    ("scripts/startup/bl_operators/wm.py", "", "", "path_split"),
+    ("doc/python_api/sphinx_doc_gen.py", "", "rna_info_BuildRNAInfo_cache", "return ret"),
+]
+# A value those lossy stubs type `None` (a function's lost return annotation), passed on or returned: `None` is not
+# written on the line. Blender's own stubs resolve these functions to their source.
+FAKE_BPY_NONE_VALUE = re.compile(
+    r"(?:is incorrect: Expected|does not match returned value: expected) `[^`]*`, found `None`$"
+)
+
+
+def fake_bpy_none_value(d: Diagnostic) -> bool:
+    return (
+        d.rule in {"invalid-argument-type", *RETURN_RULES}
+        and FAKE_BPY_NONE_VALUE.search(d.msg) is not None
+        and re.search(r"\bNone\b", d.text) is None
+        and STUB_NONE_MISMATCH.search(d.msg) is None
+    )
+
+
+# fake-bpy-module's `_bpy_types` stub declares its own `Context`, `Menu`, ... beside `bpy.types`, and `bpy.types`
+# declares the registered Python classes as instances (`X_OT_y: module.X_OT_y`), not as the classes.
+FAKE_BPY_TYPE_ALIAS = re.compile(
+    r"\b_bpy_types\.Context\b|Expected `type\[Panel \| UIList \| Menu \| \.\.\. omitted \d+ types\]`"
+    r"|^Object of type `<class 'UI_UL_list'>[^`]*` has no attribute `is_registered`"
+    r"|^Too many positional arguments to bound method `\w+_OT_\w+\.\w+`"
+    r"|found `bound method \w+_OT_\w+\.\w+\("
+)
+# fake-bpy-module types as Optional what RNA never leaves None: `bl_rna`, `RenderViews.active`, and an int property
+# (`active_*_index`, read as a collection key or updated in place). Its collections take a key `int | str |
+# tuple[str, ...]` (Blender's own stubs: `int`).
+FAKE_BPY_NULLABLE = re.compile(r"in union `Struct \| None`|`SceneRenderView \| None`")
+FAKE_BPY_NONE_INDEX = re.compile(
+    r"\(key: int \| str(?: \| tuple\[str, \.\.\.\])?\) -> \w+, .* cannot be called with key of type `None`"
+    r"|between objects of type `None` and `Literal\[1\]`"
+)
+DYNAMIC_ENUM_PLACEHOLDER = re.compile(r"""Literal\[(['"])(?:DEFAULT|PLACEHOLDER)\1\]`""")
+# The per-node socket collections of fake-bpy-module, whose `__getitem__` takes the socket names as literals.
+FAKE_BPY_NODE_SOCKETS_KEY = re.compile(
+    r"Method `__getitem__` of type `(?:Overload\[\(key: Literal\[0, |bound method _\w+_Node(?:In|Out)puts\.)"
+)
+# The library key `(name, None)` of a local data-block, which fake-bpy-module's `tuple[str, ...]` rejects.
+FAKE_BPY_LIB_KEY = re.compile(r"tuple\[str, \.\.\.\]\) -> .* cannot be called with key of type `tuple\[[^`]*, None\]`")
+# fake-bpy-module's C types lack their Python protocols: a `Vector` or `bpy_prop_array` is no `Sequence[float]`,
+# `MatrixAccess` has no `__getitem__`, `Vector` no ordering, `Quaternion` no `__neg__`, and the context managers
+# of `gpu`, `blf` and `imbuf` (`gpu.matrix.push_pop()`, `GPUOffScreen.bind()`) no `__enter__` / `__exit__`.
+FAKE_BPY_PROTOCOL = re.compile(
+    r"Expected `Sequence\[float\](?: \| None)?`, found `(?:(?:Any|Unknown) \| Vector|Vector \| Unknown"
+    r"|bpy_prop_array\[float\])`"
+    r"|found `(?:dict\[str, [^`]*|list\[)list\[Vector\]|`MatrixAccess`|between two objects of type `Vector`"
+    r"|^Unary operator `-` is not supported for object of type `Quaternion"
+    r"|^Object of type `(?:BLFImBufContext|ImBufBuffer|OffScreenStackContext|MatrixStackContext)` cannot be used"
+    r" with `with`"
+)
+
+
+def reload_idiom(d: Diagnostic) -> bool:
+    """A name bound only when the module is reloaded: ``importlib.reload(x)``, a ``"x" in locals()`` guard before
+    it, or a module that imports its submodules by name at runtime."""
+    if d.rule != "unresolved-reference":
+        return False
+    name = next(iter(re.findall(r"^Name `(\w+)`", d.msg)), "")
+    return (
+        "reload(" in d.text
+        or re.search(rf"[\"']{re.escape(name)}[\"'] in locals\(\)", d.scope.source) is not None
+        or d.path.replace("\\", "/") in DYNAMIC_IMPORT_MODULES
+    )
 
 
 def missing_attribute(msg: str) -> str | None:
@@ -367,9 +522,9 @@ PYTHON_CLASSES = {"None", "EllipsisType", "ModuleType", "~None"}
 PYTHON_USE_RULES = {
     "not-subscriptable",
     "not-iterable",
-    "call-non-callable",
+    "not-callable",
     "unsupported-operator",
-    "unresolved-attribute",
+    *MISSING_ATTRIBUTE_RULES,
 }
 
 
@@ -403,11 +558,40 @@ def python_optional(d: Diagnostic) -> bool:
 
 
 def unchecked_pointer_bug(d: Diagnostic) -> bool:
+    """A nullable read at one of UNCHECKED_POINTER_BUGS; not ``obj.data`` read as a whole ``ID | None`` (fake-bpy-module's
+    ``Object.data`` union), which is ``object-data-untagged`` wherever it is."""
     path = d.path.replace("\\", "/")
+    if re.search(r"`ID \| None`", d.msg) and ".data" in d.text:
+        return False
     return nullable(d) and any(
         path == p and (not c or d.scope.cls == c) and (not f or d.scope.function == f) and t in d.text
         for p, c, f, t in UNCHECKED_POINTER_BUGS
     )
+
+
+def object_data(d: Diagnostic) -> bool:
+    """Whether the ``ID | None`` (or ``ID``) the message names is ``Object.data``, read with no Type tag test: the
+    receiver of the missing or assigned attribute is a ``.data`` read or a local set from one (``me = obj.data``,
+    then ``me.polygons``), and so is a value or argument of that type. Not ``id_data`` (the owner of a struct),
+    ``animation_data``, nor the ``data`` an ``ID`` itself lacks: those are ``base-class-subtype``."""
+    if ID_TYPE.search(d.msg) is None:
+        return False
+    attribute = missing_attribute(d.msg) or next(iter(re.findall(r"to attribute `(\w+)` on type `ID\b", d.msg)), None)
+    if attribute is None:
+        return reads_from(d, r"\.data\b")
+    receivers = re.findall(rf"((?<![.\w])[A-Za-z_](?:[\w.]|\[[^\]]*\]|\(\))*)\.{attribute}\b", d.text)
+    return any(
+        receiver.endswith(".data")
+        or (receiver.isidentifier() and any(rhs.strip().endswith(".data") for rhs in assignments(d, receiver)[:1]))
+        for receiver in receivers
+    )
+
+
+def id_data_owner(d: Diagnostic) -> bool:
+    """Whether the ``ID`` the message names is a struct's owner, ``bpy_struct.id_data``, which the stubs type as the
+    base ``ID`` (fake-bpy-module: ``ID | None``) though the struct decides it (a pose bone's is its armature
+    object)."""
+    return ID_TYPE.search(d.msg) is not None and (reads_from(d, r"\.id_data\b") or in_sites(ID_DATA_SITES)(d))
 
 
 def python_types_only(d: Diagnostic) -> bool:
@@ -426,7 +610,10 @@ def python_types_only(d: Diagnostic) -> bool:
 def correlated_union(d: Diagnostic) -> bool:
     """Whether the message names a union of Blender types, without ``None``, that the code tells apart by a mode, a
     flag or a type field ty does not follow (``PoseBone | EditBone | Object`` picked by ``is_ebone``)."""
-    if d.rule not in {"unresolved-attribute", "invalid-assignment", "invalid-argument-type"}:
+    if d.rule not in {*MISSING_ATTRIBUTE_RULES, "invalid-assignment", "invalid-argument-type"}:
+        return False
+    # A plain `str` for an enum property (Node Wrangler's `node.operation = operation`) is general typing.
+    if STR_FOR_ENUM.match(d.msg):
         return False
     # ty names the members that lack an attribute when there are many: "not defined on `AddStrip`, `ColorStrip`".
     if re.search(r"is not defined on `\w+`, `\w+`", d.msg):
@@ -437,7 +624,9 @@ def correlated_union(d: Diagnostic) -> bool:
         else r"found `([^`]*)`$"
     )
     for type_ in re.findall(pattern, d.msg):
-        members = [m for m in union_members(type_) if m != "Unknown"]
+        # ty prints a member narrowed by a truthiness check as `(Node & ~AlwaysFalsy)`.
+        members = [re.sub(r"^\((.*) & ~AlwaysFalsy\)$", r"\1", m) for m in union_members(type_)]
+        members = [m for m in members if m != "Unknown"]
         if len(members) > 1 and all(
             BLENDER_TYPE.match(m) and m != "None" and not PYTHON_TYPE.match(m) for m in members
         ):
@@ -464,6 +653,38 @@ def in_presets(d: Diagnostic) -> bool:
 
 def in_tests(d: Diagnostic) -> bool:
     return d.path.replace("\\", "/").startswith("tests/")
+
+
+def stub_gap(d: Diagnostic) -> bool:
+    """Whether the diagnostic is a shape the stubs leave out (iteration, operators, subscripts, module members)."""
+    return (
+        d.rule in STUB_GAP_RULES
+        or "object.__init__" in d.msg
+        or re.search(r"Module `[\w.]+` has no member", d.msg) is not None
+    )
+
+
+def in_tests_or_tools(d: Diagnostic) -> bool:
+    """Whether the diagnostic is in Blender's tests or its build and developer tools, which are plain Python."""
+    return d.path.replace("\\", "/").startswith(("tests/", "tools/", "build_files/", "doc/python_api/"))
+
+
+def expected_error(d: Diagnostic) -> bool:
+    """Whether a test makes the call on purpose, to check Blender rejects it: the line is in a ``with
+    self.assertRaises(...)`` block, or passes the call to ``assertRaises`` itself."""
+    if not in_tests(d):
+        return False
+    if "assertRaises" in d.text:
+        return True
+    lines = d.scope.source.splitlines()
+    if not lines:
+        return False
+    limit = indentation(lines[-1])
+    for text in reversed(lines[:-1]):
+        if not text.strip() or indentation(text) >= limit:
+            continue
+        return ASSERT_RAISES_BLOCK.match(text) is not None
+    return False
 
 
 NONE_KEY = "with key of type `None`"
@@ -511,8 +732,9 @@ def callback_never_none(d: Diagnostic) -> bool:
 def registered_property(d: Diagnostic) -> bool:
     if in_addon(d):
         return False
-    if re.search(r"Unresolved attribute `\w+` on type `<class", d.msg):
-        return True
+    # A class attribute set to anything but a property (`RENDER_PT_format._frame_rate_ret = ...`) is a monkeypatch.
+    if CLASS_MONKEYPATCH.search(d.msg):
+        return PROPERTY_CALL.search(d.text) is not None
     if re.match(r"\s*del\b", d.text) and d.msg.startswith("Class"):
         return True
     if d.rule == "invalid-assignment" and d.msg.startswith("Object of type `_PropertyDeferred` is not assignable"):
@@ -528,7 +750,7 @@ def in_addon(d: Diagnostic) -> bool:
 def ui_draw_pointer(d: Diagnostic) -> bool:
     """A nullable read in the draw callback of a Panel, Menu, Header or UIList: Blender draws it only where its
     pointers exist (its poll, its editor or mode, or the panel's own logic), which ty does not follow (research
-    ``blender-true-problems``, "Ruled out": the UI's draw code is guarded by construction)."""
+    for #88, "Ruled out": the UI's draw code is guarded by construction)."""
     return nullable(d) and (
         (
             root(d.scope) in UI_ROOTS
@@ -539,10 +761,41 @@ def ui_draw_pointer(d: Diagnostic) -> bool:
 
 
 def layout_in(roots: set[str]) -> Callable[[Diagnostic], bool]:
+    """``self.layout`` read as ``UILayout | None`` in a helper of a class with a root of ``roots``. An operator helper
+    may also be a function taking the operator as ``self``, or a method of a mixin (a class with no bases): ty types
+    a mixin's ``self.layout`` only when the mixin has users, and as ``UILayout | None`` only when one of them is not
+    drawn, such as an Operator."""
     return lambda d: (
         "UILayout | None" in d.msg
-        and (root(d.scope) in roots or ("operator" in roots and not d.scope.cls and d.scope.params[:1] == ("self",)))
+        and (
+            root(d.scope) in roots
+            or ("operator" in roots and not d.scope.cls and d.scope.params[:1] == ("self",))
+            or ("operator" in roots and is_mixin(d.scope))
+        )
     )
+
+
+def is_mixin(scope: Scope) -> bool:
+    """Whether the enclosing class is a mixin: a class with no bases, whose idname-style name names no Blender
+    base."""
+    return bool(scope.cls) and not scope.bases and not root(scope)
+
+
+# A mixin's `super()` (`super().report(...)` in a mixin that redeclares an Operator method for its users), and a set
+# literal checked against a mixin method intersected with its users' Blender method: ty types `self` there as the
+# mixin and its users' Blender classes, but cannot follow `super()` through that, nor infer the literal's items.
+MIXIN_INTERSECTION = re.compile(
+    r"Object of type `<super: <class '(\w+)'>, (?:<class ')?\1'?>?>`|a name in the set is not an enum item"
+)
+
+
+def mixin_self(d: Diagnostic) -> bool:
+    return "Self@" in d.msg or (is_mixin(d.scope) and MIXIN_INTERSECTION.search(d.msg) is not None)
+
+
+# An operator idname built at runtime (`"{:s}.hide".format(self._operator_name)`): ty cannot tell the operator, so
+# `layout.operator()` keeps the stubs' `OperatorProperties | None`.
+RUNTIME_OPERATOR_IDNAME = re.compile(r"""\.operator\((?:f["']|(?:"[^"]*"|'[^']*')\.format\()""")
 
 
 def rule(*names: str) -> Callable[[Diagnostic], bool]:
@@ -640,7 +893,21 @@ def poll_checks_alias(d: Diagnostic) -> bool:
     names = {m for groups in members for m in groups if m}
     if names & {"object", "active_object"}:
         names |= {"object", "active_object"}
-    return any(reads_from(d, rf"\bcontext\.{m}\b") for m in names)
+    return any(reads_from(d, rf"\bcontext\.{m}\b") for m in names) or poll_tests_same_path(d)
+
+
+def poll_tests_same_path(d: Diagnostic) -> bool:
+    """``layer = obj.data.layers.active`` read in a callback whose poll tests ``obj.data.layers.active is not
+    None``, where ``obj`` is the same context member in both (``(obj := context.active_object)`` in the poll)."""
+    for name in read_names(d):
+        rhs = next(iter(assignments(d, name)), "").strip()
+        if not re.fullmatch(r"\w+(?:\.\w+)+", rhs) or f"{rhs} is not None" not in d.scope.poll:
+            continue
+        root = rhs.partition(".")[0]
+        for member in re.findall(rf"\b{root} = context\.(\w+)\s*$", d.scope.source, re.MULTILINE):
+            if re.search(rf"\b{root} :?= context\.{member}\b", d.scope.poll):
+                return True
+    return False
 
 
 def parent_panel(d: Diagnostic) -> bool:
@@ -648,7 +915,9 @@ def parent_panel(d: Diagnostic) -> bool:
 
 
 def bl_context_member(d: Diagnostic) -> bool:
-    """The active object a top-level Properties tab (``object``, ``physics``) or a mode's tool panels need."""
+    """The active object a top-level Properties tab (``object``, ``physics``) or a mode's tool panels need: the
+    ``bl_context`` Implied narrowing where its rule did not accept the read, such as a display-only context
+    (``.grease_pencil_paint``), which the tool header also draws as a popover."""
     if "Object | None" not in d.msg or d.scope.function != "poll":
         return False
     if re.search(r"bl_context = [\"']\.", d.scope.attributes):
@@ -749,6 +1018,16 @@ def set_by_preceding_call(d: Diagnostic) -> bool:
     return False
 
 
+def added_object(d: Diagnostic) -> bool:
+    """``context.object`` / ``active_object`` (or a name set from it) read after a ``bpy.ops.<category>.add()`` or
+    ``*_add()`` call earlier in the function, which makes the object it adds active."""
+    return (
+        "`Object | None`" in d.msg
+        and reads_from(d, CONTEXT + r"(?:object|active_object)\b")
+        and ADDING_CALL.search("\n".join(d.scope.source.splitlines()[:-1])) is not None
+    )
+
+
 def call_end(lines: list[str], start: int) -> int:
     """The index of the line that closes the call opened on ``lines[start]`` (the call can span several lines)."""
     depth = 0
@@ -788,31 +1067,63 @@ def window_context(d: Diagnostic) -> bool:
 # --- the table, first match wins -------------------------------------------------------------------------------
 
 CAUSES = [
-    # The Imprecise annotations (S4), Implied narrowings (S5) and Assumptions (S6): the code their dedicated rule
-    # accepts and reports. An error of the same shape is code the rule did not accept, and has another cause.
+    # The Imprecise annotations (S4), Implied narrowings (S5, and C6 of spec #123) and Assumptions (S6, and C5 / C7 of
+    # spec #123): the code their dedicated rule accepts and reports, tagged with the slice that added the rule. An
+    # error of the same shape is code the rule did not accept, and has another cause.
     *(Cause(name, group, slice_, rule(f"blender-{name}"), f"blender-{name}") for group, slice_, names in (
         ("imprecise-annotation", "S4",
          ("imprecise-operator-return", "imprecise-enum-value", "imprecise-callback-parameter")),
         ("implied-narrowing", "S5", ("narrowed-by-menu-prefix", "narrowed-by-popover", "narrowed-by-poll")),
         ("assumption", "S6", ("assumed-registration", "assumed-complete-registration", "assumed-preferences",
                               "assumed-list-item", "assumed-context-member")),
+        ("assumption", "C5", ("assumed-internal-operator", "assumed-editor-member", "assumed-preset-context",
+                              "assumed-added-object")),
+        ("implied-narrowing", "C6", ("narrowed-by-bl-context",)),
+        ("assumption", "C7", ("assumed-subclass-member",)),
+        # Step 3 of the cross-add-on work, after the specs that numbered the others: no spec area.
+        ("assumption", "", ("assumed-default-addon",)),
     ) for name in names if name != "assumed-preferences"),
     # An add-on's `register()` reads its own preferences, which exist once the add-on is enabled.
     Cause("assumed-preferences", "assumption", "S6", any_of(rule("blender-assumed-preferences"), lambda d: (
         "`AddonPreferences | None`" in d.msg and d.scope.function == "register")), "blender-assumed-preferences"),
+    # Stub shapes of fake-bpy-module that Blender's own stubs do not have: a fix in fake-bpy-module.
+    Cause("fake-bpy-python-module", "typechecker-fix", "", lambda d: not untyped_python(d) and not in_tests(d)
+          and re.search(r"libraries\.load|temp_data", d.text) is None
+          and (FAKE_BPY_PYTHON_MODULE.search(d.msg) is not None or in_sites(FAKE_BPY_PYTHON_MODULE_SITES)(d)
+               or fake_bpy_none_value(d))),
+    Cause("fake-bpy-type-alias", "typechecker-fix", "", lambda d: FAKE_BPY_TYPE_ALIAS.search(d.msg) is not None),
+    Cause("fake-bpy-nullable", "typechecker-fix", "", lambda d: FAKE_BPY_NULLABLE.search(d.msg) is not None
+          or (FAKE_BPY_NONE_INDEX.search(d.msg) is not None and reads_from(d, r"\.active_\w+"))),
+    Cause("fake-bpy-lib-key", "typechecker-fix", "", lambda d: FAKE_BPY_LIB_KEY.search(d.msg) is not None),
+    # fake-bpy-module types a node class's own sockets `_<Node>_NodeInputs | None`, indexed by the socket names
+    # only, which a node typed by its constructor (`nodes.new('ShaderNodeBsdfPrincipled')`) or a Type tag test
+    # exposes at `node.inputs["Color"]` (and at an identifier such as `"Fac"`). Only where Blender's docs don't
+    # state the sockets (a release): Blender's fork writes them, and fake-bpy-module's own generator stands aside.
+    Cause("fake-bpy-node-sockets", "typechecker-fix", "", lambda d: re.search(r"\.(?:inputs|outputs)\[", d.text)
+          is not None and ((d.rule == "not-subscriptable" and "`None`" in d.msg)
+                           or FAKE_BPY_NODE_SOCKETS_KEY.search(d.msg) is not None)),
+    Cause("fake-bpy-protocol", "typechecker-fix", "", lambda d: FAKE_BPY_PROTOCOL.search(d.msg) is not None),
     # Blender's own code is wrong (BF1 runtime, BF2 annotations).
     Cause("property-on-panel", "blender-fix", "BF1", rule("blender-unsupported-property-host")),
     Cause("dead-api", "blender-fix", "BF1", outside_tests(lambda d: DEAD_API.search(d.msg) is not None)),
-    Cause("reload-idiom", "typing-debt", "", lambda d: d.rule == "unresolved-reference" and "reload(" in d.text),
+    Cause("reload-idiom", "typing-debt", "", reload_idiom),
+    # Tests that make a wrong call on purpose, inside `assertRaises`.
+    Cause("expected-error", "typing-debt", "", expected_error),
+    Cause("runtime-name", "typing-debt", "", lambda d: d.rule == "unresolved-reference"
+          and d.path.replace("\\", "/") in RUNTIME_NAME_MODULES),
     Cause("undefined-name", "blender-fix", "BF1", outside_tests(rule("unresolved-reference"))),
-    Cause("missing-argument", "blender-fix", "BF1", outside_tests(rule("missing-argument"))),
+    Cause("missing-argument", "blender-fix", "BF1", outside_tests(lambda d: d.rule == "missing-argument"
+          and not in_sites(OVERRIDDEN_SIGNATURE_SITES)(d))),
     Cause("rigify-get-bone", "blender-fix", "BF2", lambda d: d.path.replace("\\", "/").startswith(RIGIFY)
           and re.search(r"EditBone \| PoseBone|PoseBone \| EditBone", d.msg) is not None),
     Cause("correlated-union", "typing-debt", "", correlated_union),
     Cause("tooldef", "blender-fix", "BF2", lambda d: "ToolDef" in d.msg),
-    Cause("none-for-non-optional", "blender-fix", "BF2", outside_tests(any_of(
+    Cause("stub-none-mismatch", "typechecker-fix", "", lambda d: STUB_NONE_MISMATCH.search(d.msg) is not None),
+    # Untyped packages (rigify, glTF, Freestyle) keep their typing as it is: `untyped-python` below.
+    Cause("none-for-non-optional", "blender-fix", "BF2", lambda d: not in_tests(d) and not untyped_python(d)
+          and THIRD_PARTY_STUB.search(d.msg) is None and any_of(
         rule("invalid-parameter-default"),
-        lambda d: d.rule == "invalid-argument-type" and d.msg.endswith("found `None`")))),
+        lambda d: d.rule == "invalid-argument-type" and d.msg.endswith("found `None`"))(d)),
     Cause("wrong-annotation", "blender-fix", "BF2", outside_tests(any_of(
         lambda d: d.rule == "invalid-type-form" and "bpy.context" in d.text,
         lambda d: d.rule == "invalid-base" and "`Menu`" in d.msg,
@@ -822,22 +1133,25 @@ CAUSES = [
     Cause("context-never-none", "typechecker-fix", "S1", lambda d: NEVER_NONE_CONTEXT_TYPE.search(d.msg) is not None),
     Cause("callback-never-none", "typechecker-fix", "S1", callback_never_none),
     # ObjectModifiers.new() really returns None when the modifier cannot be added (only a warning report), so an
-    # unchecked result is typing debt, not a typechecker fix.
-    Cause("modifiers-new", "typing-debt", "", lambda d: nullable(d) and reads_from(d, r"\.modifiers\.new\(")),
+    # unchecked result is typing debt, not a typechecker fix. Only the modifier itself counts: a nullable receiver
+    # on the same line (`self.spline_obj.modifiers.new(...)`) is not the result.
+    Cause("modifiers-new", "typing-debt", "", lambda d: NULLABLE_MODIFIER.search(d.msg) is not None
+          and reads_from(d, MODIFIERS_NEW)),
     Cause("helper-checks-none", "typing-debt", "", lambda d: "`SpaceAssetInfo.is_asset_browser`" in d.msg
           or (nullable(d) and in_sites(HELPER_CHECKS_SITES)(d))),
     Cause("bmesh-elem-seq", "typechecker-fix", "S2", lambda d: "`BMEdge`" in d.msg and "loop" in d.text),
     Cause("blend-data-lib-key", "typechecker-fix", "S2", lambda d: "`tuple[str, " in d.msg and "[" in d.text),
     Cause("context-store-member", "typechecker-fix", "S2", lambda d: d.msg.startswith("Object of type `Context`")
           and missing_attribute(d.msg) in CONTEXT_STORE_MEMBERS),
-    Cause("freestyle-positional", "typechecker-fix", "S2", lambda d: d.rule == "invalid-method-override"
+    Cause("freestyle-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and FREESTYLE_OVERRIDES.search(d.msg) is not None),
-    Cause("render-engine-positional", "typechecker-fix", "S2", lambda d: d.rule == "invalid-method-override"
+    Cause("render-engine-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and RENDER_ENGINE_UPDATES.search(d.msg) is not None),
     # Enums whose items are computed: at runtime (render engines, project sections) or from a tuple expression.
-    Cause("dynamic-enum", "typechecker-fix", "S2", lambda d: "Literal['DEFAULT']`" in d.msg
-          or 'Literal["DEFAULT"]`' in d.msg or re.search(r"Object of type `str & ~Literal\[|to attribute "
-                                                       r"`(?:engine|active_section)` of type `Literal", d.msg) is not None),
+    # The stubs give a computed enum the placeholder item its definition starts with (`DEFAULT`, `PLACEHOLDER`).
+    Cause("dynamic-enum", "typechecker-fix", "S2", lambda d: DYNAMIC_ENUM_PLACEHOLDER.search(d.msg) is not None
+          or re.search(r"Object of type `str & ~Literal\[|to attribute `(?:engine|active_section)` of type `Literal",
+                       d.msg) is not None),
     Cause("stub-context-manager", "typechecker-fix", "S2", lambda d: d.rule == "invalid-context-manager"
           and re.search(r"libraries\.load|temp_data", d.text) is not None),
     Cause("stub-docstring", "typechecker-fix", "S2", lambda d: re.search(
@@ -846,14 +1160,15 @@ CAUSES = [
           or (d.rule == "invalid-assignment" and "data_to." in d.text)
           or ("`ID | None`" in d.msg and reads_from(d, r"\.copy\(\)"))),
     Cause("mathutils-protocol-stub", "typechecker-fix", "S2", lambda d: MATHUTILS_PROTOCOL.search(d.msg) is not None),
-    Cause("callback-positional", "typechecker-fix", "S2", lambda d: d.rule == "invalid-method-override"
+    Cause("callback-positional", "typechecker-fix", "S2", lambda d: d.rule in METHOD_OVERRIDE_RULES
           and "`Gizmo.draw_select`" in d.msg),
     Cause("registered-class-in-bpy-types", "typechecker-fix", "S2", lambda d: "bpy.types." in d.text
           and REGISTERED_CLASS.search(d.msg) is not None),
-    # `item_type == 'PANEL'` does not narrow a NodeTreeInterfaceItem: the stubs declare no type tag for it.
+    # `item_type == 'PANEL'` does not narrow a NodeTreeInterfaceItem, nor `match item.type` a ProjectVariable: the
+    # stubs declare no type tag for their subclasses.
     Cause("item-type-tag-narrowing", "typechecker-fix", "S2", lambda d: re.search(
         r"`NodeTreeInterfaceItem(?: & ~AlwaysFalsy)?` has no attribute `(?:interface_items|name)`"
-        r"|Expected `NodeTreeInterfacePanel", d.msg) is not None),
+        r"|Expected `NodeTreeInterfacePanel|`ProjectVariable` has no attribute `value`", d.msg) is not None),
     Cause("layout-in-helper", "typechecker-fix", "S3", layout_in({"panel", "menu", "header"})),
     Cause("layout-in-operator-helper", "typing-debt", "", layout_in({"operator"})),
     Cause("cross-file-registered-property", "typing-debt", "", lambda d: re.search(
@@ -861,15 +1176,16 @@ CAUSES = [
     Cause("file-registered-property", "typechecker-fix", "S3", registered_property),
     Cause("bl-rna-property", "typechecker-fix", "S3", lambda d: d.msg.startswith("Object of type `Property`")),
     Cause("type-call-bases", "typechecker-fix", "S3", rule("blender-invalid-idname")),
-    Cause("filter-items-tuple", "typechecker-fix", "S3", lambda d: d.rule == "invalid-return-type"
+    Cause("filter-items-tuple", "typechecker-fix", "S3", lambda d: d.rule in RETURN_RULES
           and d.scope.function == "filter_items"),
     # Returns that contradict the operator API or the function's own annotation.
     Cause("operator-return-misuse", "blender-fix", "BF1", outside_tests(
-        lambda d: d.rule == "invalid-return-type" and d.scope.function in OPERATOR_RETURNS)),
-    Cause("return-annotation", "blender-fix", "BF2", outside_tests(rule("invalid-return-type"))),
+        lambda d: d.rule in RETURN_RULES and d.scope.function in OPERATOR_RETURNS)),
+    Cause("return-annotation", "blender-fix", "BF2", outside_tests(lambda d: d.rule in RETURN_RULES
+          and not untyped_python(d) and TYPESHED_PRIVATE.search(d.msg) is None)),
     # Nullable reads, from the most specific source.
     Cause("unchecked-pointer-bug", "blender-fix", "BF1", unchecked_pointer_bug),
-    Cause("mixin-self", "typing-debt", "", lambda d: "Self@" in d.msg),
+    Cause("mixin-self", "typing-debt", "", mixin_self),
     Cause("type-enum-sub-pointer", "typing-debt", "", lambda d: nullable(d) and (
         SETTINGS_POINTER.search(d.msg) is not None or SUB_POINTER.search(d.msg) is not None
         or "`Driver | None`" in d.msg or ("NodeTree | None" in d.msg and reads_from(d, r"\.node_tree\b")))),
@@ -878,15 +1194,14 @@ CAUSES = [
         python_optional(d) or PYTHON_OPTIONAL_TYPE.search(d.msg) is not None
         or (initialised_to_none(d) and not untyped_python(d)))),
     # A preset's module-level reads of the context members of the panel that runs it (`bpy.context.cloth`,
-    # `edit_movieclip`, `active_strip`, a keymap preset's `preferences`): not covered by the context-member
-    # Assumption, which takes only `scene`, `view_layer` and `tool_settings`.
-    Cause("preset-context-member", "typing-debt", "", lambda d: nullable(d) and in_presets(d)),
+    # `edit_movieclip`, `active_strip`, a keymap preset's `preferences`): the preset-context Assumption, where its
+    # rule did not accept the read.
+    Cause("preset-context-member", "assumption", "", lambda d: nullable(d) and in_presets(d)),
     Cause("ui-draw-pointer", "typing-debt", "", outside_tests(ui_draw_pointer)),
-    Cause("object-data-untagged", "typing-debt", "", lambda d: re.search(r"`ID( \| None)?`", d.msg) is not None
-          and ("data" in d.text or reads_from(d, r"\.data\b"))),
+    Cause("object-data-untagged", "typing-debt", "", object_data),
     # The window, screen, area, region, space and workspace of the editor an operator's `invoke` / `modal` (or a
     # gizmo's `exit`) runs in: those run interactively only, so the members exist (research
-    # `blender-true-problems`, "Ruled out": None only in exotic states). Not covered by an Assumption.
+    # for #88, "Ruled out": None only in exotic states). Not covered by an Assumption.
     Cause("editor-context-member", "typing-debt", "", any_of(lambda d: OTHER_CONTEXT_TYPE.search(d.msg) is not None
           and d.scope.function in INTERACTIVE_CALLBACKS, editor_member_outside_execute)),
     # A doc example or template reading the context it documents (`bpy.context.object` with an active object),
@@ -896,16 +1211,21 @@ CAUSES = [
           and not ui_callback_editor_member(d) and not set_by_preceding_call(d)),
     # The causes sorted site by site (docs/reports/spec-95-site-decisions.md), from the most specific.
     Cause("rna-never-none", "typechecker-fix", "S1", rna_never_none),
-    Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule == "unresolved-attribute"
+    Cause("base-class-subtype", "typing-debt", "", lambda d: (d.rule in MISSING_ATTRIBUTE_RULES
           and BASE_CLASS.search(d.msg) is not None) or (d.rule == "invalid-assignment"
           and base_class_target(d.msg.partition(" on type ")[2]))
-          or "Object of type `Node | None` has no attribute" in d.msg or "found `list[tuple[ID," in d.msg),
-    Cause("bl-context-implies-member", "assumption", "", bl_context_member),
+          or "Object of type `Node | None` has no attribute" in d.msg or id_data_owner(d)
+          or re.search(r"found `list\[tuple\[ID(?: \| None)?,", d.msg) is not None),
+    # A panel's `bl_context`: the bl-context Implied narrowing, where its rule did not accept the read.
+    Cause("bl-context-implies-member", "implied-narrowing", "", bl_context_member),
     Cause("set-by-ui-button", "typing-debt", "", lambda d: "`KeyMapItem | None`" in d.msg
           or (SET_BY_UI_BUTTON_TYPE.search(d.msg) is not None and not poll_checks_alias(d))),
     Cause("window-context-in-execute", "typing-debt", "", lambda d: window_context(d)
           and not ("'INTERNAL'" in d.scope.attributes and root(d.scope) == "operator")
           and not ("`Collection | None`" in d.msg and root(d.scope) == "operator")),
+    # The object a `bpy.ops.*.*_add()` call earlier in the function made active: the added-object Assumption,
+    # where its rule did not accept the read.
+    Cause("added-object", "assumption", "", added_object),
     Cause("set-by-preceding-call", "typing-debt", "", set_by_preceding_call),
     Cause("narrowed-by-poll-helper", "implied-narrowing", "", poll_checks_elsewhere),
     Cause("narrowed-by-parent-panel", "implied-narrowing", "", parent_panel),
@@ -932,6 +1252,8 @@ CAUSES = [
         or (nullable(d) and re.search(CONTEXT + r"\w+", d.text) is not None and not d.scope.function))),
     # Untyped packages (rigify, glTF) keep their internal Optionals: they go to `untyped-python` below.
     # A heterogeneous list read as a record (`[index, socket]`) names None among its items: general typing below.
+    Cause("runtime-operator-idname", "typing-debt", "", lambda d: re.search(r"`(?:None \| OperatorProperties|"
+          r"OperatorProperties \| None)`", d.msg) is not None and RUNTIME_OPERATOR_IDNAME.search(d.text) is not None),
     Cause("unchecked-pointer", "unsorted", "", lambda d: nullable(d) and not untyped_python(d)
           and GENERAL_TYPING.search(d.msg) is None),
     # The rest, by rule.
@@ -940,7 +1262,7 @@ CAUSES = [
           or ("`dict[str, Any]`" in d.msg and re.match(r"\s*props\.\w+_OT_", d.text) is not None)
           or (d.rule == "too-many-positional-arguments" and STRING_LITERAL.search(d.text) is not None)),
     Cause("unresolved-import", "typing-debt", "", lambda d: d.rule in {
-        "import-not-found", "unresolved-import", "possibly-missing-submodule"} or "Cannot resolve imported" in d.msg),
+        "import-not-found", "possibly-missing-submodule"} or "Cannot resolve imported" in d.msg),
     # `batch_for_shader()`'s deprecated primitives, left out of the documented literal.
     Cause("deprecated-enum-value", "typing-debt", "", lambda d: "`batch_for_shader`" in d.msg
           and re.search(r"found `Literal\[\"(?:TRI_FAN|LINE_LOOP)\"\]`", d.msg) is not None),
@@ -950,13 +1272,17 @@ CAUSES = [
     Cause("private-member", "typing-debt", "", lambda d: re.search(r"has no member `_\w+`", d.msg) is not None),
     Cause("build-option-gap", "typing-debt", "", lambda d: BUILD_OPTION_TYPE.search(d.msg) is not None),
     Cause("general-typing", "typing-debt", "", lambda d: d.rule in GENERAL_TYPING_RULES
+          or TYPESHED_PRIVATE.search(d.msg) is not None or THIRD_PARTY_STUB.search(d.msg) is not None
+          or in_sites(OVERRIDDEN_SIGNATURE_SITES)(d)
           or PYTHON_OBJECT_ATTRIBUTE.search(d.msg) is not None or python_types_only(d)
           or d.rule in {"redundant-condition", "mismatched-type-name"}
-          or (d.rule == "invalid-method-override" and not in_tests(d))
+          or (d.rule in METHOD_OVERRIDE_RULES and not in_tests(d))
           or (d.rule == "invalid-context-manager" and "`Iterator[None]`" in d.msg)
-          or GENERAL_TYPING.search(d.msg) is not None or MONKEYPATCH.match(d.text) is not None),
-    Cause("stub-gap", "unsorted", "", lambda d: d.rule in STUB_GAP_RULES or "object.__init__" in d.msg
-          or re.search(r"Module `[\w.]+` has no member", d.msg) is not None),
+          or GENERAL_TYPING.search(d.msg) is not None or MONKEYPATCH.match(d.text) is not None
+          or STR_FOR_ENUM.match(d.msg) is not None or CLASS_MONKEYPATCH.search(d.msg) is not None
+          # The rest of the tests and tools is plain Python: what no Blender cause above takes is general typing.
+          or (in_tests_or_tools(d) and not stub_gap(d) and not d.rule.startswith("blender-"))),
+    Cause("stub-gap", "unsorted", "", stub_gap),
     Cause("blender-rule", "unsorted", "", lambda d: d.rule.startswith("blender-")),
     Cause("unsorted", "unsorted", "", lambda d: True),
 ]  # fmt: skip
@@ -983,8 +1309,14 @@ def cause(d: Diagnostic) -> Cause:
     matches it (with ``None`` last in each union)."""
     if d.rule in CAUSE_BY_RULE:
         return CAUSE_BY_RULE[d.rule]
-    d = replace(d, msg=none_last(d.msg))
+    d = replace(d, msg=object_data_as_id(none_last(d.msg)))
     return next(c for c in CAUSES if c.matches(d))
+
+
+def object_data_as_id(msg: str) -> str:
+    """``msg`` with fake-bpy-module's ``Object.data`` union, as ty cuts it short, spelled ``ID | None`` (``ID``
+    when a check removed None or some of the types), like Blender's own stubs."""
+    return OBJECT_DATA_UNION.sub(lambda m: "`ID | None`" if m[1].startswith("Camera") else "`ID`", msg)
 
 
 # The causes in report order: by group, then in table order.

@@ -9,10 +9,10 @@ from bpy.types import PropertyGroup
 
 class REG_CLASSMETHOD_PLAIN_PG_scene(PropertyGroup):
     def register(self):
-        bpy.types.Scene.reg_classmethod_plain = IntProperty()  # ty: ignore[unresolved-attribute]  # bare-ok: never run: ty-blender must not add it
+        bpy.types.Scene.reg_classmethod_plain = IntProperty()  # ty: ignore[missing-attribute]  # bare-ok: never run: ty-blender must not add it
 
     def unregister(self):
-        del bpy.types.Scene.reg_classmethod_plain  # ty: ignore[unresolved-attribute]  # bare-ok: never run: ty-blender must not add it
+        del bpy.types.Scene.reg_classmethod_plain  # ty: ignore[missing-attribute]  # bare-ok: never run: ty-blender must not add it
 
 
 def register():

@@ -1,4 +1,5 @@
-"""Feature test: register_classes_factory results called from a hand-written register(), next to other work."""
+"""Feature test: register_classes_factory results called from a hand-written register(), next to other work. One
+operator class is not named after its idname: Blender still adds it to bpy.types as REG_FACTORY_OT_second."""
 
 import bpy
 from bpy.props import StringProperty
@@ -13,7 +14,7 @@ class REG_FACTORY_OT_first(Operator):
         return {"FINISHED"}
 
 
-class REG_FACTORY_OT_second(Operator):
+class SecondOperator(Operator):
     bl_idname = "reg_factory.second"
     bl_label = "Run"
 
@@ -29,7 +30,7 @@ class REG_FACTORY_OT_tools(Operator):
         return {"FINISHED"}
 
 
-_register, _unregister = bpy.utils.register_classes_factory((REG_FACTORY_OT_first, REG_FACTORY_OT_second))
+_register, _unregister = bpy.utils.register_classes_factory((REG_FACTORY_OT_first, SecondOperator))
 register_tools, unregister_tools = bpy.utils.register_classes_factory([REG_FACTORY_OT_tools])
 
 

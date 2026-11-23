@@ -6,4 +6,4 @@ from bpy.types import Scene
 
 
 def not_run(scene: Scene) -> None:
-    scene.reg_classmethod_plain  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    scene.reg_classmethod_plain  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it

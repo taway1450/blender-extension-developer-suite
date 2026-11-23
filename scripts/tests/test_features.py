@@ -40,7 +40,7 @@ TY_OUTPUT = dedent(
     {CHECK}:9:5: error[{ASSERT_FAILURE}] Type `str | None` does not match asserted type `str`
     {INIT}:1:30: warning[{UNKNOWN_RULE}] Unknown rule `blender-legacy-property`
     {INIT}:2:10: error[invalid-assignment] Object of type `Literal["a"]` is not assignable to `int`
-    {ROOT}/ide_addon.py:3:1: error[unresolved-attribute] Object of type `Scene` has no attribute `reg_`
+    {ROOT}/ide_addon.py:3:1: error[missing-attribute] Object of type `Scene` has no attribute `reg_`
     {ROOT}/_expected/addon/__init__.pyi:1:1: error[invalid-syntax] from a reference stub
     features/f/other/check_other.py:1:1: error[unresolved-reference] another addon's
     Found 11 diagnostics

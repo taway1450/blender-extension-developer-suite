@@ -12,3 +12,23 @@ reason = "DNA pointers are None on new data"
 code = "bpy.context.preferences is not None and bpy.context.window_manager is not None"
 expect = true
 reason = "the context always has the preferences and the window manager"
+
+[[probe]]
+code = "(lambda kc: all(x is not None for x in (kc.active, kc.default, kc.addon, kc.user)))(bpy.context.window_manager.keyconfigs)"
+expect = true
+reason = "the window manager always has its key configurations"
+
+[[probe]]
+code = "all(x is not None for x in (bpy.data.materials.new('api_never_none').node_tree, bpy.data.worlds.new('api_never_none').node_tree, bpy.data.node_groups.new('api_never_none', 'GeometryNodeTree')))"
+expect = true
+reason = "new materials and worlds get a node tree, and node_groups.new() returns the tree"
+
+[[probe]]
+code = "bpy.data.node_groups.new('api_never_none', 'NoSuchTree')"
+expect = "raises"
+reason = "node_groups.new() raises for an unknown tree type instead of returning None"
+
+[[probe]]
+code = "(lambda scene: scene.render.views.active is not None and isinstance(bpy.data.particles.new('api_never_none').active_texture_index, int))(bpy.data.scenes.new('api_never_none'))"
+expect = true
+reason = "a scene always has an active render view, and an active index is an int"

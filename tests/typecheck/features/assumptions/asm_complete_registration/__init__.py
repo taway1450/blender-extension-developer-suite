@@ -1,9 +1,11 @@
 """Feature test: register() hands register_class a class it finds at runtime (getattr on the module), so the
 register() walk gives up: every class and property of the add-on then counts as registered, and the checks that a
 class is missing from register() are off. The checker reports that once per add-on, at the value it could not follow,
-under blender-assumed-complete-registration. Nothing else is reported: the operator below is taken as registered."""
+under blender-assumed-complete-registration. Nothing else is reported: the operator below is taken as registered,
+also where the panel reads it back from bpy.types. The assert_type call is a no-op at runtime."""
 
 import sys
+from typing import assert_type
 
 import bpy
 from bpy.types import Operator, Panel
@@ -27,6 +29,7 @@ class ASM_COMPLETE_REGISTRATION_PT_panel(Panel):
 
     def draw(self, context):
         self.layout.operator("asm_complete_registration.run")
+        assert_type(bpy.types.ASM_COMPLETE_REGISTRATION_OT_run.bl_label, str)
 
 
 class ASM_COMPLETE_REGISTRATION_OT_unused(Operator):

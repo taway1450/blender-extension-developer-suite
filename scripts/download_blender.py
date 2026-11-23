@@ -43,6 +43,10 @@ def platform_key() -> str:
     raise StepError(f"Unsupported platform {sys.platform!r}")
 
 
+# What build_blender.py built into a source build's install directory (commit, preset, configure hash).
+BUILD_INFO = ".build-info"
+
+
 def blender_executable(install_dir: Path) -> Path:
     if sys.platform == "darwin":
         return install_dir / "Blender.app" / "Contents" / "MacOS" / "Blender"

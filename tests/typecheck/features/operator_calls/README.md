@@ -3,7 +3,9 @@
 **The checker must:** make `bpy.ops.<category>.<name>` callable with one keyword argument per property of the
 registered operator, typed as Blender converts it, after the positional execution context and undo flag; and give
 it `poll()`, `idname()`, `idname_py()` and `get_rna_type()`. A built-in operator takes the same positional arguments
-and functions, with the keywords of its stub, in any file (also outside an add-on).
+and functions, with the keywords of its stub, in any file (also outside an add-on). A file outside any add-on (a doc
+example, a template, a test) knows the operators it defines, at any scope, as an add-on knows its own; another such
+file's stay unknown.
 
 | Property | Argument type |
 | --- | --- |
@@ -19,6 +21,7 @@ and functions, with the keywords of its stub, in any file (also outside an add-o
 | `opcall_basic` | every property kind, every execution context, the undo flag alone, wrong arguments, the dropped properties (also behind a group), the operator functions |
 | `opcall_category` | an operator in Blender's `object` category next to the built-in ones; two operators in one new category; built-in operators with a context, the undo flag (alone, as an `int`), a wrong context |
 | `opcall_script` | a built-in operator called from a script outside any add-on (`load = false`) |
+| `opcall_script_own` | a script outside any add-on calls its own operators: `bpy.ops` and `layout.operator` with an operator defined at module level, `bpy.ops` with one defined in a test method |
 | `opcall_inherit` | properties from base operators and mixins, a redeclared property |
 | `opcall_idname_forms` | `bl_idname` from a constant, a concatenation, an f-string, another class, a mixin; a runtime value gives nothing |
 | `opcall_macro` | a Macro: one dict argument per step, named by the step's `_OT_` idname |

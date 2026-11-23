@@ -32,6 +32,7 @@ git LFS).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import platform
 import shutil
@@ -40,7 +41,7 @@ import sys
 from pathlib import Path
 
 from _common import CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper, run, validate_build_name
-from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable, read_build_info
+from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable
 from generate_stubs import blender_binary_version, ensure_worktree, tree_revision
 
 BUILD_DIR = CACHE_DIR / "blender-build"
@@ -59,6 +60,11 @@ CCACHE_ENV = {
 }
 CONFIGURE_ARGS = "configure-args.txt"
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
+# Options turned back on after a preset (``-D`` after ``-C`` overrides its forced cache entries).
+# The headless preset turns off FFmpeg, Audaspace and NDOF, and with them the Python API they add
+# (``FFmpegSettings`` and the FFMPEG file format, ``sound.mixdown``'s parameters, the NDOF
+# preferences), so the stubs generated from a headless build would miss it.
+PRESET_OPTIONS = {"headless": ["-DWITH_CODEC_FFMPEG=ON", "-DWITH_AUDASPACE=ON", "-DWITH_INPUT_NDOF=ON"]}
 
 
 def is_arm64() -> bool:
@@ -197,6 +203,70 @@ def build_env() -> tuple[dict[str, str], Path, Path]:
     return env, cmake, ninja
 
 
+def preset_file(source: Path, config: str) -> Path:
+    return source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
+
+
+def configure_command(
+    cmake: Path,
+    ninja: Path,
+    *,
+    source: Path,
+    build_dir: Path,
+    config: str,
+    build_type: str,
+    libs: Path,
+    install_dir: Path,
+) -> list[str | Path]:
+    """The CMake command that configures the build of ``source`` with the preset ``config``."""
+    return [
+        cmake,
+        "-G",
+        "Ninja",
+        "-S",
+        source,
+        "-B",
+        build_dir,
+        f"-C{preset_file(source, config)}",
+        *PRESET_OPTIONS.get(config, []),
+        f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
+        f"-DCMAKE_BUILD_TYPE={build_type}",
+        f"-DLIBDIR={libs.as_posix()}",
+        f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
+    ]
+
+
+def configure_hash(*, source: Path, build_dir: Path, config: str, build_type: str, install_dir: Path) -> str:
+    """Hash of the arguments that configure the build, which ``.build-info`` records. CMake's and Ninja's own paths
+    are left out: they come from uv's script environment, which moves when it is recreated."""
+    cmd = configure_command(
+        Path("cmake"),
+        Path("ninja"),
+        source=source,
+        build_dir=build_dir,
+        config=config,
+        build_type=build_type,
+        libs=LIBS_DIR / lib_platform(),
+        install_dir=install_dir,
+    )
+    return hashlib.sha256("\n".join(str(c) for c in cmd).encode()).hexdigest()[:16]
+
+
+def build_info_text(*, commit: str, revision: str, config: str, build_type: str, configure: str, source: Path) -> str:
+    return (
+        f"commit={commit}\nrevision={revision}\nconfig={config}\nbuild_type={build_type}\n"
+        f"configure={configure}\nsource={source}\n"
+    )
+
+
+def is_current_build(build_info: str, *, revision: str, config: str, build_type: str, configure: str) -> bool:
+    """Whether the build that ``.build-info`` reads ``build_info`` matches the requested one. ``revision`` is the
+    source's ``tree_revision``: its commit plus a hash of its uncommitted changes."""
+    fields = dict(line.split("=", 1) for line in build_info.splitlines() if "=" in line)
+    wanted = {"revision": revision, "config": config, "build_type": build_type, "configure": configure}
+    return all(fields.get(key) == value for key, value in wanted.items())
+
+
 def build_blender(
     name: str,
     *,
@@ -219,18 +289,22 @@ def build_blender(
     install_dir = BLENDER_BIN_DIR / name
     blender = blender_executable(install_dir)
     build_info = install_dir / BUILD_INFO
-    built = read_build_info(name)
+    build_dir = BUILD_DIR / name
+    configure = configure_hash(
+        source=source, build_dir=build_dir, config=config, build_type=build_type, install_dir=install_dir
+    )
     if (
         not force
         and blender.is_file()
-        and built.get("revision") == revision
-        and built.get("config") == config
-        and built.get("build_type") == build_type
+        and build_info.is_file()
+        and is_current_build(
+            build_info.read_text(), revision=revision, config=config, build_type=build_type, configure=configure
+        )
     ):
         log(f"Reusing Blender build {blender} ({revision[:10]}{revision[40:]})")
         return blender
 
-    config_file = source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
+    config_file = preset_file(source, config)
     if not config_file.is_file():
         available = sorted(p.stem.removeprefix("blender_") for p in config_file.parent.glob("blender_*.cmake"))
         raise StepError(f"Unknown build configuration {config!r} (available: {', '.join(available)})")
@@ -239,25 +313,20 @@ def build_blender(
     libs = ensure_libraries(source)
     env, cmake, ninja = build_env()
 
-    build_dir = BUILD_DIR / name
     if force:
         log(f"Removing build directory {build_dir}")
         shutil.rmtree(build_dir, ignore_errors=True)
     build_dir.mkdir(parents=True, exist_ok=True)
-    configure_cmd: list[str | Path] = [
+    configure_cmd = configure_command(
         cmake,
-        "-G",
-        "Ninja",
-        "-S",
-        source,
-        "-B",
-        build_dir,
-        f"-C{config_file}",
-        f"-DCMAKE_MAKE_PROGRAM={ninja.as_posix()}",
-        f"-DCMAKE_BUILD_TYPE={build_type}",
-        f"-DLIBDIR={libs.as_posix()}",
-        f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
-    ]
+        ninja,
+        source=source,
+        build_dir=build_dir,
+        config=config,
+        build_type=build_type,
+        libs=libs,
+        install_dir=install_dir,
+    )
     if ccache:
         if not shutil.which("ccache"):
             raise StepError("--ccache needs ccache on the PATH (https://ccache.dev/download.html)")
@@ -298,7 +367,14 @@ def build_blender(
     if not blender.is_file():
         raise StepError(f"Blender binary not found at {blender} after building")
     build_info.write_text(
-        f"commit={commit}\nrevision={revision}\nconfig={config}\nbuild_type={build_type}\nsource={source}\n"
+        build_info_text(
+            commit=commit,
+            revision=revision,
+            config=config,
+            build_type=build_type,
+            configure=configure,
+            source=source,
+        )
     )
     log(f"Blender {blender_binary_version(blender)} ({name}, {commit[:10]}) installed at {blender}")
     return blender

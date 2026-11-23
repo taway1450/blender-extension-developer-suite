@@ -9,8 +9,12 @@ generate_stubs.py) and runs ty on all Python files of the worktree (excluding ``
 test scripts ``tests/python/CMakeLists.txt`` never runs), once per stub generator (``--generator``). The full output goes to
 ``.cache/ty-results/<version>.txt`` (fake-bpy-module stubs) and ``<version>-builtin.txt`` (Blender's own stubs).
 
-Blender's bundled numpy is on the search path, through a link in ``.cache/blender-site/<version>/`` (only numpy:
-the whole ``site-packages`` would put a runtime ``typing_extensions.py`` in front of typeshed's).
+The packages of Blender's bundled Python that its code imports (numpy, setuptools, requests, USD, ...) are on the
+search path, through links in ``.cache/blender-site/<version>/`` (not the whole ``site-packages``: it would put a
+runtime ``typing_extensions.py`` in front of typeshed's). Cycles' add-on source is linked there too, as ``cycles``,
+so the checker reads what it registers (``scene.cycles``). The directories Blender's tools and tests add to
+``sys.path`` themselves are on the search path as well. Modules nothing can resolve (compiled into Blender, given by GDB, or a developer tool's
+own requirements) are allowed to be unresolved, so ``import-not-found`` reports only real gaps.
 
 Each diagnostic is sorted into a cause, which has a group, and an area (see _buckets.py). The cause x area table,
 the totals per group, errors and warnings, and the counts per rule and severity go to
@@ -32,25 +36,38 @@ import collections
 import difflib
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
 
 from _buckets import read_diagnostics, samples, summary
-from _common import CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper
+from _common import CACHE_DIR, COMPLETE_MARKER, REPO_ROOT, StepError, git_output, log, main_wrapper
 from _target import Target, add_target_arguments
 from download_blender import BLENDER_BIN_DIR
-from generate_stubs import results_name
+from generate_stubs import RUNTIME, results_name
 
-# Paths (relative to the Blender source root) left out of the check: libraries, and the dead 2.7x test scripts.
+# Paths (relative to the Blender source root) left out of the check: libraries; the dead 2.7x scripts (tests and the
+# Cycles XML exporter, which still use `tessfaces` and `register_module`); and the gdb extension with the type hints of
+# gdb's API it imports, written as `.py` modules with `pass` bodies rather than as stubs (every diagnostic there was
+# about the hints, none about Blender).
 EXCLUDED = [
     "lib/",
     "extern/",
+    "tools/debug/gdb/",
     "tests/python/view_layer/",
     "tests/python/bl_mesh_modifiers.py",
     "tests/python/rna_array.py",
+    "intern/cycles/app/io_export_cycles_xml.py",
 ]
+# Rules check:blender does not report: the unused `# type: ignore` comments are all written for Blender's mypy check
+# (`tools/check_source/check_mypy.py`), which has no bpy stubs, so they say nothing about Blender's typing.
+IGNORED_RULES = ["unused-type-ignore-comment"]
+# The platform ty checks for, whatever the host: ty takes the host's by default, so `os.getuid`, `fcntl` and
+# `termios` were errors on Windows only and the recorded summaries depended on the machine. Linux, where Blender's
+# tools and tests run most.
+PYTHON_PLATFORM = "linux"
 # Directories (relative to the Blender source root) that Blender puts on ``sys.path``.
 # The generated stubs are searched before these.
 BLENDER_SEARCH_PATHS = [
@@ -59,53 +76,156 @@ BLENDER_SEARCH_PATHS = [
     "scripts/addons_core",
     "scripts/freestyle/modules",
 ]
+# Directories (relative to the Blender source root) that Blender's own tools and tests put on ``sys.path`` before
+# importing from them (``sys.path.append(os.path.join(PWD, "modules"))``).
+SCRIPT_SEARCH_PATHS = [
+    "tools/modules",
+    "tools/utils_maintenance/modules",
+    "scripts/addons_core/bl_pkg/tests/modules",
+]
+# Modules no search path can give ty: compiled into Blender (``aud``, ``_bpy_path``, ``_cycles``) or bundled compiled
+# without stubs (``pxr``, ``PyOpenColorIO``), given by the program
+# that runs the script (``gdb``), or third-party packages that only a developer tool needs, which Blender does not
+# bundle. ty does not report them as unresolved; every other unresolved import is a real gap.
+ALLOWED_UNRESOLVED_IMPORTS = [
+    # Compiled into Blender, or bundled as compiled modules without stubs (linking these would make every member
+    # they import from their extension module unknown to ty).
+    "aud",
+    "_bpy_path",
+    "_cycles",
+    "MaterialX.**",
+    "OpenEXR",
+    "openvdb",
+    "oslquery",
+    "pxr.**",
+    "PyOpenColorIO",
+    "pyopenvdb",
+    # Given by the program that runs the script.
+    "gdb.**",
+    # CPython's private hash modules, which typeshed leaves out (`hashlib` falls back on them).
+    "_md5",
+    "_sha1",
+    "_sha2",
+    # Requirements of developer tools and the documentation build.
+    "autopep8",
+    "clang.**",
+    "cython",
+    "docformatter",
+    "enchant",
+    "iso8601",
+    "matplotlib.**",
+    "pygments.**",
+    "retry",
+    "scipy.**",
+    "sphinx.**",
+    "sphobjinv",
+    "wheel.**",
+    "yarl",
+]
 
 DIAGNOSTIC_RE = re.compile(r"^.+?:\d+:\d+: (?P<severity>\w+)\[(?P<rule>[\w-]+)\]", re.MULTILINE)
 
-# Packages of Blender's bundled Python put on the search path, each through a link in BLENDER_SITE_DIR/<version>/.
-BLENDER_SITE_PACKAGES = ["numpy"]
+# Packages of Blender's bundled Python that its code imports and that ty can read (Python source, or a compiled
+# module with stubs), put on the search path, each through a link in
+# BLENDER_SITE_DIR/<version>/ (not the whole ``site-packages``, whose ``typing_extensions.py`` would shadow typeshed's).
+BLENDER_SITE_PACKAGES = [
+    "numpy",
+    "setuptools",
+    "requests",
+    "urllib3",
+    "certifi",
+    "cattrs",
+    "docutils",
+    "zstandard",
+    "OpenImageIO",
+    "opentimelineio",
+]
+# The add-ons Blender enables by default whose source is not on BLENDER_SEARCH_PATHS, by the module name Blender
+# imports them as, and their folder in the Blender source: the checker reads what they register (`scene.cycles`).
+BLENDER_SOURCE_PACKAGES = {"cycles": "intern/cycles/blender/addon"}
 BLENDER_SITE_DIR = CACHE_DIR / "blender-site"
+# The runtime stubs without the Python source they copy from Blender's script folders, per version.
+RUNTIME_RENDERED_DIR = CACHE_DIR / "bpy-stubs-runtime-rendered"
 # The recorded bucket summaries, per stub generator; only BASELINE_VERSION has one.
 EXPECTED_DIR = REPO_ROOT / "tests" / "blender" / "expected"
 BASELINE_VERSION = "main"
 
 
-def blender_site(version: str, blender: Path | None) -> Path | None:
+def blender_site(version: str, blender: Path | None, source: Path | None = None) -> Path | None:
     """``.cache/blender-site/<version>/`` with a link to each of BLENDER_SITE_PACKAGES in Blender's bundled
-    ``site-packages`` (a junction on Windows), or None when that Blender has none of them."""
+    ``site-packages`` and to each of BLENDER_SOURCE_PACKAGES in ``source`` (a junction on Windows), and no other
+    link, or None when it would have no link."""
     install = blender or BLENDER_BIN_DIR / version
     if install.is_file():
         install = install.parent
-    site = BLENDER_SITE_DIR / version
-    linked = False
+    targets: dict[str, Path] = {}
     for package in BLENDER_SITE_PACKAGES:
         found = sorted(install.glob(f"*/python/lib/**/site-packages/{package}"))
-        if not found:
+        if found:
+            targets[package] = found[0]
+        else:
             log(f"Blender's bundled {package} not found under {install}; checking without it")
-            continue
-        linked = True
+    for package, folder in BLENDER_SOURCE_PACKAGES.items():
+        if source is not None and (source / folder).is_dir():
+            targets[package] = source / folder
+    site = BLENDER_SITE_DIR / version
+    for stale in site.iterdir() if site.is_dir() else ():
+        if stale.name not in targets:
+            unlink(stale)
+            log(f"Removed {stale}: no longer linked")
+    for package, target in targets.items():
         link = site / package
-        if link.exists() and link.resolve() == found[0].resolve():
+        if link.exists() and link.resolve() == target.resolve():
             continue
         if os.path.lexists(link):  # stale: points elsewhere or nowhere
-            if link.is_symlink():
-                link.unlink()
-            else:
-                link.rmdir()  # a junction is removed like a directory, without touching its target
+            unlink(link)
         site.mkdir(parents=True, exist_ok=True)
-        if sys.platform == "win32":
-            import _winapi
+        link_directory(link, target)
+        log(f"Linked {link} -> {target}")
+    return site if targets else None
 
-            _winapi.CreateJunction(str(found[0]), str(link))
-        else:
-            link.symlink_to(found[0], target_is_directory=True)
-        log(f"Linked {link} -> {found[0]}")
-    return site if linked else None
+
+def link_directory(link: Path, target: Path) -> None:
+    """Make ``link`` point to the directory ``target``: a junction on Windows, which needs no symlink privilege."""
+    if sys.platform == "win32":
+        import _winapi
+
+        _winapi.CreateJunction(str(target), str(link))
+    else:
+        link.symlink_to(target, target_is_directory=True)
+
+
+def unlink(link: Path) -> None:
+    """Remove a package link of BLENDER_SITE_DIR without touching its target."""
+    if link.is_symlink():
+        link.unlink()
+    else:
+        link.rmdir()  # a junction is removed like a directory, without touching its target
+
+
+def rendered_runtime_stubs(version: str, stubs: Path) -> Path:
+    """The runtime stubs ``stubs`` without the ``.py`` files the generator copies beside them: they are Blender's own
+    scripts, which this check reads from the source, and as stubs they come first on the search path and would
+    shadow the files checked. Kept in RUNTIME_RENDERED_DIR/<version>, refreshed when the stubs' marker changes."""
+    rendered = RUNTIME_RENDERED_DIR / version
+    marker = (stubs / COMPLETE_MARKER).read_text(encoding="utf-8")
+    if (rendered / COMPLETE_MARKER).exists() and (rendered / COMPLETE_MARKER).read_text(encoding="utf-8") == marker:
+        return rendered
+    shutil.rmtree(rendered, ignore_errors=True)
+    shutil.copytree(stubs, rendered, ignore=lambda folder, names: [name for name in names if name.endswith(".py")])
+    # A folder that held only copies (`bpy_extras/wm_utils/`) would be an empty namespace package.
+    for folder in sorted((path for path in rendered.rglob("*") if path.is_dir()), key=lambda p: -len(p.parts)):
+        if not any(folder.iterdir()):
+            folder.rmdir()
+    (rendered / COMPLETE_MARKER).write_text(marker, encoding="utf-8")
+    return rendered
 
 
 def run_ty(target: Target, generator: str, site: Path | None) -> Path:
     assert target.binary is not None
     source, stubs, python_version = target.source, target.stubs[generator], target.python_version
+    if generator == RUNTIME:
+        stubs = rendered_runtime_stubs(target.version, stubs)
     results = CACHE_DIR / "ty-results" / results_name(target.version, generator)
 
     cmd: list[str | Path] = [
@@ -115,6 +235,8 @@ def run_ty(target: Target, generator: str, site: Path | None) -> Path:
         source,
         "--python-version",
         python_version,
+        "--python-platform",
+        PYTHON_PLATFORM,
         "--output-format",
         "concise",
         "--no-progress",
@@ -125,10 +247,14 @@ def run_ty(target: Target, generator: str, site: Path | None) -> Path:
     ]
     if site is not None:
         cmd += ["--extra-search-path", site]
-    for path in BLENDER_SEARCH_PATHS:
+    for path in BLENDER_SEARCH_PATHS + SCRIPT_SEARCH_PATHS:
         cmd += ["--extra-search-path", source / path]
+    allowed = ", ".join(f'"{module}"' for module in ALLOWED_UNRESOLVED_IMPORTS)
+    cmd += ["--config", f"analysis.allowed-unresolved-imports = [{allowed}]"]
     for excluded in EXCLUDED:
         cmd += ["--exclude", excluded]
+    for rule in IGNORED_RULES:
+        cmd += ["--ignore", rule]
     cmd.append(source)
 
     log(f"Running ty (Python {python_version}, {generator} stubs) on {source}")
@@ -212,7 +338,7 @@ def main() -> int:
     args = parser.parse_args()
 
     target = Target.from_args(args)
-    site = blender_site(args.version, args.blender)
+    site = blender_site(args.version, args.blender, target.source)
     for generator in target.stubs:
         results = run_ty(target, generator, site)
         report_buckets(target, generator, results, update=args.update)

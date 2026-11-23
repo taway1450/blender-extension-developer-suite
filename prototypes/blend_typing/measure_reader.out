@@ -1,0 +1,41 @@
+  skip nodegroup25.blend: KeyError('idname')
+== 2. tests that open literal .blend files (not empty.blend), and their literal bpy.data keys
+  bl_alembic_io_test.py                         camera_transforms.blend +4               v503  keys in file 8/10
+  bl_animation_action.py                        layered_action_versioning_42.blend +1    v501  keys in file 18/43
+  bl_animation_convert.py                       rotation_mode_conversion.blend           v502  keys in file 5/5
+  bl_animation_fcurves.py                       euler-filter.blend +2                    v292  keys in file 2/2
+  bl_blendfile_relationships.py                 library_test_scene.blend                 v263  keys in file 3/9
+  bl_constraints.py                             constraints.blend                        v500  keys in file 3/3
+  bl_node_group_compat.py                       node_group_socket_interface_compositor.blend +2 v306  keys in file 21/22
+  bl_node_socket_usage_inference.py             socket_usage_inference.blend             v500  keys in file 1/1
+  bl_node_structure_type_inference.py           structure_type_inference.blend           v500  keys in file 11/11
+  bl_usd_export_test.py                         nested_instancing_test.blend +26         v503  keys in file 41/41
+  bl_usd_import_test.py                         nested_instancing_test.blend +12         v503  keys in file 55/110
+  mesh_validate.py                              invalid_mdisp_cube.blend                 v501  keys in file 0/0
+  total: 12 test files, 168/257 literal keys name an ID in the file
+
+== 1a. time per file (ms), median / max, over 58 files
+  decompress       4.9     17.6
+  block scan       1.4     10.0
+  SDNA decode     17.0     31.1
+  facts            0.4      1.6
+  decompressed size: median 0.7 MB, max 5.9 MB
+
+== 1b. SDNA struct.field paths the extractor reads (all a Rust reader would need to know by name)
+  ID.name
+  Material.nodetree
+  ModifierData.name
+  ModifierData.next
+  Object.data
+  Object.modifiers.first
+  Object.type
+  bNode.idname
+  bNode.inputs.first
+  bNode.name
+  bNode.next
+  bNode.outputs.first
+  bNodeSocket.idname
+  bNodeSocket.name
+  bNodeSocket.next
+  bNodeTree.idname
+  bNodeTree.nodes.first

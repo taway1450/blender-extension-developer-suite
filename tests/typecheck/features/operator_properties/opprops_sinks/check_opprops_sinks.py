@@ -19,9 +19,9 @@ def layout_operator(layout: UILayout) -> None:
     props.amount = 2
     props.amount = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
     props.mode = "C"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the asserts above need the checker
-    props.missing  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    props.missing  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
     assert_type(layout.operator("OPPROPS_SINKS_OT_step", text="Step", icon="ADD").amount, int)
-    layout.operator("opprops_sinks.bare").amount  # ty: ignore[unresolved-attribute]  # bare-ok: must stay missing: ty-blender must not add it
+    layout.operator("opprops_sinks.bare").amount  # ty: ignore[missing-attribute]  # bare-ok: must stay missing: ty-blender must not add it
 
 
 def other_layout_functions(layout: UILayout) -> None:
@@ -81,7 +81,7 @@ def own_properties(step: OPPROPS_SINKS_OT_step, bare: OPPROPS_SINKS_OT_bare) -> 
     assert_type(props.mode, Literal["A", "B"])
     assert_type(props.label, str)
     assert_type(props.flags, set[Literal["A", "B"]])
-    bare.properties.amount  # ty: ignore[unresolved-attribute]
+    bare.properties.amount  # ty: ignore[missing-attribute]
 
 
 def popup_confirm(layout: UILayout) -> None:

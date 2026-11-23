@@ -1,5 +1,7 @@
 # A build cache for cloud sessions: ty and Blender without rebuilding from scratch
 
+The platform limits and the host allowlist below were measured on 2026-11-17 and may change.
+
 Research note, 2026-11-17. The question was whether a Claude Code cloud session could download a ready
 cache instead of compiling ty and Blender, which ways there are to do that, and how they compare. A
 requirement added during the research: the cache has to keep **incremental** builds working. After the

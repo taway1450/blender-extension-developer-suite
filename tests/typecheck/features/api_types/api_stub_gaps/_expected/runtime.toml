@@ -44,6 +44,21 @@ expect = "Vector Vector"
 reason = "a matrix column or row is a Vector"
 
 [[probe]]
+code = "addon.math_protocols()"
+expect = "True Quaternion"
+reason = "vectors compare by length, and a quaternion negates"
+
+[[probe]]
+code = "addon.font_image_binding()"
+expect = "BLFImBufContext"
+reason = "a font's image binding is a context manager"
+
+[[probe]]
+code = "addon.entered_font_image_binding()"
+expect = "None"
+reason = "entering a font's image binding gives None, not the binding"
+
+[[probe]]
 code = "' '.join(type(v).__name__ for v in (bpy.data.version, bpy.context.preferences.version))"
 expect = "tuple tuple"
 reason = "the thick-wrapped version arrays are tuples"
@@ -62,6 +77,11 @@ reason = "every RNA class has bl_rna, readable from an instance too"
 code = "addon.module_members()"
 expect = "str bool frozenset str mappingproxy str ImBufFileType"
 reason = "the public module members the stubs left out"
+
+[[probe]]
+code = "' '.join(type(getattr(bpy.app.handlers, name)).__name__ for name in ('_extension_repos_update_pre', '_extension_repos_update_post', '_extension_repos_sync', '_extension_repos_files_clear')) + ' ' + str(callable(bpy.utils._sys_path_ensure_append))"
+expect = "list list list list True"
+reason = "the private module members Blender's own scripts read"
 
 [[probe]]
 code = "addon.bmesh_links()"
@@ -87,3 +107,73 @@ reason = "libraries.load returns a context manager (entered in check_api_stub_ga
 code = "addon.API_STUB_GAPS_Engine.is_registered"
 expect = true
 reason = "an engine overriding the update callbacks with positional parameters registers (Blender checks the count)"
+
+[[probe]]
+code = "type(__import__('freestyle.types').types.Noise().rand(3)).__name__"
+expect = "float"
+reason = "Noise.rand gives a float"
+
+[[probe]]
+code = "type(__import__('freestyle.types').types.Noise().turbulence_smooth(0.5, 2)).__name__"
+expect = "float"
+reason = "Noise.turbulence_smooth gives a float"
+
+[[probe]]
+code = "__import__('freestyle.utils').utils.BoundingBox(__import__('mathutils').Vector((0, 0)), __import__('mathutils').Vector((1, 2))).corners[1].y"
+expect = 2.0
+reason = "a BoundingBox has its corners"
+
+[[probe]]
+code = "type(__import__('freestyle.utils').utils.pairwise((1, 2, 3))).__name__"
+expect = "zip"
+reason = "pairwise returns an iterator of pairs, not None"
+
+[[probe]]
+code = "callable(__import__('freestyle.types').types.UnaryFunction1DDouble())"
+expect = true
+reason = "a unary function base is callable (tp_call)"
+
+[[probe]]
+code = "type(bpy.data.materials.new('api_stub_gaps').animation_data_create()).__name__"
+expect = "AnimData"
+reason = "animation_data_create gives an ID type with animation data its AnimData"
+
+[[probe]]
+code = "' '.join(type(v).__name__ for v in (bpy.data.objects.items(), bpy.data.objects.values()))"
+expect = "list list"
+reason = "a collection's items and values are lists"
+
+[[probe]]
+code = "f'{bpy.data.curves.bl_rna.identifier} {bpy.data.curves.rna_type.identifier}'"
+expect = "BlendDataCurves BlendDataCurves"
+reason = "a collection with functions has their struct's bl_rna and rna_type"
+
+[[probe]]
+code = "f'{bpy.types.bpy_func.__name__} {bpy.types.bpy_struct_meta_idprop.__name__} {issubclass(bpy.types.bpy_struct_meta_idprop, type)}'"
+expect = "bpy_func bpy_struct_meta_idprop True"
+reason = "bpy.types has the RNA function class and the ID property metaclass"
+
+[[probe]]
+code = "type(bpy.path.ensure_ext(b'name', b'.blend')).__name__"
+expect = "bytes"
+reason = "ensure_ext takes a bytes path"
+
+[[probe]]
+code = "type(bpy.path.ensure_ext('name', '.blend')).__name__"
+expect = "str"
+reason = "ensure_ext returns a str path as a str"
+
+[[probe]]
+code = "__import__('bpy_extras.asset_utils').asset_utils.SpaceAssetInfo.is_asset_browser(None) in (None, False)"
+expect = true
+reason = "is_asset_browser takes None"
+
+[[probe]]
+code = "type(bpy.types.UI_UL_list.filter_items_by_name('*', 1, bpy.data.objects)).__name__ + ' ' + type(bpy.types.UI_UL_list.sort_items_by_name(bpy.data.objects)).__name__"
+expect = "list list"
+reason = "UI_UL_list filters and sorts a collection's items"
+
+[[probe]]
+code = "addon.ik_params()"
+expect = "Itasc None"
+reason = "only the iTaSC solver has parameters"

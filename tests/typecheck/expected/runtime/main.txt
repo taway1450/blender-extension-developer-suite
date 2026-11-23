@@ -1,0 +1,3 @@
+# Feature-test results that are not passes, runtime stubs, Blender main.
+# `mise run check:features main` fails when they change; `--update` rewrites this file.
+# Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)

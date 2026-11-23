@@ -1,0 +1,13 @@
+# `[blender] strictness` sets the Implied narrowings category: lenient ignores it, default warns, strict makes it an
+# error (spec #95, #108).
+[lenient]
+blender-narrowed-by-bl-context = "ignore"
+blender-narrowed-by-poll = "ignore"
+
+[default]
+blender-narrowed-by-bl-context = "warn"
+blender-narrowed-by-poll = "warn"
+
+[strict]
+blender-narrowed-by-bl-context = "error"
+blender-narrowed-by-poll = "error"

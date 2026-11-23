@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "ptr_node_editor"
+version = "1.0.0"
+name = "Feature test: pointer aliases (ptr_node_editor)"
+tagline = "Node editor pointers Blender keeps in step"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "_expected/", "check_*.py", "ide_*.py"]

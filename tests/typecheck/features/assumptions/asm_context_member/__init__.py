@@ -1,14 +1,15 @@
-"""Feature test: outside a Blender callback, `scene`, `view_layer` and `tool_settings` of a Context are the window's or
-the loaded file's in ordinary use (a timer, an app handler, a helper, a test, a preset). The checker takes them as not
+"""Feature test: outside a Blender callback, `scene`, `view_layer`, `tool_settings` and `collection` of a Context are
+the window's or the loaded file's in ordinary use (a timer, an app handler, a helper, a test, a preset); `collection`
+falls back to the scene's master collection, so it is None exactly when `scene` is. The checker takes them as not
 None and reports the read under blender-assumed-context-member. Inside an Operator that a FileHandler names as its
-`bl_import_operator`, Blender's collection importer calls it with no scene, so `scene` and `tool_settings` are reported
-there too. The assert_type calls are no-ops at runtime; nothing here runs while the add-on is imported."""
+`bl_import_operator`, Blender's collection importer calls it with no scene, so `scene`, `tool_settings` and
+`collection` are reported there too. The assert_type calls are no-ops at runtime; nothing here runs while the add-on is imported."""
 
 from typing import assert_type
 
 import bpy
 from bpy.app.handlers import persistent
-from bpy.types import (BlendData, Context, FileHandler, Object, Operator, Panel, Scene, ToolSettings, ViewLayer,
+from bpy.types import (BlendData, Collection, Context, FileHandler, Object, Operator, Panel, Scene, ToolSettings, ViewLayer,
                        Window)
 
 
@@ -16,6 +17,7 @@ def frame_of(context: Context) -> int:
     assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member]
     assert_type(context.view_layer, ViewLayer)  # ty: ignore[blender-assumed-context-member]
     assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member]
+    assert_type(context.collection, Collection)  # ty: ignore[blender-assumed-context-member]
     assert_type(context.blend_data, BlendData | None)  # bare-ok: not an assumed member
     assert_type(context.window, Window | None)  # bare-ok: not an assumed member
     return context.scene.frame_current  # ty: ignore[blender-assumed-context-member]
@@ -72,6 +74,7 @@ class ASM_CONTEXT_MEMBER_OT_import(Operator):
     def execute(self, context):
         assert_type(context.scene, Scene)  # ty: ignore[blender-assumed-context-member]
         assert_type(context.tool_settings, ToolSettings)  # ty: ignore[blender-assumed-context-member]
+        assert_type(context.collection, Collection)  # ty: ignore[blender-assumed-context-member]
         assert_type(context.view_layer, ViewLayer)  # crashes rather than None with no scene: not reported
         return {"FINISHED"}
 
@@ -82,6 +85,7 @@ class ASM_CONTEXT_MEMBER_OT_other(Operator):
 
     def execute(self, context):
         assert_type(context.scene, Scene)  # no FileHandler names it: Guaranteed, not reported
+        context.collection.objects.link(context.object)  # ty: ignore[invalid-argument-type]
         return {"FINISHED"}
 
 

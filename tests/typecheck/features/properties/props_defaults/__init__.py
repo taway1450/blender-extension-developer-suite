@@ -1,7 +1,11 @@
 """Feature test: property arguments Blender rejects when the class is registered (ValueError), each checked on its own
 in Blender 5.4: defaults that do not fit the property, a set callback without get, callbacks with the wrong number of
 parameters, a name starting with "_", a pointer or collection type of the wrong kind, out-of-range sizes, too many
-ENUM_FLAG items and a data-block pointer on add-on preferences. Also arguments it accepts."""
+ENUM_FLAG items and a data-block pointer on add-on preferences. Also arguments it accepts. Items joined with `+` are
+read as one sequence: a 3-tuple's number is its index in the joined sequence. The assert_type calls are no-ops at
+runtime."""
+
+from typing import Literal, assert_type
 
 import bpy
 from bpy.props import (BoolProperty, BoolVectorProperty, CollectionProperty, EnumProperty, FloatProperty,
@@ -38,11 +42,19 @@ class PROPS_DEFAULTS_Valid(PropertyGroup):
     enum_by_number: EnumProperty(items=[("A", "A", "", 1), ("B", "B", "", 7)], default=7)
     flag_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A", "B"}, options={"ENUM_FLAG"})
     matrix: FloatVectorProperty(size=(2, 2), default=((1.0, 0.0), (0.0, 1.0)))
+    enum_joined: EnumProperty(items=AB + [("C", "C", "")], default=2)
+
+
+def joined_enum(group: PROPS_DEFAULTS_Valid):
+    assert_type(group.enum_joined, Literal["A", "B", "C"])
 
 
 class PROPS_DEFAULTS_Invalid(PropertyGroup):
     enum_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="C")  # ty: ignore[blender-invalid-property]
     enum_number_unknown: EnumProperty(items=[("A", "A", "", 1)], default=2)  # ty: ignore[blender-invalid-property]
+    enum_joined_unknown: EnumProperty(items=AB + [("C", "C", "")], default="D")  # ty: ignore[blender-invalid-property]
+    enum_joined_number_unknown: EnumProperty(items=AB + [("C", "C", "")], default=3)  # ty: ignore[blender-invalid-property]
+    enum_joined_tuples_unknown: EnumProperty(items=(("A", "A", ""),) + (("B", "B", ""),), default="C")  # ty: ignore[blender-invalid-property]
     flag_not_a_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default="A", options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
     flag_unknown: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"C"}, options={"ENUM_FLAG"})  # ty: ignore[blender-invalid-property]
     plain_set: EnumProperty(items=[("A", "A", ""), ("B", "B", "")], default={"A"})  # ty: ignore[blender-invalid-property]

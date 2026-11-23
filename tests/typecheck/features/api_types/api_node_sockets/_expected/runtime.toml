@@ -1,0 +1,39 @@
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeBsdfPrincipled', 'inputs', 'Base Color')"
+expect = "NodeSocketColor"
+reason = "a key names the socket the node declares under that name"
+
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeMath', 'inputs', 'Value_001')"
+expect = "NodeSocketFloat"
+reason = "a key names the socket the node declares under that identifier"
+
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeBackground', 'inputs', 1)"
+expect = "NodeSocketFloat"
+reason = "an index counts every socket"
+
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeMix', 'inputs', 'A')"
+expect = "NodeSocketFloat"
+reason = "a Mix node finds the available socket of its default float data type"
+
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeMix', 'inputs', 'A', data_type='RGBA')"
+expect = "NodeSocketColor"
+reason = "the same key finds another socket once the data type changes"
+
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeMix', 'inputs', 'A_Float')"
+expect = "KeyError"
+reason = "a Mix node finds its sockets by name only"
+
+[[probe]]
+code = "addon.socket_class('GeometryNodeTree', 'GeometryNodeMeshGrid', 'inputs', 'Size X')"
+expect = "NodeSocketFloatDistance"
+reason = "a geometry node's socket has its subtype's class"
+
+[[probe]]
+code = "addon.socket_class('ShaderNodeTree', 'ShaderNodeBsdfPrincipled', 'inputs', 'Base Colour')"
+expect = "KeyError"
+reason = "a key the node does not declare raises"

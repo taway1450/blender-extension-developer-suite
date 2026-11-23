@@ -24,7 +24,7 @@ class IMP_OPERATOR_RETURN_OT_set_str(Operator):
         return self.execute(context)
 
     def modal(self, context, event) -> set[str]:  # ty: ignore[blender-imprecise-operator-return]
-        return {"FINSHED"}  # ty: ignore[invalid-return-type]
+        return {"FINSHED"}  # ty: ignore[invalid-explicit-return]
 
 
 class IMP_OPERATOR_RETURN_OT_follow_on(Operator):
@@ -49,7 +49,7 @@ class IMP_OPERATOR_RETURN_OT_variable(Operator):
         return ret  # ty: ignore[blender-imprecise-operator-return]
 
     def invoke(self, context, event):
-        return {"OPERATOR_CANCELLED"}  # ty: ignore[invalid-return-type]
+        return {"OPERATOR_CANCELLED"}  # ty: ignore[invalid-explicit-return]
 
 
 class ResultMixin:

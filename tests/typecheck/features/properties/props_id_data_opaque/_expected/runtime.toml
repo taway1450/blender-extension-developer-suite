@@ -1,0 +1,4 @@
+[[probe]]
+code = "type(bpy.data.objects.new('probe', None).props_id_data_opaque.id_data).__name__"
+expect = "Object"
+reason = "the group is on Object too, through a type= read at runtime"

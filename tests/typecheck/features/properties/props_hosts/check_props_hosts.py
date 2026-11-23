@@ -33,10 +33,10 @@ def accepted(group: PROPS_HOSTS_Group, op: PROPS_HOSTS_OT_operator, macro: PROPS
 def ignored(panel: PROPS_HOSTS_PT_panel, menu: PROPS_HOSTS_MT_menu, header: PROPS_HOSTS_HT_header,
             keying_set: PROPS_HOSTS_KSI_keying_set, engine: PROPS_HOSTS_RenderEngine,
             handler: PROPS_HOSTS_FH_handler, shelf: PROPS_HOSTS_AST_shelf) -> None:
-    panel.value  # ty: ignore[unresolved-attribute]
-    menu.value  # ty: ignore[unresolved-attribute]
-    header.value  # ty: ignore[unresolved-attribute]
-    keying_set.value  # ty: ignore[unresolved-attribute]
-    engine.value  # ty: ignore[unresolved-attribute]
-    handler.value  # ty: ignore[unresolved-attribute]
-    shelf.value  # ty: ignore[unresolved-attribute]
+    panel.value  # ty: ignore[missing-attribute]
+    menu.value  # ty: ignore[missing-attribute]
+    header.value  # ty: ignore[missing-attribute]
+    keying_set.value  # ty: ignore[missing-attribute]
+    engine.value  # ty: ignore[missing-attribute]
+    handler.value  # ty: ignore[missing-attribute]
+    shelf.value  # ty: ignore[missing-attribute]

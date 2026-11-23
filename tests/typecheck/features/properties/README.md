@@ -16,7 +16,9 @@ what stock ty reports as `invalid-type-form`.
 | `props_callbacks` | `update` / `get` / `set` / `poll` / `items` callbacks: `self` is the declaring class |
 | `props_defaults` | arguments Blender rejects at registration (fails to load on purpose) |
 | `props_data_blocks` | the Property hosts that reject a pointer to a data-block, and two that accept one |
-| `props_registered` | properties assigned to Blender's classes: which classes accept them |
+| `props_registered` | properties assigned to Blender's classes: which classes accept them; a write after a truth test or `hasattr` (an intersection receiver); a property an update callback registers outside `register()`, read after `hasattr` (and an error without it); one assigned by an inherited `register()` classmethod on the class a subclass names (`cls.owner`) |
+| `props_id_data` | a PropertyGroup's `id_data`: the data-blocks its pointer and collection properties are registered on, through nested groups, subclasses and non-ID owners (`PoseBone` → `Object`); a data-block's `id_data` is itself |
+| `props_id_data_opaque` | not narrowed: a group's `id_data` when a `type=` in the add-on is unreadable, since it may store any group |
 | `props_rna` | `bl_rna.properties["name"]` with a literal key: the `Property` subclass of the attribute's kind, for Blender's structs and the add-on's own properties; another name or a variable key keeps `Property` |
 | `props_script` | a script outside any add-on (`load = false`): its own registrations, at module level and in a function, and their `del`s; a registration the stubs already declare (Blender's startup properties); another file's stay unknown |
 

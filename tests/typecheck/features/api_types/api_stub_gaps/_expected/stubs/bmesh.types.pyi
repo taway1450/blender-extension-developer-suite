@@ -1,8 +1,8 @@
 """Reference stub delta: BMesh sequences iterate over their elements, and an element link is a BMElemSeq of one
-element type."""
+element type. An element is indexed by a custom-data layer."""
 
 from collections.abc import Iterator
-from typing import Generic, TypeVar, overload
+from typing import Any, Generic, TypeVar, overload
 
 class BMVertSeq:
     def __iter__(self) -> Iterator[BMVert]: ...
@@ -38,3 +38,5 @@ class BMFace:
 
 class BMLoop:
     link_loops: BMElemSeq[BMLoop]
+    def __getitem__(self, key: BMLayerItem, /) -> Any: ...
+    def __setitem__(self, key: BMLayerItem, value: Any, /) -> None: ...

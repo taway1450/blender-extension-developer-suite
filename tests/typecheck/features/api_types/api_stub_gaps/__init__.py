@@ -4,7 +4,8 @@ row is a Vector, the version arrays are tuples, every struct has bl_rna, a few p
 __all__ or are not plain constants, and Operator.description may return None (Blender then shows the docstring).
 BMesh element links are sequences of one element type, bpy.data collections take a (name, library) key, and
 libraries.load and temp_data are context managers. Freestyle calls its overridable methods and Blender a render
-engine's update callbacks with positional arguments, so overrides may rename the parameters or drop their defaults.
+engine's update callbacks and a gizmo's draw_select with positional arguments, so overrides may rename the parameters
+or drop their defaults.
 The stubs must state it (check_api_stub_gaps.py); the helpers below compute the facts for the runtime probes
 (_expected/runtime.toml). The assert_type calls in the bodies are no-ops at runtime."""
 
@@ -12,7 +13,7 @@ import importlib
 from typing import assert_type
 
 import bpy
-from bpy.types import Camera, Node, Operator, RenderEngine, Scene, ViewLayer
+from bpy.types import Camera, Gizmo, Node, Operator, RenderEngine, Scene, ViewLayer
 from bpy_extras.anim_utils import BakeOptions
 from freestyle.types import (AdjacencyIterator, BinaryPredicate1D, ChainingIterator, Interface1D, Stroke,
                              StrokeShader, UnaryPredicate1D, ViewEdge)
@@ -42,11 +43,24 @@ class API_STUB_GAPS_Engine(RenderEngine):
         assert_type(node, Node | None)
 
     def update_render_passes(self, scene, renderlayer):
-        assert_type(scene, Scene | None)
-        assert_type(renderlayer, ViewLayer | None)
+        # Blender calls it only with a scene and a view layer (`RE_engine_update_render_passes`).
+        assert_type(scene, Scene)
+        assert_type(renderlayer, ViewLayer)
 
     def update_custom_camera(self, cam):
         assert_type(cam, Camera | None)
+
+
+class API_STUB_GAPS_GT_select(Gizmo):
+    """Blender passes draw_select's optional select_id positionally too."""
+
+    bl_idname = "API_STUB_GAPS_GT_select"
+
+    def draw(self, context):
+        pass
+
+    def draw_select(self, context, select_id):
+        pass
 
 
 class LongEdgeUP1D(UnaryPredicate1D):
@@ -135,6 +149,33 @@ def matrix_rows():
     return f"{type(matrix.col[0]).__name__} {type(next(iter(matrix.row))).__name__}"
 
 
+def math_protocols():
+    """Whether a shorter vector compares less, and the class name of a negated quaternion."""
+    from mathutils import Quaternion, Vector
+
+    return f"{Vector((1.0, 0.0, 0.0)) < Vector((0.0, 2.0, 0.0))} {type(-Quaternion()).__name__}"
+
+
+def font_image_binding():
+    """The class name of a font's image binding, entered and left."""
+    import blf
+    import imbuf
+
+    binding = blf.bind_imbuf(0, imbuf.new((4, 4)))
+    with binding:
+        pass
+    return type(binding).__name__
+
+
+def entered_font_image_binding():
+    """What entering a font's image binding gives. The matrix stack and an off-screen binding need a GPU context,
+    which background Blender has not; their __enter__ returns None too (gpu_py_matrix.cc, gpu_py_offscreen.cc)."""
+    import blf
+    import imbuf
+
+    with blf.bind_imbuf(0, imbuf.new((4, 4))) as entered:
+        return repr(entered)
+
 def module_members():
     """The class names of the module members the stubs left out."""
     import imbuf
@@ -145,5 +186,19 @@ def module_members():
     return " ".join(type(value).__name__ for value in values)
 
 
-classes = (API_STUB_GAPS_OT_describe, API_STUB_GAPS_Engine)
+def ik_params():
+    """The class name of a pose's IK parameters with the iTaSC solver, and the parameters with the legacy one."""
+    ob = bpy.data.objects.new("api_stub_gaps_ik", bpy.data.armatures.new("api_stub_gaps_ik"))
+    scene = bpy.data.scenes[0]
+    scene.collection.objects.link(ob)
+    scene.view_layers[0].update()
+    pose = ob.pose
+    assert pose is not None
+    pose.ik_solver = 'ITASC'
+    itasc = type(pose.ik_param).__name__
+    pose.ik_solver = 'LEGACY'
+    return f"{itasc} {pose.ik_param}"
+
+
+classes = (API_STUB_GAPS_OT_describe, API_STUB_GAPS_Engine, API_STUB_GAPS_GT_select)
 register, unregister = bpy.utils.register_classes_factory(classes)

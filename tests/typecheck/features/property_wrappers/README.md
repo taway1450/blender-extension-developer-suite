@@ -19,3 +19,4 @@ When it cannot tell:
 | Addon | Variant |
 | --- | --- |
 | `wrap_values` | all of the above on one PropertyGroup; a constant and a `functools.partial` registered on `Scene` |
+| `wrap_script` | a script, not an add-on (`load = false`): an annotation it cannot evaluate is still `Any`, with no error |

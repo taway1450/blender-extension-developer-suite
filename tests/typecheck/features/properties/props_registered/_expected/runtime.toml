@@ -41,3 +41,8 @@ reason = "every bpy.types class under a root of the allowlist accepts Registered
 code = "issubclass(type(bpy.types.UIList), type(bpy.types.Scene))"
 expect = false
 reason = "UIList has ID properties for its annotations, but its class does not accept Registered properties"
+
+[[probe]]
+code = "type(bpy.data.worlds.new('probe').reg_host_settings).__name__"
+expect = "PROPS_REGISTERED_WorldSettings"
+reason = "the register() classmethod Blender calls registers the property on the class the subclass names"

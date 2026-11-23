@@ -39,6 +39,21 @@ def run(cmd: list[str | Path], *, cwd: Path | None = None, env: dict[str, str] |
         raise StepError(f"Command failed with exit code {result.returncode}: {printable}")
 
 
+def blender_script_command(
+    blender: Path,
+    script: Path,
+    *script_args: str | Path,
+    options: tuple[str, ...] = (),
+    factory_startup: bool = True,
+) -> list[str]:
+    """The command that runs the Python ``script`` with ``script_args`` (after ``--``) in background Blender, from
+    factory settings (unless ``factory_startup`` is false) and without audio; Blender exits with code 1 when the
+    script raises. ``options`` go to Blender before the script."""
+    startup = ["--factory-startup"] if factory_startup else []
+    args = [blender, "--background", *startup, *options, "-noaudio", "--python-exit-code", "1"]
+    return [str(c) for c in [*args, "--python", script, "--", *script_args]]
+
+
 def git_output(repo: Path, *args: str) -> str:
     return subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True, text=True).stdout.strip()
 
