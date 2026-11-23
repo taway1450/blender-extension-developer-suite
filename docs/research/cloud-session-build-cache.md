@@ -92,6 +92,12 @@ estimate in 0.3 is close to the limit). The cost is small, because `scripts/blen
 pack, restore, the manifest and the release rotation: the ty variant is a second archive, the backdate step
 before the build, and a workflow trigger on `ty-blender` pointer bumps (~9 minutes of free CI each).
 
+*Found in CI:* cargo 1.99 turns incremental compilation off by default when `CI` is set, which GitHub's runners
+always do. The first CI cache therefore had no `incremental/` data and different fingerprints: restored here, it
+recompiled all 37 workspace crates (6.5 min). `ty:cache-pack` now unsets `CI` and the `CARGO_*INCREMENTAL`
+variables before building and refuses a `target/` without incremental data. Verified with a one-file crate: without
+`CI` rustc gets `-C incremental=…`, with `CI=true` it does not.
+
 *Built since:* `mise run ty:restore` / `ty:cache-pack` (`scripts/ty_cache.py`, sharing `scripts/_build_cache.py`
 with the Blender cache) and `.github/workflows/ty-cache.yml`, which runs on every `ty-blender` bump on main. Tested
 end to end here through a local HTTP server: after a simulated fresh clone the next `ty:build` was a 0.6-s no-op,

@@ -69,7 +69,8 @@ TARGET = RUFF_DIR / "target"
 # The parts of target/ the dev profile uses; another profile's directory would only make the archive bigger.
 MEMBERS = ("debug", ".rustc_info.json", "CACHEDIR.TAG")
 # Variables that change which crates cargo compiles incrementally, and with that every workspace crate's fingerprint.
-INCREMENTAL_OVERRIDES = ("CARGO_INCREMENTAL", "CARGO_PROFILE_DEV_INCREMENTAL", "CARGO_BUILD_INCREMENTAL")
+# Cargo also turns incremental compilation off by default when ``CI`` is set (as on every GitHub runner).
+INCREMENTAL_OVERRIDES = ("CARGO_INCREMENTAL", "CARGO_PROFILE_DEV_INCREMENTAL", "CARGO_BUILD_INCREMENTAL", "CI")
 
 
 def default_url() -> str:
@@ -100,9 +101,9 @@ def pack() -> Path:
     if dirty := differing_files(RUFF_DIR, commit):
         raise StepError(f"ruff-blender has uncommitted changes ({', '.join(dirty[:5])}...); pack a clean checkout")
 
-    # A cloud session builds with cargo's defaults: incremental for the workspace crates only. An override (GitHub's
-    # runners turn incremental compilation off) changes every workspace crate's fingerprint and drops rustc's
-    # incremental data, so the restored build would recompile them all.
+    # A cloud session builds with cargo's defaults: incremental for the workspace crates only. An override (on
+    # GitHub's runners, ``CI=true``) changes every workspace crate's fingerprint and drops rustc's incremental data,
+    # so the restored build would recompile them all.
     for var in INCREMENTAL_OVERRIDES:
         if os.environ.pop(var, None) is not None:
             log(f"Unsetting {var}: the cache has to match a build with cargo's defaults")
