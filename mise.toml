@@ -46,12 +46,14 @@ flag "--build-type <type>" default="Release" help="CMake build type" {
   choices "Release" "RelWithDebInfo" "Debug"
 }
 flag "--force" help="Delete the build directory and build from scratch"
+flag "--ccache" help="Compile through ccache (WITH_COMPILER_CCACHE), which must be installed"
 '''
 run = '''
 uv run scripts/build_blender.py {{usage.name}} --config "{{usage.config}}" --build-type "{{usage.build_type}}"
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.update %} --update{% endif %}
 {%- if usage.force %} --force{% endif %}
+{%- if usage.ccache %} --ccache{% endif %}
 '''
 
 [tasks."stubs:generate"]

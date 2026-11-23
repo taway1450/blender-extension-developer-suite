@@ -28,6 +28,8 @@ from pathlib import Path
 from _common import CACHE_DIR, FAKE_BPY_SRC, StepError, exe, log, main_wrapper, validate_release_version
 
 BLENDER_BIN_DIR = CACHE_DIR / "blender-bin"
+# Written by build_blender.py next to a build from source: what it was built from.
+BUILD_INFO = ".build-info"
 DOWNLOADS_DIR = CACHE_DIR / "downloads"
 
 
@@ -50,6 +52,15 @@ def blender_executable(install_dir: Path) -> Path:
 def cached_blender(version: str) -> Path | None:
     blender = blender_executable(BLENDER_BIN_DIR / version)
     return blender if blender.is_file() else None
+
+
+def read_build_info(version: str) -> dict[str, str]:
+    """The fields of the ``.build-info`` of the Blender build ``version`` from source; empty for a release or when
+    there is no complete build."""
+    build_info = BLENDER_BIN_DIR / version / BUILD_INFO
+    if not build_info.is_file():
+        return {}
+    return dict(line.split("=", 1) for line in build_info.read_text().splitlines() if "=" in line)
 
 
 def release_urls(version: str) -> tuple[str, str]:

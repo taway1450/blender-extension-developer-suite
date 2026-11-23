@@ -40,12 +40,11 @@ import sys
 from pathlib import Path
 
 from _common import CACHE_DIR, StepError, git_output, log, main_wrapper, run, validate_build_name
-from download_blender import BLENDER_BIN_DIR, blender_executable
-from generate_stubs import blender_binary_version, ensure_worktree
+from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable, read_build_info
+from generate_stubs import blender_binary_version, ensure_worktree, tree_revision
 
 BUILD_DIR = CACHE_DIR / "blender-build"
 LIBS_DIR = CACHE_DIR / "blender-libs"
-BUILD_INFO = ".build-info"
 CONFIGURE_ARGS = "configure-args.txt"
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
 
@@ -166,20 +165,29 @@ def build_blender(
     config: str = "full",
     build_type: str = "Release",
     force: bool = False,
+    ccache: bool = False,
 ) -> Path:
-    """Build Blender ``name`` from source and return the installed binary."""
+    """Build Blender ``name`` from source and return the installed binary.
+
+    The build is skipped only when the installed one was made from the same source: the same commit and the same
+    uncommitted changes (``tree_revision``), so an edit to the worktree is always built. Ninja then recompiles only
+    what the edit touched.
+    """
     source = ensure_worktree(name, ref, update=update)
     commit = git_output(source, "rev-parse", "HEAD")
+    revision = tree_revision(source, ".")
     install_dir = BLENDER_BIN_DIR / name
     blender = blender_executable(install_dir)
     build_info = install_dir / BUILD_INFO
+    built = read_build_info(name)
     if (
         not force
         and blender.is_file()
-        and build_info.is_file()
-        and build_info.read_text().startswith(f"commit={commit}\nconfig={config}\nbuild_type={build_type}\n")
+        and built.get("revision") == revision
+        and built.get("config") == config
+        and built.get("build_type") == build_type
     ):
-        log(f"Reusing Blender build {blender} ({commit[:10]})")
+        log(f"Reusing Blender build {blender} ({revision[:10]}{revision[40:]})")
         return blender
 
     config_file = source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
@@ -211,6 +219,9 @@ def build_blender(
         f"-DLIBDIR={libs.as_posix()}",
         f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
     ]
+    if ccache:
+        # Configured from a fresh cache whenever this changes (see configure_key), so OFF needs no flag.
+        configure_cmd.append("-DWITH_COMPILER_CCACHE=ON")
     configure_args = build_dir / CONFIGURE_ARGS
     configure_key = "\n".join(str(c) for c in configure_cmd)
     if (
@@ -227,12 +238,14 @@ def build_blender(
         run(configure_cmd, env=env)
         configure_args.write_text(configure_key)
 
-    log(f"Building Blender {name} ({commit[:10]}), this takes a while the first time")
+    log(f"Building Blender {name} ({revision[:10]}{revision[40:]}), this takes a while the first time")
     build_info.unlink(missing_ok=True)
     run([cmake, "--build", build_dir, "--target", "install"], env=env)
     if not blender.is_file():
         raise StepError(f"Blender binary not found at {blender} after building")
-    build_info.write_text(f"commit={commit}\nconfig={config}\nbuild_type={build_type}\nsource={source}\n")
+    build_info.write_text(
+        f"commit={commit}\nrevision={revision}\nconfig={config}\nbuild_type={build_type}\nsource={source}\n"
+    )
     log(f"Blender {blender_binary_version(blender)} ({name}, {commit[:10]}) installed at {blender}")
     return blender
 
@@ -253,9 +266,18 @@ def main() -> int:
     )
     parser.add_argument("--build-type", choices=BUILD_TYPES, default="Release", help="CMake build type")
     parser.add_argument("--force", action="store_true", help="Delete the build directory and build from scratch")
+    parser.add_argument(
+        "--ccache", action="store_true", help="Compile through ccache (WITH_COMPILER_CCACHE), which must be installed"
+    )
     args = parser.parse_args()
     build_blender(
-        args.name, ref=args.ref, update=args.update, config=args.config, build_type=args.build_type, force=args.force
+        args.name,
+        ref=args.ref,
+        update=args.update,
+        config=args.config,
+        build_type=args.build_type,
+        force=args.force,
+        ccache=args.ccache,
     )
     return 0
 
