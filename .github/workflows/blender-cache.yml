@@ -1,0 +1,144 @@
+# Builds Blender from source and publishes the build directory, install and ccache as the release
+# blender-cache-<name>-<date>-<blender commit>, keeping the newest few. The release blender-cache-<name> holds only
+# the newest build's manifest.json, pointing at it: `mise run blender:restore <name>` downloads that build in a cloud
+# session so that its next `blender:build` is incremental instead of a two-hour cold build
+# (docs/research/blender-build-cache-hosting.md); `--release <tag>` restores an older one.
+#
+# The cache only works at the absolute path it was built at, with the same compiler and ccache paths, so this job
+# builds the way a Claude Code cloud session does: repo at /home/user/blender-extension-developer-suite,
+# Ubuntu 24.04, gcc-14, ccache in /usr/local/bin and uv's cache in /root/.cache/uv.
+name: Blender build cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: Build name (also the Blender git ref built, e.g. main)
+        default: main
+      cold:
+        description: Build from scratch instead of starting from the previous cache
+        type: boolean
+        default: false
+      keep:
+        description: How many builds to keep (older releases are deleted)
+        type: number
+        default: 3
+  schedule:
+    - cron: "17 3 * * 1" # weekly, Monday 03:17 UTC
+
+permissions:
+  contents: write # create the release and upload its assets
+
+concurrency:
+  group: blender-cache-${{ inputs.name || 'main' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 345
+    env:
+      NAME: ${{ inputs.name || 'main' }}
+      KEEP: ${{ inputs.keep || 3 }}
+      REPO_DIR: /home/user/blender-extension-developer-suite
+      # The paths baked into the build directory and its configure arguments.
+      UV_CACHE_DIR: /root/.cache/uv
+      CC: gcc-14
+      CXX: g++-14
+      SUITE_JOBS: "4"
+      SUITE_MEMORY_LIMIT_GB: "0"
+      # What build_blender.py uses with --ccache; set here too for `ccache --show-stats`.
+      CCACHE_DIR: /home/user/blender-extension-developer-suite/.cache/ccache
+      # Keeps the published ccache archive small (a full build is about 0.4 GB compressed).
+      CCACHE_MAXSIZE: 3G
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Free disk space
+        run: |
+          # The libraries, source, build directory, install, ccache and archives need about 15 GB.
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          df -h /
+
+      - name: Install the build dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q gcc-14 g++-14 zstd git-lfs \
+            libxxf86vm-dev libxfixes-dev libxi-dev libxkbcommon-dev libsm-dev libgl-dev libegl-dev \
+            libwayland-dev libdecor-0-dev wayland-protocols libdbus-1-dev \
+            libxrandr-dev libxinerama-dev libxcursor-dev
+          V=4.14.3
+          curl -fsSL "https://github.com/ccache/ccache/releases/download/v$V/ccache-$V-linux-x86_64-glibc.tar.xz" | tar -xJ -C /tmp
+          sudo install -m755 "/tmp/ccache-$V-linux-x86_64-glibc/ccache" /usr/local/bin/ccache
+          sudo mkdir -p /home/user "$UV_CACHE_DIR"
+          sudo chown "$USER" /home/user
+          sudo chown -R "$USER" /root/.cache
+          sudo chmod o+x /root
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+
+      - name: Check out at the cloud session's path
+        run: |
+          git clone --no-checkout "https://github.com/${{ github.repository }}" "$REPO_DIR"
+          git -C "$REPO_DIR" checkout --detach "${{ github.sha }}"
+          cd "$REPO_DIR"
+          mise trust -q .
+          # Blobs are fetched on demand when the build's worktree is created.
+          GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --filter=blob:none blender
+
+      - name: Start from the previous cache
+        if: ${{ !inputs.cold }}
+        working-directory: ${{ env.REPO_DIR }}
+        run: mise run blender:restore "$NAME" || echo "::notice::No usable previous cache; building from scratch"
+
+      - name: Build Blender
+        working-directory: ${{ env.REPO_DIR }}
+        run: |
+          mise run blender:build "$NAME" --update --ccache
+          ccache --show-stats
+          df -h /
+
+      - name: Pack the cache
+        working-directory: ${{ env.REPO_DIR }}
+        run: mise run blender:cache-pack "$NAME"
+
+      - name: Publish the build and keep the newest ${{ env.KEEP }}
+        working-directory: ${{ env.REPO_DIR }}/.cache/blender-cache/${{ env.NAME }}
+        run: |
+          REPO="${{ github.repository }}"
+          COMMIT=$(jq -r '.commit[:10]' manifest.json)
+          export PREFIX="blender-cache-$NAME-"
+          TAG="$PREFIX$(date -u +%Y%m%d)-$COMMIT"
+          POINTER="blender-cache-$NAME"
+
+          # This build in its own release (replacing one of the same commit from earlier today).
+          gh release delete "$TAG" -R "$REPO" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+            --title "Blender build cache: $NAME at $COMMIT" \
+            --notes "Build directory, install and ccache of \`blender:build $NAME\` at Blender $COMMIT. Restore it with \`mise run blender:restore $NAME --release $TAG\`; see manifest.json for what it was built from." \
+            ./*.tar.zst manifest.json
+
+          # The pointer to the newest build, which `blender:restore <name>` reads.
+          mkdir -p ../pointer
+          jq --arg url "https://github.com/$REPO/releases/download/$TAG" '. + {archives_url: $url}' manifest.json \
+            > ../pointer/manifest.json
+          if ! gh release view "$POINTER" -R "$REPO" >/dev/null 2>&1; then
+            gh release create "$POINTER" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+              --title "Blender build cache: $NAME (newest)" \
+              --notes "manifest.json of the newest build of \`blender:build $NAME\`, which \`mise run blender:restore $NAME\` downloads; the archives are in the release it names (archives_url)."
+          fi
+          gh release upload "$POINTER" -R "$REPO" --clobber ../pointer/manifest.json
+
+          # Delete all but the newest $KEEP builds (never the one just published: it is the newest).
+          gh release list -R "$REPO" --limit 200 --json tagName,createdAt \
+            --jq '.[] | select(.tagName | startswith($ENV.PREFIX) and (ltrimstr($ENV.PREFIX) | test("^[0-9]{8}-[0-9a-f]{10}$")))
+                  | "\(.createdAt) \(.tagName)"' \
+            | sort -r | tail -n +$((KEEP > 0 ? KEEP + 1 : 2)) \
+            | while read -r _ old; do
+                echo "Deleting $old"
+                gh release delete "$old" -R "$REPO" --cleanup-tag --yes
+              done
+          { echo "Published $TAG"; echo '```json'; cat manifest.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

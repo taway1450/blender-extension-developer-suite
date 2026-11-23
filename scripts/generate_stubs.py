@@ -136,13 +136,15 @@ def ensure_worktree(version: str, ref: str | None = None, force: bool = False, u
 
     With ``update`` the ref is fetched again and an existing worktree is moved to its latest commit.
     """
+    ref_override = ref
     ref = resolve_git_ref(version, ref)
     worktree = worktree_path(version)
     # Blender stores test data and some assets in git LFS; we only need the Python sources.
     env = {**os.environ, "GIT_LFS_SKIP_SMUDGE": "1"}
     head = worktree_commit(version)
     if head and not force:
-        if update and (commit := resolve_commit(ref, fetch=True)) != head:
+        # An explicit ref moves the worktree too: otherwise `--ref other` would silently build the old checkout.
+        if (update or ref_override) and (commit := resolve_commit(ref, fetch=update)) != head:
             log(f"Updating Blender source worktree {worktree} to {ref} ({head[:10]} -> {commit[:10]})")
             run(["git", "-C", worktree, "checkout", "--detach", commit], env=env)
             return worktree

@@ -46,13 +46,39 @@ flag "--build-type <type>" default="Release" help="CMake build type" {
   choices "Release" "RelWithDebInfo" "Debug"
 }
 flag "--force" help="Delete the build directory and build from scratch"
+flag "--ccache" help="Compile through ccache (WITH_COMPILER_CCACHE), which must be installed"
 '''
 run = '''
 uv run scripts/build_blender.py {{usage.name}} --config "{{usage.config}}" --build-type "{{usage.build_type}}"
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 {%- if usage.update %} --update{% endif %}
 {%- if usage.force %} --force{% endif %}
+{%- if usage.ccache %} --ccache{% endif %}
 '''
+
+[tasks."blender:restore"]
+description = "Download the Blender build cache CI publishes (build directory, install, ccache) so the next blender:build is incremental (Linux)"
+usage = '''
+arg "<name>" help="Build name the cache was made for (e.g. main)"
+flag "--url <url>" help="Where the cache's files are (default: the newest build CI published)"
+flag "--release <tag>" help="Restore an older build CI kept, e.g. blender-cache-main-20261123-faa17d9072"
+flag "--force" help="Replace an existing build directory and install with the cache"
+flag "--ccache-only" help="Only restore ccache: works at any path, but the next build replays every compile"
+'''
+run = '''
+uv run scripts/blender_cache.py restore {{usage.name}}
+{%- if usage.url %} --url "{{usage.url}}"{% endif %}
+{%- if usage.release %} --release "{{usage.release}}"{% endif %}
+{%- if usage.force %} --force{% endif %}
+{%- if usage.ccache_only %} --ccache-only{% endif %}
+'''
+
+[tasks."blender:cache-pack"]
+description = "Pack a clean Blender build from source as a cache into .cache/blender-cache/<name>/ (used by CI, Linux)"
+usage = '''
+arg "<name>" help="Build name (e.g. main)"
+'''
+run = 'uv run scripts/blender_cache.py pack {{usage.name}}'
 
 [tasks."stubs:generate"]
 description = "Generate bpy stubs with fake-bpy-module and Blender's own stub generator (downloads the Blender release if needed)"

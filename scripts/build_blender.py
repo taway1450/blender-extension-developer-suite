@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["pyyaml", "cmake>=3.21", "ninja"]
+# dependencies = ["pyyaml", "cmake==4.4.5", "ninja==1.13.2"]
 # ///
 """Build Blender from source into ``.cache/blender-bin/<name>``, next to the downloaded releases.
 
@@ -40,12 +40,24 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _common import CACHE_DIR, StepError, git_output, log, main_wrapper, run, validate_build_name
+from _common import CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper, run, validate_build_name
 from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable
-from generate_stubs import blender_binary_version, ensure_worktree
+from generate_stubs import blender_binary_version, ensure_worktree, tree_revision
 
 BUILD_DIR = CACHE_DIR / "blender-build"
 LIBS_DIR = CACHE_DIR / "blender-libs"
+CCACHE_DIR = CACHE_DIR / "ccache"
+# Settings that let the cache published by CI (blender_cache.py) hit in other checkouts and machines; each one only
+# applies when its CCACHE_* variable is not set already.
+CCACHE_ENV = {
+    "CCACHE_DIR": str(CCACHE_DIR),
+    # Paths under the repo are hashed relative to it.
+    "CCACHE_BASEDIR": str(REPO_ROOT),
+    # Hash the compiler's content, not its mtime and size, which differ between installs.
+    "CCACHE_COMPILERCHECK": "content",
+    # Lets the compiles that use a precompiled header (USD, Freestyle) be cached at all.
+    "CCACHE_SLOPPINESS": "pch_defines,time_macros",
+}
 CONFIGURE_ARGS = "configure-args.txt"
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
 # Options turned back on after a preset (``-D`` after ``-C`` overrides its forced cache entries).
@@ -73,20 +85,25 @@ def lib_platform() -> str:
     raise StepError(f"Unsupported platform {sys.platform!r}")
 
 
-def ensure_libraries(source: Path) -> Path:
-    """Check out the precompiled libraries pinned by ``source`` in the shared clone and return it.
-
-    Every Blender worktree would otherwise download several GB of libraries into its own submodule;
-    the shared clone only downloads the git LFS files that changed between the pinned commits.
-    """
+def pinned_libraries(source: Path) -> tuple[str, str, str]:
+    """The ``lib/<platform>`` submodule of the Blender source ``source`` for this machine: its platform name, URL
+    and pinned commit."""
     name = lib_platform()
     submodule = f"lib/{name}"
     url = git_output(source, "config", "-f", ".gitmodules", f"submodule.{submodule}.url")
     tree = git_output(source, "ls-tree", "HEAD", submodule).split()
     if len(tree) < 3 or tree[1] != "commit":
         raise StepError(f"{source} has no {submodule} submodule")
-    commit = tree[2]
+    return name, url, tree[2]
 
+
+def ensure_libraries(source: Path) -> Path:
+    """Check out the precompiled libraries pinned by ``source`` in the shared clone and return it.
+
+    Every Blender worktree would otherwise download several GB of libraries into its own submodule;
+    the shared clone only downloads the git LFS files that changed between the pinned commits.
+    """
+    name, url, commit = pinned_libraries(source)
     libs = LIBS_DIR / name
     if not (libs / ".git").exists():
         log(f"Cloning the precompiled libraries {url} into {libs}")
@@ -102,14 +119,37 @@ def ensure_libraries(source: Path) -> Path:
         log(f"Fetching library commit {commit[:10]}")
         run(["git", "-C", libs, "fetch", "origin"])
 
-    # Always check out: after `clone --no-checkout` HEAD already names the pinned commit while the
-    # working tree is still empty. Files that are already up to date are left alone.
-    log(f"Checking out precompiled libraries {name} at {commit[:10]} (downloads the changed git LFS files)")
-    run(["git", "-C", libs, "-c", "advice.detachedHead=false", "checkout", "--force", "--detach", commit])
+    # Check out only when needed: `checkout --force` rewrites every file whose timestamps differ from the index,
+    # even with the same content, and the newer timestamps make Ninja rebuild everything that includes them.
+    # (After `clone --no-checkout` HEAD already names the pinned commit, but the files show as deleted.)
+    if is_clean_checkout(libs, commit):
+        log(f"Precompiled libraries {name} are checked out at {commit[:10]}")
+    else:
+        log(f"Checking out precompiled libraries {name} at {commit[:10]} (downloads the changed git LFS files)")
+        run(["git", "-C", libs, "-c", "advice.detachedHead=false", "checkout", "--force", "--detach", commit])
     # A checkout interrupted while downloading leaves LFS pointer files behind; this completes it.
-    run(["git", "-C", libs, "lfs", "pull"])
+    pull_lfs_files(libs)
     log(f"Precompiled libraries: {libs} ({commit[:10]})")
     return libs
+
+
+def is_clean_checkout(repo: Path, commit: str) -> bool:
+    """Whether ``repo`` has ``commit`` checked out with no tracked file changed or missing."""
+    head = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True)
+    return head.stdout.strip() == commit and not git_output(repo, "status", "--porcelain", "--untracked-files=no")
+
+
+def pull_lfs_files(repo: Path) -> None:
+    """Download the git LFS files of ``repo`` that are still pointer files, if any.
+
+    Not unconditionally: `git lfs pull` also rewrites the empty files of the checkout, and so their timestamps,
+    which made Ninja recompile what includes them (e.g. ``source/blender/render/hydra/settings.hh``) on every build.
+    """
+    # Each line is `<oid> <*|-> <path>`; `-` marks a file that is still a pointer.
+    listing = git_output(repo, "lfs", "ls-files")
+    if any(line.split(maxsplit=2)[1] == "-" for line in listing.splitlines() if line.strip()):
+        log(f"Pulling git LFS files of {repo}")
+        run(["git", "-C", repo, "lfs", "pull"])
 
 
 def visual_studio_env() -> dict[str, str]:
@@ -212,14 +252,18 @@ def configure_hash(*, source: Path, build_dir: Path, config: str, build_type: st
     return hashlib.sha256("\n".join(str(c) for c in cmd).encode()).hexdigest()[:16]
 
 
-def build_info_text(*, commit: str, config: str, build_type: str, configure: str, source: Path) -> str:
-    return f"commit={commit}\nconfig={config}\nbuild_type={build_type}\nconfigure={configure}\nsource={source}\n"
+def build_info_text(*, commit: str, revision: str, config: str, build_type: str, configure: str, source: Path) -> str:
+    return (
+        f"commit={commit}\nrevision={revision}\nconfig={config}\nbuild_type={build_type}\n"
+        f"configure={configure}\nsource={source}\n"
+    )
 
 
-def is_current_build(build_info: str, *, commit: str, config: str, build_type: str, configure: str) -> bool:
-    """Whether the build that ``.build-info`` reads ``build_info`` matches the requested one."""
+def is_current_build(build_info: str, *, revision: str, config: str, build_type: str, configure: str) -> bool:
+    """Whether the build that ``.build-info`` reads ``build_info`` matches the requested one. ``revision`` is the
+    source's ``tree_revision``: its commit plus a hash of its uncommitted changes."""
     fields = dict(line.split("=", 1) for line in build_info.splitlines() if "=" in line)
-    wanted = {"commit": commit, "config": config, "build_type": build_type, "configure": configure}
+    wanted = {"revision": revision, "config": config, "build_type": build_type, "configure": configure}
     return all(fields.get(key) == value for key, value in wanted.items())
 
 
@@ -231,10 +275,17 @@ def build_blender(
     config: str = "full",
     build_type: str = "Release",
     force: bool = False,
+    ccache: bool = False,
 ) -> Path:
-    """Build Blender ``name`` from source and return the installed binary."""
+    """Build Blender ``name`` from source and return the installed binary.
+
+    The build is skipped only when the installed one was made from the same source: the same commit and the same
+    uncommitted changes (``tree_revision``), so an edit to the worktree is always built. Ninja then recompiles only
+    what the edit touched.
+    """
     source = ensure_worktree(name, ref, update=update)
     commit = git_output(source, "rev-parse", "HEAD")
+    revision = tree_revision(source, ".")
     install_dir = BLENDER_BIN_DIR / name
     blender = blender_executable(install_dir)
     build_info = install_dir / BUILD_INFO
@@ -247,10 +298,10 @@ def build_blender(
         and blender.is_file()
         and build_info.is_file()
         and is_current_build(
-            build_info.read_text(), commit=commit, config=config, build_type=build_type, configure=configure
+            build_info.read_text(), revision=revision, config=config, build_type=build_type, configure=configure
         )
     ):
-        log(f"Reusing Blender build {blender} ({commit[:10]})")
+        log(f"Reusing Blender build {blender} ({revision[:10]}{revision[40:]})")
         return blender
 
     config_file = preset_file(source, config)
@@ -258,8 +309,7 @@ def build_blender(
         available = sorted(p.stem.removeprefix("blender_") for p in config_file.parent.glob("blender_*.cmake"))
         raise StepError(f"Unknown build configuration {config!r} (available: {', '.join(available)})")
 
-    log("Pulling git LFS files of the source worktree")
-    run(["git", "-C", source, "lfs", "pull"])
+    pull_lfs_files(source)
     libs = ensure_libraries(source)
     env, cmake, ninja = build_env()
 
@@ -277,8 +327,26 @@ def build_blender(
         libs=libs,
         install_dir=install_dir,
     )
+    if ccache:
+        if not shutil.which("ccache"):
+            raise StepError("--ccache needs ccache on the PATH (https://ccache.dev/download.html)")
+        # Configured from a fresh cache whenever this changes (see configure_key), so OFF needs no flag.
+        configure_cmd.append("-DWITH_COMPILER_CCACHE=ON")
+        for var, value in CCACHE_ENV.items():
+            env.setdefault(var, value)
     configure_args = build_dir / CONFIGURE_ARGS
-    configure_key = "\n".join(str(c) for c in configure_cmd)
+    # CMake only reads CC/CXX when it configures from a fresh cache, so a different compiler needs a new one too
+    # (e.g. CC=gcc-14 on a system whose default GCC is older than Blender's minimum). Unset, they default to the
+    # ones the build directory was configured with, like CMake's own cache does: a build restored from CI keeps
+    # its compiler without CC/CXX in the environment.
+    recorded = configure_args.read_text().splitlines() if configure_args.is_file() else []
+    for var in ("CC", "CXX"):
+        if not env.get(var) and (
+            value := next((r.split("=", 1)[1] for r in recorded if r.startswith(f"{var}=")), None)
+        ):
+            env[var] = value
+    compilers = [f"{var}={env[var]}" for var in ("CC", "CXX") if env.get(var)]
+    configure_key = "\n".join([*(str(c) for c in configure_cmd), *compilers])
     if (
         (build_dir / "build.ninja").is_file()
         and configure_args.is_file()
@@ -293,13 +361,20 @@ def build_blender(
         run(configure_cmd, env=env)
         configure_args.write_text(configure_key)
 
-    log(f"Building Blender {name} ({commit[:10]}), this takes a while the first time")
+    log(f"Building Blender {name} ({revision[:10]}{revision[40:]}), this takes a while the first time")
     build_info.unlink(missing_ok=True)
     run([cmake, "--build", build_dir, "--target", "install"], env=env)
     if not blender.is_file():
         raise StepError(f"Blender binary not found at {blender} after building")
     build_info.write_text(
-        build_info_text(commit=commit, config=config, build_type=build_type, configure=configure, source=source)
+        build_info_text(
+            commit=commit,
+            revision=revision,
+            config=config,
+            build_type=build_type,
+            configure=configure,
+            source=source,
+        )
     )
     log(f"Blender {blender_binary_version(blender)} ({name}, {commit[:10]}) installed at {blender}")
     return blender
@@ -321,9 +396,18 @@ def main() -> int:
     )
     parser.add_argument("--build-type", choices=BUILD_TYPES, default="Release", help="CMake build type")
     parser.add_argument("--force", action="store_true", help="Delete the build directory and build from scratch")
+    parser.add_argument(
+        "--ccache", action="store_true", help="Compile through ccache (WITH_COMPILER_CCACHE), which must be installed"
+    )
     args = parser.parse_args()
     build_blender(
-        args.name, ref=args.ref, update=args.update, config=args.config, build_type=args.build_type, force=args.force
+        args.name,
+        ref=args.ref,
+        update=args.update,
+        config=args.config,
+        build_type=args.build_type,
+        force=args.force,
+        ccache=args.ccache,
     )
     return 0
 
