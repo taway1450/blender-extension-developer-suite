@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["pyyaml", "cmake>=3.21", "ninja"]
+# dependencies = ["pyyaml", "cmake==4.4.5", "ninja==1.13.2"]
 # ///
 """Build Blender from source into ``.cache/blender-bin/<name>``, next to the downloaded releases.
 
@@ -39,12 +39,24 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _common import CACHE_DIR, StepError, git_output, log, main_wrapper, run, validate_build_name
+from _common import CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper, run, validate_build_name
 from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable, read_build_info
 from generate_stubs import blender_binary_version, ensure_worktree, tree_revision
 
 BUILD_DIR = CACHE_DIR / "blender-build"
 LIBS_DIR = CACHE_DIR / "blender-libs"
+CCACHE_DIR = CACHE_DIR / "ccache"
+# Settings that let the cache published by CI (blender_cache.py) hit in other checkouts and machines; each one only
+# applies when its CCACHE_* variable is not set already.
+CCACHE_ENV = {
+    "CCACHE_DIR": str(CCACHE_DIR),
+    # Paths under the repo are hashed relative to it.
+    "CCACHE_BASEDIR": str(REPO_ROOT),
+    # Hash the compiler's content, not its mtime and size, which differ between installs.
+    "CCACHE_COMPILERCHECK": "content",
+    # Lets the compiles that use a precompiled header (USD, Freestyle) be cached at all.
+    "CCACHE_SLOPPINESS": "pch_defines,time_macros",
+}
 CONFIGURE_ARGS = "configure-args.txt"
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
 
@@ -67,20 +79,25 @@ def lib_platform() -> str:
     raise StepError(f"Unsupported platform {sys.platform!r}")
 
 
-def ensure_libraries(source: Path) -> Path:
-    """Check out the precompiled libraries pinned by ``source`` in the shared clone and return it.
-
-    Every Blender worktree would otherwise download several GB of libraries into its own submodule;
-    the shared clone only downloads the git LFS files that changed between the pinned commits.
-    """
+def pinned_libraries(source: Path) -> tuple[str, str, str]:
+    """The ``lib/<platform>`` submodule of the Blender source ``source`` for this machine: its platform name, URL
+    and pinned commit."""
     name = lib_platform()
     submodule = f"lib/{name}"
     url = git_output(source, "config", "-f", ".gitmodules", f"submodule.{submodule}.url")
     tree = git_output(source, "ls-tree", "HEAD", submodule).split()
     if len(tree) < 3 or tree[1] != "commit":
         raise StepError(f"{source} has no {submodule} submodule")
-    commit = tree[2]
+    return name, url, tree[2]
 
+
+def ensure_libraries(source: Path) -> Path:
+    """Check out the precompiled libraries pinned by ``source`` in the shared clone and return it.
+
+    Every Blender worktree would otherwise download several GB of libraries into its own submodule;
+    the shared clone only downloads the git LFS files that changed between the pinned commits.
+    """
+    name, url, commit = pinned_libraries(source)
     libs = LIBS_DIR / name
     if not (libs / ".git").exists():
         log(f"Cloning the precompiled libraries {url} into {libs}")
@@ -242,11 +259,23 @@ def build_blender(
         f"-DCMAKE_INSTALL_PREFIX={install_dir.as_posix()}",
     ]
     if ccache:
+        if not shutil.which("ccache"):
+            raise StepError("--ccache needs ccache on the PATH (https://ccache.dev/download.html)")
         # Configured from a fresh cache whenever this changes (see configure_key), so OFF needs no flag.
         configure_cmd.append("-DWITH_COMPILER_CCACHE=ON")
+        for var, value in CCACHE_ENV.items():
+            env.setdefault(var, value)
     configure_args = build_dir / CONFIGURE_ARGS
     # CMake only reads CC/CXX when it configures from a fresh cache, so a different compiler needs a new one too
-    # (e.g. CC=gcc-14 on a system whose default GCC is older than Blender's minimum).
+    # (e.g. CC=gcc-14 on a system whose default GCC is older than Blender's minimum). Unset, they default to the
+    # ones the build directory was configured with, like CMake's own cache does: a build restored from CI keeps
+    # its compiler without CC/CXX in the environment.
+    recorded = configure_args.read_text().splitlines() if configure_args.is_file() else []
+    for var in ("CC", "CXX"):
+        if not env.get(var) and (
+            value := next((r.split("=", 1)[1] for r in recorded if r.startswith(f"{var}=")), None)
+        ):
+            env[var] = value
     compilers = [f"{var}={env[var]}" for var in ("CC", "CXX") if env.get(var)]
     configure_key = "\n".join([*(str(c) for c in configure_cmd), *compilers])
     if (
