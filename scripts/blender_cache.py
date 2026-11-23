@@ -139,7 +139,8 @@ def tar_create(archive: Path, root: Path, members: list[str]) -> None:
 
 
 def tar_extract(archive: Path, root: Path) -> None:
-    run(["tar", "--use-compress-program", "zstd -d", "-xf", archive, "-C", root])
+    # CI builds as another user than the cloud session's root; keep the extracting user as the owner.
+    run(["tar", "--use-compress-program", "zstd -d", "--no-same-owner", "-xf", archive, "-C", root])
 
 
 # --- pack ----------------------------------------------------------------------------------------------------------
