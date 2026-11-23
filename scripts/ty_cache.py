@@ -61,7 +61,7 @@ from _build_cache import (
 from _common import CACHE_DIR, REPO_ROOT, TY_SUBMODULE, StepError, git_output, log, main_wrapper
 from build_ty import RUFF_DIR, build_ty, ensure_checkout
 
-FORMAT = 1
+FORMAT = 2
 PROFILE = "dev"
 OUT_DIR = CACHE_DIR / "ty-cache"
 ARCHIVE = f"ty-target-{PROFILE}.tar.zst"
