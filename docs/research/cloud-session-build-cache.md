@@ -108,6 +108,9 @@ its package's single newest file on every machine.
 with the Blender cache) and `.github/workflows/ty-cache.yml`, which runs on every `ty-blender` bump on main. Tested
 end to end here through a local HTTP server: after a simulated fresh clone the next `ty:build` was a 0.6-s no-op,
 and with `ruff-blender` one commit ahead of the cache (one file in `ty_python_semantic`) it rebuilt 5 crates in 22 s.
+With the cache CI published (run 7, after the two fixes below), in this cloud session after a simulated fresh
+clone: `ty:restore` 79 s (1105 MB downloaded from the GitHub release in 58 s), then `ty:build` a 1.9-s no-op
+(0 crates), then a one-line edit in `ty_python_semantic` 20.6 s (5 crates).
 
 Cheaper alternatives considered:
 - **Drop `ty:build` from the setup script.** Setup then likely fits the window, the snapshot forms, and the
