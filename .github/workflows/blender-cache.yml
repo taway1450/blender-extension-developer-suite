@@ -1,6 +1,8 @@
 # Builds Blender from source and publishes the build directory, install and ccache as the release
-# blender-cache-<name>, which `mise run blender:restore <name>` downloads in a cloud session so that its next
-# `blender:build` is incremental instead of a two-hour cold build (docs/research/blender-build-cache-hosting.md).
+# blender-cache-<name>-<date>-<blender commit>, keeping the newest few. The release blender-cache-<name> holds only
+# the newest build's manifest.json, pointing at it: `mise run blender:restore <name>` downloads that build in a cloud
+# session so that its next `blender:build` is incremental instead of a two-hour cold build
+# (docs/research/blender-build-cache-hosting.md); `--release <tag>` restores an older one.
 #
 # The cache only works at the absolute path it was built at, with the same compiler and ccache paths, so this job
 # builds the way a Claude Code cloud session does: repo at /home/user/blender-extension-developer-suite,
@@ -17,6 +19,10 @@ on:
         description: Build from scratch instead of starting from the previous cache
         type: boolean
         default: false
+      keep:
+        description: How many builds to keep (older releases are deleted)
+        type: number
+        default: 3
   schedule:
     - cron: "17 3 * * 1" # weekly, Monday 03:17 UTC
 
@@ -33,6 +39,7 @@ jobs:
     timeout-minutes: 345
     env:
       NAME: ${{ inputs.name || 'main' }}
+      KEEP: ${{ inputs.keep || 3 }}
       REPO_DIR: /home/user/blender-extension-developer-suite
       # The paths baked into the build directory and its configure arguments.
       UV_CACHE_DIR: /root/.cache/uv
@@ -98,17 +105,40 @@ jobs:
         working-directory: ${{ env.REPO_DIR }}
         run: mise run blender:cache-pack "$NAME"
 
-      - name: Publish the release
+      - name: Publish the build and keep the newest ${{ env.KEEP }}
         working-directory: ${{ env.REPO_DIR }}/.cache/blender-cache/${{ env.NAME }}
         run: |
-          TAG="blender-cache-$NAME"
           REPO="${{ github.repository }}"
-          if ! gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
-            gh release create "$TAG" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
-              --title "Blender build cache: $NAME" \
-              --notes "Build directory, install and ccache of \`blender:build $NAME\`, for \`mise run blender:restore $NAME\`. Replaced by every run of the Blender build cache workflow; see manifest.json for what it was built from."
+          COMMIT=$(jq -r '.commit[:10]' manifest.json)
+          export PREFIX="blender-cache-$NAME-"
+          TAG="$PREFIX$(date -u +%Y%m%d)-$COMMIT"
+          POINTER="blender-cache-$NAME"
+
+          # This build in its own release (replacing one of the same commit from earlier today).
+          gh release delete "$TAG" -R "$REPO" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+            --title "Blender build cache: $NAME at $COMMIT" \
+            --notes "Build directory, install and ccache of \`blender:build $NAME\` at Blender $COMMIT. Restore it with \`mise run blender:restore $NAME --release $TAG\`; see manifest.json for what it was built from." \
+            ./*.tar.zst manifest.json
+
+          # The pointer to the newest build, which `blender:restore <name>` reads.
+          mkdir -p ../pointer
+          jq --arg url "https://github.com/$REPO/releases/download/$TAG" '. + {archives_url: $url}' manifest.json \
+            > ../pointer/manifest.json
+          if ! gh release view "$POINTER" -R "$REPO" >/dev/null 2>&1; then
+            gh release create "$POINTER" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+              --title "Blender build cache: $NAME (newest)" \
+              --notes "manifest.json of the newest build of \`blender:build $NAME\`, which \`mise run blender:restore $NAME\` downloads; the archives are in the release it names (archives_url)."
           fi
-          # The manifest last: a restore that reads the new manifest finds the new archives.
-          gh release upload "$TAG" -R "$REPO" --clobber ./*.tar.zst
-          gh release upload "$TAG" -R "$REPO" --clobber manifest.json
-          cat manifest.json >> "$GITHUB_STEP_SUMMARY"
+          gh release upload "$POINTER" -R "$REPO" --clobber ../pointer/manifest.json
+
+          # Delete all but the newest $KEEP builds (never the one just published: it is the newest).
+          gh release list -R "$REPO" --limit 200 --json tagName,createdAt \
+            --jq '.[] | select(.tagName | startswith($ENV.PREFIX) and (ltrimstr($ENV.PREFIX) | test("^[0-9]{8}-[0-9a-f]{10}$")))
+                  | "\(.createdAt) \(.tagName)"' \
+            | sort -r | tail -n +$((KEEP > 0 ? KEEP + 1 : 2)) \
+            | while read -r _ old; do
+                echo "Deleting $old"
+                gh release delete "$old" -R "$REPO" --cleanup-tag --yes
+              done
+          { echo "Published $TAG"; echo '```json'; cat manifest.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

@@ -6,7 +6,8 @@
 next ``blender:build`` is incremental (``restore``, in a cloud session). Linux only.
 
 ``pack <name>`` writes three files to ``.cache/blender-cache/<name>/``, which CI uploads to the GitHub release
-``blender-cache-<name>`` (``.github/workflows/blender-cache.yml``):
+``blender-cache-<name>-<date>-<commit>`` and keeps the last few of; the release ``blender-cache-<name>`` holds a copy
+of the newest manifest that points there (``.github/workflows/blender-cache.yml``):
 
   - ``blender-build-<name>.tar.zst``: the build directory ``.cache/blender-build/<name>`` and the install
     ``.cache/blender-bin/<name>``, timestamps included (Ninja decides what to rebuild by them);
@@ -32,6 +33,7 @@ Usage:
   uv run scripts/blender_cache.py pack main
   uv run scripts/blender_cache.py restore main
   uv run scripts/blender_cache.py restore main --ccache-only
+  uv run scripts/blender_cache.py restore main --release blender-cache-main-20261123-faa17d9072
   uv run scripts/blender_cache.py restore main --url https://example.com/blender-cache-main
 """
 
@@ -49,8 +51,17 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 
-from _common import BLENDER_SUBMODULE, CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper, run
-from _common import validate_build_name
+from _common import (
+    BLENDER_SUBMODULE,
+    CACHE_DIR,
+    REPO_ROOT,
+    StepError,
+    git_output,
+    log,
+    main_wrapper,
+    run,
+    validate_build_name,
+)
 from build_blender import (
     BUILD_DIR,
     CCACHE_DIR,
@@ -81,9 +92,17 @@ def ccache_archive(name: str) -> str:
     return f"ccache-{name}.tar.zst"
 
 
+def release_url(tag: str) -> str:
+    return f"https://github.com/{GITHUB_REPO}/releases/download/{tag}"
+
+
 def default_url(name: str) -> str:
-    """Where CI publishes the cache of the build ``name``; ``BLENDER_CACHE_URL`` overrides it."""
-    return os.environ.get("BLENDER_CACHE_URL") or f"https://github.com/{GITHUB_REPO}/releases/download/blender-cache-{name}"
+    """Where CI publishes the newest cache of the build ``name``; ``BLENDER_CACHE_URL`` overrides it.
+
+    The release ``blender-cache-<name>`` only holds the newest build's manifest, whose ``archives_url`` names the
+    release with its archives, ``blender-cache-<name>-<date>-<commit>``; CI keeps the last few of those.
+    """
+    return os.environ.get("BLENDER_CACHE_URL") or release_url(f"blender-cache-{name}")
 
 
 def require_linux() -> None:
@@ -112,9 +131,7 @@ def first_line(cmd: list[str]) -> str:
 
 def os_name() -> str:
     try:
-        fields = dict(
-            line.split("=", 1) for line in Path("/etc/os-release").read_text().splitlines() if "=" in line
-        )
+        fields = dict(line.split("=", 1) for line in Path("/etc/os-release").read_text().splitlines() if "=" in line)
     except OSError:
         return platform.platform()
     return fields.get("PRETTY_NAME", "").strip('"') or platform.platform()
@@ -154,7 +171,9 @@ def pack(name: str) -> Path:
     if not info:
         raise StepError(f"No Blender build named {name!r}: build it with `mise run blender:build {name}` first")
     if info.get("revision") != info.get("commit"):
-        raise StepError(f"The build {name!r} was made from uncommitted changes ({info.get('revision')}); pack a clean one")
+        raise StepError(
+            f"The build {name!r} was made from uncommitted changes ({info.get('revision')}); pack a clean one"
+        )
     source = Path(info["source"])
     libs_platform, _, libs_commit = pinned_libraries(source)
     compilers, ccache = recorded_configuration(name)
@@ -166,7 +185,10 @@ def pack(name: str) -> Path:
     tar_create(
         out / build_archive(name),
         CACHE_DIR,
-        [(BUILD_DIR / name).relative_to(CACHE_DIR).as_posix(), (BLENDER_BIN_DIR / name).relative_to(CACHE_DIR).as_posix()],
+        [
+            (BUILD_DIR / name).relative_to(CACHE_DIR).as_posix(),
+            (BLENDER_BIN_DIR / name).relative_to(CACHE_DIR).as_posix(),
+        ],
     )
     if ccache and CCACHE_DIR.is_dir():
         log(f"Packing the ccache directory {CCACHE_DIR}")
@@ -189,7 +211,9 @@ def pack(name: str) -> Path:
         "repo_root": str(REPO_ROOT),
         "machine": platform.machine(),
         "os": os_name(),
-        "compilers": {var: {"path": path, "version": first_line([path, "--version"])} for var, path in compilers.items()},
+        "compilers": {
+            var: {"path": path, "version": first_line([path, "--version"])} for var, path in compilers.items()
+        },
         "ccache": {"path": ccache, "version": first_line([ccache, "--version"])} if ccache else None,
         "suite_commit": git_output(REPO_ROOT, "rev-parse", "HEAD"),
         "created": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -302,12 +326,20 @@ def restore(name: str, url: str | None = None, *, force: bool = False, ccache_on
     downloads.mkdir(parents=True)
     manifest = json.loads(download(f"{url}/{MANIFEST}", downloads / MANIFEST).read_text())
     check_manifest(manifest, name, ccache_only=ccache_only)
-    log(f"Cache of {name}: Blender {manifest['commit'][:10]}, {manifest['config']} {manifest['build_type']}, "
-        f"built {manifest['created']} on {manifest['os']}")
+    if archives_url := manifest.get("archives_url"):
+        # A pointer to the release that holds the archives (see default_url).
+        url = archives_url.rstrip("/")
+        log(f"Newest cache: {url}")
+    log(
+        f"Cache of {name}: Blender {manifest['commit'][:10]}, {manifest['config']} {manifest['build_type']}, "
+        f"built {manifest['created']} on {manifest['os']}"
+    )
     assets = manifest["assets"]
 
     if ccache_archive(name) in assets:
-        archive = download(f"{url}/{ccache_archive(name)}", downloads / ccache_archive(name), assets[ccache_archive(name)])
+        archive = download(
+            f"{url}/{ccache_archive(name)}", downloads / ccache_archive(name), assets[ccache_archive(name)]
+        )
         log(f"Extracting ccache into {CCACHE_DIR}")
         tar_extract(archive, CACHE_DIR)
         archive.unlink()
@@ -361,7 +393,12 @@ def main() -> int:
     pack_parser.add_argument("name", type=validate_build_name)
     restore_parser = commands.add_parser("restore", help="Download and restore the cache of a build")
     restore_parser.add_argument("name", type=validate_build_name)
-    restore_parser.add_argument("--url", help="Where the cache's files are (default: this repo's GitHub release)")
+    source = restore_parser.add_mutually_exclusive_group()
+    source.add_argument("--url", help="Where the cache's files are (default: the newest build CI published)")
+    source.add_argument(
+        "--release",
+        help="Restore this release of the repo instead of the newest, e.g. blender-cache-main-20261123-faa17d9072",
+    )
     restore_parser.add_argument(
         "--force", action="store_true", help="Replace an existing build directory and install with the cache"
     )
@@ -372,7 +409,8 @@ def main() -> int:
     if args.command == "pack":
         pack(args.name)
     else:
-        restore(args.name, args.url, force=args.force, ccache_only=args.ccache_only)
+        url = release_url(args.release) if args.release else args.url
+        restore(args.name, url, force=args.force, ccache_only=args.ccache_only)
     return 0
 
 
