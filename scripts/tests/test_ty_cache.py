@@ -72,3 +72,17 @@ def test_unusable_manifest_is_refused(overrides):
 def test_other_cargo_home_only_warns(capsys):
     ty_cache.check_manifest(manifest(cargo_home=os.path.join(os.sep, "other", ".cargo")))
     assert "CARGO_HOME" in capsys.readouterr().out
+
+
+def test_each_manifest_is_its_packages_single_newest_file(repo):
+    (repo / "crates" / "vendored" / "Cargo.toml").write_text("[package]\n")
+    (repo / "crates" / "edited").mkdir()
+    (repo / "crates" / "edited" / "Cargo.toml").write_text("[package]\n")
+    backdate(repo, skip=("target",))
+    edited = repo / "crates" / "edited" / "Cargo.toml"
+    os.utime(edited, (EPOCH + 500, EPOCH + 500))  # changed since the cache: keeps its newer time
+
+    assert ty_cache.mark_manifests_newest(repo) == 1
+    assert (repo / "crates" / "vendored" / "Cargo.toml").stat().st_mtime == EPOCH + 1
+    assert (repo / "crates" / "vendored" / "typeshed" / "os.pyi").stat().st_mtime == EPOCH
+    assert edited.stat().st_mtime == EPOCH + 500

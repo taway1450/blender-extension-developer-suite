@@ -42,6 +42,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from _build_cache import (
+    EPOCH,
     asset_table,
     backdate,
     differing_files,
@@ -61,7 +62,7 @@ from _build_cache import (
 from _common import CACHE_DIR, REPO_ROOT, TY_SUBMODULE, StepError, git_output, log, main_wrapper
 from build_ty import RUFF_DIR, build_ty, ensure_checkout
 
-FORMAT = 2
+FORMAT = 3
 PROFILE = "dev"
 OUT_DIR = CACHE_DIR / "ty-cache"
 ARCHIVE = f"ty-target-{PROFILE}.tar.zst"
@@ -89,6 +90,26 @@ def toolchain() -> str:
     return pinned["toolchain"]["channel"]
 
 
+def mark_manifests_newest(repo: Path) -> int:
+    """Give every ``Cargo.toml`` still at ``EPOCH`` the time ``EPOCH + 1``; return how many.
+
+    A build script that names no inputs (``ty_vendored``'s) is fingerprinted by its package's newest file, recorded as
+    ``"<mtime> (<file>)"``. With every file at ``EPOCH`` that is a tie, which each machine breaks by its own
+    directory order (CI recorded ``Cargo.toml``, a cloud session ``src/lib.rs``), so the value differs and the
+    package rebuilds. One file a second newer makes the value the same everywhere; a file that really changed keeps
+    the current time and still wins.
+    """
+    count = 0
+    for directory, subdirs, files in os.walk(repo):
+        subdirs[:] = [d for d in subdirs if d != ".git" and not (directory == str(repo) and d == "target")]
+        if "Cargo.toml" in files:
+            path = os.path.join(directory, "Cargo.toml")
+            if os.lstat(path).st_mtime == EPOCH:
+                os.utime(path, (EPOCH + 1, EPOCH + 1), follow_symlinks=False)
+                count += 1
+    return count
+
+
 # --- pack ----------------------------------------------------------------------------------------------------------
 
 
@@ -109,6 +130,7 @@ def pack() -> Path:
             log(f"Unsetting {var}: the cache has to match a build with cargo's defaults")
     log(f"Setting every source of ruff-blender to an old time, so cargo records that time ({commit[:10]})")
     backdate(RUFF_DIR, skip=("target",))
+    mark_manifests_newest(RUFF_DIR)
     build_ty(PROFILE)
     incremental = TARGET / "debug" / "incremental"
     if not incremental.is_dir() or not any(incremental.iterdir()):
@@ -209,6 +231,7 @@ def restore(url: str | None = None, *, force: bool = False) -> None:
 
     if ensure_commit(commit):
         changed = repair_timestamps(RUFF_DIR, commit, skip=("target",))
+        mark_manifests_newest(RUFF_DIR)
         log(f"ruff-blender: {changed} files differ from the cache's commit {commit[:10]}, the rest got an old time")
     else:
         log(f"Warning: the cache's commit {commit[:10]} is not in ruff-blender; every crate of it will recompile")

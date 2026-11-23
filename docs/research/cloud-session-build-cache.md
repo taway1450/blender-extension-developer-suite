@@ -98,6 +98,12 @@ recompiled all 37 workspace crates (6.5 min). `ty:cache-pack` now unsets `CI` an
 variables before building and refuses a `target/` without incremental data. Verified with a one-file crate: without
 `CI` rustc gets `-C incremental=…`, with `CI=true` it does not.
 
+*Also found across machines:* the value cargo records for `ty_vendored` is `"<newest mtime> (<file>)"`. With every
+file at `EPOCH` the newest file is a tie, which each machine breaks by its own directory order: CI recorded
+`946684800.000000000s (Cargo.toml)`, this session `(src/lib.rs)`. That rebuilt `ty_vendored` and the 6 crates
+after it (24 s) even though nothing had changed. Pack and restore now give each `Cargo.toml` `EPOCH + 1`, so it is
+its package's single newest file on every machine.
+
 *Built since:* `mise run ty:restore` / `ty:cache-pack` (`scripts/ty_cache.py`, sharing `scripts/_build_cache.py`
 with the Blender cache) and `.github/workflows/ty-cache.yml`, which runs on every `ty-blender` bump on main. Tested
 end to end here through a local HTTP server: after a simulated fresh clone the next `ty:build` was a 0.6-s no-op,
