@@ -40,17 +40,27 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
 import os
 import platform
 import shutil
 import subprocess
-import sys
-import time
 from datetime import UTC, datetime
 from pathlib import Path
 
+from _build_cache import (
+    asset_table,
+    download,
+    download_manifest,
+    first_line,
+    os_name,
+    release_url,
+    repair_timestamps,
+    require_linux,
+    require_tools,
+    tar_create,
+    tar_extract,
+    write_manifest,
+)
 from _common import (
     BLENDER_SUBMODULE,
     CACHE_DIR,
@@ -71,17 +81,11 @@ from build_blender import (
     pinned_libraries,
     pull_lfs_files,
 )
-from download_blender import BLENDER_BIN_DIR, fetch, read_build_info
+from download_blender import BLENDER_BIN_DIR, read_build_info
 from generate_stubs import ensure_worktree, worktree_commit
 
 FORMAT = 1
-GITHUB_REPO = "taway1450/blender-extension-developer-suite"
 OUT_DIR = CACHE_DIR / "blender-cache"
-MANIFEST = "manifest.json"
-# GitHub's limit for one release asset.
-MAX_ASSET_BYTES = 2 * 1024**3
-# The time unchanged sources get on restore: older than anything the cache was built from.
-EPOCH = 946684800  # 2000-01-01T00:00:00Z
 
 
 def build_archive(name: str) -> str:
@@ -92,10 +96,6 @@ def ccache_archive(name: str) -> str:
     return f"ccache-{name}.tar.zst"
 
 
-def release_url(tag: str) -> str:
-    return f"https://github.com/{GITHUB_REPO}/releases/download/{tag}"
-
-
 def default_url(name: str) -> str:
     """Where CI publishes the newest cache of the build ``name``; ``BLENDER_CACHE_URL`` overrides it.
 
@@ -103,38 +103,6 @@ def default_url(name: str) -> str:
     release with its archives, ``blender-cache-<name>-<date>-<commit>``; CI keeps the last few of those.
     """
     return os.environ.get("BLENDER_CACHE_URL") or release_url(f"blender-cache-{name}")
-
-
-def require_linux() -> None:
-    if not sys.platform.startswith("linux"):
-        raise StepError("The Blender build cache is only published for Linux")
-
-
-def require_tools(*tools: str) -> None:
-    missing = [tool for tool in tools if not shutil.which(tool)]
-    if missing:
-        raise StepError(f"Missing {', '.join(missing)} (e.g. `apt-get install {' '.join(missing)}`)")
-
-
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as f:
-        while chunk := f.read(1 << 20):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def first_line(cmd: list[str]) -> str:
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    return result.stdout.splitlines()[0] if result.returncode == 0 and result.stdout else ""
-
-
-def os_name() -> str:
-    try:
-        fields = dict(line.split("=", 1) for line in Path("/etc/os-release").read_text().splitlines() if "=" in line)
-    except OSError:
-        return platform.platform()
-    return fields.get("PRETTY_NAME", "").strip('"') or platform.platform()
 
 
 def recorded_configuration(name: str) -> tuple[dict[str, str], str | None]:
@@ -151,21 +119,12 @@ def recorded_configuration(name: str) -> tuple[dict[str, str], str | None]:
     return compilers, ccache
 
 
-def tar_create(archive: Path, root: Path, members: list[str]) -> None:
-    run(["tar", "--use-compress-program", "zstd -T0 -3", "-cf", archive, "-C", root, *members])
-
-
-def tar_extract(archive: Path, root: Path) -> None:
-    # CI builds as another user than the cloud session's root; keep the extracting user as the owner.
-    run(["tar", "--use-compress-program", "zstd -d", "--no-same-owner", "-xf", archive, "-C", root])
-
-
 # --- pack ----------------------------------------------------------------------------------------------------------
 
 
 def pack(name: str) -> Path:
     """Write the cache of the build ``name`` to ``.cache/blender-cache/<name>/`` and return that directory."""
-    require_linux()
+    require_linux("Blender build")
     require_tools("tar", "zstd")
     info = read_build_info(name)
     if not info:
@@ -194,13 +153,7 @@ def pack(name: str) -> Path:
         log(f"Packing the ccache directory {CCACHE_DIR}")
         tar_create(out / ccache_archive(name), CACHE_DIR, [CCACHE_DIR.relative_to(CACHE_DIR).as_posix()])
 
-    assets = {}
-    for archive in sorted(out.glob("*.tar.zst")):
-        size = archive.stat().st_size
-        if size > MAX_ASSET_BYTES:
-            raise StepError(f"{archive.name} is {size / 1024**3:.2f} GiB, over GitHub's 2 GiB limit per release asset")
-        assets[archive.name] = {"sha256": sha256(archive), "size": size}
-        log(f"{archive.name}: {size / 1024**2:.0f} MB")
+    assets = asset_table(out)
     manifest = {
         "format": FORMAT,
         "name": name,
@@ -219,7 +172,7 @@ def pack(name: str) -> Path:
         "created": datetime.now(UTC).isoformat(timespec="seconds"),
         "assets": assets,
     }
-    (out / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n")
+    write_manifest(out, manifest)
     log(f"Blender build cache for {name}: {out}")
     return out
 
@@ -254,16 +207,6 @@ def check_manifest(manifest: dict, name: str, *, ccache_only: bool) -> None:
         )
 
 
-def download(url: str, target: Path, expected: dict | None = None) -> Path:
-    started = time.monotonic()
-    fetch(url, target)
-    size = target.stat().st_size
-    log(f"Downloaded {target.name}: {size / 1024**2:.0f} MB in {time.monotonic() - started:.0f} s")
-    if expected and (size != expected["size"] or sha256(target) != expected["sha256"]):
-        raise StepError(f"{target.name} does not match the manifest (the cache may be being republished; retry)")
-    return target
-
-
 def ensure_blender_commit(commit: str, ref: str) -> None:
     """Make ``commit`` available in the blender submodule, fetching ``ref`` (which should contain it) if needed."""
     known = subprocess.run(
@@ -272,38 +215,6 @@ def ensure_blender_commit(commit: str, ref: str) -> None:
     if known.returncode != 0:
         log(f"Fetching {ref} for the cache's Blender commit {commit[:10]}")
         run(["git", "-C", BLENDER_SUBMODULE, "fetch", "origin", ref])
-
-
-def repair_timestamps(repo: Path, base_commit: str) -> int:
-    """Give every file of the checkout ``repo`` the old time ``EPOCH``, except the files that differ from
-    ``base_commit`` (committed, uncommitted or untracked), which get the current time. Return how many differ.
-
-    Ninja then sees exactly those files as newer than the restored build outputs.
-    """
-    for directory, subdirs, files in os.walk(repo):
-        if ".git" in subdirs:
-            subdirs.remove(".git")
-        for file in files:
-            if file != ".git":
-                os.utime(os.path.join(directory, file), (EPOCH, EPOCH), follow_symlinks=False)
-
-    def names(*args: str) -> list[str]:
-        out = subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True).stdout
-        return [n.decode() for n in out.split(b"\0") if n]
-
-    differing = names("diff", "--name-only", "-z", base_commit, "--") + names(
-        "ls-files", "--others", "--exclude-standard", "-z"
-    )
-    now = time.time()
-    count = 0
-    for name in differing:
-        path = repo / name
-        if path.exists() or path.is_symlink():
-            os.utime(path, (now, now), follow_symlinks=False)
-            count += 1
-    # Store the new timestamps in the index, so the next `git status` does not rehash every file.
-    subprocess.run(["git", "-C", str(repo), "update-index", "-q", "--refresh"], capture_output=True)
-    return count
 
 
 def planned_steps(name: str) -> int | None:
@@ -318,18 +229,13 @@ def planned_steps(name: str) -> int | None:
 
 
 def restore(name: str, url: str | None = None, *, force: bool = False, ccache_only: bool = False) -> None:
-    require_linux()
+    require_linux("Blender build")
     require_tools("tar", "zstd")
-    url = (url or default_url(name)).rstrip("/")
     downloads = OUT_DIR / name
     shutil.rmtree(downloads, ignore_errors=True)
     downloads.mkdir(parents=True)
-    manifest = json.loads(download(f"{url}/{MANIFEST}", downloads / MANIFEST).read_text())
+    manifest, url = download_manifest(url or default_url(name), downloads)
     check_manifest(manifest, name, ccache_only=ccache_only)
-    if archives_url := manifest.get("archives_url"):
-        # A pointer to the release that holds the archives (see default_url).
-        url = archives_url.rstrip("/")
-        log(f"Newest cache: {url}")
     log(
         f"Cache of {name}: Blender {manifest['commit'][:10]}, {manifest['config']} {manifest['build_type']}, "
         f"built {manifest['created']} on {manifest['os']}"

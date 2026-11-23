@@ -92,6 +92,11 @@ estimate in 0.3 is close to the limit). The cost is small, because `scripts/blen
 pack, restore, the manifest and the release rotation: the ty variant is a second archive, the backdate step
 before the build, and a workflow trigger on `ty-blender` pointer bumps (~9 minutes of free CI each).
 
+*Built since:* `mise run ty:restore` / `ty:cache-pack` (`scripts/ty_cache.py`, sharing `scripts/_build_cache.py`
+with the Blender cache) and `.github/workflows/ty-cache.yml`, which runs on every `ty-blender` bump on main. Tested
+end to end here through a local HTTP server: after a simulated fresh clone the next `ty:build` was a 0.6-s no-op,
+and with `ruff-blender` one commit ahead of the cache (one file in `ty_python_semantic`) it rebuilt 5 crates in 22 s.
+
 Cheaper alternatives considered:
 - **Drop `ty:build` from the setup script.** Setup then likely fits the window, the snapshot forms, and the
   first task in each session pays 8.7 minutes instead. The snapshot would not have ty, so every session

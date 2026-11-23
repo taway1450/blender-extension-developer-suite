@@ -1,0 +1,139 @@
+# Builds ty (dev profile) from the ty-blender submodule and publishes target/debug as the release
+# ty-cache-<date>-<ruff-blender commit>, keeping the newest few. The release ty-cache holds only the newest build's
+# manifest.json, pointing at it: `mise run ty:restore` downloads that build in a cloud session (or its setup script)
+# so that the next `ty:build` is a no-op instead of a 9-minute cold build (docs/research/cloud-session-build-cache.md
+# section 0); `--release <tag>` restores an older one.
+#
+# A target/ from an older commit is nearly a cold build after a Cargo.lock change, so this runs on every ty-blender
+# bump on main. The cache only works at the absolute path it was built at, so this job builds the way a Claude Code
+# cloud session does: repo at /home/user/blender-extension-developer-suite, CARGO_HOME=/root/.cargo,
+# RUSTUP_HOME=/root/.rustup, uv's cache in /root/.cache/uv.
+name: ty build cache
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ty-blender
+      - scripts/ty_cache.py
+      - scripts/_build_cache.py
+      - scripts/build_ty.py
+      - .github/workflows/ty-cache.yml
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Build and publish even if the newest cache is of the same ruff-blender commit
+        type: boolean
+        default: false
+      keep:
+        description: How many builds to keep (older releases are deleted)
+        type: number
+        default: 3
+
+permissions:
+  contents: write # create the release and upload its assets
+
+concurrency:
+  group: ty-cache
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      KEEP: ${{ inputs.keep || 3 }}
+      REPO_DIR: /home/user/blender-extension-developer-suite
+      # The paths baked into target/ (dep-info files, rustc's incremental data).
+      CARGO_HOME: /root/.cargo
+      RUSTUP_HOME: /root/.rustup
+      UV_CACHE_DIR: /root/.cache/uv
+      SUITE_JOBS: "4"
+      SUITE_MEMORY_LIMIT_GB: "0"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Prepare the cloud session's paths and rustup
+        run: |
+          sudo apt-get install -y -q zstd
+          sudo mkdir -p /home/user "$CARGO_HOME" "$RUSTUP_HOME" "$UV_CACHE_DIR"
+          sudo chown "$USER" /home/user
+          sudo chown -R "$USER" "$CARGO_HOME" "$RUSTUP_HOME" /root/.cache
+          sudo chmod o+x /root
+          curl -fsSL https://sh.rustup.rs | sh -s -- -y -q --no-modify-path --default-toolchain none
+          echo "$CARGO_HOME/bin" >> "$GITHUB_PATH"
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+
+      - name: Check out at the cloud session's path
+        run: |
+          git clone --no-checkout "https://github.com/${{ github.repository }}" "$REPO_DIR"
+          git -C "$REPO_DIR" checkout --detach "${{ github.sha }}"
+          cd "$REPO_DIR"
+          mise trust -q .
+          git submodule update --init ty-blender
+          git -C ty-blender submodule update --init ruff-blender
+
+      - name: Skip if the newest cache is of this commit
+        id: check
+        working-directory: ${{ env.REPO_DIR }}
+        run: |
+          COMMIT=$(git -C ty-blender/ruff-blender rev-parse HEAD)
+          FORMAT=$(sed -n 's/^FORMAT = //p' scripts/ty_cache.py)
+          PUBLISHED=$(gh release download ty-cache -R "${{ github.repository }}" -p manifest.json -O - 2>/dev/null \
+            | jq -r '"\(.commit) \(.format)"' || true)
+          echo "ruff-blender $COMMIT (format $FORMAT); newest cache: ${PUBLISHED:-none}"
+          if [ "$PUBLISHED" = "$COMMIT $FORMAT" ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "::notice::The newest ty cache is already of ruff-blender ${COMMIT:0:10}; nothing to do"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build ty and pack the cache
+        if: steps.check.outputs.skip != 'true'
+        working-directory: ${{ env.REPO_DIR }}
+        run: |
+          (cd ty-blender/ruff-blender && rustup toolchain install)
+          mise run ty:cache-pack
+          df -h /
+
+      - name: Publish the build and keep the newest ${{ env.KEEP }}
+        if: steps.check.outputs.skip != 'true'
+        working-directory: ${{ env.REPO_DIR }}/.cache/ty-cache
+        run: |
+          REPO="${{ github.repository }}"
+          COMMIT=$(jq -r '.commit[:10]' manifest.json)
+          export PREFIX="ty-cache-"
+          TAG="$PREFIX$(date -u +%Y%m%d)-$COMMIT"
+          POINTER="ty-cache"
+
+          # This build in its own release (replacing one of the same commit from earlier today).
+          gh release delete "$TAG" -R "$REPO" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+            --title "ty build cache: ruff-blender $COMMIT" \
+            --notes "target/debug of \`ty:build\` (dev profile) at ruff-blender $COMMIT. Restore it with \`mise run ty:restore --release $TAG\`; see manifest.json for what it was built from." \
+            ./*.tar.zst manifest.json
+
+          # The pointer to the newest build, which `ty:restore` reads.
+          mkdir -p pointer
+          jq --arg url "https://github.com/$REPO/releases/download/$TAG" '. + {archives_url: $url}' manifest.json \
+            > pointer/manifest.json
+          if ! gh release view "$POINTER" -R "$REPO" >/dev/null 2>&1; then
+            gh release create "$POINTER" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+              --title "ty build cache (newest)" \
+              --notes "manifest.json of the newest build of \`ty:build\`, which \`mise run ty:restore\` downloads; the archive is in the release it names (archives_url)."
+          fi
+          gh release upload "$POINTER" -R "$REPO" --clobber pointer/manifest.json
+
+          # Delete all but the newest $KEEP builds (never the one just published: it is the newest).
+          gh release list -R "$REPO" --limit 200 --json tagName,createdAt \
+            --jq '.[] | select(.tagName | startswith($ENV.PREFIX) and (ltrimstr($ENV.PREFIX) | test("^[0-9]{8}-[0-9a-f]{10}$")))
+                  | "\(.createdAt) \(.tagName)"' \
+            | sort -r | tail -n +$((KEEP > 0 ? KEEP + 1 : 2)) \
+            | while read -r _ old; do
+                echo "Deleting $old"
+                gh release delete "$old" -R "$REPO" --cleanup-tag --yes
+              done
+          { echo "Published $TAG"; echo '```json'; cat manifest.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

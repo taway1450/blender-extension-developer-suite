@@ -7,6 +7,7 @@ import pytest
 from test_stub_cache import git
 
 import blender_cache
+from _build_cache import EPOCH
 from _common import REPO_ROOT, StepError
 
 
@@ -33,7 +34,7 @@ def mtimes(repo):
 
 def test_unchanged_files_get_the_old_time(repo):
     assert blender_cache.repair_timestamps(repo, git(repo, "rev-parse", "HEAD")) == 0
-    assert set(mtimes(repo).values()) == {blender_cache.EPOCH}
+    assert set(mtimes(repo).values()) == {EPOCH}
 
 
 def test_files_differing_from_the_cache_commit_get_the_current_time(repo):
@@ -48,10 +49,10 @@ def test_files_differing_from_the_cache_commit_get_the_current_time(repo):
 
     assert blender_cache.repair_timestamps(repo, cache_commit) == 3
     times = mtimes(repo)
-    new = {name for name, mtime in times.items() if mtime != blender_cache.EPOCH}
+    new = {name for name, mtime in times.items() if mtime != EPOCH}
     assert new == {os.path.join("src", "a.c"), os.path.join("src", "b.c"), os.path.join("src", "new.c")}
     # Ignored files are not sources: they keep the old time like everything else.
-    assert times[os.path.join("ignored", "out.o")] == blender_cache.EPOCH
+    assert times[os.path.join("ignored", "out.o")] == EPOCH
 
 
 def test_index_is_refreshed(repo):
