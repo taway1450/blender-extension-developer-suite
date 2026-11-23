@@ -111,10 +111,13 @@ jobs:
           echo "--- cargo config files"; ls -la "$CARGO_HOME" ~/.cargo .cargo 2>&1 || true
           for f in "$CARGO_HOME"/config* ~/.cargo/config* .cargo/config*; do [ -f "$f" ] && { echo "# $f"; cat "$f"; }; done
           echo "--- target/debug"; ls -la target/debug; ls -la target/debug/incremental 2>&1 | head
-          echo "--- rustc flags for ty_static (verbose rebuild)"
+          echo "--- verbose rebuild of ty after touching ty_static: its rustc command and every warning"
           touch crates/ty_static/src/lib.rs
-          cargo build --profile dev -p ty_static -v 2>&1 | grep -E 'Running|incremental' | head -5
-          ls -la target/debug/incremental 2>&1 | head
+          cargo build --profile dev --bin ty -v > /tmp/verbose.log 2>&1 || true
+          grep -E 'crate-name ty_static ' /tmp/verbose.log | grep -oE -- '-C (incremental|opt-level|debuginfo)[^ ]*' || echo "(no -C incremental for ty_static)"
+          grep -iE 'warning|error|incremental|session' /tmp/verbose.log | grep -v -- '--crate-name' | head -20
+          grep -E 'Fresh|Compiling|Running' /tmp/verbose.log | awk '{print $1}' | sort | uniq -c
+          find target/debug/incremental -maxdepth 2 | head; df -T target/debug; mount | grep -E ' / | /home' || true
 
       - name: Publish the build and keep the newest ${{ env.KEEP }}
         if: steps.check.outputs.skip != 'true'
