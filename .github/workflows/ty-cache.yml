@@ -103,6 +103,19 @@ jobs:
           mise run ty:cache-pack
           df -h /
 
+      - name: Diagnose a build that was not incremental
+        if: failure() && steps.check.outputs.skip != 'true'
+        working-directory: ${{ env.REPO_DIR }}/ty-blender/ruff-blender
+        run: |
+          echo "--- cargo/rust environment"; env | grep -iE '^(cargo|rust)' | sort || true
+          echo "--- cargo config files"; ls -la "$CARGO_HOME" ~/.cargo .cargo 2>&1 || true
+          for f in "$CARGO_HOME"/config* ~/.cargo/config* .cargo/config*; do [ -f "$f" ] && { echo "# $f"; cat "$f"; }; done
+          echo "--- target/debug"; ls -la target/debug; ls -la target/debug/incremental 2>&1 | head
+          echo "--- rustc flags for ty_static (verbose rebuild)"
+          touch crates/ty_static/src/lib.rs
+          cargo build --profile dev -p ty_static -v 2>&1 | grep -E 'Running|incremental' | head -5
+          ls -la target/debug/incremental 2>&1 | head
+
       - name: Publish the build and keep the newest ${{ env.KEEP }}
         if: steps.check.outputs.skip != 'true'
         working-directory: ${{ env.REPO_DIR }}/.cache/ty-cache
