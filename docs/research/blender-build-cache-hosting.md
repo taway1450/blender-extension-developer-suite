@@ -14,7 +14,111 @@ two things:
 Every fact has a source next to it: a URL, a `path:line` in this repo or its `blender` submodule, or a
 command run in this cloud session (*verified locally*, 2026-11-22). Estimates are labelled **estimate**. My
 own advice is kept to [section 7](#7-recommendation), apart from verdicts in the text marked
-**Recommendation**. Nothing was built for this note.
+**Recommendation**. Nothing was built for the original note; [section 0](#0-measured-results-2026-11-23)
+adds measurements from real builds made afterwards, and where they disagree with an estimate further down,
+section 0 wins.
+
+---
+
+## 0. Measured results (2026-11-23)
+
+Measured in a cloud session (4 vCPU, 15 GB RAM, Ubuntu 24.04), building `main` at `faa17d9072` with the
+`full` preset, Release, `SUITE_JOBS=4`, ccache 4.14.3 on, via `mise run blender:build main --ccache`. Each
+time is the wall time of the whole mise task. Logs were kept in `.cache/measure/` (not committed).
+
+### 0.1 What a fresh session pays without a cache
+
+| Step | Time | Size |
+| --- | --- | --- |
+| Source worktree + its git LFS files (`projects.blender.org`) | ~5.5 min | 1.2 GB |
+| Precompiled libraries `lib/linux_x64` (`projects.blender.org`) | ~1 min | 4.4 GB on disk |
+| CMake configure + generate | 14 s | |
+| Compile, link, install (5162 compiles, 7991 Ninja steps) | **1 h 54 min** | build dir 2.9 GB, install 1.2 GB |
+
+- **Blender `main` needs GCC 14**; the cloud image's default GCC 13.3 fails at configure
+  ("The minimum supported version of GCC is 14.0.0", `CMakeLists.txt:106`). `apt-get install gcc-14 g++-14`
+  (14.2, from Ubuntu 24.04's own archive) and `CC=gcc-14 CXX=g++-14` fix it. Section 3.3's assumption of
+  GCC 13.3 is therefore wrong for `main`; CI must install `gcc-14` as well.
+- The build also needs X11/Wayland/GL development headers the image lacks (`libxxf86vm-dev libxfixes-dev
+  libxi-dev libxkbcommon-dev libgl-dev libwayland-dev libdecor-0-dev wayland-protocols libdbus-1-dev
+  libegl-dev libxrandr-dev libxinerama-dev libxcursor-dev`).
+- Slowest compiles are the OpenVDB/volume files (up to 176 s each). The sum of all step times is 350
+  CPU-minutes, so the build is CPU-bound: 4 cores give ~1 h 55 min.
+- 1.45 GB of the 2.9 GB build directory is a single precompiled header,
+  `source/blender/io/usd/CMakeFiles/bf_io_usd.dir/cmake_pch.hxx.gch`.
+- Linking `bin/blender` takes 2.4 s, so the build-info relink on every build is cheap (no need for
+  `BUILDINFO_OVERRIDE_DATE`).
+
+### 0.2 Incremental builds on the machine that built (after the fixes in 0.4)
+
+| Change | Time |
+| --- | --- |
+| Nothing changed (`blender:build` reuses the install) | 0.3 s |
+| One-line code change in `blenkernel/intern/object.cc` | 22 s |
+| A property description in `makesrna/intern/rna_object.cc` (568 steps planned, most skipped by `makesrna`'s restat) | 31 s |
+| Reverting both edits (ccache hits for the reverted files) | 8.6 s |
+| Same edit, after a forced CMake reconfigure from a fresh cache | 18.5 s (only the edited file recompiled) |
+
+### 0.3 What each cache gives a fresh session
+
+| Approach | Archive (zstd -3) | Restore | First build after a one-file edit | Incremental? |
+| --- | --- | --- | --- | --- |
+| No cache | | | **~2 h 01 min** (downloads + cold build) | |
+| **A. Build dir + install, timestamps repaired** | **868 MB**, packed in 9 s | ~35 s download (25 MB/s from a GitHub release asset, measured) + 11 s unpack + 0.2 s repairing 39,067 files' mtimes | **21.5 s** (8 Ninja steps, the same as on the original machine) | **yes** |
+| A without the timestamp repair | 868 MB | same | all 7961 steps rerun: a full replay (≈ B with ccache, ≈ 2 h without) | no |
+| A with the old `build_blender.py` (before 0.4) | 868 MB | same | 4 min 25 s: CMake re-ran and 3451 steps rebuilt | no |
+| **B. ccache only** | **196 MB** (223 MB on disk) | ~8 s download + 1.3 s unpack | **3 min 45 s**: 99.96% hits, but every compile and link still runs | no (a replay) |
+
+Both are on top of the ~6.5 min of source and library downloads from `projects.blender.org`, which every
+fresh session pays either way.
+
+- **ccache and precompiled headers.** With the default settings, the 308 compiles of the two PCH targets
+  (USD, Freestyle) are uncacheable ("Could not use precompiled header", `ccache -sv`). They take 9 of the
+  replay's 15.9 CPU-minutes. With `sloppiness=pch_defines,time_macros` they become cacheable: rebuilding just
+  those objects went from 196 s to 10 s. But in a replay without the build directory the `.gch` is
+  regenerated, its bytes differ, and all 308 miss again (replay still 4 min 18 s). So the setting helps only
+  together with approach A, or with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON` (not measured).
+- **Restore was measured within one machine**: the worktree was recreated with `git worktree add` (new
+  mtimes) and every library file touched, but the compiler, system headers and `/root/.cache/uv` stayed the
+  same. A CI-to-cloud restore additionally needs identical apt package versions. dpkg keeps the mtimes of the
+  `.deb`, so identical versions also give identical header mtimes, but this was not tested across machines.
+
+### 0.4 Bugs found and fixed while measuring
+
+1. `blender:build` skipped the build whenever the commit was unchanged, so an uncommitted edit was never
+   compiled (section 3.5). It now keys the build on the commit plus a hash of the uncommitted changes.
+2. `--ref` on an existing worktree was ignored unless `--update` was given.
+3. rst docs and stubs were cached by the worktree commit, so they went stale after rebuilding from an
+   edited worktree; they now follow what the binary was built from.
+4. `ensure_libraries` always ran `git checkout --force`, which rewrites every library file whose timestamps
+   differ from git's index; this is what broke approach A (14,943 files rewritten). `git lfs pull` on every
+   build rewrote every empty file, among them `source/blender/render/hydra/settings.hh`, so 7 Hydra sources
+   recompiled on every build. Both now run only when needed.
+5. A change of `CC`/`CXX` did not reconfigure an existing build directory.
+6. New `--ccache` flag (`WITH_COMPILER_CCACHE`).
+
+### 0.5 Probes of other open questions
+
+- **uv's environment path** (open question 3). `uv run` names the environment of `build_blender.py` after
+  the script's absolute path (moving the script changed the hash, `build-blender-bcaac36082839e2f` vs
+  `-f1f68c2c940ab333`), not after the resolved versions: the same path held cmake 4.4.5 / ninja 1.13.2 and,
+  with `--exclude-newer 2025-01-01`, cmake 3.31.2 / ninja 1.11.1. So CI and the cloud get the same path at the
+  same repo path and `UV_CACHE_DIR`, but can silently get different versions unless `cmake`/`ninja` are
+  pinned (or locked with `uv lock --script`).
+- **Forced reconfigure** (open question 3, second half): reconfiguring from a fresh `CMakeCache.txt` with the
+  same arguments left every compile command unchanged; only the edited file rebuilt (0.2).
+- **The ccache C++ HTTPS helper through the proxy** (open question 9). `ccache-storage-http-cpp` 0.11, built
+  from source in a minute (needs `libcurl4-openssl-dev libuv1-dev`):
+  - Against a local HTTP server, a second, empty ccache got a remote hit for a compile the first one had
+    stored.
+  - It goes through `HTTPS_PROXY` and trusts the proxy CA: a GET to a blocked host failed with
+    "CONNECT tunnel failed, response 403", and a GET to a missing object on `storage.googleapis.com` came back
+    as a clean `HTTP 404` miss.
+  - Not tested: uploads (PUT) through the proxy, and whether a network-secret header reaches them. Test PUTs
+    to a public echo service were refused by this session's permission checks; this needs a real storage host.
+- **Not probed:** whether the environment snapshot keeps `.cache/` (open question 4; not observable from
+  inside a session), the `headless` preset's API (open question 5; would need another two-hour build), R2,
+  Drive, Docker Hub (open questions 7, 8, 10, 11; need accounts).
 
 ---
 
@@ -29,11 +133,9 @@ own advice is kept to [section 7](#7-recommendation), apart from verdicts in the
   hashes content. But without a build directory, the first `blender:build` still configures CMake, runs
   every compile (as cache hits) and every link. That build is a replay, not an incremental rebuild
   (section 3.2). ccache works best as a safety net next to the restored build directory.
-- **`blender:build` currently ignores uncommitted edits.** It skips the build whenever
-  `.cache/blender-bin/<name>/.build-info` names the same commit, config and build type
-  (`scripts/build_blender.py:175-183`). The only way around that is `--force`, which deletes the build
-  directory. So editing C/C++ in the worktree and rerunning the task does nothing today, cache or no
-  cache. The script has to change for the requirement to hold at all (section 3.5).
+- **`blender:build` ignored uncommitted edits** when this note was written: it skipped the build whenever
+  `.cache/blender-bin/<name>/.build-info` named the same commit, config and build type. The only way around
+  that was `--force`, which deletes the build directory. *Fixed since, see 0.4.*
 - **Host: GitHub Releases on this public repo is free, needs no secret, and is on the default
   allowlist.** The 2 GiB limit per asset means splitting the archive. A free GitHub Actions job on
   `ubuntu-24.04` (4 vCPU, 16 GB RAM, 6 h per job) can produce the cache. Every other object store tested is
@@ -627,6 +729,17 @@ disagree with each other, so prices should be checked before you buy.
 ## 7. Recommendation
 
 This section is my judgement, built on the facts above.
+
+**After measuring (section 0) the recommendation stands, with these changes:**
+
+- Approach A measured at **~1 min to restore plus 21.5 s for the first edit**, against ~2 h with no cache.
+  Its archive is 868 MB, so it fits one GitHub release asset without splitting.
+- Approach B (ccache only) is much better than estimated: **a 196 MB archive and a 3 min 45 s replay**. It
+  needs no timestamp repair and is far more forgiving (different paths with `base_dir`, newer system
+  headers), so it is the right safety net next to A, and a reasonable first step on its own.
+- CI must install `gcc-14` and build with `CC=gcc-14 CXX=g++-14`, and so must the session (setup script).
+- Point 1's `build_blender.py` fixes are done (0.4), and `BUILDINFO_OVERRIDE_*` is unnecessary (a 2.4 s
+  relink). Pinning `cmake` and `ninja` is still to do (0.5).
 
 **Primary: CI builds the build directory and ccache; GitHub Releases hosts them; the session restores
 on demand (approach A + B).**
