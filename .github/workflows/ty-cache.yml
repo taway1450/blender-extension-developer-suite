@@ -63,6 +63,10 @@ jobs:
           echo "$CARGO_HOME/bin" >> "$GITHUB_PATH"
 
       - uses: astral-sh/setup-uv@v6
+        with:
+          # setup-uv sets UV_CACHE_DIR itself (to a runner path) unless told otherwise; the scripts' uv environments,
+          # and with them the CMake and Ninja paths a Blender build records, live under it.
+          cache-local-path: /root/.cache/uv
 
       - uses: jdx/mise-action@v2
         with:

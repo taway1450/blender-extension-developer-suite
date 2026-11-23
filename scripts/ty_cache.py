@@ -58,7 +58,7 @@ from _build_cache import (
     walk_paths,
     write_manifest,
 )
-from _common import CACHE_DIR, REPO_ROOT, TY_SUBMODULE, StepError, git_output, log, main_wrapper, run
+from _common import CACHE_DIR, REPO_ROOT, TY_SUBMODULE, StepError, git_output, log, main_wrapper
 from build_ty import RUFF_DIR, build_ty, ensure_checkout
 
 FORMAT = 1
@@ -68,6 +68,8 @@ ARCHIVE = f"ty-target-{PROFILE}.tar.zst"
 TARGET = RUFF_DIR / "target"
 # The parts of target/ the dev profile uses; another profile's directory would only make the archive bigger.
 MEMBERS = ("debug", ".rustc_info.json", "CACHEDIR.TAG")
+# Variables that change which crates cargo compiles incrementally, and with that every workspace crate's fingerprint.
+INCREMENTAL_OVERRIDES = ("CARGO_INCREMENTAL", "CARGO_PROFILE_DEV_INCREMENTAL", "CARGO_BUILD_INCREMENTAL")
 
 
 def default_url() -> str:
@@ -98,9 +100,18 @@ def pack() -> Path:
     if dirty := differing_files(RUFF_DIR, commit):
         raise StepError(f"ruff-blender has uncommitted changes ({', '.join(dirty[:5])}...); pack a clean checkout")
 
+    # A cloud session builds with cargo's defaults: incremental for the workspace crates only. An override (GitHub's
+    # runners turn incremental compilation off) changes every workspace crate's fingerprint and drops rustc's
+    # incremental data, so the restored build would recompile them all.
+    for var in INCREMENTAL_OVERRIDES:
+        if os.environ.pop(var, None) is not None:
+            log(f"Unsetting {var}: the cache has to match a build with cargo's defaults")
     log(f"Setting every source of ruff-blender to an old time, so cargo records that time ({commit[:10]})")
     backdate(RUFF_DIR, skip=("target",))
     build_ty(PROFILE)
+    incremental = TARGET / "debug" / "incremental"
+    if not incremental.is_dir() or not any(incremental.iterdir()):
+        raise StepError(f"{incremental} is empty: the build was not incremental, so a restore would recompile it all")
 
     out = OUT_DIR
     shutil.rmtree(out, ignore_errors=True)
@@ -180,9 +191,13 @@ def restore(url: str | None = None, *, force: bool = False) -> None:
     ensure_checkout()
     if (TARGET / "debug").exists() and not force:
         raise StepError(f"{TARGET / 'debug'} exists already; --force replaces it with the cache")
+    if overrides := [var for var in INCREMENTAL_OVERRIDES if var in os.environ]:
+        log(f"Warning: {', '.join(overrides)} is set here; the cache was built without it, so cargo will rebuild it")
     if manifest["toolchain"] != toolchain():
-        log(f"Warning: the cache was built with Rust {manifest['toolchain']}, ruff-blender now pins {toolchain()}; "
-            "cargo will rebuild everything")
+        log(
+            f"Warning: the cache was built with Rust {manifest['toolchain']}, ruff-blender now pins {toolchain()}; "
+            "cargo will rebuild everything"
+        )
     archive = download(f"{url}/{ARCHIVE}", OUT_DIR / ARCHIVE, manifest["assets"][ARCHIVE])
 
     log(f"Extracting into {TARGET}")
@@ -207,7 +222,9 @@ def main() -> int:
     restore_parser = commands.add_parser("restore", help="Download and restore ty's build cache")
     source = restore_parser.add_mutually_exclusive_group()
     source.add_argument("--url", help="Where the cache's files are (default: the newest build CI published)")
-    source.add_argument("--release", help="Restore this release instead of the newest, e.g. ty-cache-20261123-3872f740fc")
+    source.add_argument(
+        "--release", help="Restore this release instead of the newest, e.g. ty-cache-20261123-3872f740fc"
+    )
     restore_parser.add_argument("--force", action="store_true", help="Replace an existing target/debug with the cache")
     args = parser.parse_args()
     if args.command == "pack":
