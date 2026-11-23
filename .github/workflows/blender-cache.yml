@@ -27,19 +27,24 @@ on:
     - cron: "17 3 * * 1" # weekly, Monday 03:17 UTC
 
 permissions:
-  contents: write # create the release and upload its assets
+  contents: read
 
 concurrency:
   group: blender-cache-${{ inputs.name || 'main' }}
   cancel-in-progress: false
 
+env:
+  NAME: ${{ inputs.name || 'main' }}
+  KEEP: ${{ inputs.keep || 3 }}
+
+# The build hands its archives to a separate publish job: a release call from the build job itself, 90 minutes in,
+# was refused (HTTP 403, "Resource not accessible by integration") although the ty cache's job, with the same
+# permissions, publishes fine; a short job gets a fresh token, and "Re-run failed jobs" retries the publish alone.
 jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 345
     env:
-      NAME: ${{ inputs.name || 'main' }}
-      KEEP: ${{ inputs.keep || 3 }}
       REPO_DIR: /home/user/blender-extension-developer-suite
       # The paths baked into the build directory and its configure arguments.
       UV_CACHE_DIR: /root/.cache/uv
@@ -51,7 +56,6 @@ jobs:
       CCACHE_DIR: /home/user/blender-extension-developer-suite/.cache/ccache
       # Keeps the published ccache archive small (a full build is about 0.4 GB compressed).
       CCACHE_MAXSIZE: 3G
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Free disk space
         run: |
@@ -109,8 +113,30 @@ jobs:
         working-directory: ${{ env.REPO_DIR }}
         run: mise run blender:cache-pack "$NAME"
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blender-cache
+          path: ${{ env.REPO_DIR }}/.cache/blender-cache/${{ env.NAME }}
+          compression-level: 0 # already zstd
+          retention-days: 3
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write # create the release and upload its assets
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: blender-cache
+          path: cache
+
       - name: Publish the build and keep the newest ${{ env.KEEP }}
-        working-directory: ${{ env.REPO_DIR }}/.cache/blender-cache/${{ env.NAME }}
+        working-directory: cache
         run: |
           REPO="${{ github.repository }}"
           COMMIT=$(jq -r '.commit[:10]' manifest.json)
