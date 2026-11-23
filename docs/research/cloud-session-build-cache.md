@@ -15,6 +15,91 @@ absent).
 
 ---
 
+## 0. Measured results for ty (2026-11-23)
+
+A prototype of option B (section 5), measured in a cloud session (4 vCPU, `SUITE_JOBS` unset, so 2 cargo jobs),
+at `ruff-blender` 3872f740fc. The script is
+[cloud-session-build-cache/ty_restore_proto.py](cloud-session-build-cache/ty_restore_proto.py). Every build ran
+through `mise run ty:build`. A "fresh clone" was simulated by giving every file in `ruff-blender` the current
+time, which is what `git clone` does.
+
+### 0.1 Timings
+
+| Scenario | Time | Crates compiled |
+| --- | --- | --- |
+| Cold build (empty `target/`, toolchain and registry already present) | **8 min 40 s** | 297 |
+| No-op rebuild | 0.9 s | 0 |
+| A 6-day-old `target/` (11-17) after the submodule moved to the 11-19 commit (new `Cargo.lock`) | 7 min 02 s | 99 (62 third-party) |
+| Restored `target/`, fresh clone, **no mtime repair** | 30 s | 37 (all workspace crates; rustc reuses its incremental data) |
+| Restored `target/`, fresh clone, repair backdates files only | 23–25 s | 7 (`ty_vendored` and everything after it) |
+| Restored `target/` built from backdated sources, fresh clone, repair of files and directories | **1.4 s** | 0 |
+| Then a one-line edit in `ty_python_semantic` | 20 s | 5 |
+| Then reverting the edit | 19 s | 5 |
+
+The pieces of a restore:
+
+| Step | Time / size |
+| --- | --- |
+| `target/` after a cold build | 3.9 GB |
+| `tar | zstd -T0 -3` of it | **1.17 GB** (1.62 GB after a few more incremental builds, which grow `incremental/`) |
+| Pack | 8–11 s |
+| Extract | 15–18 s |
+| mtime repair (12,341 paths) | under 1 s |
+| Download at the 25 MB/s measured from GitHub releases (`blender-build-cache-hosting.md` section 0) | ~47 s (estimate) |
+
+### 0.2 What the prototype found that the reading in 3.1 missed
+
+- **Without any repair a restored `target/` is already good.** Cargo reruns rustc on the 37 workspace crates,
+  but rustc finds nothing changed in its incremental data, so the fresh clone costs 30 s rather than 8 min.
+  That is the opposite of Blender, where a fresh checkout makes Ninja recompile everything.
+- **Backdating sources only after the restore is not enough.** `ty_vendored`'s build script prints no
+  `rerun-if-changed`. Cargo then fingerprints the package by its newest mtime and stores that time as a value.
+  Backdating changes the value, so cargo reruns the build script, which rezips typeshed, and everything that
+  depends on `ty_vendored` recompiles. This is my reading of the behaviour, not of cargo's source: backdating
+  before the build fixed it (next point). The fix is to backdate the sources (directories included)
+  *before* the CI build too, so the recorded value is the same `EPOCH` the restore sets.
+- **A stale cache is nearly worthless after a dependency bump.** The 6-day-old `target/` saved only 1.5
+  minutes, because the new commit changed `Cargo.lock` (35 of the 452 commits in the last month touch it,
+  most of them upstream's dependency updates). So the cache has to follow every `ty-blender` pointer bump,
+  not be rebuilt weekly.
+
+### 0.3 Setup time with and without the cache
+
+The platform snapshots the environment only "when setup completes within roughly five minutes" (section 4).
+The other steps of the current setup script, measured in this session where possible:
+
+| Setup step | Time |
+| --- | --- |
+| `blender` submodule, `--filter=blob:none`, no LFS (clone + checkout) | 48 s |
+| Rust 1.99.0 toolchain (`rustup toolchain install`, 1.5 GB) | 30 s |
+| `apt-get update` | 5 s |
+| apt install (GCC 14, X/Wayland headers), ccache, mise, plugin, the other submodules, crate registry | not measured; ~1.5–2 min estimated |
+| **ty today: `mise run ty:build`** | **8 min 40 s** |
+| **ty with the cache: download + extract + repair + no-op build** | **~65 s** |
+
+Without the cache setup takes about 12 minutes, far over the window. So most likely no snapshot is ever
+taken, and every new session waits for that setup before it starts. With the cache, the estimate is about
+4–4.5 minutes, near the limit, so whether the snapshot then forms is not certain.
+
+### 0.4 Is it worth it?
+
+**Yes, but it is a smaller win than the Blender cache, and it relies on one assumption.** It saves about
+7.5 minutes per new session for certain. The bigger prize is the snapshot: if setup gets under 5 minutes,
+sessions skip setup entirely for 7 days. That part is not verified (open question 2 still stands, and the
+estimate in 0.3 is close to the limit). The cost is small, because `scripts/blender_cache.py` already does
+pack, restore, the manifest and the release rotation: the ty variant is a second archive, the backdate step
+before the build, and a workflow trigger on `ty-blender` pointer bumps (~9 minutes of free CI each).
+
+Cheaper alternatives considered:
+- **Drop `ty:build` from the setup script.** Setup then likely fits the window, the snapshot forms, and the
+  first task in each session pays 8.7 minutes instead. The snapshot would not have ty, so every session
+  still pays the build, just later.
+- **sccache.** Not useful: it skips the incremental workspace crates, which are what an edit rebuilds (3.2).
+- **A weekly cache instead of per-bump.** Not useful: the measurement above shows a stale `target/` is nearly
+  a cold build.
+
+---
+
 ## 1. Summary
 
 - **Today every cloud session pays for a full ty build in the setup script, and the platform's own
@@ -122,7 +207,8 @@ Source: cargo `src/compiler/fingerprint/mod.rs` at commit `ef7d397` (rust-lang/c
   `git diff --name-only <cache commit> HEAD` gives the files to keep at "now", and
   `touch -d @<old>` goes on the rest. Cargo's freshness then sees exactly the files that really changed,
   which gives the incremental rebuild the requirement asks for. This is my reading of the mtime rules above,
-  not something I ran.
+  not something I ran. *Measured later (section 0.2):* the sources also have to be backdated before the CI
+  build, and directories too, or `ty_vendored` and the 6 crates after it rebuild.
 - **Keep the path the same anyway.** Cargo tries to be path-independent "best effort", and I did not verify
   whether rustc's `incremental/` data is reused from another path. The cloud checkout is always
   `/home/user/blender-extension-developer-suite` (*verified locally*), so the cache should be built at that
