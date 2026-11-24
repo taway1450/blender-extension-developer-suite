@@ -149,6 +149,12 @@ Two things broke on the way, both fixed:
   was measured with `lib/python3.12` linked to `python3.13` in the local environment; with the path present,
   nothing else differed between the CI build and the cloud session (no reconfigure, no other dirty step).
 
+**Verified with the fix (2026-11-24).** Run 5 (`UV_PYTHON=3.13`, format 2) built cold in 86 min and
+published in 4 min (most of it the artifact download). In a cloud session, with the link above removed,
+`blender:restore main` took 149 s (290 MB in 17 s, 863 MB in 48 s); the restored build directory records
+CMake under `lib/python3.13/` and plans only the six buildinfo, link and install steps every build runs.
+The same one-line edit to `object.cc` rebuilt in **73 s** without re-running CMake, and reverting it in 20 s.
+
 ## 1. Summary
 
 - **Only one approach meets the hard requirement on the first build after a restore: restore the build
