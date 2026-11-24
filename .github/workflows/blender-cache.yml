@@ -98,8 +98,13 @@ jobs:
           git -C "$REPO_DIR" checkout --detach "${{ github.sha }}"
           cd "$REPO_DIR"
           mise trust -q .
-          # Blobs are fetched on demand when the build's worktree is created.
-          GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --filter=blob:none blender
+          # Blobs are fetched on demand when the build's worktree is created. projects.blender.org has refused a
+          # runner's anonymous clone with HTTP 403 before, so retry with backoff.
+          for wait in 60 180 420 0; do
+            GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --filter=blob:none blender && break
+            [ "$wait" = 0 ] && exit 1
+            echo "::warning::Cloning blender failed; retrying in $wait s"; sleep "$wait"
+          done
 
       - name: Start from the previous cache
         if: ${{ !inputs.cold }}
