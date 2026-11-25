@@ -1,0 +1,23 @@
+schema_version = "1.0.0"
+
+id = "batch_io"
+version = "1.0.0"
+name = "Batch I/O"
+tagline = "Export every object to its own file and import many files at once"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[permissions]
+files = "Export to and import from the folders you choose"
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "check_*.py"]
+
+# Blender ignores the [tool] table. The checker reads from it the add-ons whose registrations this one
+# reads: the batch can leave out the copies Scatter Tools made (`Object.is_scatter_copy`).
+[tool.blender]
+uses = ["scatter_tools"]

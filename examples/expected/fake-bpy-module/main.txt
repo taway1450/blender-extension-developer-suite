@@ -2,6 +2,14 @@
 # reports on the add-ons' own code, and the check_*.py markers that do not hold yet.
 # `mise run check:addons main` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+batch_io/check_batch_io.py | type-assertion-failure | assert_type(ob.batch_io.file_format, Literal["SCENE", "OBJ", "STL", "GLTF"])
+batch_io/check_batch_io.py | unused-ignore-comment | item.properties.selection = True  # ty: ignore[invalid-assignment]
+batch_io/check_batch_io.py | type-assertion-failure | assert_type(filepath, str)
+batch_io/handlers.py | blender-assumed-context-member | scene = bpy.context.scene
+batch_io/importer.py | blender-assumed-context-member | collection = context.collection
+batch_io/importer.py | blender-assumed-context-member | context.scene.collection.children.link(collection)
+batch_io/presets/batch_io/object/print.py | blender-assumed-preset-context | settings = bpy.context.object.batch_io
+batch_io/ui.py | blender-narrowed-by-bl-context | settings = context.object.batch_io
 legacy_renamer/ops.py | blender-assumed-context-member | return bpy.context.scene.legacy_renamer
 legacy_renamer/ops.py | blender-imprecise-operator-return | def execute(self, context) -> set[str]:
 legacy_renamer/ops.py | blender-assumed-registration | bpy.ops.object.legacy_tag_collections(color=color)
