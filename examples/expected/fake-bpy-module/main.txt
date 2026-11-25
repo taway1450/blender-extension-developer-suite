@@ -1,0 +1,11 @@
+# Example add-on results that are not passes, fake-bpy-module stubs, Blender main: the diagnostics ty
+# reports on the add-ons' own code, and the check_*.py markers that do not hold yet.
+# `mise run check:addons main` fails when they change; `--update` rewrites this file.
+# Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+scatter_tools/check_scatter_tools.py | type-assertion-failure | assert_type(subdivision, SubsurfModifier | None)
+scatter_tools/operators.py | blender-narrowed-by-poll | source = context.active_object
+scatter_tools/operators.py | missing-attribute | subdivision.subdivision_type = "SIMPLE"
+scatter_tools/operators.py | missing-attribute | subdivision.levels = 4
+scatter_tools/ui.py | blender-assumed-list-item | instance = item.instance
+scatter_tools/ui.py | blender-assumed-list-item | layout.label(text=item.name, icon="OBJECT_DATA" if instance else "ERROR")
+scatter_tools/ui.py | blender-narrowed-by-poll | layout.label(text=f"Source: {context.active_object.name}")

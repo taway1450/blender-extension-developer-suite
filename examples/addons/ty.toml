@@ -1,0 +1,10 @@
+# ty configuration for the example add-ons (mise run check:addons). This folder is a Workspace: every
+# sub-folder is one add-on. The stubs and the Python version are passed on the command line per stub
+# generator and Blender version.
+
+[rules]
+# The markers in the add-ons' check_*.py files rely on these (see tests/typecheck/README.md): an expected
+# error (`# ty: ignore[rule]`) that ty no longer reports is a failure, and so is a wrong assert_type.
+unused-ignore-comment = "error"
+unused-type-ignore-comment = "error"
+type-assertion-failure = "error"
