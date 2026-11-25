@@ -1,8 +1,8 @@
 schema_version = "1.0.0"
 
-id = "batch_io"
+id = "batch_export_and_import"
 version = "1.0.0"
-name = "Batch I/O"
+name = "Batch Export and Import"
 tagline = "Export every object to its own file and import many files at once"
 maintainer = "Blender Extension Developer Suite"
 type = "add-on"

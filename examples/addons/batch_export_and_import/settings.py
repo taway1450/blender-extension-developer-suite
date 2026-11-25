@@ -43,7 +43,7 @@ class BatchSettings(PropertyGroup):
     )
 
 
-class BatchIOPreferences(AddonPreferences):
+class BatchExportAndImportPreferences(AddonPreferences):
     bl_idname = __package__
 
     report_folder: BoolProperty(
@@ -56,22 +56,24 @@ class BatchIOPreferences(AddonPreferences):
         self.layout.prop(self, "report_folder")
 
 
-def get_preferences(context: Context) -> BatchIOPreferences:
+def get_preferences(context: Context) -> BatchExportAndImportPreferences:
     return context.preferences.addons[__package__].preferences
 
 
-classes = (ObjectExportSettings, BatchSettings, BatchIOPreferences)
+classes = (ObjectExportSettings, BatchSettings, BatchExportAndImportPreferences)
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
-    bpy.types.Scene.batch_io = PointerProperty(type=BatchSettings)
-    bpy.types.Object.batch_io = PointerProperty(type=ObjectExportSettings)
+    bpy.types.Scene.batch_export_and_import = PointerProperty(type=BatchSettings)
+    bpy.types.Object.batch_export_and_import = PointerProperty(
+        type=ObjectExportSettings
+    )
 
 
 def unregister():
-    del bpy.types.Object.batch_io
-    del bpy.types.Scene.batch_io
+    del bpy.types.Object.batch_export_and_import
+    del bpy.types.Scene.batch_export_and_import
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

@@ -1,4 +1,4 @@
-"""Batch I/O: export every object to its own file, and import many files at once."""
+"""Batch Export and Import: export every object to its own file, and import many files at once."""
 
 import os
 
@@ -16,7 +16,7 @@ def register_keymap():
         return
     keymap = keyconfig.keymaps.new(name="Object Mode")
     item = keymap.keymap_items.new(
-        "export_scene.batch_io", "E", "PRESS", ctrl=True, shift=True
+        "export_scene.batch_export", "E", "PRESS", ctrl=True, shift=True
     )
     # demo: operator_properties
     item.properties.use_selection = True

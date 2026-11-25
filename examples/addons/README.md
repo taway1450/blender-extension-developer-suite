@@ -7,7 +7,7 @@ folder is a Workspace: every sub-folder is one add-on, and [ty.toml](ty.toml) co
 | Add-on | What it is |
 | --- | --- |
 | [scatter_tools](scatter_tools/) | Scatters copies of an object over a mesh. An Extension split into `properties`, `operators`, `ui` and `preferences`: every kind of property, operators with a poll mixin, panels with sub-panels and a UI list. |
-| [batch_io](batch_io/) | Exports objects to files and imports them back. Built-in exporters, a macro, a file handler, presets, a key map, a save handler, and Scatter Tools as a declared dependency (`[tool.blender] uses`). |
+| [batch_export_and_import](batch_export_and_import/) | Exports objects to files and imports them back. Built-in exporters, a macro, a file handler, presets, a key map, a save handler, and Scatter Tools as a declared dependency (`[tool.blender] uses`). |
 | [node_kit](node_kit/) | A node tree type of its own with nodes and sockets, and helpers for the shader editor. It ships a `.blend` file. |
 | [viewport_tools](viewport_tools/) | A modal measure operator with an overlay drawn by `gpu` and `blf`, a gizmo group, a toolbar tool and popovers. |
 | [legacy_renamer](legacy_renamer/) | Renames objects by rules. A `bl_info` add-on written the old way, with the imprecise annotations and the two registration mistakes such add-ons often have. |
@@ -89,18 +89,18 @@ The tables are written by `mise run examples:coverage`. To find the lines, searc
 | [`addon_preferences`](../../tests/typecheck/features/addon_preferences/README.md) | [legacy_renamer/check_legacy_renamer.py](legacy_renamer/check_legacy_renamer.py), [scatter_tools/check_scatter_tools.py](scatter_tools/check_scatter_tools.py), [scatter_tools/preferences.py](scatter_tools/preferences.py) |
 | [`api_types`](../../tests/typecheck/features/api_types/README.md) | [node_kit/check_node_kit.py](node_kit/check_node_kit.py), [node_kit/shader.py](node_kit/shader.py) |
 | [`assumptions`](../../tests/typecheck/features/assumptions/README.md) | [legacy_renamer/ops.py](legacy_renamer/ops.py) |
-| [`bpy_symbols`](../../tests/typecheck/features/bpy_symbols/README.md) | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/handlers.py](batch_io/handlers.py), [batch_io/importer.py](batch_io/importer.py), [scatter_tools/operators.py](scatter_tools/operators.py), [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py) |
-| [`context_members`](../../tests/typecheck/features/context_members/README.md) | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/export.py](batch_io/export.py), [node_kit/ui.py](node_kit/ui.py), [scatter_tools/ui.py](scatter_tools/ui.py) |
+| [`bpy_symbols`](../../tests/typecheck/features/bpy_symbols/README.md) | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/handlers.py](batch_export_and_import/handlers.py), [batch_export_and_import/importer.py](batch_export_and_import/importer.py), [scatter_tools/operators.py](scatter_tools/operators.py), [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py) |
+| [`context_members`](../../tests/typecheck/features/context_members/README.md) | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/export.py](batch_export_and_import/export.py), [node_kit/ui.py](node_kit/ui.py), [scatter_tools/ui.py](scatter_tools/ui.py) |
 | [`implied_narrowings`](../../tests/typecheck/features/implied_narrowings/README.md) | [scatter_tools/ui.py](scatter_tools/ui.py) |
 | [`imprecise_annotations`](../../tests/typecheck/features/imprecise_annotations/README.md) | [legacy_renamer/ops.py](legacy_renamer/ops.py) |
 | [`inheritance`](../../tests/typecheck/features/inheritance/README.md) | [node_kit/tree.py](node_kit/tree.py), [scatter_tools/operators.py](scatter_tools/operators.py) |
-| [`operator_calls`](../../tests/typecheck/features/operator_calls/README.md) | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/export.py](batch_io/export.py), [scatter_tools/check_scatter_tools.py](scatter_tools/check_scatter_tools.py), [scatter_tools/operators.py](scatter_tools/operators.py), [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py) |
-| [`operator_properties`](../../tests/typecheck/features/operator_properties/README.md) | [batch_io/__init__.py](batch_io/__init__.py), [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [node_kit/ui.py](node_kit/ui.py), [scatter_tools/ui.py](scatter_tools/ui.py), [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py), [viewport_tools/gizmos.py](viewport_tools/gizmos.py), [viewport_tools/tool.py](viewport_tools/tool.py) |
+| [`operator_calls`](../../tests/typecheck/features/operator_calls/README.md) | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/export.py](batch_export_and_import/export.py), [scatter_tools/check_scatter_tools.py](scatter_tools/check_scatter_tools.py), [scatter_tools/operators.py](scatter_tools/operators.py), [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py) |
+| [`operator_properties`](../../tests/typecheck/features/operator_properties/README.md) | [batch_export_and_import/__init__.py](batch_export_and_import/__init__.py), [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [node_kit/ui.py](node_kit/ui.py), [scatter_tools/ui.py](scatter_tools/ui.py), [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py), [viewport_tools/gizmos.py](viewport_tools/gizmos.py), [viewport_tools/tool.py](viewport_tools/tool.py) |
 | [`pointer_aliases`](../../tests/typecheck/features/pointer_aliases/README.md) | [node_kit/shader.py](node_kit/shader.py) |
 | [`properties`](../../tests/typecheck/features/properties/README.md) | [legacy_renamer/props.py](legacy_renamer/props.py), [node_kit/check_node_kit.py](node_kit/check_node_kit.py), [scatter_tools/check_scatter_tools.py](scatter_tools/check_scatter_tools.py), [scatter_tools/properties.py](scatter_tools/properties.py) |
 | [`property_wrappers`](../../tests/typecheck/features/property_wrappers/README.md) | [scatter_tools/check_scatter_tools.py](scatter_tools/check_scatter_tools.py), [scatter_tools/properties.py](scatter_tools/properties.py) |
 | [`registration`](../../tests/typecheck/features/registration/README.md) | [legacy_renamer/check_legacy_renamer.py](legacy_renamer/check_legacy_renamer.py), [scatter_tools/__init__.py](scatter_tools/__init__.py) |
-| [`registration_checks`](../../tests/typecheck/features/registration_checks/README.md) | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/export.py](batch_io/export.py) |
+| [`registration_checks`](../../tests/typecheck/features/registration_checks/README.md) | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/export.py](batch_export_and_import/export.py) |
 | [`type_narrowing`](../../tests/typecheck/features/type_narrowing/README.md) | [node_kit/check_node_kit.py](node_kit/check_node_kit.py), [node_kit/shader.py](node_kit/shader.py), [node_kit/tree.py](node_kit/tree.py), [scatter_tools/check_scatter_tools.py](scatter_tools/check_scatter_tools.py), [scatter_tools/operators.py](scatter_tools/operators.py) |
 
 ### Rules
@@ -109,13 +109,13 @@ The tables are written by `mise run examples:coverage`. To find the lines, searc
 | --- | --- | --- |
 | `blender-assumed-added-object` | warn | [viewport_tools/measure.py](viewport_tools/measure.py) |
 | `blender-assumed-complete-registration` | warn | [viewport_tools/ui.py](viewport_tools/ui.py) |
-| `blender-assumed-context-member` | warn | [batch_io/importer.py](batch_io/importer.py), [legacy_renamer/ops.py](legacy_renamer/ops.py) |
+| `blender-assumed-context-member` | warn | [batch_export_and_import/importer.py](batch_export_and_import/importer.py), [legacy_renamer/ops.py](legacy_renamer/ops.py) |
 | `blender-assumed-default-addon` | warn | feature tests only: needs a default add-on's source on a search path (see `later/default-addon-properties`) |
 | `blender-assumed-editor-member` | warn | [viewport_tools/overlay.py](viewport_tools/overlay.py) |
 | `blender-assumed-internal-operator` | warn | [legacy_renamer/ops.py](legacy_renamer/ops.py) |
 | `blender-assumed-list-item` | warn | [scatter_tools/ui.py](scatter_tools/ui.py) |
 | `blender-assumed-preferences` | warn | feature tests only: the read raises `AttributeError` in Blender: the preferences are `None` until their class is registered |
-| `blender-assumed-preset-context` | warn | [batch_io/presets/batch_io/object/print.py](batch_io/presets/batch_io/object/print.py) |
+| `blender-assumed-preset-context` | warn | [batch_export_and_import/presets/batch_export_and_import/object/print.py](batch_export_and_import/presets/batch_export_and_import/object/print.py) |
 | `blender-assumed-registration` | warn | [legacy_renamer/ops.py](legacy_renamer/ops.py) |
 | `blender-assumed-subclass-member` | warn | [node_kit/shader.py](node_kit/shader.py) |
 | `blender-duplicate-registration` | error | feature tests only: the add-on fails to enable, or one class silently replaces another |
@@ -132,7 +132,7 @@ The tables are written by `mise run examples:coverage`. To find the lines, searc
 | `blender-legacy-property` | warn | [legacy_renamer/ops.py](legacy_renamer/ops.py) |
 | `blender-missing-callback` | error | feature tests only: the add-on fails to enable |
 | `blender-mixin-order` | warn | feature tests only: the mixin's method is silently never called |
-| `blender-narrowed-by-bl-context` | warn | [batch_io/ui.py](batch_io/ui.py), [viewport_tools/ui.py](viewport_tools/ui.py) |
+| `blender-narrowed-by-bl-context` | warn | [batch_export_and_import/ui.py](batch_export_and_import/ui.py), [viewport_tools/ui.py](viewport_tools/ui.py) |
 | `blender-narrowed-by-menu-prefix` | warn | [node_kit/ui.py](node_kit/ui.py) |
 | `blender-narrowed-by-poll` | warn | [scatter_tools/operators.py](scatter_tools/operators.py), [viewport_tools/gizmos.py](viewport_tools/gizmos.py), [viewport_tools/measure.py](viewport_tools/measure.py) |
 | `blender-narrowed-by-popover` | warn | [viewport_tools/ui.py](viewport_tools/ui.py) |
@@ -154,15 +154,15 @@ The tables are written by `mise run examples:coverage`. To find the lines, searc
 | `builtin-gizmo-types` | The properties of Blender's own gizmo types: `gizmos.new("GIZMO_GT_arrow_3d")` gives a plain `Gizmo` | `docs/reports/remaining-causes.md` S11 | [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py), [viewport_tools/gizmos.py](viewport_tools/gizmos.py) |
 | `default-addon-properties` | The properties of the add-ons Blender enables by default (`scene.cycles`): `check:addons` does not put their source on a search path, so `blender-assumed-default-addon` cannot be shown |  | [node_kit/check_node_kit.py](node_kit/check_node_kit.py) |
 | `editor-members-in-modal` | `context.area`, `region` and `space_data` in an operator's `modal`, which Blender calls without polling again | `docs/reports/remaining-causes.md` R21 | [viewport_tools/measure.py](viewport_tools/measure.py) |
-| `enum-items-unpacked` | The values of an `EnumProperty` whose `items` unpack another tuple (`(first, *OTHERS)`) |  | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/settings.py](batch_io/settings.py) |
-| `handler-callback-types` | The parameters of a function appended to `bpy.app.handlers` (a save handler's file path) |  | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/handlers.py](batch_io/handlers.py) |
+| `enum-items-unpacked` | The values of an `EnumProperty` whose `items` unpack another tuple (`(first, *OTHERS)`) |  | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/settings.py](batch_export_and_import/settings.py) |
+| `handler-callback-types` | The parameters of a function appended to `bpy.app.handlers` (a save handler's file path) |  | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/handlers.py](batch_export_and_import/handlers.py) |
 | `msgbus-keys` | A `(type, "property")` key of `bpy.msgbus.subscribe_rna`, which the builtin stubs reject |  | [viewport_tools/__init__.py](viewport_tools/__init__.py) |
 | `own-node-sockets` | The sockets a node's `init` creates, by name (`node.inputs["A"]`) |  | [node_kit/check_node_kit.py](node_kit/check_node_kit.py) |
 | `own-node-tree-types` | A node tree made by the idname of the add-on's own `NodeTree` class (`node_groups.new(name, "KitNodeTree")`) |  | [node_kit/check_node_kit.py](node_kit/check_node_kit.py), [node_kit/tree.py](node_kit/tree.py) |
 | `popover-opened-by-appended-function` | What a function appended to one of Blender's headers or menus checked before it opens a popover |  | [viewport_tools/ui.py](viewport_tools/ui.py) |
 | `preview-icons` | The previews of a `bpy.utils.previews` collection by name (`icons["ruler"].icon_id`), with the builtin stubs |  | [viewport_tools/check_viewport_tools.py](viewport_tools/check_viewport_tools.py) |
 | `registered-property-write-on-partly-unknown` | A write to a Registered property of an object whose type is partly unknown (`Object \| Unknown`) is reported as `invalid-assignment`; the read and a write to a built-in attribute pass. A bug of the checker |  | [legacy_renamer/ops.py](legacy_renamer/ops.py) |
-| `startup-modules-in-builtin-stubs` | Blender's startup modules (`bl_operators`, `bl_ui`) in the builtin stubs: `from bl_operators.presets import AddPresetBase` is not found |  | [batch_io/check_batch_io.py](batch_io/check_batch_io.py), [batch_io/ui.py](batch_io/ui.py) |
+| `startup-modules-in-builtin-stubs` | Blender's startup modules (`bl_operators`, `bl_ui`) in the builtin stubs: `from bl_operators.presets import AddPresetBase` is not found |  | [batch_export_and_import/check_batch_export_and_import.py](batch_export_and_import/check_batch_export_and_import.py), [batch_export_and_import/ui.py](batch_export_and_import/ui.py) |
 | `subclass-member-writes` | A write to a member only a subclass has (`socket.default_value = ...`): a read is assumed (`blender-assumed-subclass-member`), a write is an error |  | [node_kit/shader.py](node_kit/shader.py) |
 
 <!-- END coverage -->

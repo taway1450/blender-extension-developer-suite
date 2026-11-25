@@ -11,10 +11,10 @@ from bpy_extras.io_utils import ImportHelper
 
 
 # demo: bpy_symbols
-class IMPORT_SCENE_OT_batch_io(Operator, ImportHelper):
+class IMPORT_SCENE_OT_batch_import(Operator, ImportHelper):
     """Import every chosen OBJ and STL file"""
 
-    bl_idname = "import_scene.batch_io"
+    bl_idname = "import_scene.batch_import"
     bl_label = "Batch Import"
     bl_options = {"REGISTER", "UNDO"}
 
@@ -57,10 +57,10 @@ class IMPORT_SCENE_OT_batch_io(Operator, ImportHelper):
         return {"FINISHED"}
 
 
-class IO_FH_batch_io(FileHandler):
-    bl_idname = "IO_FH_batch_io"
+class IO_FH_batch_import(FileHandler):
+    bl_idname = "IO_FH_batch_import"
     bl_label = "Batch Import"
-    bl_import_operator = "import_scene.batch_io"
+    bl_import_operator = "import_scene.batch_import"
     bl_file_extensions = ".obj;.stl"
 
     @classmethod
@@ -68,7 +68,7 @@ class IO_FH_batch_io(FileHandler):
         return context.area is not None and context.area.type == "VIEW_3D"
 
 
-classes = (IMPORT_SCENE_OT_batch_io, IO_FH_batch_io)
+classes = (IMPORT_SCENE_OT_batch_import, IO_FH_batch_import)
 
 
 def register():

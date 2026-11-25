@@ -2,35 +2,35 @@
 # reports on the add-ons' own code, and the check_*.py markers that do not hold yet.
 # `mise run check:addons 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
-batch_io/__init__.py | missing-union-attribute | keyconfig = bpy.context.window_manager.keyconfigs.addon
-batch_io/check_batch_io.py | type-assertion-failure | assert_type(ob.batch_io.file_format, Literal["SCENE", "OBJ", "STL", "GLTF"])
-batch_io/check_batch_io.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences
-batch_io/check_batch_io.py | unused-ignore-comment | item.properties.selection = True  # ty: ignore[invalid-assignment]
-batch_io/check_batch_io.py | type-assertion-failure | assert_type(filepath, str)
-batch_io/export.py | missing-union-attribute | return context.mode == "OBJECT"
-batch_io/export.py | missing-attribute | settings = context.scene.batch_io
-batch_io/export.py | missing-union-attribute | settings = context.scene.batch_io
-batch_io/export.py | missing-union-attribute | objects = context.selected_objects
-batch_io/export.py | missing-union-attribute | objects = list(context.scene.objects)
-batch_io/export.py | not-iterable | for ob in objects:
-batch_io/export.py | invalid-argument-type | export_object(context, ob, path, file_format, settings.apply_modifiers)
-batch_io/export.py | invalid-argument-type | folder = directory if get_preferences(context).report_folder else ""
-batch_io/export.py | invalid-argument-type | bpy.utils.register_class(OBJECT_OT_batch_io_apply_and_export)
-batch_io/export.py | invalid-argument-type | bpy.utils.unregister_class(OBJECT_OT_batch_io_apply_and_export)
-batch_io/handlers.py | blender-assumed-context-member | scene = bpy.context.scene
-batch_io/importer.py | missing-union-attribute | collection = context.collection
-batch_io/importer.py | missing-union-attribute | context.scene.collection.children.link(collection)
-batch_io/importer.py | missing-union-attribute | for ob in context.selected_objects:
-batch_io/importer.py | not-iterable | for ob in context.selected_objects:
-batch_io/importer.py | missing-union-attribute | collection.objects.link(ob)
-batch_io/importer.py | missing-union-attribute | return context.area is not None and context.area.type == "VIEW_3D"
-batch_io/presets/batch_io/object/print.py | blender-assumed-preset-context | settings = bpy.context.object.batch_io
-batch_io/settings.py | missing-union-attribute | return context.preferences.addons[__package__].preferences
-batch_io/ui.py | incompatible-method-override | draw = Menu.draw_preset
-batch_io/ui.py | blender-narrowed-by-bl-context | settings = context.object.batch_io
-batch_io/ui.py | missing-union-attribute | settings = context.object.batch_io
-batch_io/ui.py | missing-attribute | settings = context.scene.batch_io
-batch_io/ui.py | missing-union-attribute | settings = context.scene.batch_io
+batch_export_and_import/__init__.py | missing-union-attribute | keyconfig = bpy.context.window_manager.keyconfigs.addon
+batch_export_and_import/check_batch_export_and_import.py | type-assertion-failure | assert_type( #2
+batch_export_and_import/check_batch_export_and_import.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences
+batch_export_and_import/check_batch_export_and_import.py | unused-ignore-comment | item.properties.selection = True  # ty: ignore[invalid-assignment]
+batch_export_and_import/check_batch_export_and_import.py | type-assertion-failure | assert_type(filepath, str)
+batch_export_and_import/export.py | missing-union-attribute | return context.mode == "OBJECT"
+batch_export_and_import/export.py | missing-attribute | settings = context.scene.batch_export_and_import
+batch_export_and_import/export.py | missing-union-attribute | settings = context.scene.batch_export_and_import
+batch_export_and_import/export.py | missing-union-attribute | objects = context.selected_objects
+batch_export_and_import/export.py | missing-union-attribute | objects = list(context.scene.objects)
+batch_export_and_import/export.py | not-iterable | for ob in objects:
+batch_export_and_import/export.py | invalid-argument-type | export_object(context, ob, path, file_format, settings.apply_modifiers)
+batch_export_and_import/export.py | invalid-argument-type | folder = directory if get_preferences(context).report_folder else ""
+batch_export_and_import/export.py | invalid-argument-type | bpy.utils.register_class(OBJECT_OT_apply_and_batch_export)
+batch_export_and_import/export.py | invalid-argument-type | bpy.utils.unregister_class(OBJECT_OT_apply_and_batch_export)
+batch_export_and_import/handlers.py | blender-assumed-context-member | scene = bpy.context.scene
+batch_export_and_import/importer.py | missing-union-attribute | collection = context.collection
+batch_export_and_import/importer.py | missing-union-attribute | context.scene.collection.children.link(collection)
+batch_export_and_import/importer.py | missing-union-attribute | for ob in context.selected_objects:
+batch_export_and_import/importer.py | not-iterable | for ob in context.selected_objects:
+batch_export_and_import/importer.py | missing-union-attribute | collection.objects.link(ob)
+batch_export_and_import/importer.py | missing-union-attribute | return context.area is not None and context.area.type == "VIEW_3D"
+batch_export_and_import/presets/batch_export_and_import/object/print.py | blender-assumed-preset-context | settings = bpy.context.object.batch_export_and_import
+batch_export_and_import/settings.py | missing-union-attribute | return context.preferences.addons[__package__].preferences
+batch_export_and_import/ui.py | incompatible-method-override | draw = Menu.draw_preset
+batch_export_and_import/ui.py | blender-narrowed-by-bl-context | settings = context.object.batch_export_and_import
+batch_export_and_import/ui.py | missing-union-attribute | settings = context.object.batch_export_and_import
+batch_export_and_import/ui.py | missing-attribute | settings = context.scene.batch_export_and_import
+batch_export_and_import/ui.py | missing-union-attribute | settings = context.scene.batch_export_and_import
 legacy_renamer/__init__.py | blender-unregister-mismatch | bpy.types.Object.legacy_original_name = StringProperty(name="Original Name")
 legacy_renamer/check_legacy_renamer.py | missing-union-attribute | context.preferences.addons["legacy_renamer"].preferences,
 legacy_renamer/check_legacy_renamer.py | missing-union-attribute | assert_type(context.preferences.addons["legacy_renamer"].preferences.separator, str)

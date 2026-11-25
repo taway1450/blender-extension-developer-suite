@@ -7,16 +7,24 @@ from typing import Literal, assert_type
 import bpy
 from bpy.types import Context, KeyMap, Object, Scene
 
-from .settings import BatchIOPreferences, BatchSettings, ObjectExportSettings
+from .settings import (
+    BatchExportAndImportPreferences,
+    BatchSettings,
+    ObjectExportSettings,
+)
 
 
 def registered_properties(scene: Scene, ob: Object) -> None:
-    assert_type(scene.batch_io, BatchSettings)
-    assert_type(ob.batch_io, ObjectExportSettings)
-    assert_type(scene.batch_io.file_format, Literal["OBJ", "STL", "GLTF"])
+    assert_type(scene.batch_export_and_import, BatchSettings)
+    assert_type(ob.batch_export_and_import, ObjectExportSettings)
+    assert_type(
+        scene.batch_export_and_import.file_format, Literal["OBJ", "STL", "GLTF"]
+    )
     # The items are a tuple that unpacks another one: `(("SCENE", ...), *FORMATS)`.
     # demo: later/enum-items-unpacked
-    assert_type(ob.batch_io.file_format, Literal["SCENE", "OBJ", "STL", "GLTF"])
+    assert_type(
+        ob.batch_export_and_import.file_format, Literal["SCENE", "OBJ", "STL", "GLTF"]
+    )
 
 
 def another_addon(scene: Scene, ob: Object) -> None:
@@ -30,23 +38,23 @@ def another_addon(scene: Scene, ob: Object) -> None:
 
 def preferences(context: Context) -> None:
     prefs = context.preferences.addons[__package__].preferences
-    assert_type(prefs, BatchIOPreferences)
+    assert_type(prefs, BatchExportAndImportPreferences)
 
 
 def operator_calls() -> None:
     # A category of the add-on's own, and properties inherited from `AddPresetBase`, a class of a startup
     # module, which the builtin stubs do not have.
     # demo: later/startup-modules-in-builtin-stubs
-    bpy.ops.batch_io.object_preset_add(name="Print", remove_active=False)
-    bpy.ops.batch_io.object_preset_add(remove=True)  # ty: ignore[no-matching-overload]
+    bpy.ops.batch_export_and_import.object_preset_add(name="Print", remove_active=False)
+    bpy.ops.batch_export_and_import.object_preset_add(remove=True)  # ty: ignore[no-matching-overload]
     # A macro takes the properties of each step.
     # demo: operator_calls
-    bpy.ops.object.batch_io_apply_and_export(
+    bpy.ops.object.apply_and_batch_export(
         OBJECT_OT_transform_apply={"location": False},
-        EXPORT_SCENE_OT_batch_io={"use_selection": True},
+        EXPORT_SCENE_OT_batch_export={"use_selection": True},
     )
-    bpy.ops.object.batch_io_apply_and_export(
-        EXPORT_SCENE_OT_batch_io={"selection": True}  # ty: ignore[invalid-argument-type, unknown-typed-dict-constructor-key]
+    bpy.ops.object.apply_and_batch_export(
+        EXPORT_SCENE_OT_batch_export={"selection": True}  # ty: ignore[invalid-argument-type, unknown-typed-dict-constructor-key]
     )
 
 
@@ -60,7 +68,7 @@ def overridden_context(context: Context, ob: Object) -> None:
 def keymap_item(keymap: KeyMap) -> None:
     # The properties of a key map item are those of the operator it names.
     # demo: operator_properties
-    item = keymap.keymap_items.new("export_scene.batch_io", "E", "PRESS")
+    item = keymap.keymap_items.new("export_scene.batch_export", "E", "PRESS")
     assert_type(item.properties.use_selection, bool)
     item.properties.selection = True  # ty: ignore[invalid-assignment]
 

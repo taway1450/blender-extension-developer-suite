@@ -16,7 +16,7 @@ EXTENSIONS = {"OBJ": ".obj", "STL": ".stl", "GLTF": ".glb"}
 
 def exported(ob: Object, settings: BatchSettings) -> bool:
     """Whether the batch exports this object."""
-    if ob.type != "MESH" or not ob.batch_io.enabled:
+    if ob.type != "MESH" or not ob.batch_export_and_import.enabled:
         return False
     # The property is there only while Scatter Tools is enabled.
     # demo: registration_checks
@@ -49,10 +49,10 @@ def export_object(
             )
 
 
-class EXPORT_SCENE_OT_batch_io(Operator):
+class EXPORT_SCENE_OT_batch_export(Operator):
     """Export every mesh object to its own file"""
 
-    bl_idname = "export_scene.batch_io"
+    bl_idname = "export_scene.batch_export"
     bl_label = "Batch Export"
     bl_options = {"REGISTER"}
 
@@ -67,7 +67,7 @@ class EXPORT_SCENE_OT_batch_io(Operator):
         return context.mode == "OBJECT"
 
     def execute(self, context):
-        settings = context.scene.batch_io
+        settings = context.scene.batch_export_and_import
         directory = bpy.path.abspath(settings.directory)
         os.makedirs(directory, exist_ok=True)
 
@@ -79,10 +79,10 @@ class EXPORT_SCENE_OT_batch_io(Operator):
         for ob in objects:
             if not exported(ob, settings):
                 continue
-            file_format = ob.batch_io.file_format
+            file_format = ob.batch_export_and_import.file_format
             if file_format == "SCENE":
                 file_format = settings.file_format
-            name = bpy.path.clean_name(ob.batch_io.file_name or ob.name)
+            name = bpy.path.clean_name(ob.batch_export_and_import.file_name or ob.name)
             path = os.path.join(directory, name + EXTENSIONS[file_format])
             export_object(context, ob, path, file_format, settings.apply_modifiers)
             count += 1
@@ -93,22 +93,22 @@ class EXPORT_SCENE_OT_batch_io(Operator):
 
 
 # demo: operator_calls
-class OBJECT_OT_batch_io_apply_and_export(Macro):
+class OBJECT_OT_apply_and_batch_export(Macro):
     """Apply rotation and scale to the selected objects, then export them"""
 
-    bl_idname = "object.batch_io_apply_and_export"
+    bl_idname = "object.apply_and_batch_export"
     bl_label = "Apply and Batch Export"
     bl_options = {"REGISTER", "UNDO"}
 
 
 def register():
-    bpy.utils.register_class(EXPORT_SCENE_OT_batch_io)
-    bpy.utils.register_class(OBJECT_OT_batch_io_apply_and_export)
-    apply = OBJECT_OT_batch_io_apply_and_export.define("OBJECT_OT_transform_apply")
+    bpy.utils.register_class(EXPORT_SCENE_OT_batch_export)
+    bpy.utils.register_class(OBJECT_OT_apply_and_batch_export)
+    apply = OBJECT_OT_apply_and_batch_export.define("OBJECT_OT_transform_apply")
     apply.properties.location = False
-    OBJECT_OT_batch_io_apply_and_export.define("EXPORT_SCENE_OT_batch_io")
+    OBJECT_OT_apply_and_batch_export.define("EXPORT_SCENE_OT_batch_export")
 
 
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_batch_io_apply_and_export)
-    bpy.utils.unregister_class(EXPORT_SCENE_OT_batch_io)
+    bpy.utils.unregister_class(OBJECT_OT_apply_and_batch_export)
+    bpy.utils.unregister_class(EXPORT_SCENE_OT_batch_export)

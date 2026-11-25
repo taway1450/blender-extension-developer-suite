@@ -9,7 +9,7 @@ from bpy.app.handlers import persistent
 @persistent
 def export_after_save(filepath, *_):
     scene = bpy.context.scene
-    wanted = filepath and scene.batch_io.export_on_save
+    wanted = filepath and scene.batch_export_and_import.export_on_save
     if wanted and not bpy.app.timers.is_registered(run_export):
         bpy.app.timers.register(run_export, first_interval=0.5)
 
@@ -17,7 +17,7 @@ def export_after_save(filepath, *_):
 # A timer runs again after the seconds it returns; this one returns nothing, so it runs once.
 def run_export():
     if bpy.context.mode == "OBJECT":
-        bpy.ops.export_scene.batch_io(use_selection=False)
+        bpy.ops.export_scene.batch_export(use_selection=False)
 
 
 def register():
