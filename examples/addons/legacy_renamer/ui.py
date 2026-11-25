@@ -67,4 +67,19 @@ class VIEW3D_PT_legacy_renamer(bpy.types.Panel):
         layout.operator("object.legacy_rename")
 
 
+# This panel was never added to `classes` below, so Blender does not know it and never draws it.
+# demo: blender-unregistered-class
+class VIEW3D_PT_legacy_renamer_original(bpy.types.Panel):
+    bl_label = "Original Name"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "Rename"
+    bl_parent_id = "VIEW3D_PT_legacy_renamer"
+
+    def draw(self, context):
+        ob = context.object
+        if ob:
+            self.layout.label(text=ob.legacy_original_name or ob.name)
+
+
 classes = (LEGACY_UL_rules, VIEW3D_PT_legacy_renamer)

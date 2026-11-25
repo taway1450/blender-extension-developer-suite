@@ -88,26 +88,25 @@ def draw_header(self, context):
         )
 
 
-classes = (
-    VIEW3D_PT_viewport_tools,
-    VIEW3D_PT_viewport_tools_edges,
-    VIEW3D_PT_viewport_tools_display,
-    VIEW3D_PT_viewport_tools_object,
-)
+def panel_classes():
+    """Every panel of this module, in the order they are defined."""
+    # The checker cannot follow a class list built at run time, so it takes every class as registered.
+    # demo: blender-assumed-complete-registration
+    return [value for name, value in globals().items() if name.startswith("VIEW3D_PT_")]
 
 
 def register():
     icons = bpy.utils.previews.new()
     icons.load("ruler", os.path.join(os.path.dirname(__file__), "ruler.png"), "IMAGE")
     preview_collections["main"] = icons
-    for cls in classes:
+    for cls in panel_classes():
         bpy.utils.register_class(cls)
     bpy.types.VIEW3D_HT_header.append(draw_header)
 
 
 def unregister():
     bpy.types.VIEW3D_HT_header.remove(draw_header)
-    for cls in reversed(classes):
+    for cls in reversed(panel_classes()):
         bpy.utils.unregister_class(cls)
     for icons in preview_collections.values():
         bpy.utils.previews.remove(icons)

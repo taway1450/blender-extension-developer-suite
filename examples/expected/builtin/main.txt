@@ -12,19 +12,24 @@ batch_io/presets/batch_io/object/print.py | blender-assumed-preset-context | set
 batch_io/ui.py | import-not-found | from bl_operators.presets import AddPresetBase
 batch_io/ui.py | blender-narrowed-by-bl-context | settings = context.object.batch_io
 batch_io/ui.py | invalid-assignment | remove.remove_active = True
+legacy_renamer/__init__.py | blender-unregister-mismatch | bpy.types.Object.legacy_original_name = StringProperty(name="Original Name")
 legacy_renamer/ops.py | blender-assumed-context-member | return bpy.context.scene.legacy_renamer
 legacy_renamer/ops.py | blender-imprecise-operator-return | def execute(self, context) -> set[str]:
+legacy_renamer/ops.py | invalid-assignment | ob.legacy_original_name = ob.name
 legacy_renamer/ops.py | blender-assumed-registration | bpy.ops.object.legacy_tag_collections(color=color)
 legacy_renamer/ops.py | blender-imprecise-enum-value | collection.color_tag = self.color
 legacy_renamer/ops.py | blender-assumed-internal-operator | rule.find = re.escape(context.object.name)
 legacy_renamer/ops.py | blender-legacy-property | filter_glob = StringProperty(default="*.csv", options={"HIDDEN"})
 legacy_renamer/ui.py | blender-imprecise-callback-parameter | item: RenameRule,
 legacy_renamer/ui.py | blender-imprecise-enum-value | layout.label(text=ob.name, icon=TYPE_ICONS.get(ob.type, "OBJECT_DATA"))
+legacy_renamer/ui.py | blender-unregistered-class | class VIEW3D_PT_legacy_renamer_original(bpy.types.Panel):
 node_kit/check_node_kit.py | invalid-argument-type | assert_type(bpy.data.node_groups.new("Calculator", "KitNodeTree"), KitNodeTree)
 node_kit/check_node_kit.py | type-assertion-failure | assert_type(bpy.data.node_groups.new("Calculator", "KitNodeTree"), KitNodeTree)
 node_kit/check_node_kit.py | type-assertion-failure | assert_type(node.inputs["A"], KitFloatSocket)
 node_kit/check_node_kit.py | type-assertion-failure | assert_type(bpy.data.node_groups["Scatter Points"], GeometryNodeTree)
 node_kit/check_node_kit.py | type-assertion-failure | assert_type(rust_nodes["Principled BSDF"], ShaderNodeBsdfPrincipled)
+node_kit/check_node_kit.py | missing-attribute | assert_type(scene.cycles.samples, int)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(scene.cycles.samples, int)
 node_kit/shader.py | blender-narrowed-by-poll | tree = context.space_data.edit_tree
 node_kit/shader.py | blender-narrowed-by-poll | node = context.active_node
 node_kit/shader.py | blender-assumed-subclass-member | color = self.tinted(socket.default_value)
@@ -33,6 +38,7 @@ node_kit/shader.py | missing-attribute | principled.inputs["Roughness"].default_
 node_kit/tree.py | invalid-argument-type | tree = bpy.data.node_groups.new("Calculator", "KitNodeTree")
 node_kit/tree.py | blender-narrowed-by-poll | context.space_data.node_tree = tree
 node_kit/ui.py | blender-narrowed-by-menu-prefix | if context.space_data.tree_type == "KitNodeTree":
+node_kit/ui.py | blender-unknown-operator | layout.operator("node.nw_add_textures_for_principled")
 scatter_tools/operators.py | blender-narrowed-by-poll | source = context.active_object
 scatter_tools/ui.py | blender-assumed-list-item | instance = item.instance
 scatter_tools/ui.py | blender-assumed-list-item | layout.label(text=item.name, icon="OBJECT_DATA" if instance else "ERROR")
@@ -56,3 +62,4 @@ viewport_tools/overlay.py | blender-assumed-editor-member | region_3d = bpy.cont
 viewport_tools/ui.py | blender-narrowed-by-bl-context | mesh = context.edit_object.data
 viewport_tools/ui.py | blender-narrowed-by-popover | settings = context.space_data.overlay
 viewport_tools/ui.py | invalid-argument-type | layout.prop(context.object, "name")
+viewport_tools/ui.py | blender-assumed-complete-registration | return [value for name, value in globals().items() if name.startswith("VIEW3D_PT_")]

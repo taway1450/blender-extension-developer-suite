@@ -34,11 +34,13 @@ def preferences(context: Context) -> None:
 
 
 def operator_calls() -> None:
-    # A category of the add-on's own, and properties inherited from a base class of Blender's.
-    # demo: operator_calls
+    # A category of the add-on's own, and properties inherited from `AddPresetBase`, a class of a startup
+    # module, which the builtin stubs do not have.
+    # demo: later/startup-modules-in-builtin-stubs
     bpy.ops.batch_io.object_preset_add(name="Print", remove_active=False)
     bpy.ops.batch_io.object_preset_add(remove=True)  # ty: ignore[no-matching-overload]
     # A macro takes the properties of each step.
+    # demo: operator_calls
     bpy.ops.object.batch_io_apply_and_export(
         OBJECT_OT_transform_apply={"location": False},
         EXPORT_SCENE_OT_batch_io={"use_selection": True},

@@ -55,6 +55,9 @@ def register():
     if bpy.app.version >= (2, 91, 0):
         bpy.utils.register_class(ops.OBJECT_OT_legacy_tag_collections)
     bpy.types.Scene.legacy_renamer = PointerProperty(type=props.RenamerSettings)
+    # `unregister()` below forgets this property, so it stays on every object after the add-on is disabled.
+    # demo: blender-unregister-mismatch
+    bpy.types.Object.legacy_original_name = StringProperty(name="Original Name")
 
 
 def unregister():

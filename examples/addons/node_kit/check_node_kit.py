@@ -10,6 +10,7 @@ from bpy.types import (
     Node,
     NodeSocketColor,
     NodeTree,
+    Scene,
     ShaderNodeBsdfPrincipled,
     ShaderNodeTexImage,
     ShaderNodeTree,
@@ -60,3 +61,10 @@ def shipped_file() -> None:
     rust_nodes = bpy.data.materials["Rust"].node_tree.nodes
     # demo: later/blend-file-typing
     assert_type(rust_nodes["Principled BSDF"], ShaderNodeBsdfPrincipled)
+
+
+def default_addons(scene: Scene) -> None:
+    # Cycles is an add-on that Blender enables by default. Its properties are known only when its source is
+    # on a search path, where `check:addons` does not put it.
+    # demo: later/default-addon-properties
+    assert_type(scene.cycles.samples, int)

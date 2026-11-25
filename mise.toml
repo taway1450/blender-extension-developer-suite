@@ -225,6 +225,13 @@ flag "--check" help="Fail if the generated files are out of date instead of writ
 '''
 run = 'uv run scripts/generate_features.py {% if usage.check %}--check{% endif %}'
 
+[tasks."examples:coverage"]
+description = "Check the `# demo:` tags of the example add-ons against their recorded results and write the coverage tables in examples/addons/README.md"
+usage = '''
+flag "--check" help="Fail if a tag does not hold, a feature or rule is not covered or the tables are out of date, instead of writing them"
+'''
+run = 'uv run scripts/examples_coverage.py {% if usage.check %}--check{% endif %}'
+
 [tasks."check:ide"]
 description = "Query ty's language server at the markers in tests/typecheck/ (hover, signature help, completions) and compare with tests/typecheck/expected/"
 usage = '''
@@ -406,7 +413,7 @@ description = "Lint and format the tooling in scripts/ with the pinned upstream 
 run = 'uvx prek@0.5.6 run --all-files'
 
 [tasks."test:scripts"]
-description = "Unit-test the feature-test harness in scripts/ (markers, verdicts, recorded results, stub merge) with pytest"
+description = "Unit-test the tooling in scripts/ (markers, verdicts, recorded results, stub merge) with pytest, and check the coverage of the example add-ons"
 run = 'uv run --no-project --with pytest pytest scripts/tests -q -p no:cacheprovider'
 
 [tasks."report:flags"]
@@ -461,10 +468,10 @@ flag "--update-overlays" help="Write the overlays from B into the example add-on
 run = 'uv run scripts/probe_blend_typing.py {{usage.version}} {% if usage.make %}--make{% endif %} {% if usage.update_overlays %}--update-overlays{% endif %}'
 
 [tasks."probe:runtime-stubs"]
-description = "Compare the runtime stubs (stubs:generate --generator runtime) with the builtin and fake-bpy-module stubs, and run the runtime generator on each example add-on: its delta, merged stubs and .blend overlays"
+description = "Compare the runtime stubs (stubs:generate --generator runtime) with the builtin and fake-bpy-module stubs, and run the runtime generator on add-ons: its delta, merged stubs and .blend overlays"
 usage = '''
 arg "<version>" help="Name of a blender:build build (e.g. main) or Blender version X.Y"
-flag "--addon <path>" var=#true help="An add-on folder to run add-on mode on (default: the example add-ons)"
+flag "--addon <path>" var=#true help="An add-on folder to run add-on mode on (default: two of the prototype add-ons in prototypes/blend_typing/examples/)"
 '''
 run = 'uv run scripts/probe_runtime_stubs.py {{usage.version}} {% for a in usage.addon %}--addon "{{a}}" {% endfor %}'
 

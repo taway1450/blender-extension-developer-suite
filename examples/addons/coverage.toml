@@ -1,0 +1,75 @@
+# What the `# demo:` tags of the example add-ons do not say themselves (see README.md).
+# `mise run examples:coverage` reads this file and writes the tables in README.md.
+
+# --- Topics that do not work yet ---------------------------------------------------------------------------------------
+# [later.<topic>] describes the tag `# demo: later/<topic>`. `source` names where the topic is tracked, and
+# `untagged` the reason when no line of an add-on can show it.
+
+[later.blend-file-typing]
+description = "The data-blocks of a `.blend` file the add-on ships (`[tool.blender] blend-files`), by name: `bpy.data.materials[\"Rust\"]` and the nodes of its tree"
+source = "`prototypes/blend_typing/`; `docs/reports/remaining-causes.md` S12"
+
+[later.builtin-gizmo-types]
+description = "The properties of Blender's own gizmo types: `gizmos.new(\"GIZMO_GT_arrow_3d\")` gives a plain `Gizmo`"
+source = "`docs/reports/remaining-causes.md` S11"
+
+[later.default-addon-properties]
+description = "The properties of the add-ons Blender enables by default (`scene.cycles`): `check:addons` does not put their source on a search path, so `blender-assumed-default-addon` cannot be shown"
+
+[later.editor-members-in-modal]
+description = "`context.area`, `region` and `space_data` in an operator's `modal`, which Blender calls without polling again"
+source = "`docs/reports/remaining-causes.md` R21"
+
+[later.enum-items-unpacked]
+description = "The values of an `EnumProperty` whose `items` unpack another tuple (`(first, *OTHERS)`)"
+
+[later.handler-callback-types]
+description = "The parameters of a function appended to `bpy.app.handlers` (a save handler's file path)"
+
+[later.msgbus-keys]
+description = "A `(type, \"property\")` key of `bpy.msgbus.subscribe_rna`, which the builtin stubs reject"
+
+[later.own-node-sockets]
+description = "The sockets a node's `init` creates, by name (`node.inputs[\"A\"]`)"
+
+[later.own-node-tree-types]
+description = "A node tree made by the idname of the add-on's own `NodeTree` class (`node_groups.new(name, \"KitNodeTree\")`)"
+
+[later.popover-opened-by-appended-function]
+description = "What a function appended to one of Blender's headers or menus checked before it opens a popover"
+
+[later.preview-icons]
+description = "The previews of a `bpy.utils.previews` collection by name (`icons[\"ruler\"].icon_id`), with the builtin stubs"
+
+[later.registered-property-write-on-partly-unknown]
+description = "A write to a Registered property of an object whose type is partly unknown (`Object | Unknown`) is reported as `invalid-assignment`; the read and a write to a built-in attribute pass. A bug of the checker"
+
+[later.startup-modules-in-builtin-stubs]
+description = "Blender's startup modules (`bl_operators`, `bl_ui`) in the builtin stubs: `from bl_operators.presets import AddPresetBase` is not found"
+
+[later.subclass-member-writes]
+description = "A write to a member only a subclass has (`socket.default_value = ...`): a read is assumed (`blender-assumed-subclass-member`), a write is an error"
+
+# --- Features and rules the examples leave to the feature tests -------------------------------------------------------
+# Every example add-on loads in Blender and works as written, so a rule that needs code Blender rejects, or code
+# that silently does nothing, is shown only in tests/typecheck/features/.
+
+[exempt]
+blender-assumed-default-addon = "needs a default add-on's source on a search path (see `later/default-addon-properties`)"
+blender-assumed-preferences = "the read raises `AttributeError` in Blender: the preferences are `None` until their class is registered"
+blender-duplicate-registration = "the add-on fails to enable, or one class silently replaces another"
+blender-invalid-addon-metadata = "Blender refuses to list or install the add-on"
+blender-invalid-base = "the class is silently registered as its first Blender base only"
+blender-invalid-idname = "the add-on fails to enable, or Blender prints a warning"
+blender-invalid-operator-property = "Blender registers the operator without the property and those after it"
+blender-invalid-override = "the add-on fails to enable"
+blender-invalid-property = "the add-on fails to enable"
+blender-invalid-register = "the add-on fails to enable or to disable"
+blender-missing-callback = "the add-on fails to enable"
+blender-mixin-order = "the mixin's method is silently never called"
+blender-preferences-idname = "the preferences are silently never shown"
+blender-register-order = "the add-on fails to enable"
+blender-registered-base = "the base class's callbacks are silently no longer called"
+blender-unreachable-registration = "the classes are silently never registered"
+blender-unsupported-property-host = "the property silently does not exist"
+blender-unsupported-property-target = "the property silently does not exist"

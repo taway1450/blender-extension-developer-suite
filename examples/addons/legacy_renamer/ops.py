@@ -8,8 +8,9 @@ from bpy.props import EnumProperty, StringProperty
 from bpy_extras.io_utils import ImportHelper
 
 
-# demo: blender-assumed-context-member
 def renamer_settings():
+    # demo: assumptions
+    # demo: blender-assumed-context-member
     return bpy.context.scene.legacy_renamer
 
 
@@ -24,6 +25,7 @@ class OBJECT_OT_legacy_rename(bpy.types.Operator):
     bl_label = "Batch Rename"
     bl_options = {"REGISTER", "UNDO"}
 
+    # demo: imprecise_annotations
     # demo: blender-imprecise-operator-return
     def execute(self, context) -> set[str]:
         settings = renamer_settings()
@@ -50,6 +52,10 @@ class OBJECT_OT_legacy_rename(bpy.types.Operator):
                 name = name.upper()
             elif settings.case == "LOWER":
                 name = name.lower()
+            if not ob.legacy_original_name:
+                # The list comes from three places, one of them untyped, so `ob` is only partly known.
+                # demo: later/registered-property-write-on-partly-unknown
+                ob.legacy_original_name = ob.name
             ob.name = name
 
         if settings.tag_collections and bpy.app.version >= (2, 91, 0):

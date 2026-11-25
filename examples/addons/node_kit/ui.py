@@ -46,6 +46,10 @@ class NODE_PT_kit(Panel):
         elif space.tree_type == "ShaderNodeTree":
             layout.operator("node.kit_principled_setup")
             layout.operator("node.kit_append_assets", icon="APPEND_BLEND")
+            # Node Wrangler's operator: the button is there only while that add-on is enabled.
+            if hasattr(bpy.types, "NODE_OT_nw_add_textures_for_principled"):
+                # demo: blender-unknown-operator
+                layout.operator("node.nw_add_textures_for_principled")
 
         node = context.active_node
         if node is not None:
