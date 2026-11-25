@@ -13,7 +13,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from _common import TYPECHECK_TESTS_DIR, StepError
+from _common import EXAMPLE_ADDONS_DIR, TYPECHECK_TESTS_DIR, StepError, example_addons
 from _markers import (
     ASSERT,
     EXPECTED,
@@ -30,6 +30,7 @@ from _markers import (
 FEATURES_DIR = TYPECHECK_TESTS_DIR / "features"
 GENERATED = "generated"  # features/<feature>/generated/<addon>/: written by generate_features.py
 EXPECTED_STUBS = "_expected"  # <addon>/_expected/: reference stubs for check:oracle
+EXAMPLES = "examples"  # the feature name of the example add-ons in examples/addons/ (check:addons)
 
 # ty --output-format concise: `path:line:col: severity[rule] message`
 DIAGNOSTIC = re.compile(
@@ -39,20 +40,26 @@ DIAGNOSTIC = re.compile(
 
 @dataclass(frozen=True)
 class Addon:
-    """One addon of a feature: a package directory, or a legacy single-file addon (a ``.py`` file)."""
+    """One addon of a feature: a package directory, or a legacy single-file addon (a ``.py`` file).
+
+    ``base`` is the ty project the addon is checked in; the paths of its markers, diagnostics and recorded results
+    are relative to it. An example add-on (``example_addon_list``) has ``examples/addons`` as its base.
+    """
 
     feature: str
     path: Path
+    base: Path = TYPECHECK_TESTS_DIR
 
     @property
     def rel(self) -> str:
-        """Path relative to tests/typecheck, e.g. ``features/properties/props_hosts``."""
-        return self.path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
+        """Path relative to the base, e.g. ``features/properties/props_hosts`` (or ``scatter_tools``)."""
+        return self.path.relative_to(self.base).as_posix()
 
     @property
     def name(self) -> str:
         """Path relative to the feature, e.g. ``props_hosts`` or ``generated/props_float_vector``."""
-        return self.path.relative_to(FEATURES_DIR / self.feature).as_posix()
+        home = self.base if self.feature == EXAMPLES else FEATURES_DIR / self.feature
+        return self.path.relative_to(home).as_posix()
 
     @property
     def module(self) -> str:
@@ -130,6 +137,11 @@ def all_addons() -> list[Addon]:
     return addons
 
 
+def example_addon_list(names: list[str]) -> list[Addon]:
+    """The example add-ons in ``examples/addons/``, or only the named ones, as addons of the ``examples`` feature."""
+    return [Addon(EXAMPLES, path, EXAMPLE_ADDONS_DIR) for path in example_addons(names)]
+
+
 def import_roots(addons: list[Addon]) -> list[str]:
     """The ty ``environment.root`` entries (relative to tests/typecheck) that make every addon top-level."""
     return sorted({a.root.relative_to(TYPECHECK_TESTS_DIR).as_posix() for a in addons})
@@ -183,10 +195,10 @@ class MarkerResult:
 
 
 def type_files(addon: Addon) -> dict[str, TypeFile]:
-    """The parsed type-test files of the addon, by path relative to tests/typecheck."""
+    """The parsed type-test files of the addon, by path relative to its base (tests/typecheck)."""
     files = {}
     for path in addon.type_test_files():
-        rel = path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
+        rel = path.relative_to(addon.base).as_posix()
         files[rel] = parse_type_file(rel, path.read_text(encoding="utf-8"))
     return files
 
@@ -194,7 +206,7 @@ def type_files(addon: Addon) -> dict[str, TypeFile]:
 def ide_markers(addon: Addon) -> list[IdeMarker]:
     markers = []
     for path in addon.ide_test_files():
-        rel = path.relative_to(TYPECHECK_TESTS_DIR).as_posix()
+        rel = path.relative_to(addon.base).as_posix()
         markers += parse_ide_file(rel, path.read_text(encoding="utf-8"))
     return markers
 
@@ -235,7 +247,7 @@ class AddonResult:
     def line_key(self, path: str, line: int) -> str:
         """The key of a line of one of the addon's files (see ``_markers.line_keys``)."""
         if path not in self.files:
-            text = (TYPECHECK_TESTS_DIR / path).read_text(encoding="utf-8")
+            text = (self.addon.base / path).read_text(encoding="utf-8")
             self.files[path] = TypeFile([], frozenset(), line_keys(text.splitlines()))
         keys = self.files[path].keys
         return keys[line - 1] if 0 < line <= len(keys) else ""

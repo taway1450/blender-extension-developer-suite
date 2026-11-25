@@ -1,4 +1,5 @@
 from _baseline import (
+    EXAMPLES,
     FEATURES,
     IDE,
     Changes,
@@ -15,6 +16,7 @@ from _baseline import (
     write_sections,
 )
 from _common import TYPECHECK_TESTS_DIR
+from _features import EXAMPLES as EXAMPLES_FEATURE
 from _features import Addon
 from _markers import ASSERT_FAILURE, UNKNOWN_RULE, parse_ide_file, parse_type_file
 
@@ -190,3 +192,23 @@ def test_ide_results_compare_their_bodies(tmp_path, capsys):
     out = capsys.readouterr().out
     assert f"    ~ {title}" in out
     assert "        -FAIL: no hover" in out and "        +PASS" in out
+
+
+def test_example_results_are_recorded_without_a_progress_table(tmp_path, capsys):
+    """check:addons: the example add-ons are no feature, so ``--update`` writes only the results file."""
+    scatter = Addon(EXAMPLES_FEATURE, tmp_path / "addons" / "scatter", tmp_path / "addons")
+    warning = type_entry("scatter/ui.py", "blender-assumed-context-member", "scene = bpy.context.scene")
+    gap = type_entry("scatter/check_scatter.py", ASSERT_FAILURE, "assert_type(timer_arg, float)")
+
+    def record_examples(actual: list[str], update: bool = False) -> bool:
+        entries = dict.fromkeys(actual, "a message")
+        return record(
+            EXAMPLES, "gen", "main", entries, [scatter], update=update, directory=tmp_path, existing=[scatter]
+        )
+
+    assert record_examples([warning, gap], update=True) is False
+    assert read_lines(tmp_path / "gen" / "main.txt") == dict.fromkeys([gap, warning], "")
+    assert not (tmp_path / "gen" / "main.progress.md").exists()
+    assert record_examples([warning]) is True  # the gap closed: that is a change to review, too
+    out = capsys.readouterr().out
+    assert f"    - {gap}" in out and "`mise run check:addons main --update`" in out

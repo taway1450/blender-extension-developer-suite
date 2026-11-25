@@ -13,6 +13,15 @@ ignore = [
     "RUF012",
 ]
 
+[lint.per-file-ignores]
+# check_*.py holds type markers (assert_type, expected errors) for check:addons, check:features and check:oracle.
+# Blender never imports it.
+"**/check_*.py" = [
+    "B018",  # useless-expression: bare attribute reads that ty should flag or type
+    "F811",  # redefined-while-unused: parameters that shadow a module on purpose (addon_preferences)
+    "F841",  # unused-variable: assignments that only exist to be type-checked
+]
+
 [lint.flake8-type-checking]
 # Blender evaluates the annotations of these classes at registration (bpy_rna.cc), so imports used only in
 # their annotations must stay at runtime (TC001-TC003) and quoted annotations must stay quoted (UP037: with

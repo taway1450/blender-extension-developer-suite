@@ -7,7 +7,7 @@ from textwrap import dedent
 
 from _baseline import type_entries
 from _common import TYPECHECK_TESTS_DIR
-from _features import Addon, AddonResult, Diagnostic, evaluate_addon, parse_diagnostics
+from _features import EXAMPLES, Addon, AddonResult, Diagnostic, evaluate, evaluate_addon, parse_diagnostics
 from _markers import ASSERT_FAILURE, UNKNOWN_RULE, UNUSED_IGNORE, parse_type_file
 
 ROOT = "features/f/addon"
@@ -122,4 +122,24 @@ def test_entries_record_each_failing_line_once_per_rule_by_line_text():
         f"{CHECK} | not-subscriptable | assert_type(v, bpy_prop_array[float])",
         f"{CHECK} | unresolved-reference | foo()",
         f"{CHECK} | {ASSERT_FAILURE} | assert_type(__package__, str)  # oracle-skip: stock ty says str | None",
+    ]
+
+
+def test_an_example_addon_is_judged_relative_to_its_own_base(tmp_path):
+    """check:addons: the add-on sits directly in its base, and its files and diagnostics are relative to it."""
+    addon = Addon(EXAMPLES, tmp_path / "scatter", tmp_path)
+    addon.path.mkdir()
+    (addon.path / "__init__.py").write_text("x: int = 1\nscene.count = 'a'\n", encoding="utf-8")
+    (addon.path / "check_scatter.py").write_text("assert_type(s.count, int)\n", encoding="utf-8")
+    assert (addon.rel, addon.name, addon.module) == ("scatter", "scatter", "scatter")
+
+    output = (
+        f"{tmp_path / 'scatter' / '__init__.py'}:2:1: warning[blender-assumed-context-member] assumed\n"
+        f"scatter/check_scatter.py:1:13: error[{ASSERT_FAILURE}] Type `Unknown` does not match `int`\n"
+    )
+    [result] = evaluate([addon], parse_diagnostics(output, tmp_path))
+    assert result.counts("assert_type") == (0, 1)
+    assert list(type_entries([result])) == [
+        "scatter/__init__.py | blender-assumed-context-member | scene.count = 'a'",
+        f"scatter/check_scatter.py | {ASSERT_FAILURE} | assert_type(s.count, int)",
     ]

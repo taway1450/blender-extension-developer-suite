@@ -142,10 +142,11 @@ uv run scripts/check_blender.py {{usage.version}} --profile "{{usage.profile}}"
 '''
 
 [tasks."check:addons"]
-description = "Type-check the example addons in examples/addons/ with ty"
+description = "Type-check the example addons in examples/addons/ with ty and compare with examples/expected/"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
 arg "[addons]" var=#true help="Addon directory names in examples/addons/ (default: all)"
+flag "--update" help="Rewrite examples/expected/<generator>/<version>.txt instead of comparing"
 flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: dev (incremental, fastest rebuild), profiling (optimised, no LTO) or release (LTO, slow)" {
   choices "dev" "profiling" "release"
 }
@@ -157,7 +158,8 @@ flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-modu
 '''
 run = '''
 uv run scripts/check_addons.py {{usage.version}}
-{%- for addon in usage.addons %} {{addon}}{% endfor %} --profile "{{usage.profile}}"
+{%- for addon in usage.addons %} {{addon}}{% endfor %}
+{%- if usage.update %} --update{% endif %} --profile "{{usage.profile}}"
 {%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 '''
@@ -202,15 +204,17 @@ uv run scripts/check_oracle.py {{usage.version}}
 '''
 
 [tasks."check:load"]
-description = "Load every feature-test addon in Blender (import, register, unregister) and compare with its _expected/runtime.toml"
+description = "Load every feature-test addon in Blender (import, register, unregister) and compare with its _expected/runtime.toml; with --examples, load the example addons"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/ (default: all)"
+arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/, or with --examples addon directory names in examples/addons/ (default: all)"
+flag "--examples" help="Load the example addons in examples/addons/ instead of the feature-test addons"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 '''
 run = '''
 uv run scripts/check_load.py {{usage.version}}
 {%- for feature in usage.features %} {{feature}}{% endfor %}
+{%- if usage.examples %} --examples{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
 '''
 

@@ -5,13 +5,9 @@
 # hit too (F821 on `PROPS["weight"]` annotations and on the reload pattern) stays reported, so it shows up here.
 extend = "addons.toml"
 
-[lint.per-file-ignores]
-# check_*.py and ide_*.py hold markers for check:features, check:oracle and check:ide:
-"**/check_*.py" = [
-    "B018",  # useless-expression: bare attribute reads that ty should flag or type
-    "F811",  # redefined-while-unused: parameters that shadow a module on purpose (addon_preferences)
-    "F841",  # unused-variable: assignments that only exist to be type-checked
-]
+[lint.extend-per-file-ignores]
+# ide_*.py holds markers for check:ide. The check_*.py exceptions are in addons.toml, because the example
+# add-ons have such files too; this table adds to that one.
 "**/ide_*.py" = [
     "B018",  # useless-expression: the expressions the hover and completion markers point at
     "F821",  # undefined-name: half-typed calls that completion markers point into

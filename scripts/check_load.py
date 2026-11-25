@@ -28,9 +28,13 @@ says so in ``<addon>/_expected/runtime.toml``::
 
 The task fails when an addon does not do what it says.
 
+With ``--examples`` it loads the example add-ons in ``examples/addons/`` instead. They have no ``runtime.toml``:
+every one of them has to register and unregister.
+
 Usage:
   uv run scripts/check_load.py main
   uv run scripts/check_load.py 5.4 registration_checks
+  uv run scripts/check_load.py main --examples scatter_tools
 """
 
 from __future__ import annotations
@@ -41,7 +45,7 @@ import tomllib
 from pathlib import Path
 
 from _common import REPO_ROOT, StepError, log, main_wrapper, validate_version
-from _features import Addon, select
+from _features import Addon, example_addon_list, select
 from _target import TYPECHECK_RESULTS_DIR
 from generate_stubs import find_blender, run_blender_script
 
@@ -82,12 +86,17 @@ def probe_problems(probes: list[dict], results: list) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("version", type=validate_version, help="Blender version (X.Y) or build name (e.g. main)")
-    parser.add_argument("features", nargs="*", help="Features or addons (feature/addon) (default: all)")
+    parser.add_argument(
+        "features",
+        nargs="*",
+        help="Features or addons (feature/addon), or with --examples addon directory names (default: all)",
+    )
     parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
+    parser.add_argument("--examples", action="store_true", help="Load the example add-ons in examples/addons/")
     args = parser.parse_args()
 
     entries, expectations = [], {}
-    for addon in select(args.features):
+    for addon in example_addon_list(args.features) if args.examples else select(args.features):
         spec = runtime_spec(addon)
         if spec.get("load", True) is False:
             continue
@@ -101,12 +110,13 @@ def main() -> int:
     blender = find_blender(args.version, args.blender)
     work = TYPECHECK_RESULTS_DIR / args.version
     work.mkdir(parents=True, exist_ok=True)
-    (work / "load-input.json").write_text(json.dumps(entries, indent=1), encoding="utf-8")
+    stem = "load-examples" if args.examples else "load"
+    (work / f"{stem}-input.json").write_text(json.dumps(entries, indent=1), encoding="utf-8")
     log(f"Loading {len(entries)} addons in Blender")
-    run_blender_script(blender, LOADER, work / "load-input.json", work / "load.json")
+    run_blender_script(blender, LOADER, work / f"{stem}-input.json", work / f"{stem}.json")
 
     failures = 0
-    for result in json.loads((work / "load.json").read_text(encoding="utf-8")):
+    for result in json.loads((work / f"{stem}.json").read_text(encoding="utf-8")):
         spec = expectations[result["name"]]
         expected, reason = spec.get("register", "ok"), spec.get("reason", "")
         ok = result["error"] is None

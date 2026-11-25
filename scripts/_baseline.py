@@ -26,6 +26,7 @@ from _features import Addon, AddonResult, all_addons, feature_names, ide_markers
 from _markers import ASSERT, IdeMarker, TypeMarker
 
 EXPECTED_DIR = TYPECHECK_TESTS_DIR / "expected"
+EXAMPLES_EXPECTED_DIR = REPO_ROOT / "examples" / "expected"  # the recorded check:addons results
 SEPARATOR = " | "
 
 
@@ -161,6 +162,7 @@ class Kind:
     read: Callable[[Path], dict[str, str]]
     write: Callable[[Path, list[str], dict[str, str]], None]
     header: Callable[[str, str], list[str]]
+    progress: bool = True  # whether ``--update`` also rewrites the per-feature progress table
 
     def file(self, generator: str, version: str, directory: Path = EXPECTED_DIR) -> Path:
         return directory / generator / f"{version}{self.suffix}"
@@ -177,6 +179,20 @@ FEATURES = Kind(
         f"`mise run check:features {version}` fails when they change; `--update` rewrites this file.",
         "Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)",
     ],
+)
+EXAMPLES = Kind(
+    "check:addons",
+    ".txt",
+    False,
+    read_lines,
+    write_lines,
+    lambda generator, version: [
+        f"Example add-on results that are not passes, {generator} stubs, Blender {version}: the diagnostics ty",
+        "reports on the add-ons' own code, and the check_*.py markers that do not hold yet.",
+        f"`mise run check:addons {version}` fails when they change; `--update` rewrites this file.",
+        "Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)",
+    ],
+    progress=False,
 )
 IDE = Kind(
     "check:ide",
@@ -251,8 +267,10 @@ def record(
     existing = all_addons() if existing is None else existing
     if update:
         kind.write(path, kind.header(generator, version), merge(recorded, stored, selected, existing))
-        progress = write_progress(generator, version, directory=directory, addons=existing)
-        log(f"Wrote {shown(path)} and {shown(progress)}")
+        written = [path]
+        if kind.progress:
+            written.append(write_progress(generator, version, directory=directory, addons=existing))
+        log(f"Wrote {' and '.join(shown(p) for p in written)}")
         return False
     if not path.is_file():
         log(f"No recorded results in {shown(path)}; run with --update to record them")
