@@ -81,6 +81,18 @@ def most_derived_owner(scene: Scene, obj: Object) -> None:
 
 def through_union(either: Scene | Object) -> None:
     assert_type(either.reg_id, int)  # every arm has it
+    either.reg_id = 2  # a write goes to every arm
+    either.reg_id = "2"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the write above needs the checker
+
+
+def through_partly_unknown(scene: Scene, other, flag: bool) -> None:
+    """A write through a union with an unknown arm, as on an item of a list that typed and untyped code filled."""
+    either = scene if flag else other  # `Scene | Unknown`
+    either.reg_int = 5
+    either.reg_int = "5"  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing; the write above needs the checker
+    either.reg_locked = 5  # ty: ignore[invalid-assignment]  # bare-ok: holds bare because the attribute is missing
+    for item in [scene] if flag else other:
+        item.reg_int = 6
 
 
 def through_bound(scene: SceneT) -> SceneT:

@@ -52,7 +52,6 @@ legacy_renamer/ops.py | blender-imprecise-operator-return | def execute(self, co
 legacy_renamer/ops.py | missing-union-attribute | objects = context.selected_objects
 legacy_renamer/ops.py | missing-union-attribute | objects = list(context.scene.objects)
 legacy_renamer/ops.py | missing-union-attribute | objects.sort(key=lambda ob: ob.name)
-legacy_renamer/ops.py | invalid-assignment | ob.legacy_original_name = ob.name
 legacy_renamer/ops.py | blender-assumed-registration | bpy.ops.object.legacy_tag_collections(color=color)
 legacy_renamer/ops.py | missing-union-attribute | for ob in context.selected_objects:
 legacy_renamer/ops.py | blender-imprecise-enum-value | collection.color_tag = self.color

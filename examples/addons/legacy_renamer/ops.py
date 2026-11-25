@@ -54,7 +54,8 @@ class OBJECT_OT_legacy_rename(bpy.types.Operator):
                 name = name.lower()
             if not ob.legacy_original_name:
                 # The list comes from three places, one of them untyped, so `ob` is only partly known.
-                # demo: later/registered-property-write-on-partly-unknown
+                # The write is still checked against the property `register()` adds to `Object`.
+                # demo: properties
                 ob.legacy_original_name = ob.name
             ob.name = name
 

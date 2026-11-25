@@ -15,7 +15,6 @@ batch_export_and_import/ui.py | invalid-assignment | remove.remove_active = True
 legacy_renamer/__init__.py | blender-unregister-mismatch | bpy.types.Object.legacy_original_name = StringProperty(name="Original Name")
 legacy_renamer/ops.py | blender-assumed-context-member | return bpy.context.scene.legacy_renamer
 legacy_renamer/ops.py | blender-imprecise-operator-return | def execute(self, context) -> set[str]:
-legacy_renamer/ops.py | invalid-assignment | ob.legacy_original_name = ob.name
 legacy_renamer/ops.py | blender-assumed-registration | bpy.ops.object.legacy_tag_collections(color=color)
 legacy_renamer/ops.py | blender-imprecise-enum-value | collection.color_tag = self.color
 legacy_renamer/ops.py | blender-assumed-internal-operator | rule.find = re.escape(context.object.name)

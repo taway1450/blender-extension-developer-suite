@@ -41,9 +41,6 @@ description = "What a function appended to one of Blender's headers or menus che
 [later.preview-icons]
 description = "The previews of a `bpy.utils.previews` collection by name (`icons[\"ruler\"].icon_id`), with the builtin stubs"
 
-[later.registered-property-write-on-partly-unknown]
-description = "A write to a Registered property of an object whose type is partly unknown (`Object | Unknown`) is reported as `invalid-assignment`; the read and a write to a built-in attribute pass. A bug of the checker"
-
 [later.startup-modules-in-builtin-stubs]
 description = "Blender's startup modules (`bl_operators`, `bl_ui`) in the builtin stubs: `from bl_operators.presets import AddPresetBase` is not found"
 
