@@ -18,6 +18,21 @@ legacy_renamer/ops.py | blender-assumed-internal-operator | rule.find = re.escap
 legacy_renamer/ops.py | blender-legacy-property | filter_glob = StringProperty(default="*.csv", options={"HIDDEN"})
 legacy_renamer/ui.py | blender-imprecise-callback-parameter | item: RenameRule,
 legacy_renamer/ui.py | blender-imprecise-enum-value | layout.label(text=ob.name, icon=TYPE_ICONS.get(ob.type, "OBJECT_DATA"))
+node_kit/check_node_kit.py | invalid-argument-type | assert_type(bpy.data.node_groups.new("Calculator", "KitNodeTree"), KitNodeTree)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(bpy.data.node_groups.new("Calculator", "KitNodeTree"), KitNodeTree)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(node.inputs["A"], KitFloatSocket)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(bpy.data.node_groups["Scatter Points"], GeometryNodeTree)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(rust_nodes["Principled BSDF"], ShaderNodeBsdfPrincipled)
+node_kit/shader.py | blender-narrowed-by-poll | tree = context.space_data.edit_tree
+node_kit/shader.py | blender-narrowed-by-poll | node = context.active_node
+node_kit/shader.py | blender-assumed-subclass-member | color = self.tinted(socket.default_value)
+node_kit/shader.py | missing-attribute | socket.default_value = color
+node_kit/shader.py | invalid-context-manager | with bpy.data.libraries.load(ASSETS) as (_source, target):
+node_kit/shader.py | missing-attribute | principled.inputs["Roughness"].default_value = 0.9
+node_kit/tree.py | not-subscriptable | source = socket.links[0].from_node
+node_kit/tree.py | invalid-argument-type | tree = bpy.data.node_groups.new("Calculator", "KitNodeTree")
+node_kit/tree.py | blender-narrowed-by-poll | context.space_data.node_tree = tree
+node_kit/ui.py | blender-narrowed-by-menu-prefix | if context.space_data.tree_type == "KitNodeTree":
 scatter_tools/check_scatter_tools.py | type-assertion-failure | assert_type(subdivision, SubsurfModifier | None)
 scatter_tools/operators.py | blender-narrowed-by-poll | source = context.active_object
 scatter_tools/operators.py | missing-attribute | subdivision.subdivision_type = "SIMPLE"

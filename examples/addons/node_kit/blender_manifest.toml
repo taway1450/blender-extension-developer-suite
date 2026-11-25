@@ -1,0 +1,20 @@
+schema_version = "1.0.0"
+
+id = "node_kit"
+version = "1.0.0"
+name = "Node Kit"
+tagline = "A calculator node tree and helpers for the shader editor"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "check_*.py"]
+
+# Blender ignores the [tool] table. `blend-files` would name the files the add-on's code runs against, so
+# that a checker can read their data-block names; nothing reads it yet (docs/research/blend-file-typing.md).
+[tool.blender]
+blend-files = ["assets.blend"]
