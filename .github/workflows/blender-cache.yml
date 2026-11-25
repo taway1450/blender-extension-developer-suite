@@ -212,9 +212,9 @@ jobs:
           fi
           gh release upload "$POINTER" -R "$REPO" --clobber ../libs-pointer/manifest.json
 
-          gh release list -R "$REPO" --limit 200 --json tagName,createdAt \
+          gh release list -R "$REPO" --limit 200 --json tagName,publishedAt \
             --jq '.[] | select(.tagName | startswith($ENV.PREFIX) and (ltrimstr($ENV.PREFIX) | test("^[0-9a-f]{10}$")))
-                  | "\(.createdAt) \(.tagName)"' \
+                  | "\(.publishedAt) \(.tagName)"' \
             | sort -r | tail -n +$((KEEP_LIBS + 1)) \
             | while read -r _ old; do
                 echo "Deleting $old"
@@ -251,9 +251,9 @@ jobs:
           gh release upload "$POINTER" -R "$REPO" --clobber ../pointer/manifest.json
 
           # Delete all but the newest $KEEP builds (never the one just published: it is the newest).
-          gh release list -R "$REPO" --limit 200 --json tagName,createdAt \
+          gh release list -R "$REPO" --limit 200 --json tagName,publishedAt \
             --jq '.[] | select(.tagName | startswith($ENV.PREFIX) and (ltrimstr($ENV.PREFIX) | test("^[0-9]{8}-[0-9a-f]{10}$")))
-                  | "\(.createdAt) \(.tagName)"' \
+                  | "\(.publishedAt) \(.tagName)"' \
             | sort -r | tail -n +$((KEEP > 0 ? KEEP + 1 : 2)) \
             | while read -r _ old; do
                 echo "Deleting $old"
