@@ -3,6 +3,8 @@
 # Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
 features/addon_preferences/prefs_ext/ui/panel.py | missing-union-attribute | if context.preferences is not None:
 features/addon_preferences/prefs_ext/ui/panel.py | missing-union-attribute | self.layout.prop(preferences(context.preferences), "scale")
+features/addon_preferences/prefs_split/__init__.py | missing-union-attribute | if __name__ in bpy.context.preferences.addons:
+features/addon_preferences/prefs_split/__init__.py | missing-union-attribute | prefs = bpy.context.preferences.addons[__name__].preferences
 features/api_types/api_c_modules/__init__.py | import-not-found | import _freestyle
 features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _bpy
 features/api_types/api_c_modules/check_api_c_modules.py | import-not-found | import _bpy_hydra
@@ -34,8 +36,8 @@ features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation)
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(asset, AssetRepresentation) #2
 features/api_types/api_never_none/__init__.py | type-assertion-failure | assert_type(layout, UILayout)
-features/api_types/api_never_none/check_api_never_none.py | import-not-found | MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink, NodeSocket, NodeTree, Object,
-features/api_types/api_never_none/check_api_never_none.py | import-not-found | from idprop.types import IDPropertyUIManager
+features/api_types/api_never_none/check_api_never_none.py | missing-module-member | MovieTrackingReconstruction, Node, NodeInternalLink, NodeLink, NodeSocket, NodeTree, Object,
+features/api_types/api_never_none/check_api_never_none.py | missing-module-member | from idprop.types import IDPropertyUIManager
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(camera.dof, CameraDOFSettings)  # bare-ok: a stub fact: the struct is a member of Camera
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.view_settings, ColorManagedViewSettings)  # bare-ok: a stub fact: the struct is a member of Scene
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(scene.eevee, SceneEEVEE)  # bare-ok: a stub fact: the struct is a member of Scene
@@ -70,6 +72,7 @@ features/api_types/api_never_none/check_api_never_none.py | type-assertion-failu
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(update.id, ID)  # bare-ok: a stub fact: every update is of an ID
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(material.node_tree, NodeTree)  # bare-ok: a stub fact: every material has a node tree since 5.0
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(world.node_tree, NodeTree)  # bare-ok: a stub fact: every world has a node tree since 5.0
+features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(node_groups.new("Tree", "GeometryNodeTree"), GeometryNodeTree)  # oracle-skip: narrowed by ty-blender
 features/api_types/api_never_none/check_api_never_none.py | type-assertion-failure | assert_type(ob.id_properties_ui("prop"), IDPropertyUIManager)  # bare-ok: a stub fact: a failure raises
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | menu.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | header.draw(None)  # ty: ignore[invalid-argument-type]  # bare-ok: a stub fact: Blender always passes a context
@@ -87,14 +90,38 @@ features/api_types/api_never_none/check_api_never_none.py | unused-ignore-commen
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | engine.render(None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | ksi.iterator(context, None)  # ty: ignore[invalid-argument-type]
 features/api_types/api_never_none/check_api_never_none.py | unused-ignore-comment | shelf.asset_poll(None)  # ty: ignore[invalid-argument-type]
+features/api_types/api_node_sockets/__init__.py | type-assertion-failure | assert_type(principled.inputs["Base Color"], NodeSocketColor)
+features/api_types/api_node_sockets/__init__.py | missing-attribute | principled.inputs["Base Color"].default_value = (0.8, 0.1, 0.1, 1.0)
+features/api_types/api_node_sockets/__init__.py | missing-attribute | principled.inputs["Roughness"].default_value = 0.4
+features/api_types/api_node_sockets/__init__.py | type-assertion-failure | assert_type(principled.outputs["BSDF"], NodeSocketShader)
+features/api_types/api_node_sockets/__init__.py | type-assertion-failure | assert_type(node.inputs[1], NodeSocketFloat)
+features/api_types/api_node_sockets/__init__.py | type-assertion-failure | assert_type(node.inputs["Value_001"], NodeSocketFloat)
+features/api_types/api_node_sockets/__init__.py | missing-attribute | node.inputs[1].default_value = 2.0
+features/api_types/api_node_sockets/check_api_node_sockets.py | invalid-argument-type | assert_type(node.inputs["Base Colour"], NodeSocket)  # bare-ok: a key the node does not declare
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(node.inputs["Base Colour"], NodeSocket)  # bare-ok: a key the node does not declare
+features/api_types/api_node_sockets/check_api_node_sockets.py | invalid-argument-type | assert_type(node.inputs[key], NodeSocket)  # bare-ok: a key that is not a literal
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(node.inputs[key], NodeSocket)  # bare-ok: a key that is not a literal
+features/api_types/api_node_sockets/check_api_node_sockets.py | invalid-argument-type | assert_type(node.inputs[0:2], list[NodeSocket])  # bare-ok: a slice
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(node.inputs[0:2], list[NodeSocket])  # bare-ok: a slice
+features/api_types/api_node_sockets/check_api_node_sockets.py | invalid-argument-type | assert_type(math.inputs["Value_001"], NodeSocketFloat)  # bare-ok: the identifier of the second input
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(math.inputs["Value_001"], NodeSocketFloat)  # bare-ok: the identifier of the second input
+features/api_types/api_node_sockets/check_api_node_sockets.py | invalid-argument-type | assert_type(background.inputs[99], NodeSocket)  # bare-ok: an index past the declared sockets
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(background.inputs[99], NodeSocket)  # bare-ok: an index past the declared sockets
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(mix.inputs["A"], NodeSocketFloat | NodeSocketVector | NodeSocketColor)  # bare-ok: a stub fact
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(mix.inputs["Factor"], NodeSocketFloatFactor | NodeSocketVectorFactor)  # bare-ok: a stub fact
+features/api_types/api_node_sockets/check_api_node_sockets.py | invalid-argument-type | assert_type(mix.inputs["A_Float"], NodeSocket)  # bare-ok: Mix finds its sockets by name only
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(mix.inputs["A_Float"], NodeSocket)  # bare-ok: Mix finds its sockets by name only
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(store.inputs["Value"], StoreValue)  # bare-ok: a stub fact
+features/api_types/api_node_sockets/check_api_node_sockets.py | type-assertion-failure | assert_type(repeat_out.inputs["Geometry"], NodeSocket)  # bare-ok: a repeat item's, which the user names
 features/api_types/api_stub_gaps/__init__.py | invalid-explicit-return | return None
 features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_script_node(self, node):
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(node, Node | None)
 features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_render_passes(self, scene, renderlayer):
-features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(scene, Scene | None)
-features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(renderlayer, ViewLayer | None)
+features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(scene, Scene)
+features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(renderlayer, ViewLayer)
 features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def update_custom_camera(self, cam):
 features/api_types/api_stub_gaps/__init__.py | type-assertion-failure | assert_type(cam, Camera | None)
+features/api_types/api_stub_gaps/__init__.py | incompatible-method-override | def draw_select(self, context, select_id):
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, edge: Interface1D) -> bool:
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def __call__(self, first: Interface1D, second: Interface1D) -> bool:
 features/api_types/api_stub_gaps/__init__.py | lost-keyword-for-regular-parameter | def traverse(self, iter: AdjacencyIterator) -> ViewEdge | None:
@@ -104,6 +131,7 @@ features/api_types/api_stub_gaps/__init__.py | unknown-argument | return BakeOpt
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | values = (bpy.utils.system_resource('SCRIPTS'), bpy.utils.is_path_builtin(""), bpy.path.extensions_image,
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | next(iter(bpy.path.extensions_image)), imbuf.file_types, next(iter(imbuf.file_types)),
 features/api_types/api_stub_gaps/__init__.py | missing-attribute | next(iter(imbuf.file_types.values())))
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-module-member | from gpu.types import Buffer, GPUFrameBuffer, GPUOffScreen, GPUShader, GPUStorageBuf, GPUVertFormat
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(edge.length_2d, float)  # bare-ok: a stub fact: a ViewEdge is an Interface1D
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(iterator.is_begin, bool)  # bare-ok: a stub fact: a Python chaining iterator is a ChainingIterator
@@ -115,13 +143,28 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | as
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(options.do_pose, bool)  # bare-ok: a stub fact: a dataclass's fields
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | not-iterable | for elem in bm.select_history:
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(elem, BMVert | BMEdge | BMFace)  # bare-ok: a stub fact: the selection history iterates over elements
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(vertex_format.attr_add(id="pos", comp_type='F32', len=3, fetch_mode='FLOAT'), int)  # bare-ok: a stub fact: the attribute's index
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | shader.uniform_float("matrix", Matrix())  # a stub fact: a uniform takes a 3x3 or 4x4 matrix
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | bpy.msgbus.subscribe_rna(key=ob.location, owner=ob, args=(), notify=print)  # a stub fact: a key is a math value with an owner
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | bpy.msgbus.subscribe_rna(key=(bpy.types.Object, "location"), owner=ob, args=(), notify=print)  # a stub fact: or a (struct type, name) pair
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | data.libraries.write(path, objects)  # a stub fact: write takes a set of one ID type
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-assignment | scene.render.engine = 'CYCLES'  # a stub fact: an add-on's render engine is an engine too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(context.property, tuple[bpy_struct, str, int] | None)  # bare-ok: a stub fact: the data, its path and index
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(preferences.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(library.version, tuple[int, int, int])  # bare-ok: a stub fact: a thick-wrapped array is a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | unsupported-operator | assert_type(preferences.version >= (4, 2, 0), bool)  # bare-ok: a stub fact: so it compares with a tuple
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(Operator.bl_rna, Struct)  # bare-ok: a stub fact: every RNA class has bl_rna
-features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(ob.bl_rna, Struct)  # bare-ok: a stub fact: readable from an instance too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(ob.rna_type, Struct)  # bare-ok: a stub fact: every RNA struct has the rna_type property
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(ob.rna_type, Struct)  # bare-ok: a stub fact: every RNA struct has the rna_type property
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(node.rna_type, Struct)  # bare-ok: a stub fact: a node's too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(node.rna_type, Struct)  # bare-ok: a stub fact: a node's too
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(data.rna_type, Struct)  # bare-ok: a stub fact: and bpy.data's
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.rna_type, Struct)  # bare-ok: a stub fact: and bpy.data's
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | ob.rna_type = node.rna_type  # ty: ignore[invalid-assignment]  # a stub fact: a read-only attribute can't be assigned
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | unused-ignore-comment | ob.rna_type = node.rna_type  # ty: ignore[invalid-assignment]  # a stub fact: a read-only attribute can't be assigned
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | bmesh.ops.triangulate(bm, faces=bm.faces)  # a stub fact: an element buffer takes the mesh's sequence of its type
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | bmesh.ops.delete(bm, geom=bm.verts[:] + bm.edges[:])  # a stub fact: or a list of some of the element types it takes
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.utils.system_resource('SCRIPTS'), str)  # bare-ok: a stub fact: public, though not in __all__
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(bpy.path.extensions_image, frozenset[str])  # bare-ok: a stub fact: a frozenset in __all__
@@ -178,6 +221,31 @@ features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(iter_distance_from_camera(stroke, 0.0, 1.0, 1.0), Iterator[tuple[StrokeVertex, float]])  # bare-ok: a stub fact: a generator, not None
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(stroke_normal(stroke), Iterator[Vector])  # bare-ok: a stub fact: a generator, not None
 features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(get_strokes(), tuple[Stroke, ...])  # bare-ok: a stub fact: the strokes, not None
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(id_.animation_data_create(), AnimData | None)  # bare-ok: a stub fact: None for an ID type without animation data
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(gpu.types.GPUStorageBuf(data), GPUStorageBuf)  # bare-ok: a stub fact: a storage buffer takes any buffer
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-assignment | buffer.dimensions = 16  # a stub fact: the dimensions take an int
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-assignment | buffer.dimensions = (4, 4)  # a stub fact: or a sequence of ints
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(strip.transform, StripTransform)  # bare-ok: a stub fact: allocated for every strip but a sound strip
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(strip.crop, StripCrop)  # bare-ok: a stub fact: allocated for every strip but a sound strip
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(area.spaces.active, Space)  # bare-ok: a stub fact: an area always has a space
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(graph.dopesheet, DopeSheet)  # bare-ok: a stub fact: the Graph editor allocates it
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(nla.dopesheet, DopeSheet)  # bare-ok: a stub fact: the NLA editor allocates it
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(shape_key.data[0], ShapeKeyPoint | ShapeKeyCurvePoint | ShapeKeyBezierPoint)  # bare-ok: a stub fact: refined by the Key's owner
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(pose.ik_param, Itasc | None)  # bare-ok: a stub fact: only the iTaSC solver has parameters
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(light.shadow_maximum_resolution, float)  # bare-ok: a stub fact: every light type declares it
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(light.shadow_maximum_resolution, float)  # bare-ok: a stub fact: every light type declares it
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(attribute.data, AttributeData)  # bare-ok: a stub fact: every attribute type declares it, of its values
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(attribute.data, AttributeData)  # bare-ok: a stub fact: every attribute type declares it, of its values
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(view_settings.view_transform, str)  # bare-ok: a stub fact: the view transforms of the OCIO configuration
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(view_settings.look, str)  # bare-ok: a stub fact: the looks of the OCIO configuration
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(display_settings.display_device, str)  # bare-ok: a stub fact: the displays of the OCIO configuration
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(curve.fill_mode, str)  # bare-ok: a stub fact: a 2D curve has other fill modes than a 3D one
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(data.curves.rna_type, Struct)  # bare-ok: a stub fact: and its rna_type
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(isinstance(data.curves.new, bpy.types.bpy_func), bool)  # bare-ok: a stub fact: the class of an RNA function
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | missing-attribute | assert_type(issubclass(bpy.types.bpy_struct_meta_idprop, type), bool)  # bare-ok: a stub fact: the metaclass of the classes with ID properties
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | invalid-argument-type | assert_type(SpaceAssetInfo.is_asset_browser(space), bool)  # bare-ok: a stub fact: it tests for None
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.types.UI_UL_list.filter_items_by_name("*", 1, data.objects), list[int])  # bare-ok: a stub fact: a collection's items
+features/api_types/api_stub_gaps/check_api_stub_gaps.py | type-assertion-failure | assert_type(bpy.types.UI_UL_list.sort_items_by_name(data.objects), list[int])  # bare-ok: a stub fact: a collection's items
 features/api_types/api_type_tags/__init__.py | invalid-argument-type | items = (interface.new_panel("Panel"), interface.new_socket("Value", socket_type="NodeSocketFloat"))
 features/api_types/api_type_tags/__init__.py | missing-union-attribute | items = (interface.new_panel("Panel"), interface.new_socket("Value", socket_type="NodeSocketFloat"))
 features/api_types/api_type_tags/__init__.py | missing-attribute | if space.type == 'SPREADSHEET' for table in space.tables if table.id is not None
@@ -185,9 +253,9 @@ features/api_types/api_type_tags/__init__.py | missing-attribute | if space.type
 features/api_types/api_type_tags/__init__.py | missing-attribute | if bpy.data.project is None:
 features/api_types/api_type_tags/__init__.py | missing-attribute | bpy.ops.project.new(directory=directory)
 features/api_types/api_type_tags/__init__.py | missing-attribute | project = bpy.data.project
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | PointLight, Pose, ProjectVariableInteger, ShaderFxBlur, ShaderNodeMath, SpaceProperties,
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | TextCurve, TextureNodeMath, _FluidModifier_DOMAIN, _Object_ARMATURE, _Object_EMPTY, _Object_FONT,
-features/api_types/api_type_tags/check_api_type_tags.py | import-not-found | _Object_MESH, _Object_SURFACE)
+features/api_types/api_type_tags/check_api_type_tags.py | missing-module-member | PointLight, Pose, ProjectVariableInteger, ShaderFxBlur, ShaderNodeMath, SpaceProperties,
+features/api_types/api_type_tags/check_api_type_tags.py | missing-module-member | TextCurve, TextureNodeMath, _FluidModifier_DOMAIN, _Object_ARMATURE, _Object_EMPTY, _Object_FONT,
+features/api_types/api_type_tags/check_api_type_tags.py | missing-module-member | _Object_MESH, _Object_SURFACE)
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(md.type, Literal['SUBSURF'])  # bare-ok: a stub fact: a SUBSURF modifier is a SubsurfModifier
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(gp_md.type, Literal['GREASE_PENCIL_OPACITY'])  # bare-ok: a stub fact: Grease Pencil modifiers too
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(con.type, Literal['COPY_LOCATION'])  # bare-ok: a stub fact: constraints
@@ -236,8 +304,19 @@ features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips.new(), ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(layer.strips[0], ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
 features/api_types/api_type_tags/check_api_type_tags.py | type-assertion-failure | assert_type(strip, ActionKeyframeStrip)  # bare-ok: a stub fact: the only strip type Blender creates
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(cube.type, Literal['MESH'])  # the view of a mesh object
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(cube.data, Mesh)
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(context.active_object.type, Literal['EMPTY'])  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(text.type, Literal['FONT'])
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(text.data, TextCurve)
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(context.object.data, Lattice)  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(context.object.data, Camera)  # ty: ignore[blender-assumed-added-object]
 features/assumptions/asm_added_object/__init__.py | missing-union-attribute | light = context.active_object  # ty: ignore[blender-assumed-added-object]
 features/assumptions/asm_added_object/__init__.py | unused-ignore-comment | light = context.active_object  # ty: ignore[blender-assumed-added-object]
+features/assumptions/asm_added_object/__init__.py | missing-union-attribute | assert_type(light.type, Literal['LIGHT'])
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(light.type, Literal['LIGHT'])
+features/assumptions/asm_added_object/__init__.py | missing-union-attribute | assert_type(light.data, Light)
+features/assumptions/asm_added_object/__init__.py | type-assertion-failure | assert_type(light.data, Light)
 features/assumptions/asm_added_object/__init__.py | missing-union-attribute | light.location.z = 3.0
 features/assumptions/asm_added_object/__init__.py | strictness-default | light = context.active_object  # ty: ignore[blender-assumed-added-object]
 features/assumptions/asm_added_object/__init__.py | strictness-lenient | light = context.active_object  # ty: ignore[blender-assumed-added-object]
@@ -290,6 +369,7 @@ features/assumptions/asm_editor_member/__init__.py | unused-ignore-comment | reg
 features/assumptions/asm_editor_member/__init__.py | type-assertion-failure | assert_type(region, Region)
 features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | print(region.width, region.height)
 features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | assert_type(context.region, Region | None)  # bare-ok: an operator runs from any editor, or none
+features/assumptions/asm_editor_member/__init__.py | missing-union-attribute | context.window_manager.modal_handler_add(self)
 features/assumptions/asm_editor_member/__init__.py | strictness-default | return context.region.type != 'TOOL_HEADER'  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_editor_member/__init__.py | strictness-default | assert_type(context.space_data, Space)  # ty: ignore[blender-assumed-editor-member]
 features/assumptions/asm_editor_member/__init__.py | strictness-default | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
@@ -347,6 +427,7 @@ features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layou
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(slot.material, "name", text="", emboss=False)
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.label(text=item.name)  # ty: ignore[blender-assumed-list-item]
 features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(item, bpy_struct)  # ty: ignore[blender-assumed-list-item] #2
+features/assumptions/asm_list_item/__init__.py | type-assertion-failure | assert_type(data, bpy_struct)  # bare-ok: no call with a typed `dataptr` names the list
 features/assumptions/asm_list_item/__init__.py | missing-union-attribute | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
 features/assumptions/asm_list_item/__init__.py | unused-ignore-comment | layout.prop(item, "name")  # ty: ignore[invalid-argument-type]  # bare-ok: an annotation with None keeps None
 features/assumptions/asm_list_item/panels.py | missing-union-attribute | scene = context.scene
@@ -357,6 +438,8 @@ features/assumptions/asm_preferences/__init__.py | missing-union-attribute | ent
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__)  # the entry exists while Blender enables the add-on
 features/assumptions/asm_preferences/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__) #3
 features/assumptions/asm_preset_context/__init__.py | incompatible-method-override | draw = Menu.draw_preset
+features/assumptions/asm_preset_context/presets/fluid/thick.py | type-assertion-failure | assert_type(domain, FluidDomainSettings)  # oracle-skip: stock ty keeps the stub type
+features/assumptions/asm_preset_context/presets/fluid/thick.py | invalid-assignment | domain.viscosity_base = 3.0
 features/assumptions/asm_registration/__init__.py | missing-attribute | layout.label(text=str(context.scene.asm_registration_always))
 features/assumptions/asm_registration/__init__.py | missing-union-attribute | layout.label(text=str(context.scene.asm_registration_always))
 features/assumptions/asm_registration/__init__.py | missing-attribute | layout.label(text=str(context.scene.asm_registration_new))  # ty: ignore[blender-assumed-registration]
@@ -381,6 +464,11 @@ features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | r
 features/assumptions/asm_subclass_member/__init__.py | missing-attribute | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return con.target  # narrowed by the Type tag: not reported
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | assert_type(strip.content_trim_start, int)  # every strip but the effects declares it: not reported
+features/assumptions/asm_subclass_member/__init__.py | type-assertion-failure | assert_type(strip.content_trim_start, int)  # every strip but the effects declares it: not reported
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return strip.content_trim_start
+features/assumptions/asm_subclass_member/__init__.py | missing-attribute | return strip.volume  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | unused-ignore-comment | return strip.volume  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-default | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-default | return con.target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-default | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
@@ -388,6 +476,7 @@ features/assumptions/asm_subclass_member/__init__.py | strictness-default | retu
 features/assumptions/asm_subclass_member/__init__.py | strictness-default | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-default | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-default | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-default | return strip.volume  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | return con.target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
@@ -395,6 +484,7 @@ features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | retu
 features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-lenient | return strip.volume  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-strict | assert_type(con.target, Object | None)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-strict | return con.target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-strict | assert_type(md.levels, int)  # ty: ignore[blender-assumed-subclass-member]
@@ -402,6 +492,7 @@ features/assumptions/asm_subclass_member/__init__.py | strictness-strict | retur
 features/assumptions/asm_subclass_member/__init__.py | strictness-strict | assert_type(light.spot_size, float)  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-strict | return light.spot_size  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/__init__.py | strictness-strict | print(node.inputs["Color"].default_value)  # ty: ignore[blender-assumed-subclass-member]
+features/assumptions/asm_subclass_member/__init__.py | strictness-strict | return strip.volume  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | strictness-default | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | strictness-lenient | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
 features/assumptions/asm_subclass_member/ide_asm_subclass_member.py | strictness-strict | ob.constraints[0].target  # ty: ignore[blender-assumed-subclass-member]
@@ -423,6 +514,14 @@ features/context_members/ctx_members/__init__.py | missing-union-attribute | sce
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(scene, Scene)
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type([context.scene for _ in range(2)], list[Scene])  # a comprehension in the callback
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window, Window)  # drawn inside a window
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window, Window)  # drawn inside a window
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.screen, Screen)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.screen, Screen)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.workspace, WorkSpace)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.workspace, WorkSpace)
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window, Window)
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window, Window)
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #2
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager) #2
@@ -435,8 +534,11 @@ features/context_members/ctx_members/__init__.py | missing-union-attribute | ass
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #2
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings) #2
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #2
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window, Window | None)  # bare-ok: an operator runs in background mode, with no window
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(ctx.scene, Scene)  # a renamed context parameter
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(ctx.scene, Scene)  # a renamed context parameter
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.screen, Screen) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.screen, Screen) #2
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #3
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager) #3
@@ -449,6 +551,8 @@ features/context_members/ctx_members/__init__.py | missing-union-attribute | ass
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #3
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings) #3
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #3
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.workspace, WorkSpace) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.workspace, WorkSpace) #2
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.preferences, Preferences) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.preferences, Preferences) #4
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window_manager, WindowManager) #4
@@ -461,6 +565,8 @@ features/context_members/ctx_members/__init__.py | missing-union-attribute | ass
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer) #4
 features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.tool_settings, ToolSettings) #4
 features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.tool_settings, ToolSettings) #4
+features/context_members/ctx_members/__init__.py | missing-union-attribute | assert_type(context.window, Window) #2
+features/context_members/ctx_members/__init__.py | type-assertion-failure | assert_type(context.window, Window) #2
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)
 features/context_members/ctx_spaces/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)
 features/context_members/ctx_spaces/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D) #2
@@ -513,6 +619,12 @@ features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure 
 features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object.pose, Pose)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context] #2
+features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context] #2
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context] #3
+features/implied_narrowings/nar_bl_context/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-bl-context] #3
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | self.layout.label(text=context.active_object.name)  # ty: ignore[blender-narrowed-by-bl-context]
+features/implied_narrowings/nar_bl_context/__init__.py | missing-union-attribute | self.layout.label(text=context.edit_object.name)  # ty: ignore[blender-narrowed-by-bl-context]
 features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | return context.object is not None
 features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_config/__init__.py | missing-union-attribute | self.layout.prop(context.space_data, "show_gizmo")  # blender-narrowed-by-menu-prefix is ignored here
@@ -580,11 +692,19 @@ features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | ass
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | if context.material:  # tested for truth only: not reported
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.label(text=context.material.name)
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | material = context.material
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | (type(context.curve) is TextCurve)
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and type(context.mesh) == Mesh
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | and type(context.lattice) in {Lattice}
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.prop(context.curve, "body")  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.label(text=context.mesh.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.label(text=context.lattice.name)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #2
-features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | return super().poll(context) and context.material is not None
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #3
-features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | return super().poll(context) and context.material is not None
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.material, Material)  # ty: ignore[blender-narrowed-by-poll] #2
+features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll] #5
 features/implied_narrowings/nar_poll/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceNodeEditor)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll/__init__.py | missing-attribute | assert_type(context.space_data.edit_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
@@ -624,6 +744,9 @@ features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute
 features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return bool(context.object and context.object.active_material)
 features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll] #3
 features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.active_material, Material)  # ty: ignore[blender-narrowed-by-poll] #4
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | return helpers.is_mesh(context.object)
+features/implied_narrowings/nar_poll_reach/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+features/implied_narrowings/nar_poll_reach/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_poll_reach/sub_panels.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
 features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
@@ -634,6 +757,12 @@ features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | 
 features/implied_narrowings/nar_popover/__init__.py | unused-ignore-comment | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
 features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # drawn only in its region: a silent guarantee
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | type-assertion-failure | assert_type(context.object.data, Mesh)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | self.layout.label(text=context.object.name)  # ty: ignore[blender-narrowed-by-popover]
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: also opened where nothing was checked
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | assert_type(context.object, Object | None)  # bare-ok: also drawn in its region, unchecked
+features/implied_narrowings/nar_popover/__init__.py | missing-union-attribute | ob = context.object
 features/implied_narrowings/nar_popover/__init__.py | strictness-default | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | strictness-default | self.layout.prop(context.space_data, "lens")  # ty: ignore[blender-narrowed-by-popover]
 features/implied_narrowings/nar_popover/__init__.py | strictness-strict | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
@@ -684,6 +813,13 @@ features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | brush
 features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | paint = context.tool_settings.gpencil_weight_paint
 features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | vertex = context.tool_settings.gpencil_vertex_paint
 features/pointer_aliases/ptr_brush/__init__.py | missing-union-attribute | sculpt = context.tool_settings.sculpt
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | return context.particle_system is not None
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | self.layout.label(text=context.particle_system.name)  # ty: ignore[blender-narrowed-by-poll]
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | assert_type(context.object, Object)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | return context.active_strip is not None
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | assert_type(context.sequencer_scene, Scene)  # oracle-skip: a Pointer alias, silent
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | return context.active_pose_bone is not None
+features/pointer_aliases/ptr_context/__init__.py | missing-union-attribute | assert_type(context.active_object, Object | None)  # bare-ok: the 3D viewport may hide the active object
 features/pointer_aliases/ptr_node_editor/__init__.py | missing-attribute | tree = context.space_data.edit_tree  # ty: ignore[blender-narrowed-by-poll]
 features/pointer_aliases/ptr_node_editor/__init__.py | missing-union-attribute | tree = context.space_data.edit_tree  # ty: ignore[blender-narrowed-by-poll]
 features/pointer_aliases/ptr_node_editor/__init__.py | type-assertion-failure | assert_type(tree, NodeTree)  # oracle-skip: a Pointer alias, silent
@@ -713,17 +849,25 @@ features/properties/props_hosts/__init__.py | missing-union-attribute | layout.l
 features/properties/props_hosts/__init__.py | missing-union-attribute | layout.label(text=text)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.register_class(cls)
 features/properties/props_hosts/__init__.py | invalid-argument-type | bpy.utils.unregister_class(cls)
+features/registration_checks/regchk_uses/__init__.py | missing-attribute | context.scene.regchk_uses_provider.samples += 1
+features/registration_checks/regchk_uses/__init__.py | missing-union-attribute | context.scene.regchk_uses_provider.samples += 1
 features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(space, SpaceView3D)  # oracle-skip: narrowed by the area's Type tag
 features/type_narrowing/narrow_area_type/__init__.py | missing-attribute | space.shading.type = "MATERIAL"
 features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceImageEditor | SpaceClipEditor)  # oracle-skip: a Type tag
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, Space)  # bare-ok: no test names the type here
 features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, SpaceNodeEditor)  # oracle-skip: narrowed after the early continue
 features/type_narrowing/narrow_area_type/__init__.py | missing-attribute | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
 features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | shader = (a for a in screen.areas if a.type == "NODE_EDITOR" and assert_type(a.spaces.active, SpaceNodeEditor).tree_type == "ShaderNodeTree")  # oracle-skip: a Type tag before `and`
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, Space)  # bare-ok: `area` was rebound after the test
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, Space)  # bare-ok: the area's type was written after the test
+features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(area.spaces.active, Space)  # bare-ok: ui_type writes the area's type too
 features/type_narrowing/narrow_area_type/__init__.py | type-assertion-failure | assert_type(views, list[SpaceView3D])  # oracle-skip: a Type tag in the comprehension's condition
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(con, CopyLocationConstraint)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | con.target = target
 features/type_narrowing/narrow_constructors/__init__.py | unknown-argument | track = ob.constraints.new(type='TRACK_TO', name="Aim")
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(track, TrackToConstraint)
+features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return fcu.driver
+features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return ob.driver_add("hide_viewport").driver  # no array: one F-Curve
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(light, SpotLight)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | light.spot_size = 0.8
 features/type_narrowing/narrow_constructors/__init__.py | invalid-explicit-return | return light
@@ -732,7 +876,21 @@ features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(node, ShaderNodeMath)
 features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | node.operation = 'MULTIPLY'
 features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(other, ShaderNodeMath)
-features/type_narrowing/narrow_values/__init__.py | import-not-found | Pose, ProjectVariable, ProjectVariableInteger, SequenceEditor, ShaderNodeMath, SpotLight,
+features/type_narrowing/narrow_constructors/__init__.py | invalid-argument-type | socket = tree.interface.new_socket("Factor", in_out='INPUT', socket_type='NodeSocketFloat')
+features/type_narrowing/narrow_constructors/__init__.py | missing-union-attribute | socket = tree.interface.new_socket("Factor", in_out='INPUT', socket_type='NodeSocketFloat')
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(socket, NodeTreeInterfaceSocketFloat)
+features/type_narrowing/narrow_constructors/__init__.py | missing-attribute | socket.min_value = 0.0
+features/type_narrowing/narrow_constructors/__init__.py | invalid-argument-type | unknown = tree.interface.new_socket("Own", socket_type='NarrowConstructorsUnknown')
+features/type_narrowing/narrow_constructors/__init__.py | missing-union-attribute | unknown = tree.interface.new_socket("Own", socket_type='NarrowConstructorsUnknown')
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(ob.data, Camera)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(ob.type, Literal['CAMERA'])
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(empty.type, Literal['EMPTY'])
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(maybe.type, Literal['MESH', 'EMPTY'])
+features/type_narrowing/narrow_constructors/__init__.py | missing-union-attribute | layout.label(text=text)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(value, NodeSocketFloat)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(color, NodeSocketColor)
+features/type_narrowing/narrow_constructors/__init__.py | type-assertion-failure | assert_type(shader, ShaderNodeTree)
+features/type_narrowing/narrow_values/__init__.py | missing-module-member | Pose, ProjectVariable, ProjectVariableInteger, SequenceEditor, ShaderNodeMath, SpotLight, Strip,
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, SubsurfModifier)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | levels = max(levels, md.levels)
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(md, MultiresModifier)  # elif: the earlier tag is ruled out
@@ -745,6 +903,14 @@ features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | ass
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return con.target
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(strip, ColorStrip)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | colors.append(strip.color)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | assert_type(strip.speed_control, Literal['STRETCH', 'MULTIPLY', 'FRAME_NUMBER', 'LENGTH'])
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(strip.speed_control, Literal['STRETCH', 'MULTIPLY', 'FRAME_NUMBER', 'LENGTH'])
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | assert_type(strip.input_1, Strip)  # both blur strips have one input
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(strip.input_1, Strip)  # both blur strips have one input
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | assert_type(strip.transition_type, Literal['SINGLE', 'DOUBLE', 'IRIS', 'CLOCK'])  # else of `!=`
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(strip.transition_type, Literal['SINGLE', 'DOUBLE', 'IRIS', 'CLOCK'])  # else of `!=`
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | settings.append(strip.speed_control)  # ty: ignore[blender-assumed-subclass-member]  # another strip: not narrowed
+features/type_narrowing/narrow_values/__init__.py | unused-ignore-comment | settings.append(strip.speed_control)  # ty: ignore[blender-assumed-subclass-member]  # another strip: not narrowed
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(light, SunLight)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return light.angle
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(light, PointLight | SpotLight)  # the rest of the function after `not in` ... return
@@ -761,6 +927,9 @@ features/type_narrowing/narrow_values/__init__.py | missing-attribute | return r
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | if modifier.type == 'DISTANCE_FROM_OBJECT':
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(modifier, LineStyleColorModifier_DistanceFromObject)  # the base states the tag of its subclasses
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return modifier.target
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | if modifier.type == 'DISTANCE_FROM_OBJECT': #2
+features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(modifier, LineStyleColorModifier_DistanceFromObject | LineStyleAlphaModifier_DistanceFromObject)
+features/type_narrowing/narrow_values/__init__.py | missing-attribute | return modifier.target #2
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(elem, IDViewerPathElem)
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return elem.id
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(ob.pose, None)  # only an armature object has a pose
@@ -768,6 +937,7 @@ features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | ass
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return f"Subdivision {md.levels}"
 features/type_narrowing/narrow_values/__init__.py | type-assertion-failure | assert_type(socket, NodeSocketString | NodeSocketStringFilePath)  # several socket classes share a type
 features/type_narrowing/narrow_values/__init__.py | missing-attribute | return socket.default_value
+features/type_narrowing/narrow_values/check_narrow_values.py | type-assertion-failure | assert_type(node, NarrowValuesNode | NarrowValuesOtherNode | ShaderNodeMath)  # oracle-skip: a narrowing
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(ob.data, Mesh)  # a call does not undo the test
 features/type_narrowing/narrow_views/__init__.py | missing-union-attribute | return len(ob.data.vertices)
@@ -781,4 +951,7 @@ features/type_narrowing/narrow_views/__init__.py | missing-attribute | if md.typ
 features/type_narrowing/narrow_views/__init__.py | missing-attribute | assert_type(md.domain_settings, FluidDomainSettings)
 features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(md.domain_settings, FluidDomainSettings)
 features/type_narrowing/narrow_views/__init__.py | missing-attribute | return md.domain_settings.resolution_max
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(fluid.domain_settings, FluidDomainSettings)  # the setter allocates the domain settings
+features/type_narrowing/narrow_views/__init__.py | invalid-assignment | fluid.domain_settings.use_noise = True
+features/type_narrowing/narrow_views/__init__.py | type-assertion-failure | assert_type(fluid.domain_settings, FluidDomainSettings)  # a write of another attribute keeps the view
 features/type_narrowing/narrow_views/check_narrow_views.py | type-assertion-failure | assert_type(ob.data, Mesh)  # oracle-skip: narrowing by a Type tag needs the checker

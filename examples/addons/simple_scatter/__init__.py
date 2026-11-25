@@ -3,22 +3,40 @@
 from __future__ import annotations
 
 import random
+from typing import Literal
 
 import bpy
 from bpy.props import FloatProperty, IntProperty, PointerProperty
-from bpy.types import Context, Object, Operator, Panel, PropertyGroup
+from bpy.types import Context, Object, Operator, Panel, PropertyGroup, Scene
 from mathutils import Vector
+
+# The names an operator's execute may return.
+OperatorResult = Literal[
+    "RUNNING_MODAL", "CANCELLED", "FINISHED", "PASS_THROUGH", "INTERFACE"
+]
 
 
 class SimpleScatterSettings(PropertyGroup):
-    count: IntProperty(name="Count", description="Number of copies to create", default=10, min=1, max=1000)
-    radius: FloatProperty(name="Radius", description="Maximum distance from the original", default=5.0,
-                          min=0.0, unit="LENGTH")
+    count: IntProperty(
+        name="Count",
+        description="Number of copies to create",
+        default=10,
+        min=1,
+        max=1000,
+    )
+    radius: FloatProperty(
+        name="Radius",
+        description="Maximum distance from the original",
+        default=5.0,
+        min=0.0,
+        unit="LENGTH",
+    )
     seed: IntProperty(name="Seed", description="Random seed", default=0, min=0)
 
 
-def scatter_settings(context: Context) -> SimpleScatterSettings:
-    return context.scene.simple_scatter
+# The scene comes from a callback's context, where Blender guarantees one.
+def scatter_settings(scene: Scene) -> SimpleScatterSettings:
+    return scene.simple_scatter
 
 
 class OBJECT_OT_simple_scatter(Operator):
@@ -32,8 +50,8 @@ class OBJECT_OT_simple_scatter(Operator):
     def poll(cls, context: Context) -> bool:
         return context.active_object is not None and context.mode == "OBJECT"
 
-    def execute(self, context: Context) -> set[str]:
-        settings = scatter_settings(context)
+    def execute(self, context: Context) -> set[OperatorResult]:
+        settings = scatter_settings(context.scene)
         source = context.active_object
         assert source is not None
         collection = context.collection or context.scene.collection
@@ -42,7 +60,10 @@ class OBJECT_OT_simple_scatter(Operator):
         copies: list[Object] = []
         for _ in range(settings.count):
             copy = source.copy()
-            offset = Vector((rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0), 0.0)) * settings.radius
+            offset = (
+                Vector((rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0), 0.0))
+                * settings.radius
+            )
             copy.location = source.location + offset
             copy.rotation_euler.z = rng.uniform(0.0, 6.283185)
             collection.objects.link(copy)
@@ -60,7 +81,7 @@ class VIEW3D_PT_simple_scatter(Panel):
 
     def draw(self, context: Context) -> None:
         layout = self.layout
-        settings = scatter_settings(context)
+        settings = scatter_settings(context.scene)
         column = layout.column(align=True)
         column.prop(settings, "count")
         column.prop(settings, "radius")
