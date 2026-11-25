@@ -29,6 +29,16 @@ def log(message: str) -> None:
     print(f"==> {message}", flush=True)
 
 
+def example_addons(names: list[str]) -> list[Path]:
+    """The example add-ons (the packages in ``examples/addons/``), or only the named ones; none is not an error."""
+    found = EXAMPLE_ADDONS_DIR.iterdir() if EXAMPLE_ADDONS_DIR.is_dir() else []
+    available = sorted(p.name for p in found if (p / "__init__.py").is_file())
+    unknown = set(names) - set(available)
+    if unknown:
+        raise StepError(f"Unknown addons {', '.join(sorted(unknown))} (available: {', '.join(available) or 'none'})")
+    return [EXAMPLE_ADDONS_DIR / name for name in (names or available)]
+
+
 def run(cmd: list[str | Path], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
     printable = " ".join(str(c) for c in cmd)
     print(f"    $ {printable}", flush=True)

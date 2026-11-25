@@ -10,7 +10,7 @@ code if ty reports any diagnostics.
 
 Usage:
   uv run scripts/check_addons.py 5.2                  # all example addons
-  uv run scripts/check_addons.py 5.2 hello_cube       # only the named addons
+  uv run scripts/check_addons.py 5.2 scatter_tools    # only the named addons
   uv run scripts/check_addons.py 5.2 --profile profiling
 """
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 
-from _common import EXAMPLE_ADDONS_DIR, StepError, log, main_wrapper
+from _common import EXAMPLE_ADDONS_DIR, StepError, example_addons, log, main_wrapper
 from _target import Target, add_target_arguments
 
 
@@ -29,11 +29,10 @@ def main() -> int:
     parser.add_argument("addons", nargs="*", help=f"Addon directory names in {EXAMPLE_ADDONS_DIR} (default: all)")
     args = parser.parse_args()
 
-    available = sorted(p.name for p in EXAMPLE_ADDONS_DIR.iterdir() if (p / "__init__.py").is_file())
-    unknown = set(args.addons) - set(available)
-    if unknown:
-        raise StepError(f"Unknown addons {', '.join(sorted(unknown))} (available: {', '.join(available)})")
-    addons = [EXAMPLE_ADDONS_DIR / name for name in (args.addons or available)]
+    addons = example_addons(args.addons)
+    if not addons:
+        log(f"No example add-ons in {EXAMPLE_ADDONS_DIR}")
+        return 0
 
     target = Target.from_args(args)
     python_version = target.python_version

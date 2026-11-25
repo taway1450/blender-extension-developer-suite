@@ -23,7 +23,7 @@ The target Python version is the one of the Blender version. Only the stubs targ
 Usage:
   uv run scripts/run_ruff.py lint blender 5.2
   uv run scripts/run_ruff.py format stubs 5.2 --generator builtin
-  uv run scripts/run_ruff.py lint addons 5.2 simple_scatter
+  uv run scripts/run_ruff.py lint addons 5.2 scatter_tools
   uv run scripts/run_ruff.py format features 5.2 properties
 """
 
@@ -38,7 +38,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from _common import CACHE_DIR, EXAMPLE_ADDONS_DIR, REPO_ROOT, StepError, log, main_wrapper
+from _common import CACHE_DIR, EXAMPLE_ADDONS_DIR, REPO_ROOT, StepError, example_addons, log, main_wrapper
 from _features import EXPECTED_STUBS, FEATURES_DIR, select
 from _target import Target, add_target_arguments
 from build_ty import stock_command
@@ -184,15 +184,14 @@ def jobs_for(tool: str, args: argparse.Namespace, target: Target) -> list[Job]:
             )
         return jobs
     if args.target == "addons":
-        available = sorted(p.name for p in EXAMPLE_ADDONS_DIR.iterdir() if (p / "__init__.py").is_file())
-        unknown = set(args.names) - set(available)
-        if unknown:
-            raise StepError(f"Unknown addons {', '.join(sorted(unknown))} (available: {', '.join(available)})")
-        names = args.names or available
+        addons = example_addons(args.names)
+        if not addons:
+            log(f"No example add-ons in {EXAMPLE_ADDONS_DIR}")
+            return []
         return [
             Job(
-                f"the example addons {', '.join(names)}",
-                [EXAMPLE_ADDONS_DIR / n for n in names],
+                f"the example addons {', '.join(a.name for a in addons)}",
+                addons,
                 EXAMPLE_ADDONS_DIR,
                 f"{stem}-{args.version}",
                 [],
