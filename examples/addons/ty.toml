@@ -8,3 +8,11 @@
 unused-ignore-comment = "error"
 unused-type-ignore-comment = "error"
 type-assertion-failure = "error"
+
+# Rule levels for one add-on. The legacy add-on is being ported, so its Imprecise annotations are errors:
+# the category's name sets its three rules, and a rule's own name would override it for that rule.
+[[overrides]]
+include = ["legacy_renamer/**"]
+
+[overrides.rules]
+blender-imprecise-annotations = "error"
