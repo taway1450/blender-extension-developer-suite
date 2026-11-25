@@ -18,7 +18,7 @@
 #
 # The cache only works at the absolute path it was built at, with the same compiler and ccache paths, so this job
 # builds the way a Claude Code cloud session does: repo at /home/user/blender-extension-developer-suite,
-# Ubuntu 24.04, gcc-14, ccache in /usr/local/bin, uv's cache in /root/.cache/uv and Python 3.13.
+# Ubuntu 24.04, gcc-14, the lld linker, ccache in /usr/local/bin, uv's cache in /root/.cache/uv and Python 3.13.
 name: Blender build cache
 
 on:
@@ -92,7 +92,9 @@ jobs:
       - name: Install the build dependencies
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q gcc-14 g++-14 zstd git-lfs \
+          # lld: Blender's configure links with it when the compiler finds it, and a cloud session has it. Without
+          # it here, the first CMake run in a session changed every link command and linked everything again.
+          sudo apt-get install -y -q gcc-14 g++-14 lld zstd git-lfs \
             libxxf86vm-dev libxfixes-dev libxi-dev libxkbcommon-dev libsm-dev libgl-dev libegl-dev \
             libwayland-dev libdecor-0-dev wayland-protocols libdbus-1-dev \
             libxrandr-dev libxinerama-dev libxcursor-dev

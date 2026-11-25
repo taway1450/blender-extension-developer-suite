@@ -155,6 +155,57 @@ published in 4 min (most of it the artifact download). In a cloud session, with 
 CMake under `lib/python3.13/` and plans only the six buildinfo, link and install steps every build runs.
 The same one-line edit to `object.cc` rebuilt in **73 s** without re-running CMake, and reverting it in 20 s.
 
+### 0.7 A fresh session, checked again (2026-11-25)
+
+The cache of `typecheck-fixes` at `988211c9d8` (runs 10 and 11) was restored in a session that had built
+nothing before (4 vCPU, `SUITE_JOBS` unset, so 2 jobs). `blender:restore` took 3 min 3 s with the precompiled
+libraries (734 MB) and the LFS objects (564 MB) from their releases, and about 1 min 45 s when repeated with
+`--force`. `blender:build` with nothing changed reused the install in 0.3 s. A one-line comment added to
+`blenkernel/intern/object.cc` then was **not** incremental: Ninja re-ran CMake, planned 3993 steps and ran
+941 compiles, 940 of them ccache misses, in 2 min 13 s. Three things were wrong, none of them visible in
+0.6, where the session already had uv's CMake from an earlier build:
+
+1. **CMake's own modules were newer than the cache.** `build.ninja` depends on the 59 CMake modules it was
+   generated from. They are in `build_blender.py`'s uv environment, which `blender:restore` creates, so in
+   a fresh session (and on every CI runner) they carry the time of the restore and Ninja re-runs CMake. The
+   restore's "runs 1 build steps" was that CMake run: a dry run stops there. `blender:restore` now gives the
+   files of that CMake install the old time too, and reports a planned CMake run, with Ninja's reason,
+   instead of a step count.
+2. **CI and the session link with different linkers.** Blender's configure links with `lld` when the
+   compiler finds it (`build_files/cmake/platform/platform_unix.cmake`). The cloud image has the `lld`
+   package and the runner does not, so the CMake run in the session added `-fuse-ld=lld` to every link
+   command: every executable was linked again, among them `makesdna`, `datatoc` and `shader_tool`, whose
+   outputs (843 data files, the shaders, DNA) were then regenerated and compiled. The workflow now installs
+   `lld`; `blender:cache-pack` records the linker in the manifest and `blender:restore` warns when the
+   machine would take another.
+3. **No compile of CI's ccache hit in the session.** ccache hashes `LANG`, `LC_ALL`, `LC_CTYPE` and
+   `LC_MESSAGES`; a runner has `LANG=C.UTF-8` and a session has none of them. Replaying single compiles
+   against an untouched copy of CI's ccache missed without `LANG` and hit with `LANG=C.UTF-8` (four of
+   four, one of them a USD source that uses the precompiled header). `blender:build --ccache` now always
+   builds with `LANG=C.UTF-8` and without the other three.
+
+With the three fixes, restoring the same cache (built before them) gave:
+
+| Change | Time |
+| --- | --- |
+| One-line comment in `blenkernel/intern/object.cc` (8 Ninja steps, no CMake run) | **25 s** |
+| Reverting it (`object.cc` from CI's ccache) | 18 s |
+| A comment in `blenkernel/CMakeLists.txt`: CMake re-runs and switches to `lld` (3993 steps planned, 940 compiles, 939 from CI's ccache) | 33 s |
+| A second comment there (7 steps: CMake, buildinfo, links, install) | 11 s |
+
+The 33 s are what the linker difference costs once, with ccache working; a cache built by a runner with
+`lld` does not pay them.
+
+**After a rebase of the fork branch the build directory is lost.** Run 10 followed a rebase of
+`typecheck-fixes` onto upstream `main`: its restore step ended after 51 s and the build took 93 minutes.
+The cache was of `1e2bbecf64`, which no branch of the fork contains any more, and GitHub does not serve
+such a commit (`git fetch origin 1e2bbecf64...` fails with `not our ref`), so the worktree at the cache's
+commit could not be created; the log of that step is no longer readable through the API, so this is
+inferred from those facts. `blender:restore` now restores ccache and the LFS objects before it needs the
+commit, says why it stops, and does not download the build directory for nothing. Using the build
+directory across a rebase would need the list of the cache's source files and their blob ids in the cache
+itself (to tell what changed without the commit); not done.
+
 ## 1. Summary
 
 - **Only one approach meets the hard requirement on the first build after a restore: restore the build

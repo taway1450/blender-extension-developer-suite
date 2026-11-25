@@ -70,6 +70,11 @@ CCACHE_ENV = {
     # Lets the compiles that use a precompiled header (USD, Freestyle) be cached at all.
     "CCACHE_SLOPPINESS": "pch_defines,time_macros",
 }
+# ccache also hashes the locale variables (they decide the language of the compiler's messages), so a compile only
+# hits where they are the same: a GitHub runner has LANG=C.UTF-8 and a cloud session none, and not one compile of
+# CI's cache hit in a session (measured). A build with --ccache therefore runs with this LANG and without the others.
+CCACHE_LOCALE = "C.UTF-8"
+CCACHE_LOCALE_VARIABLES = ("LC_ALL", "LC_CTYPE", "LC_MESSAGES")
 CONFIGURE_ARGS = "configure-args.txt"
 # The shared clone of the precompiled libraries as CI publishes it (blender_cache.py `pack`), so that a fresh
 # checkout does not need projects.blender.org for it.
@@ -264,6 +269,16 @@ def build_env() -> tuple[dict[str, str], Path, Path]:
     return env, cmake, ninja
 
 
+def use_ccache(env: dict[str, str]) -> None:
+    """Set up the build environment ``env`` for compiles through ccache whose results other checkouts and machines
+    can reuse (``CCACHE_ENV``, one fixed locale)."""
+    for var, value in CCACHE_ENV.items():
+        env.setdefault(var, value)
+    env["LANG"] = CCACHE_LOCALE
+    for var in CCACHE_LOCALE_VARIABLES:
+        env.pop(var, None)
+
+
 def preset_file(source: Path, config: str) -> Path:
     return source / "build_files" / "cmake" / "config" / f"blender_{config}.cmake"
 
@@ -393,8 +408,7 @@ def build_blender(
             raise StepError("--ccache needs ccache on the PATH (https://ccache.dev/download.html)")
         # Configured from a fresh cache whenever this changes (see configure_key), so OFF needs no flag.
         configure_cmd.append("-DWITH_COMPILER_CCACHE=ON")
-        for var, value in CCACHE_ENV.items():
-            env.setdefault(var, value)
+        use_ccache(env)
     configure_args = build_dir / CONFIGURE_ARGS
     # CMake only reads CC/CXX when it configures from a fresh cache, so a different compiler needs a new one too
     # (e.g. CC=gcc-14 on a system whose default GCC is older than Blender's minimum). Unset, they default to the

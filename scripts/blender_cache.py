@@ -13,9 +13,9 @@ of the newest manifest that points there (``.github/workflows/blender-cache.yml`
     ``.cache/blender-bin/<name>``, timestamps included (Ninja decides what to rebuild by them);
   - ``ccache-<name>.tar.zst``: the ccache directory ``.cache/ccache``, if the build used ``--ccache``;
   - ``blender-lfs-<name>.tar.zst.000``, ...: the git LFS objects of the source (icons, fonts, test files), in parts;
-  - ``manifest.json``: what was built (Blender commit, libraries commit, config), with which toolchain, from
-    which absolute path, and the archives' checksums. Written last, so a restore never sees a manifest whose
-    archives are not uploaded yet.
+  - ``manifest.json``: what was built (Blender commit, libraries commit, config), with which toolchain (compilers,
+    linker, ccache, CMake), from which absolute path, and the archives' checksums. Written last, so a restore never
+    sees a manifest whose archives are not uploaded yet.
 
 The precompiled libraries change far less often than the source, so they get a release of their own,
 ``blender-libs-<platform>-<commit>``: ``pack`` writes the shared clone ``.cache/blender-libs/<platform>`` (the
@@ -27,16 +27,21 @@ and then, only for what changed since.
 
 ``restore <name>`` downloads them and recreates the state Ninja expects:
 
-  1. the source worktree (at the cache's commit if there is none yet), its LFS objects from the archive, and the
-     precompiled libraries, as ``blender:build`` would;
-  2. the build directory, install and ccache from the archives;
-  3. the timestamps: every source and library file gets an old fixed time, except the files that differ from
-     the commits the cache was built from (committed, uncommitted or untracked), which get the current time.
-     A fresh checkout gives every file the current time, which would make Ninja rebuild everything.
+  1. ccache and the source's LFS objects from the archives: they are of use whatever is built next, so they are
+     there even if the rest fails (the cache's commit is gone from the fork after a rebase);
+  2. the source worktree (at the cache's commit if there is none yet) and the precompiled libraries, as
+     ``blender:build`` would;
+  3. the build directory and install from the archive;
+  4. the timestamps: every source and library file and every file of CMake itself gets an old fixed time, except
+     the sources that differ from the commits the cache was built from (committed, uncommitted or untracked), which
+     get the current time. A fresh checkout gives every file the current time, which would make Ninja rebuild
+     everything, and a fresh install of CMake makes it re-run CMake.
 
 The build directory only works at the absolute path it was built at (CMake refuses another source directory, and
-every compile command contains the paths), with the same compiler and ccache paths: restore checks these. The
-ccache archive works anywhere (``--ccache-only``), but then the first build replays every compile from the cache.
+every compile command contains the paths), with the same compiler and ccache paths: restore checks these. It also
+warns when this machine would link with another linker than the cache did (Blender's configure takes the fastest
+one installed): the first build that re-runs CMake would then link everything again. The ccache archive works
+anywhere (``--ccache-only``), but then the first build replays every compile from the cache.
 
 Usage:
   uv run scripts/blender_cache.py pack main
@@ -53,6 +58,7 @@ from __future__ import annotations
 import argparse
 import os
 import platform
+import re
 import shutil
 import subprocess
 from datetime import UTC, datetime
@@ -60,6 +66,7 @@ from pathlib import Path
 
 from _build_cache import (
     asset_table,
+    backdate,
     download,
     download_archive,
     download_manifest,
@@ -155,6 +162,33 @@ def recorded_cmake(name: str) -> str:
         if line.startswith("CMAKE_COMMAND:"):
             return line.split("=", 1)[1]
     raise StepError(f"No CMAKE_COMMAND in the CMake cache of {name}")
+
+
+def recorded_linker(name: str) -> str | None:
+    """The linker the build directory of ``name`` links with: ``lld``, ``mold``, or None for the compiler's default.
+    No configure argument sets it: Blender's configure takes mold or lld when it finds one installed."""
+    with (BUILD_DIR / name / "build.ninja").open(encoding="utf-8", errors="replace") as build_file:
+        for line in build_file:
+            if "LINK_FLAGS" in line and (match := re.search(r'-fuse-ld="?([^\s"]+)', line)):
+                return Path(match.group(1)).name.removeprefix("ld.")
+    return None
+
+
+def machine_linker(compiler: str) -> str | None:
+    """The linker Blender's configure takes on this machine with the GCC ``compiler``, like ``recorded_linker``
+    (``build_files/cmake/platform/platform_unix.cmake``: mold if it is installed, else lld if the compiler finds it)."""
+    if shutil.which("mold"):
+        return "mold"
+    probe = subprocess.run([compiler, "-fuse-ld=lld", "-Wl,--version"], capture_output=True, text=True)
+    return "lld" if "LLD" in probe.stdout else None
+
+
+def backdate_cmake(cmake: str) -> int:
+    """Give every file of the CMake install that has the binary ``cmake`` (``<install>/bin/cmake``) the old time
+    ``EPOCH``; return how many. ``build.ninja`` depends on the CMake modules it was generated from, and uv installs
+    them with the time of the install: in a fresh session they are newer than the cache, so Ninja re-ran CMake
+    before the first build (measured), and a CMake run on another machine than CI's can change what is built."""
+    return backdate(Path(cmake).parent.parent)
 
 
 def ensure_build_environment() -> None:
@@ -270,6 +304,7 @@ def pack(name: str, *, libs_only: bool = False) -> Path | None:
             var: {"path": path, "version": first_line([path, "--version"])} for var, path in compilers.items()
         },
         "ccache": {"path": ccache, "version": first_line([ccache, "--version"])} if ccache else None,
+        "linker": recorded_linker(name),
         "cmake": recorded_cmake(name),
         "suite_commit": git_output(REPO_ROOT, "rev-parse", "HEAD"),
         "created": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -305,6 +340,17 @@ def check_manifest(manifest: dict, name: str, *, ccache_only: bool) -> None:
         version = first_line([compiler["path"], "--version"])
         if version != compiler["version"]:
             log(f"Warning: {compiler['path']} is {version!r} here, the cache used {compiler['version']!r}")
+    # Caches packed before the linker was recorded have no "linker" at all; None is the compiler's default.
+    if "linker" in manifest and (compiler := manifest.get("compilers", {}).get("CC")):
+        cached, here = (
+            linker or "the compiler's default" for linker in (manifest["linker"], machine_linker(compiler["path"]))
+        )
+        if cached != here:
+            log(
+                f"Warning: the cache links with {cached}, but Blender's configure takes {here} on this machine: the "
+                "first build that re-runs CMake (a changed CMakeLists.txt, a new source file) links everything again "
+                "and regenerates what the relinked tools write"
+            )
     if (ccache := manifest.get("ccache")) and not Path(ccache["path"]).is_file():
         raise StepError(
             f"The cache's compile commands run ccache from {ccache['path']} ({ccache['version']}), which is missing"
@@ -316,25 +362,55 @@ def check_manifest(manifest: dict, name: str, *, ccache_only: bool) -> None:
         )
 
 
-def ensure_blender_commit(commit: str, ref: str) -> None:
-    """Make ``commit`` available in the blender submodule, fetching ``ref`` (which should contain it) if needed."""
+def has_blender_commit(commit: str) -> bool:
     known = subprocess.run(
         ["git", "-C", str(BLENDER_SUBMODULE), "cat-file", "-e", f"{commit}^{{commit}}"], capture_output=True
     )
-    if known.returncode != 0:
-        log(f"Fetching {ref} for the cache's Blender commit {commit[:10]}")
+    return known.returncode == 0
+
+
+def ensure_blender_commit(commit: str, ref: str) -> None:
+    """Make ``commit`` available in the blender submodule, fetching ``ref`` (which should contain it) if needed.
+
+    It is gone for good once the branch was rebased and pushed: GitHub does not serve a commit no branch contains
+    (``not our ref``, measured), and without it nothing can tell which sources changed since the cache."""
+    if has_blender_commit(commit):
+        return
+    log(f"Fetching {ref} for the cache's Blender commit {commit[:10]}")
+    try:
         run(["git", "-C", BLENDER_SUBMODULE, "fetch", "origin", ref])
+    except StepError as error:
+        log(f"{error}")
+    if not has_blender_commit(commit):
+        raise StepError(
+            f"The cache was built from Blender {commit[:10]}, which {ref} of the blender submodule's remote does "
+            "not contain (was the branch rebased since?), so its build directory cannot be used"
+        )
 
 
-def planned_steps(name: str) -> int | None:
-    """How many steps the next build of ``name`` runs, from a Ninja dry run (None if Ninja can't tell)."""
+def planned_build(name: str) -> str | None:
+    """What the next build of ``name`` runs, from a Ninja dry run, as the end of a sentence (None if Ninja can't
+    tell): how many build steps, or that it re-runs CMake first and why. The dry run stops at the CMake run (it
+    would write a new ``build.ninja``), so its one step says nothing about how much is built after it."""
     ninja = shutil.which("ninja")
     if not ninja:
         return None
-    result = subprocess.run([ninja, "-C", str(BUILD_DIR / name), "-n", "install"], capture_output=True, text=True)
+    result = subprocess.run(
+        [ninja, "-C", str(BUILD_DIR / name), "-n", "-d", "explain", "install"], capture_output=True, text=True
+    )
     if result.returncode != 0:
         return None
-    return sum(1 for line in result.stdout.splitlines() if line.startswith("["))
+    return describe_dry_run(result.stdout, result.stderr)
+
+
+def describe_dry_run(stdout: str, explanations: str) -> str:
+    """``planned_build`` for the output of the Ninja dry run and its ``-d explain`` lines."""
+    steps = [line for line in stdout.splitlines() if line.startswith("[")]
+    if not any("Re-running CMake" in step for step in steps):
+        return f"runs {len(steps)} build steps"
+    reasons = [line for line in explanations.splitlines() if " build.ninja " in line]
+    reason = reasons[0].removeprefix("ninja explain: ") if reasons else "an input of build.ninja changed"
+    return f"re-runs CMake first ({reason}); what it builds after that depends on the new build.ninja"
 
 
 def restore_lfs_objects(name: str, url: str, assets: dict[str, dict], downloads: Path) -> bool:
@@ -362,6 +438,7 @@ def restore(
     if not (ccache_only or lfs_only):
         ensure_build_environment()
     check_manifest(manifest, name, ccache_only=ccache_only or lfs_only)
+    commit = manifest["commit"]
     log(
         f"Cache of {name}: Blender {manifest['commit'][:10]}, {manifest['config']} {manifest['build_type']}, "
         f"built {manifest['created']} on {manifest['os']}"
@@ -389,17 +466,20 @@ def restore(
     build_dir, install_dir = BUILD_DIR / name, BLENDER_BIN_DIR / name
     if not force and (build_dir.exists() or install_dir.exists()):
         raise StepError(f"{build_dir} or {install_dir} exists already; --force replaces them with the cache")
+    # Before anything that needs the cache's commit: like ccache, the LFS objects serve any build of the source.
+    restore_lfs_objects(name, url, assets, downloads)
+    try:
+        ensure_blender_commit(commit, name)
+    except StepError as error:
+        raise StepError(
+            f"{error}. The cache's ccache and git LFS objects are restored: `mise run blender:build {name} --ccache` "
+            "builds everything, with the compiles the cache has from ccache"
+        ) from None
     archive = download(f"{url}/{build_archive(name)}", downloads / build_archive(name), assets[build_archive(name)])
 
     # The source and the libraries, as blender:build would prepare them. An existing worktree stays where it is:
     # what differs from the cache's commit just gets rebuilt.
-    commit = manifest["commit"]
-    if worktree_commit(name):
-        source = ensure_worktree(name)
-    else:
-        ensure_blender_commit(commit, name)
-        source = ensure_worktree(name, commit)
-    restore_lfs_objects(name, url, assets, downloads)
+    source = ensure_worktree(name) if worktree_commit(name) else ensure_worktree(name, commit)
     pull_lfs_files(source, BLENDER_LFS_URL)
     libs = ensure_libraries(source)
     if not (LIBS_DIR / manifest["libs"]["platform"]).samefile(libs):
@@ -416,11 +496,13 @@ def restore(
     log(f"Source worktree: {changed} files differ from {commit[:10]}")
     changed = repair_timestamps(libs, manifest["libs"]["commit"])
     log(f"Precompiled libraries: {changed} files differ from {manifest['libs']['commit'][:10]}")
+    if cmake := manifest.get("cmake"):
+        log(f"CMake: {backdate_cmake(cmake)} files of {Path(cmake).parent.parent} set to the old time")
 
-    steps = planned_steps(name)
+    planned = planned_build(name)
     log(
         f"Restored the Blender build {name}"
-        + (f"; the next `mise run blender:build {name}` runs {steps} build steps" if steps is not None else "")
+        + (f"; the next `mise run blender:build {name}` {planned}" if planned is not None else "")
     )
 
 

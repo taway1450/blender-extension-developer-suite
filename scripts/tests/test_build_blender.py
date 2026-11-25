@@ -41,6 +41,21 @@ def test_headless_build_turns_the_api_options_back_on_after_its_preset():
     assert all(option in cmd[preset + 1 :] for option in PRESET_OPTIONS["headless"])
 
 
+def test_ccache_build_runs_with_one_locale_whatever_the_machine_has():
+    env = {"LANG": "de_DE.UTF-8", "LC_ALL": "de_DE.UTF-8", "LC_MESSAGES": "fr_FR.UTF-8", "CCACHE_DIR": "/elsewhere"}
+    build_blender.use_ccache(env)
+    # ccache hashes these four: CI and a cloud session must agree on them for a compile to hit.
+    assert {var: env.get(var) for var in ("LANG", "LC_ALL", "LC_CTYPE", "LC_MESSAGES")} == {
+        "LANG": "C.UTF-8",
+        "LC_ALL": None,
+        "LC_CTYPE": None,
+        "LC_MESSAGES": None,
+    }
+    # A ccache setting of the caller wins over the default.
+    assert env["CCACHE_DIR"] == "/elsewhere"
+    assert env["CCACHE_COMPILERCHECK"] == "content"
+
+
 def test_other_presets_keep_their_options():
     assert not set(PRESET_OPTIONS["headless"]) & set(command("full"))
 

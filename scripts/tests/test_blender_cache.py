@@ -101,6 +101,112 @@ def test_unusable_caches_are_refused(overrides, message):
         blender_cache.check_manifest(manifest(**overrides), "main", ccache_only=False)
 
 
+@pytest.mark.parametrize(
+    ("link_flags", "expected"),
+    [
+        ("-no-pie -Wl,--dependency-file=bin/makesdna.dir/link.d", None),
+        ("-fuse-ld=lld -no-pie   -latomic", "lld"),
+        ("-shared  -fuse-ld=mold -Wl,--dependency-file=x/link.d", "mold"),
+        ('-fuse-ld="/usr/bin/ld.lld" -no-pie', "lld"),
+    ],
+)
+def test_the_linker_is_read_from_the_link_commands(tmp_path, monkeypatch, link_flags, expected):
+    monkeypatch.setattr(blender_cache, "BUILD_DIR", tmp_path)
+    (tmp_path / "main").mkdir()
+    (tmp_path / "main" / "build.ninja").write_text(
+        "build a.o: C_COMPILER a.c\n  FLAGS = -fuse-ld=not-a-link-command\n"
+        f"build bin/makesdna: CXX_EXECUTABLE_LINKER a.o\n  LINK_FLAGS = {link_flags}\n"
+    )
+    assert blender_cache.recorded_linker("main") == expected
+
+
+@pytest.mark.parametrize(
+    ("cached", "here", "warned"),
+    [(None, None, False), ("lld", "lld", False), (None, "lld", True), ("lld", None, True), ("mold", "lld", True)],
+)
+def test_another_linker_than_the_cache_used_is_warned_about(monkeypatch, capsys, cached, here, warned):
+    monkeypatch.setattr(blender_cache, "machine_linker", lambda compiler: here)
+    compilers = {"CC": {"path": sys.executable, "version": ""}}
+    blender_cache.check_manifest(manifest(compilers=compilers, linker=cached), "main", ccache_only=False)
+    assert ("links everything again" in capsys.readouterr().out) is warned
+
+
+def test_a_cache_without_a_recorded_linker_is_not_compared(monkeypatch, capsys):
+    monkeypatch.setattr(blender_cache, "machine_linker", lambda compiler: "lld")
+    compilers = {"CC": {"path": sys.executable, "version": ""}}
+    blender_cache.check_manifest(manifest(compilers=compilers), "main", ccache_only=False)
+    assert "links everything again" not in capsys.readouterr().out
+
+
+def test_the_files_of_the_cmake_install_get_the_old_time(tmp_path):
+    cmake = tmp_path / "site-packages" / "cmake" / "data" / "bin" / "cmake"
+    module = (
+        tmp_path / "site-packages" / "cmake" / "data" / "share" / "cmake-4.4" / "Modules" / "CMakeCInformation.cmake"
+    )
+    outside = tmp_path / "site-packages" / "cmake" / "__init__.py"
+    for file in (cmake, module, outside):
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text("")
+    # The binary, the module and the three directories bin, share/cmake-4.4 and its Modules... all under data/.
+    assert blender_cache.backdate_cmake(str(cmake)) == 6
+    assert (cmake.stat().st_mtime, module.stat().st_mtime) == (EPOCH, EPOCH)
+    assert outside.stat().st_mtime != EPOCH
+
+
+def test_a_dry_run_without_a_cmake_run_gives_the_number_of_steps():
+    stdout = "[1/8] Generating buildinfo.h\n[2/8] Building CXX object a.o\n[8/8] Install the project...\n"
+    assert blender_cache.describe_dry_run(stdout, "") == "runs 3 build steps"
+
+
+def test_a_dry_run_that_stops_at_cmake_says_why_instead_of_one_step():
+    explanations = (
+        "ninja explain: output build.ninja older than most recent input /uv/cmake/Modules/CMakeCInformation.cmake "
+        "(1 vs 2)\nninja explain: build.ninja is dirty\n"
+    )
+    planned = blender_cache.describe_dry_run("[0/1] Re-running CMake...\n", explanations)
+    assert planned.startswith("re-runs CMake first (output build.ninja older than most recent input /uv/cmake/")
+    assert "1 build steps" not in planned
+
+
+def test_a_cache_of_a_commit_the_remote_lost_is_refused_with_the_reason(monkeypatch):
+    fetched = []
+    monkeypatch.setattr(blender_cache, "has_blender_commit", lambda commit: False)
+    monkeypatch.setattr(blender_cache, "run", lambda cmd: fetched.append(cmd[-2:]))
+    with pytest.raises(StepError, match="was the branch rebased"):
+        blender_cache.ensure_blender_commit("a" * 40, "typecheck-fixes")
+    assert fetched == [["origin", "typecheck-fixes"]]
+
+
+def test_a_commit_the_submodule_has_is_not_fetched(monkeypatch):
+    monkeypatch.setattr(blender_cache, "has_blender_commit", lambda commit: True)
+    monkeypatch.setattr(blender_cache, "run", lambda cmd: pytest.fail("fetched"))
+    blender_cache.ensure_blender_commit("a" * 40, "typecheck-fixes")
+
+
+def test_ccache_and_lfs_objects_are_restored_before_a_lost_commit_stops_the_restore(tmp_path, monkeypatch):
+    done = []
+    monkeypatch.setattr(blender_cache, "require_linux", lambda what: None)
+    monkeypatch.setattr(blender_cache, "require_tools", lambda *tools: None)
+    monkeypatch.setattr(blender_cache, "ensure_build_environment", lambda: None)
+    for constant in ("OUT_DIR", "BUILD_DIR", "BLENDER_BIN_DIR", "CACHE_DIR"):
+        monkeypatch.setattr(blender_cache, constant, tmp_path / constant)
+    cache = manifest(commit="a" * 40, config="full", build_type="Release", created="", os="")
+    cache["assets"] = {name: {} for name in ("ccache-main.tar.zst", "blender-build-main.tar.zst")}
+    monkeypatch.setattr(blender_cache, "download_manifest", lambda url, downloads: (cache, "https://host/release"))
+    monkeypatch.setattr(blender_cache, "download", lambda url, target, expected: done.append(target.name) or target)
+    monkeypatch.setattr(blender_cache, "tar_extract", lambda archive, root: archive.touch())
+    monkeypatch.setattr(blender_cache, "restore_lfs_objects", lambda *args: done.append("lfs objects"))
+
+    def lost(commit, ref):
+        raise StepError("The cache was built from Blender aaaaaaaaaa, which typecheck-fixes does not contain")
+
+    monkeypatch.setattr(blender_cache, "ensure_blender_commit", lost)
+    with pytest.raises(StepError, match="ccache and git LFS objects are restored"):
+        blender_cache.restore("main")
+    # The 900 MB build directory, of no use without the commit, is not downloaded.
+    assert done == ["ccache-main.tar.zst", "lfs objects"]
+
+
 def test_ccache_only_works_from_another_path():
     blender_cache.check_manifest(manifest(repo_root="/elsewhere"), "main", ccache_only=True)
 
