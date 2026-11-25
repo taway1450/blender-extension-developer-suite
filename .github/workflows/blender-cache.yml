@@ -4,6 +4,10 @@
 # session so that its next `blender:build` is incremental instead of a two-hour cold build
 # (docs/research/blender-build-cache-hosting.md); `--release <tag>` restores an older one.
 #
+# The default build is typecheck-fixes, the fork branch the blender submodule tracks: it changes headers nearly every
+# file includes (BLI_utildefines.hh, BKE_global.hh, DNA and RNA headers), so a cache of upstream main leaves about 90%
+# of the build to redo when a session moves to the fork. Dispatch with name main for an upstream cache.
+#
 # The cache only works at the absolute path it was built at, with the same compiler and ccache paths, so this job
 # builds the way a Claude Code cloud session does: repo at /home/user/blender-extension-developer-suite,
 # Ubuntu 24.04, gcc-14, ccache in /usr/local/bin, uv's cache in /root/.cache/uv and Python 3.13.
@@ -13,8 +17,8 @@ on:
   workflow_dispatch:
     inputs:
       name:
-        description: Build name (also the Blender git ref built, e.g. main)
-        default: main
+        description: Build name (also the Blender git ref built, e.g. typecheck-fixes or main)
+        default: typecheck-fixes
       cold:
         description: Build from scratch instead of starting from the previous cache
         type: boolean
@@ -30,11 +34,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: blender-cache-${{ inputs.name || 'main' }}
+  group: blender-cache-${{ inputs.name || 'typecheck-fixes' }}
   cancel-in-progress: false
 
 env:
-  NAME: ${{ inputs.name || 'main' }}
+  NAME: ${{ inputs.name || 'typecheck-fixes' }}
   KEEP: ${{ inputs.keep || 3 }}
 
 # The build hands its archives to a separate publish job: a release call from the build job itself, 90 minutes in,
