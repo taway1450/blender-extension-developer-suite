@@ -40,6 +40,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from _build_cache import download_archive, download_manifest, release_url, tar_extract_parts
 from _common import (
     BLENDER_LFS_URL,
     CACHE_DIR,
@@ -70,6 +71,9 @@ CCACHE_ENV = {
     "CCACHE_SLOPPINESS": "pch_defines,time_macros",
 }
 CONFIGURE_ARGS = "configure-args.txt"
+# The shared clone of the precompiled libraries as CI publishes it (blender_cache.py `pack`), so that a fresh
+# checkout does not need projects.blender.org for it.
+LIBS_FORMAT = 1
 BUILD_TYPES = ["Release", "RelWithDebInfo", "Debug"]
 # Options turned back on after a preset (``-D`` after ``-C`` overrides its forced cache entries).
 # The headless preset turns off FFmpeg, Audaspace and NDOF, and with them the Python API they add
@@ -108,19 +112,62 @@ def pinned_libraries(source: Path) -> tuple[str, str, str]:
     return name, url, tree[2]
 
 
+def libs_archive(name: str) -> str:
+    return f"blender-libs-{name}.tar.zst"
+
+
+def libs_release(name: str, commit: str | None = None) -> str:
+    """The release with the libraries ``name`` at ``commit``; without a commit, the one that points at the newest."""
+    return f"blender-libs-{name}" + (f"-{commit[:10]}" if commit else "")
+
+
+def restore_libraries(name: str, commit: str) -> bool:
+    """Extract the shared clone of the libraries ``name`` from a release CI published: the one of ``commit``, else
+    the newest (git then downloads only what changed since). False if there is none this machine can use (CI
+    publishes ``linux_x64`` only); the caller clones then."""
+    if not (shutil.which("tar") and shutil.which("zstd")):
+        return False
+    libs, downloads = LIBS_DIR / name, LIBS_DIR / f"{name}.download"
+    for tag in (libs_release(name, commit), libs_release(name)):
+        shutil.rmtree(downloads, ignore_errors=True)
+        downloads.mkdir(parents=True)
+        try:
+            manifest, url = download_manifest(release_url(tag), downloads)
+            if manifest.get("format") != LIBS_FORMAT or manifest.get("platform") != name:
+                raise StepError(f"format {manifest.get('format')!r} for {manifest.get('platform')!r}")
+            parts = download_archive(url, libs_archive(name), manifest["assets"], downloads)
+            if not parts:
+                raise StepError("the manifest lists no archive")
+            log(f"Extracting the precompiled libraries {name} ({manifest['commit'][:10]}) into {libs}")
+            shutil.rmtree(libs, ignore_errors=True)
+            tar_extract_parts(parts, LIBS_DIR, remove=True)
+            return True
+        except (OSError, StepError, KeyError, ValueError) as error:
+            log(f"No usable libraries in the release {tag}: {error}")
+            shutil.rmtree(libs, ignore_errors=True)
+        finally:
+            shutil.rmtree(downloads, ignore_errors=True)
+    return False
+
+
 def ensure_libraries(source: Path) -> Path:
     """Check out the precompiled libraries pinned by ``source`` in the shared clone and return it.
 
     Every Blender worktree would otherwise download several GB of libraries into its own submodule;
-    the shared clone only downloads the git LFS files that changed between the pinned commits.
+    the shared clone only downloads the git LFS files that changed between the pinned commits. A missing clone
+    comes from the release CI publishes it in, if there is one (``restore_libraries``), else from ``source``'s URL.
     """
     name, url, commit = pinned_libraries(source)
     libs = LIBS_DIR / name
     if not (libs / ".git").exists():
-        log(f"Cloning the precompiled libraries {url} into {libs}")
         shutil.rmtree(libs, ignore_errors=True)
         libs.parent.mkdir(parents=True, exist_ok=True)
-        run_fetch(["git", "clone", "--no-checkout", "--filter=blob:none", url, libs])
+        if not restore_libraries(name, commit):
+            log(f"Cloning the precompiled libraries {url} into {libs}")
+            run_fetch(["git", "clone", "--no-checkout", "--filter=blob:none", url, libs])
+    # Compare a file with the index by size and modification time only: the clone extracted from a release has
+    # other inodes and change times, and git would hash every library again to find them unchanged (measured).
+    git_output(libs, "config", "core.checkStat", "minimal")
     if (
         subprocess.run(
             ["git", "-C", str(libs), "cat-file", "-e", f"{commit}^{{commit}}"], capture_output=True

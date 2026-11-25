@@ -247,3 +247,101 @@ def test_fetch_fails_after_the_last_wait(monkeypatch, failing_runs):
     with pytest.raises(StepError):
         _common.run_fetch(["git", "fetch"])
     assert (failing_runs["runs"], failing_runs["sleeps"]) == (3, [1.0, 2.0])
+
+
+LIBS_COMMIT = "0123456789abcdef0123456789abcdef01234567"
+PINNED, NEWEST = "blender-libs-linux_x64-0123456789", "blender-libs-linux_x64"
+
+
+@pytest.fixture
+def libs_releases(tmp_path, monkeypatch):
+    """Stand-ins for the releases CI publishes the libraries in: ``published`` maps a release to its manifest;
+    ``asked`` lists the releases looked at and ``extracted`` the archive parts extracted, in order."""
+    published, asked, extracted = {}, [], []
+    monkeypatch.setattr(build_blender, "LIBS_DIR", tmp_path / "libs")
+    monkeypatch.setattr(build_blender.shutil, "which", lambda tool: tool)
+
+    def download_manifest(url, downloads):
+        assert downloads.is_dir()
+        tag = url.rsplit("/", 1)[1]
+        asked.append(tag)
+        if tag not in published:
+            raise OSError("HTTP Error 404: Not Found")
+        return published[tag], f"https://host/{published[tag].get('tag', tag)}"
+
+    def download_archive(url, archive, assets, downloads):
+        names = sorted(name for name in assets if name.startswith(archive))
+        for name in names:
+            (downloads / name).write_bytes(b"part")
+        return [downloads / name for name in names]
+
+    def tar_extract_parts(parts, root, *, remove=False):
+        extracted.extend(part.name for part in parts)
+        (root / "linux_x64" / ".git").mkdir(parents=True)
+
+    monkeypatch.setattr(build_blender, "download_manifest", download_manifest)
+    monkeypatch.setattr(build_blender, "download_archive", download_archive)
+    monkeypatch.setattr(build_blender, "tar_extract_parts", tar_extract_parts)
+    return published, asked, extracted
+
+
+def libs_manifest(commit: str = LIBS_COMMIT, **overrides) -> dict:
+    parts = {f"blender-libs-linux_x64.tar.zst.00{n}": {"sha256": "", "size": 4} for n in range(2)}
+    base = {"format": build_blender.LIBS_FORMAT, "platform": "linux_x64", "commit": commit, "assets": parts}
+    return {**base, "tag": f"blender-libs-linux_x64-{commit[:10]}", **overrides}
+
+
+def test_libraries_come_from_the_release_of_the_pinned_commit(tmp_path, libs_releases):
+    published, asked, extracted = libs_releases
+    published[PINNED] = published[NEWEST] = libs_manifest()
+    assert build_blender.restore_libraries("linux_x64", LIBS_COMMIT)
+    assert asked == [PINNED]
+    assert extracted == ["blender-libs-linux_x64.tar.zst.000", "blender-libs-linux_x64.tar.zst.001"]
+    assert (tmp_path / "libs" / "linux_x64" / ".git").is_dir()
+    assert not (tmp_path / "libs" / "linux_x64.download").exists()
+
+
+def test_libraries_of_another_commit_come_from_the_newest_release(libs_releases):
+    published, asked, extracted = libs_releases
+    published[NEWEST] = libs_manifest("f" * 40)
+    assert build_blender.restore_libraries("linux_x64", LIBS_COMMIT)
+    assert asked == [PINNED, NEWEST]
+    assert len(extracted) == 2
+
+
+def test_without_a_libraries_release_the_caller_clones(tmp_path, libs_releases):
+    _, asked, extracted = libs_releases
+    assert not build_blender.restore_libraries("linux_x64", LIBS_COMMIT)
+    assert asked == [PINNED, NEWEST]
+    assert extracted == []
+    assert not (tmp_path / "libs" / "linux_x64").exists()
+
+
+@pytest.mark.parametrize("overrides", [{"format": 99}, {"platform": "linux_arm64"}, {"assets": {}}])
+def test_an_unusable_libraries_release_is_skipped(libs_releases, overrides):
+    published, asked, extracted = libs_releases
+    published[PINNED] = libs_manifest(**overrides)
+    assert not build_blender.restore_libraries("linux_x64", LIBS_COMMIT)
+    assert asked == [PINNED, NEWEST]
+    assert extracted == []
+
+
+def test_a_failed_extraction_leaves_no_half_clone(tmp_path, monkeypatch, libs_releases):
+    published, _, _ = libs_releases
+    published[PINNED] = libs_manifest()
+
+    def broken(parts, root, *, remove=False):
+        (root / "linux_x64" / ".git").mkdir(parents=True)
+        raise StepError("Extracting failed")
+
+    monkeypatch.setattr(build_blender, "tar_extract_parts", broken)
+    assert not build_blender.restore_libraries("linux_x64", LIBS_COMMIT)
+    assert not (tmp_path / "libs" / "linux_x64").exists()
+
+
+def test_no_libraries_release_is_tried_without_the_archive_tools(monkeypatch, libs_releases):
+    published, asked, _ = libs_releases
+    published[PINNED] = libs_manifest()
+    monkeypatch.setattr(build_blender.shutil, "which", lambda tool: None)
+    assert not build_blender.restore_libraries("linux_x64", LIBS_COMMIT)
+    assert asked == []

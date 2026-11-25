@@ -1,12 +1,19 @@
 """The parts of blender_cache.py that decide what a restored build rebuilds, and which caches a checkout refuses."""
 
+import hashlib
+import json
 import os
 import platform
+import shutil
+import sys
+from pathlib import Path
 
 import pytest
 from test_stub_cache import git
 
+import _build_cache
 import blender_cache
+import build_blender
 from _build_cache import EPOCH
 from _common import REPO_ROOT, StepError
 
@@ -96,3 +103,203 @@ def test_unusable_caches_are_refused(overrides, message):
 
 def test_ccache_only_works_from_another_path():
     blender_cache.check_manifest(manifest(repo_root="/elsewhere"), "main", ccache_only=True)
+
+
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("blender-libs-linux_x64.tar.zst", True),
+        ("blender-libs-linux_x64.tar.zst.000", True),
+        ("blender-libs-linux_x64.tar.zst.012", True),
+        ("blender-libs-linux_x64.tar.zst.part", False),
+        ("blender-libs-linux_x64.tar.zst.0000", False),
+        ("blender-libs-linux_x64_debug.tar.zst.000", False),
+        ("manifest.json", False),
+    ],
+)
+def test_an_archive_is_one_file_or_numbered_parts(name, expected):
+    assert _build_cache.is_archive_part(name, "blender-libs-linux_x64.tar.zst") is expected
+
+
+def test_parts_are_listed_in_order_and_only_those_of_the_archive(tmp_path):
+    for name in ("a.tar.zst.001", "a.tar.zst.000", "a.tar.zst.010", "b.tar.zst", "manifest.json"):
+        (tmp_path / name).write_bytes(b"x")
+    assert [p.name for p in _build_cache.archive_parts(tmp_path, "a.tar.zst")] == [
+        "a.tar.zst.000",
+        "a.tar.zst.001",
+        "a.tar.zst.010",
+    ]
+
+
+def test_manifest_lists_archives_and_parts_with_their_checksums(tmp_path):
+    (tmp_path / "a.tar.zst.000").write_bytes(b"first")
+    (tmp_path / "a.tar.zst.001").write_bytes(b"second")
+    (tmp_path / "b.tar.zst").write_bytes(b"whole")
+    (tmp_path / "manifest.json").write_text("{}")
+    assets = _build_cache.asset_table(tmp_path)
+    assert list(assets) == ["a.tar.zst.000", "a.tar.zst.001", "b.tar.zst"]
+    assert assets["a.tar.zst.001"] == {"sha256": hashlib.sha256(b"second").hexdigest(), "size": 6}
+
+
+def test_a_part_over_the_asset_limit_is_refused(tmp_path, monkeypatch):
+    monkeypatch.setattr(_build_cache, "MAX_ASSET_BYTES", 3)
+    (tmp_path / "a.tar.zst.000").write_bytes(b"four")
+    with pytest.raises(StepError, match=r"a\.tar\.zst\.000 is .* over GitHub's 2 GiB limit"):
+        _build_cache.asset_table(tmp_path)
+
+
+def test_an_archive_is_downloaded_part_by_part_in_order(tmp_path, monkeypatch):
+    fetched = []
+    monkeypatch.setattr(
+        _build_cache, "download", lambda url, target, expected: fetched.append((url, expected)) or target
+    )
+    assets = {"a.tar.zst.001": {"size": 2}, "a.tar.zst.000": {"size": 1}, "b.tar.zst": {"size": 3}}
+    parts = _build_cache.download_archive("https://host/release", "a.tar.zst", assets, tmp_path)
+    assert parts == [tmp_path / "a.tar.zst.000", tmp_path / "a.tar.zst.001"]
+    assert fetched == [
+        ("https://host/release/a.tar.zst.000", {"size": 1}),
+        ("https://host/release/a.tar.zst.001", {"size": 2}),
+    ]
+    assert _build_cache.download_archive("https://host/release", "c.tar.zst", assets, tmp_path) == []
+
+
+needs_archive_tools = pytest.mark.skipif(
+    sys.platform == "win32" or not all(shutil.which(tool) for tool in ("tar", "zstd", "split")),
+    reason="needs GNU tar, zstd and split",
+)
+
+
+@needs_archive_tools
+def test_split_archive_round_trip(tmp_path, monkeypatch):
+    monkeypatch.setattr(_build_cache, "PART_BYTES", 4096)
+    root, out, target = tmp_path / "root", tmp_path / "out", tmp_path / "target"
+    for directory in (root / "libs" / "sub", root / "libs" / ".git" / "lfs", out, target):
+        directory.mkdir(parents=True)
+    content = os.urandom(10_000)  # does not compress, so the archive needs three parts
+    (root / "libs" / "sub" / "data.bin").write_bytes(content)
+    (root / "libs" / ".git" / "config").write_text("[core]\n")
+    (root / "libs" / ".git" / "lfs" / "object").write_bytes(b"a copy of the checkout")
+
+    parts = _build_cache.tar_create_split(out / "libs.tar.zst", root, ["libs"], exclude=("libs/.git/lfs",))
+    assert [p.name for p in parts] == ["libs.tar.zst.000", "libs.tar.zst.001", "libs.tar.zst.002"]
+    assert all(p.stat().st_size <= 4096 for p in parts)
+
+    _build_cache.tar_extract_parts(parts, target, remove=True)
+    assert (target / "libs" / "sub" / "data.bin").read_bytes() == content
+    assert (target / "libs" / ".git" / "config").is_file()
+    assert not (target / "libs" / ".git" / "lfs").exists()
+    assert list(out.iterdir()) == []
+
+
+@needs_archive_tools
+def test_a_broken_archive_fails_to_extract(tmp_path):
+    part = tmp_path / "a.tar.zst.000"
+    part.write_bytes(b"not an archive")
+    with pytest.raises(StepError, match=r"Extracting a\.tar\.zst\.000 failed"):
+        _build_cache.tar_extract_parts([part], tmp_path)
+
+
+LIBS_COMMIT = "0123456789abcdef0123456789abcdef01234567"
+
+
+@pytest.fixture
+def libs_pack(tmp_path, monkeypatch):
+    """``pack_libraries`` on any machine: no tools needed, the libraries are an empty directory, and the archive is a
+    stand-in file. Gives what was packed (the arguments of ``tar_create_split``)."""
+    packed = []
+    libs = tmp_path / "blender-libs" / "linux_x64"
+    libs.mkdir(parents=True)
+    monkeypatch.setattr(blender_cache, "require_linux", lambda what: None)
+    monkeypatch.setattr(blender_cache, "require_tools", lambda *tools: None)
+    monkeypatch.setattr(blender_cache, "OUT_DIR", tmp_path / "blender-cache")
+    monkeypatch.setattr(blender_cache, "LIBS_DIR", libs.parent)
+    monkeypatch.setattr(blender_cache, "pinned_libraries", lambda source: ("linux_x64", "url", LIBS_COMMIT))
+    monkeypatch.setattr(blender_cache, "ensure_libraries", lambda source: libs)
+
+    def tar_create_split(archive, root, members, exclude=()):
+        packed.append((archive.name, root, members, exclude))
+        Path(f"{archive}.000").write_bytes(b"part")
+        return [Path(f"{archive}.000")]
+
+    monkeypatch.setattr(blender_cache, "tar_create_split", tar_create_split)
+    return packed
+
+
+def test_libraries_are_packed_without_their_lfs_objects(tmp_path, monkeypatch, libs_pack):
+    monkeypatch.setattr(blender_cache, "release_exists", lambda tag: False)
+    out = blender_cache.pack_libraries(tmp_path / "source")
+    assert out == tmp_path / "blender-cache" / "libs-linux_x64"
+    assert libs_pack == [
+        ("blender-libs-linux_x64.tar.zst", tmp_path / "blender-libs", ["linux_x64"], ("linux_x64/.git/lfs",))
+    ]
+    written = json.loads((out / "manifest.json").read_text())
+    assert written["format"] == build_blender.LIBS_FORMAT
+    assert (written["platform"], written["commit"]) == ("linux_x64", LIBS_COMMIT)
+    assert written["tag"] == "blender-libs-linux_x64-0123456789"
+    assert list(written["assets"]) == ["blender-libs-linux_x64.tar.zst.000"]
+
+
+def test_published_libraries_are_not_packed_again(tmp_path, monkeypatch, libs_pack):
+    asked = []
+    stale = tmp_path / "blender-cache" / "libs-linux_x64"
+    stale.mkdir(parents=True)
+    (stale / "blender-libs-linux_x64.tar.zst.000").write_bytes(b"of an earlier commit")
+    monkeypatch.setattr(blender_cache, "release_exists", lambda tag: asked.append(tag) or True)
+    assert blender_cache.pack_libraries(tmp_path / "source") is None
+    assert asked == ["blender-libs-linux_x64-0123456789"]
+    assert libs_pack == []
+    # Nothing is left for CI to upload.
+    assert not stale.exists()
+
+
+def test_lfs_only_needs_a_cache_with_the_lfs_archive(tmp_path, monkeypatch):
+    monkeypatch.setattr(blender_cache, "require_linux", lambda what: None)
+    monkeypatch.setattr(blender_cache, "require_tools", lambda *tools: None)
+    monkeypatch.setattr(blender_cache, "OUT_DIR", tmp_path)
+    old = manifest(repo_root="/elsewhere", commit="a" * 40, config="headless", build_type="Release", created="", os="")
+    old["assets"] = {"blender-build-main.tar.zst": {"sha256": "", "size": 0}}
+    monkeypatch.setattr(blender_cache, "download_manifest", lambda url, downloads: (old, "https://host/release"))
+    with pytest.raises(StepError, match="no git LFS archive"):
+        blender_cache.restore("main", lfs_only=True)
+
+
+def test_lfs_objects_are_extracted_next_to_the_ones_the_submodule_has(tmp_path, monkeypatch):
+    lfs = tmp_path / "modules" / "blender" / "lfs"
+    extracted = []
+    monkeypatch.setattr(blender_cache, "lfs_directory", lambda: lfs)
+    monkeypatch.setattr(_build_cache, "download", lambda url, target, expected: target)
+    monkeypatch.setattr(
+        blender_cache, "tar_extract_parts", lambda parts, root, remove=False: extracted.append((parts, root, remove))
+    )
+    assets = {"blender-lfs-main.tar.zst.000": {}, "blender-build-main.tar.zst": {}}
+    assert blender_cache.restore_lfs_objects("main", "https://host/release", assets, tmp_path)
+    assert extracted == [([tmp_path / "blender-lfs-main.tar.zst.000"], lfs.parent, True)]
+    assert lfs.is_dir()
+    assert not blender_cache.restore_lfs_objects("other", "https://host/release", assets, tmp_path)
+
+
+def test_only_the_lfs_objects_of_the_checkout_are_packed(tmp_path, monkeypatch):
+    lfs = tmp_path / "lfs"
+    here, other, missing = "ab" + "1" * 62, "cd" + "2" * 62, "ef" + "3" * 62
+    for oid in (here, other):
+        (lfs / "objects" / oid[:2] / oid[2:4]).mkdir(parents=True)
+        (lfs / "objects" / oid[:2] / oid[2:4] / oid).write_bytes(b"x")
+    listing = f"{here} * release/datafiles/splash.png\n{missing} - tests/files/pointer.blend\n{here} * copy.png\n"
+    monkeypatch.setattr(blender_cache, "git_output", lambda repo, *args: listing)
+    assert blender_cache.lfs_object_paths(tmp_path / "source", lfs) == [f"lfs/objects/ab/11/{here}"]
+
+
+@needs_archive_tools
+def test_lfs_archive_holds_the_listed_objects(tmp_path, monkeypatch):
+    lfs, out, target = tmp_path / "git" / "lfs", tmp_path / "out", tmp_path / "target"
+    for directory in (lfs / "objects" / "ab" / "cd", out, target):
+        directory.mkdir(parents=True)
+    (lfs / "objects" / "ab" / "cd" / "wanted").write_bytes(b"wanted")
+    (lfs / "objects" / "ab" / "cd" / "old").write_bytes(b"of another commit")
+    monkeypatch.setattr(blender_cache, "lfs_directory", lambda: lfs)
+    monkeypatch.setattr(blender_cache, "lfs_object_paths", lambda source, lfs: ["lfs/objects/ab/cd/wanted"])
+    blender_cache.pack_lfs_objects("main", tmp_path / "source", out)
+    assert [p.name for p in out.iterdir()] == ["blender-lfs-main.tar.zst.000"]
+
+    _build_cache.tar_extract_parts(list(out.iterdir()), target)
+    assert [p.name for p in (target / "lfs" / "objects" / "ab" / "cd").iterdir()] == ["wanted"]

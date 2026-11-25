@@ -1,8 +1,15 @@
-# Builds Blender from source and publishes the build directory, install and ccache as the release
-# blender-cache-<name>-<date>-<blender commit>, keeping the newest few. The release blender-cache-<name> holds only
-# the newest build's manifest.json, pointing at it: `mise run blender:restore <name>` downloads that build in a cloud
-# session so that its next `blender:build` is incremental instead of a two-hour cold build
+# Builds Blender from source and publishes the build directory, install, ccache and the source's git LFS objects as
+# the release blender-cache-<name>-<date>-<blender commit>, keeping the newest few. The release blender-cache-<name>
+# holds only the newest build's manifest.json, pointing at it: `mise run blender:restore <name>` downloads that build
+# in a cloud session so that its next `blender:build` is incremental instead of a two-hour cold build
 # (docs/research/blender-build-cache-hosting.md); `--release <tag>` restores an older one.
+#
+# The precompiled libraries the source pins get a release of their own, blender-libs-linux_x64-<library commit>
+# (pointer: blender-libs-linux_x64), published when there is none for that commit yet; `blender:build` extracts it
+# instead of cloning the libraries. Only the source's git history comes from GitHub: the LFS files and the libraries
+# exist only on projects.blender.org, which refuses runners with HTTP 403 for hours at a time, so with both in
+# releases a run needs that server only for what changed since. Dispatch with libs_only to publish the libraries
+# without building (minutes instead of hours).
 #
 # The default build is typecheck-fixes, the branch the blender submodule pins, of the fork github.com/taway1450/blender
 # (a fork of Blender's GitHub mirror). It changes headers nearly every file includes (BLI_utildefines.hh, BKE_global.hh,
@@ -28,6 +35,10 @@ on:
         description: How many builds to keep (older releases are deleted)
         type: number
         default: 3
+      libs_only:
+        description: Only publish the precompiled libraries the source pins, without building
+        type: boolean
+        default: false
   schedule:
     - cron: "17 3 * * 1" # weekly, Monday 03:17 UTC
 
@@ -35,12 +46,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: blender-cache-${{ inputs.name || 'typecheck-fixes' }}
+  group: blender-cache-${{ inputs.name || 'typecheck-fixes' }}${{ inputs.libs_only && '-libs' || '' }}
   cancel-in-progress: false
 
 env:
   NAME: ${{ inputs.name || 'typecheck-fixes' }}
   KEEP: ${{ inputs.keep || 3 }}
+  # How many releases of the precompiled libraries to keep.
+  KEEP_LIBS: 2
 
 # The build hands its archives to a separate publish job: a release call from the build job itself, 90 minutes in,
 # was refused (HTTP 403, "Resource not accessible by integration") although the ty cache's job, with the same
@@ -65,14 +78,14 @@ jobs:
       CCACHE_DIR: /home/user/blender-extension-developer-suite/.cache/ccache
       # Keeps the published ccache archive small (a full build is about 0.4 GB compressed).
       CCACHE_MAXSIZE: 3G
-      # The source comes from GitHub, but its git LFS files and the precompiled libraries only exist on
+      # What the releases do not have yet (new git LFS files, a newer commit of the libraries) comes from
       # projects.blender.org, which has refused runners with HTTP 403 for hours at a time (runs 4 and 7): the scripts
       # retry those downloads after each of these waits (seconds).
       SUITE_FETCH_RETRY_WAITS: "60 180 420 900 1800"
     steps:
       - name: Free disk space
         run: |
-          # The libraries, source, build directory, install, ccache and archives need about 15 GB.
+          # The libraries, source, build directory, install, ccache and archives need about 20 GB.
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
           df -h /
 
@@ -111,11 +124,19 @@ jobs:
           GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --filter=blob:none blender
 
       - name: Start from the previous cache
-        if: ${{ !inputs.cold }}
+        if: ${{ !inputs.libs_only }}
         working-directory: ${{ env.REPO_DIR }}
-        run: mise run blender:restore "$NAME" || echo "::notice::No usable previous cache; building from scratch"
+        run: |
+          # A cold build still takes the source's git LFS objects from the previous cache: they are downloads, not
+          # build results.
+          if [ "${{ inputs.cold }}" = true ]; then
+            mise run blender:restore "$NAME" --lfs-only || echo "::notice::No git LFS objects in the previous cache"
+          else
+            mise run blender:restore "$NAME" || echo "::notice::No usable previous cache; building from scratch"
+          fi
 
       - name: Build Blender
+        if: ${{ !inputs.libs_only }}
         working-directory: ${{ env.REPO_DIR }}
         run: |
           mise run blender:build "$NAME" --update --ccache
@@ -124,15 +145,27 @@ jobs:
 
       - name: Pack the cache
         working-directory: ${{ env.REPO_DIR }}
-        run: mise run blender:cache-pack "$NAME"
+        run: |
+          mise run blender:cache-pack "$NAME" ${{ inputs.libs_only && '--libs-only' || '' }}
+          df -h /
 
       - uses: actions/upload-artifact@v4
+        if: ${{ !inputs.libs_only }}
         with:
           name: blender-cache
           path: ${{ env.REPO_DIR }}/.cache/blender-cache/${{ env.NAME }}
           compression-level: 0 # already zstd
           retention-days: 3
           if-no-files-found: error
+
+      # Only there when no release has the libraries at the commit the source pins.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blender-libs
+          path: ${{ env.REPO_DIR }}/.cache/blender-cache/libs-linux_x64
+          compression-level: 0 # already zstd
+          retention-days: 3
+          if-no-files-found: ignore
 
   publish:
     needs: build
@@ -143,13 +176,55 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
+      # Each artifact in its own directory: artifacts/blender-cache and, if the build packed them, artifacts/blender-libs.
       - uses: actions/download-artifact@v4
         with:
-          name: blender-cache
-          path: cache
+          pattern: blender-*
+          path: artifacts
+
+      - name: Publish the precompiled libraries and keep the newest ${{ env.KEEP_LIBS }}
+        run: |
+          if [ ! -f artifacts/blender-libs/manifest.json ]; then
+            echo "The precompiled libraries are published already" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          cd artifacts/blender-libs
+          REPO="${{ github.repository }}"
+          TAG=$(jq -r .tag manifest.json)
+          COMMIT=$(jq -r '.commit[:10]' manifest.json)
+          POINTER="blender-libs-$(jq -r .platform manifest.json)"
+          export PREFIX="$POINTER-"
+
+          gh release delete "$TAG" -R "$REPO" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "$TAG" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+            --title "Blender precompiled libraries: ${POINTER#blender-libs-} at $COMMIT" \
+            --notes "The shared clone of Blender's precompiled libraries at $COMMIT, in parts; \`mise run blender:build\` extracts it instead of cloning them from projects.blender.org." \
+            ./*.tar.zst* manifest.json
+
+          # The pointer to the newest libraries, for a source that pins a commit no release has.
+          mkdir -p ../libs-pointer
+          jq --arg url "https://github.com/$REPO/releases/download/$TAG" '. + {archives_url: $url}' manifest.json \
+            > ../libs-pointer/manifest.json
+          if ! gh release view "$POINTER" -R "$REPO" >/dev/null 2>&1; then
+            gh release create "$POINTER" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
+              --title "Blender precompiled libraries: ${POINTER#blender-libs-} (newest)" \
+              --notes "manifest.json of the newest release of Blender's precompiled libraries; the archives are in the release it names (archives_url)."
+          fi
+          gh release upload "$POINTER" -R "$REPO" --clobber ../libs-pointer/manifest.json
+
+          gh release list -R "$REPO" --limit 200 --json tagName,createdAt \
+            --jq '.[] | select(.tagName | startswith($ENV.PREFIX) and (ltrimstr($ENV.PREFIX) | test("^[0-9a-f]{10}$")))
+                  | "\(.createdAt) \(.tagName)"' \
+            | sort -r | tail -n +$((KEEP_LIBS + 1)) \
+            | while read -r _ old; do
+                echo "Deleting $old"
+                gh release delete "$old" -R "$REPO" --cleanup-tag --yes
+              done
+          { echo "Published $TAG"; echo '```json'; cat manifest.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish the build and keep the newest ${{ env.KEEP }}
-        working-directory: cache
+        if: ${{ !inputs.libs_only }}
+        working-directory: artifacts/blender-cache
         run: |
           REPO="${{ github.repository }}"
           COMMIT=$(jq -r '.commit[:10]' manifest.json)
@@ -161,8 +236,8 @@ jobs:
           gh release delete "$TAG" -R "$REPO" --cleanup-tag --yes 2>/dev/null || true
           gh release create "$TAG" -R "$REPO" --target "${{ github.sha }}" --prerelease --latest=false \
             --title "Blender build cache: $NAME at $COMMIT" \
-            --notes "Build directory, install and ccache of \`blender:build $NAME\` at Blender $COMMIT. Restore it with \`mise run blender:restore $NAME --release $TAG\`; see manifest.json for what it was built from." \
-            ./*.tar.zst manifest.json
+            --notes "Build directory, install, ccache and git LFS objects of \`blender:build $NAME\` at Blender $COMMIT. Restore it with \`mise run blender:restore $NAME --release $TAG\`; see manifest.json for what it was built from." \
+            ./*.tar.zst* manifest.json
 
           # The pointer to the newest build, which `blender:restore <name>` reads.
           mkdir -p ../pointer

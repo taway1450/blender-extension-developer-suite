@@ -7,6 +7,29 @@ few hours later with the same clone plus retries, cloned fine). Facts marked *me
 cloud session; the GitHub documentation pages were not reachable from it, so the LFS rules come from search
 results of those pages and are marked *docs, via search*.
 
+## Decision (2026-11-25)
+
+The fork moved to GitHub anyway, as [taway1450/blender](https://github.com/taway1450/blender), a fork of the mirror.
+What changed since the recommendation below: runs 4 and 7 of the Blender cache workflow (45395369582, 45631834912)
+got HTTP 403 at the submodule clone and retries did not help, because the block lasts for hours. The recommendation's
+objection, that the large downloads stay on projects.blender.org, is met by publishing them as release assets
+(its point 3, extended to the source's LFS objects):
+
+- **LFS.** The mirror has no LFS objects (*measured*: its LFS batch API answers 404), and upstream's server
+  serves them anonymously (*measured*: `release/datafiles/splash.png`). The tasks pull with
+  `git -c lfs.url=https://projects.blender.org/blender/blender.git/info/lfs lfs pull`, as Blender's own
+  `make update` does for clones hosted elsewhere. No commit of the fork adds an LFS file, and a push to the fork
+  goes out with `GIT_LFS_SKIP_PUSH=1` (*measured*: GitHub accepted the three branches; no GH008).
+- **Release assets instead of the Actions cache.** Releases are kept until deleted and have no quota; an Actions
+  cache entry is evicted after 7 days without use. The libraries are one release per library commit
+  (`blender-libs-linux_x64-<commit>`, the shared clone without `.git/lfs`, in parts under GitHub's 2 GiB per asset),
+  the source's LFS objects an archive in each build release.
+- **Extracted clone.** With `core.checkStat=minimal` git accepts the extracted libraries as unchanged without
+  hashing them (*measured* with a counting clean filter: 2 of 2 files filtered again by default, 0 with the setting).
+- **Contributing back.** The projects.blender.org fork stays, as a second remote, for pull requests to Blender.
+
+Still open from the list below: skipping `tests/files` in the LFS pull.
+
 ## What the submodule pulls from projects.blender.org
 
 | What | From | Size | Needed by the build |
