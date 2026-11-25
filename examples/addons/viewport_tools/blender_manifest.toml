@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "viewport_tools"
+version = "1.0.0"
+name = "Viewport Tools"
+tagline = "Measure distances in the 3D viewport, and a gizmo for the energy of a light"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+[build]
+paths_exclude_pattern = ["__pycache__/", "check_*.py"]

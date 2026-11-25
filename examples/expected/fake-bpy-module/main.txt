@@ -40,3 +40,21 @@ scatter_tools/operators.py | missing-attribute | subdivision.levels = 4
 scatter_tools/ui.py | blender-assumed-list-item | instance = item.instance
 scatter_tools/ui.py | blender-assumed-list-item | layout.label(text=item.name, icon="OBJECT_DATA" if instance else "ERROR")
 scatter_tools/ui.py | blender-narrowed-by-poll | layout.label(text=f"Source: {context.active_object.name}")
+viewport_tools/check_viewport_tools.py | unused-ignore-comment | layout.operator("view3d.viewport_tools_measure").snapping = True  # ty: ignore[invalid-assignment]
+viewport_tools/check_viewport_tools.py | missing-attribute | assert_type(arrow.draw_style, Literal["NORMAL", "CROSS", "BOX", "CONE", "PLANE"])
+viewport_tools/check_viewport_tools.py | type-assertion-failure | assert_type(arrow.draw_style, Literal["NORMAL", "CROSS", "BOX", "CONE", "PLANE"])
+viewport_tools/gizmos.py | blender-narrowed-by-poll | light = context.object.data
+viewport_tools/gizmos.py | missing-attribute | arrow.draw_style = "BOX"
+viewport_tools/gizmos.py | missing-attribute | button.icon = "DRIVER_DISTANCE"
+viewport_tools/gizmos.py | missing-attribute | button.draw_options = {"BACKDROP", "OUTLINE"}
+viewport_tools/gizmos.py | blender-narrowed-by-poll | matrix = context.object.matrix_world.normalized()
+viewport_tools/measure.py | blender-narrowed-by-poll | context.area.tag_redraw()
+viewport_tools/measure.py | missing-union-attribute | context.area.tag_redraw() #2
+viewport_tools/measure.py | invalid-argument-type | context.region,
+viewport_tools/measure.py | missing-attribute | context.space_data.region_3d,
+viewport_tools/measure.py | blender-assumed-added-object | context.object.name = f"Measure {index + 1}"
+viewport_tools/overlay.py | blender-assumed-editor-member | region = bpy.context.region
+viewport_tools/overlay.py | blender-assumed-editor-member | region_3d = bpy.context.space_data.region_3d
+viewport_tools/ui.py | blender-narrowed-by-bl-context | mesh = context.edit_object.data
+viewport_tools/ui.py | blender-narrowed-by-popover | settings = context.space_data.overlay
+viewport_tools/ui.py | invalid-argument-type | layout.prop(context.object, "name")
