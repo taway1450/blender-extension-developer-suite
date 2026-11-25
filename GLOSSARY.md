@@ -127,6 +127,16 @@ _Avoid_: mode, profile
 **Internal operator**:
 An Operator with `'INTERNAL'` in its `bl_options`: hidden from the operator search, but any script, button or key can still call it.
 
+## Examples
+
+**Example add-on**:
+One of the realistic Add-ons in `examples/addons/` that together show what the typechecker types, what it reports and what it cannot do yet. Each one loads in Blender, unlike a feature-test add-on, which may fail on purpose.
+_Avoid_: sample, demo add-on
+
+**Demo tag**:
+A `# demo: <id>` comment line in an Example add-on that names what the statement below it shows: a feature of the feature tests, a `blender-*` rule, or a `later/` topic that does not work yet. Whether the claim holds is checked against the recorded results.
+_Avoid_: demo marker (a marker is an `assert_type` call or a `# ty: ignore[...]` comment)
+
 ## Add-on code
 
 **Add-on index**:

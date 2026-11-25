@@ -137,7 +137,7 @@ produces a diagnostic.
   (`set[str]`), `pose_library/operators.py:65,103,116,190` (`typing.Set[str]`), plus two mixins:
   `FixToCameraCommon.execute` (`copy_global_transform.py:640`) and `PoseAssetUser.execute`
   (`pose_library/operators.py:228`).
-- **This repo:** the example add-on uses it too (`examples/addons/simple_scatter/__init__.py`).
+- **This repo:** an example add-on uses it too (`examples/addons/legacy_renamer/ops.py`).
 - **Third-party:** common in typed add-ons and templates (for example Oxicid/UniV `operators/mark.py`,
   SuperFLEB/blender_addon_template `src/operator/an_operator.py`). The precise spellings (`OperatorReturnItems`,
   fake-bpy-module's alias) are rarer. A template that uses `set[str]` spreads it to every add-on made from it.

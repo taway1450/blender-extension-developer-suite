@@ -45,6 +45,10 @@ for ex in asset_pack scene_template sculpt_template; do cp -r prototypes/blend_t
 mise run check:addons main --generator builtin prototype_asset_pack prototype_scene_template prototype_sculpt_template
 ```
 
+The task compares with the results recorded for the example add-ons, so it lists every diagnostic of the copies
+as new (`+`) and fails; do not pass `--update`. The full output is in
+`.cache/typecheck-results/main/builtin/examples-ty.txt`.
+
 ```bash
 rm -rf examples/addons/prototype_*
 ```

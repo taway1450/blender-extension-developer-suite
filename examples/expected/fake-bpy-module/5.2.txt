@@ -1,0 +1,186 @@
+# Example add-on results that are not passes, fake-bpy-module stubs, Blender 5.2: the diagnostics ty
+# reports on the add-ons' own code, and the check_*.py markers that do not hold yet.
+# `mise run check:addons 5.2` fails when they change; `--update` rewrites this file.
+# Format: path | rule | source line (with #2, #3 ... when the same text occurs again in the file)
+batch_io/__init__.py | missing-union-attribute | keyconfig = bpy.context.window_manager.keyconfigs.addon
+batch_io/check_batch_io.py | type-assertion-failure | assert_type(ob.batch_io.file_format, Literal["SCENE", "OBJ", "STL", "GLTF"])
+batch_io/check_batch_io.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences
+batch_io/check_batch_io.py | unused-ignore-comment | item.properties.selection = True  # ty: ignore[invalid-assignment]
+batch_io/check_batch_io.py | type-assertion-failure | assert_type(filepath, str)
+batch_io/export.py | missing-union-attribute | return context.mode == "OBJECT"
+batch_io/export.py | missing-attribute | settings = context.scene.batch_io
+batch_io/export.py | missing-union-attribute | settings = context.scene.batch_io
+batch_io/export.py | missing-union-attribute | objects = context.selected_objects
+batch_io/export.py | missing-union-attribute | objects = list(context.scene.objects)
+batch_io/export.py | not-iterable | for ob in objects:
+batch_io/export.py | invalid-argument-type | export_object(context, ob, path, file_format, settings.apply_modifiers)
+batch_io/export.py | invalid-argument-type | folder = directory if get_preferences(context).report_folder else ""
+batch_io/export.py | invalid-argument-type | bpy.utils.register_class(OBJECT_OT_batch_io_apply_and_export)
+batch_io/export.py | invalid-argument-type | bpy.utils.unregister_class(OBJECT_OT_batch_io_apply_and_export)
+batch_io/handlers.py | blender-assumed-context-member | scene = bpy.context.scene
+batch_io/importer.py | missing-union-attribute | collection = context.collection
+batch_io/importer.py | missing-union-attribute | context.scene.collection.children.link(collection)
+batch_io/importer.py | missing-union-attribute | for ob in context.selected_objects:
+batch_io/importer.py | not-iterable | for ob in context.selected_objects:
+batch_io/importer.py | missing-union-attribute | collection.objects.link(ob)
+batch_io/importer.py | missing-union-attribute | return context.area is not None and context.area.type == "VIEW_3D"
+batch_io/presets/batch_io/object/print.py | blender-assumed-preset-context | settings = bpy.context.object.batch_io
+batch_io/settings.py | missing-union-attribute | return context.preferences.addons[__package__].preferences
+batch_io/ui.py | incompatible-method-override | draw = Menu.draw_preset
+batch_io/ui.py | blender-narrowed-by-bl-context | settings = context.object.batch_io
+batch_io/ui.py | missing-union-attribute | settings = context.object.batch_io
+batch_io/ui.py | missing-attribute | settings = context.scene.batch_io
+batch_io/ui.py | missing-union-attribute | settings = context.scene.batch_io
+legacy_renamer/__init__.py | blender-unregister-mismatch | bpy.types.Object.legacy_original_name = StringProperty(name="Original Name")
+legacy_renamer/check_legacy_renamer.py | missing-union-attribute | context.preferences.addons["legacy_renamer"].preferences,
+legacy_renamer/check_legacy_renamer.py | missing-union-attribute | assert_type(context.preferences.addons["legacy_renamer"].preferences.separator, str)
+legacy_renamer/ops.py | blender-assumed-context-member | return bpy.context.scene.legacy_renamer
+legacy_renamer/ops.py | missing-union-attribute | return bpy.context.preferences.addons[__name__.partition(".")[0]].preferences
+legacy_renamer/ops.py | blender-imprecise-operator-return | def execute(self, context) -> set[str]:
+legacy_renamer/ops.py | missing-union-attribute | objects = context.selected_objects
+legacy_renamer/ops.py | missing-union-attribute | objects = list(context.scene.objects)
+legacy_renamer/ops.py | missing-union-attribute | objects.sort(key=lambda ob: ob.name)
+legacy_renamer/ops.py | invalid-assignment | ob.legacy_original_name = ob.name
+legacy_renamer/ops.py | blender-assumed-registration | bpy.ops.object.legacy_tag_collections(color=color)
+legacy_renamer/ops.py | missing-union-attribute | for ob in context.selected_objects:
+legacy_renamer/ops.py | not-iterable | for ob in context.selected_objects:
+legacy_renamer/ops.py | blender-imprecise-enum-value | collection.color_tag = self.color
+legacy_renamer/ops.py | missing-attribute | settings = context.scene.legacy_renamer
+legacy_renamer/ops.py | missing-union-attribute | settings = context.scene.legacy_renamer
+legacy_renamer/ops.py | missing-union-attribute | rule.find = re.escape(context.object.name)
+legacy_renamer/ops.py | missing-attribute | settings = context.scene.legacy_renamer #2
+legacy_renamer/ops.py | missing-union-attribute | settings = context.scene.legacy_renamer #2
+legacy_renamer/ops.py | blender-legacy-property | filter_glob = StringProperty(default="*.csv", options={"HIDDEN"})
+legacy_renamer/ops.py | missing-attribute | settings = context.scene.legacy_renamer #3
+legacy_renamer/ops.py | missing-union-attribute | settings = context.scene.legacy_renamer #3
+legacy_renamer/ui.py | blender-imprecise-callback-parameter | item: RenameRule,
+legacy_renamer/ui.py | missing-union-attribute | row = layout.row(align=True)
+legacy_renamer/ui.py | missing-attribute | settings = context.scene.legacy_renamer
+legacy_renamer/ui.py | missing-union-attribute | settings = context.scene.legacy_renamer
+legacy_renamer/ui.py | missing-union-attribute | ob = context.object
+legacy_renamer/ui.py | blender-imprecise-enum-value | layout.label(text=ob.name, icon=TYPE_ICONS.get(ob.type, "OBJECT_DATA"))
+legacy_renamer/ui.py | blender-unregistered-class | class VIEW3D_PT_legacy_renamer_original(bpy.types.Panel):
+legacy_renamer/ui.py | missing-union-attribute | ob = context.object #2
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(shader, ShaderNodeBsdfPrincipled)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(shader.inputs["Base Color"], NodeSocketColor)
+node_kit/check_node_kit.py | missing-attribute | assert_type(shader.inputs["Roughness"].default_value, float)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(shader.inputs["Roughness"].default_value, float)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(node, ShaderNodeTexImage)
+node_kit/check_node_kit.py | invalid-argument-type | assert_type(bpy.data.node_groups.new("Calculator", "KitNodeTree"), KitNodeTree)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(bpy.data.node_groups.new("Calculator", "KitNodeTree"), KitNodeTree)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(node.inputs["A"], KitFloatSocket)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(bpy.data.node_groups["Scatter Points"], GeometryNodeTree)
+node_kit/check_node_kit.py | missing-union-attribute | rust_nodes = bpy.data.materials["Rust"].node_tree.nodes
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(rust_nodes["Principled BSDF"], ShaderNodeBsdfPrincipled)
+node_kit/check_node_kit.py | missing-attribute | assert_type(scene.cycles.samples, int)
+node_kit/check_node_kit.py | type-assertion-failure | assert_type(scene.cycles.samples, int)
+node_kit/shader.py | blender-narrowed-by-poll | tree = context.space_data.edit_tree
+node_kit/shader.py | missing-attribute | tree = context.space_data.edit_tree
+node_kit/shader.py | missing-union-attribute | tree = context.space_data.edit_tree
+node_kit/shader.py | missing-union-attribute | return super().poll(context) and context.active_node is not None
+node_kit/shader.py | blender-narrowed-by-poll | node = context.active_node
+node_kit/shader.py | missing-union-attribute | node = context.active_node
+node_kit/shader.py | missing-attribute | socket.default_value = self.tinted(socket.default_value)
+node_kit/shader.py | missing-attribute | socket.default_value = self.tinted(socket.default_value) #2
+node_kit/shader.py | missing-attribute | color = self.tinted(socket.default_value)
+node_kit/shader.py | missing-attribute | socket.default_value = color
+node_kit/shader.py | invalid-context-manager | with bpy.data.libraries.load(ASSETS) as (_source, target):
+node_kit/shader.py | missing-union-attribute | principled = rust.node_tree.nodes["Principled BSDF"]
+node_kit/shader.py | missing-attribute | principled.inputs["Roughness"].default_value = 0.9
+node_kit/shader.py | missing-union-attribute | if context.object is not None and context.object.type == "MESH":
+node_kit/shader.py | missing-union-attribute | context.object.data.materials.append(rust)
+node_kit/tree.py | missing-union-attribute | layout.label(text=text)
+node_kit/tree.py | missing-union-attribute | layout.prop(self, "value", text=text)
+node_kit/tree.py | missing-union-attribute | layout.prop(self, "value", text="")
+node_kit/tree.py | missing-union-attribute | layout.prop(self, "operation", text="")
+node_kit/tree.py | not-subscriptable | source = socket.links[0].from_node
+node_kit/tree.py | invalid-argument-type | tree = bpy.data.node_groups.new("Calculator", "KitNodeTree")
+node_kit/tree.py | blender-narrowed-by-poll | context.space_data.node_tree = tree
+node_kit/tree.py | missing-attribute | context.space_data.node_tree = tree
+node_kit/tree.py | missing-union-attribute | context.space_data.node_tree = tree
+node_kit/tree.py | missing-union-attribute | return super().poll(context) and context.active_node is not None
+node_kit/tree.py | missing-union-attribute | node = context.active_node
+node_kit/ui.py | missing-attribute | if context.space_data.tree_type == "KitNodeTree":
+node_kit/ui.py | missing-union-attribute | if context.space_data.tree_type == "KitNodeTree":
+node_kit/ui.py | missing-union-attribute | space = context.space_data
+node_kit/ui.py | missing-attribute | if space.tree_type == "KitNodeTree":
+node_kit/ui.py | missing-attribute | elif space.tree_type == "ShaderNodeTree":
+node_kit/ui.py | blender-unknown-operator | layout.operator("node.nw_add_textures_for_principled")
+node_kit/ui.py | missing-union-attribute | node = context.active_node
+scatter_tools/check_scatter_tools.py | missing-union-attribute | prefs = context.preferences.addons[__package__].preferences
+scatter_tools/check_scatter_tools.py | type-assertion-failure | assert_type(ground.data, Mesh)
+scatter_tools/check_scatter_tools.py | type-assertion-failure | assert_type(subdivision, SubsurfModifier | None)
+scatter_tools/operators.py | missing-union-attribute | if event.shift:
+scatter_tools/operators.py | invalid-argument-type | self.count = get_preferences(context).default_count
+scatter_tools/operators.py | missing-attribute | settings = context.scene.scatter_tools
+scatter_tools/operators.py | missing-union-attribute | settings = context.scene.scatter_tools
+scatter_tools/operators.py | blender-narrowed-by-poll | source = context.active_object
+scatter_tools/operators.py | missing-union-attribute | source = context.active_object
+scatter_tools/operators.py | missing-union-attribute | collection = settings.target_collection or context.scene.collection
+scatter_tools/operators.py | invalid-argument-type | if get_preferences(context).show_stats:
+scatter_tools/operators.py | missing-union-attribute | faces = len(mesh.polygons) * len(points)
+scatter_tools/operators.py | missing-attribute | context.scene.scatter_tools.seed += 1
+scatter_tools/operators.py | missing-union-attribute | context.scene.scatter_tools.seed += 1
+scatter_tools/operators.py | missing-attribute | return len(context.scene.scatter_tools.placed) > 0
+scatter_tools/operators.py | missing-union-attribute | return len(context.scene.scatter_tools.placed) > 0
+scatter_tools/operators.py | blender-narrowed-by-poll | removed = remove_copies(context.scene.scatter_tools)
+scatter_tools/operators.py | missing-union-attribute | removed = remove_copies(context.scene.scatter_tools)
+scatter_tools/operators.py | missing-attribute | settings = context.scene.scatter_tools #2
+scatter_tools/operators.py | missing-union-attribute | settings = context.scene.scatter_tools #2
+scatter_tools/operators.py | missing-union-attribute | ground.data.materials.clear()
+scatter_tools/operators.py | missing-attribute | subdivision.subdivision_type = "SIMPLE"
+scatter_tools/operators.py | missing-attribute | subdivision.levels = 4
+scatter_tools/operators.py | missing-union-attribute | context.scene.collection.objects.link(ground)
+scatter_tools/preferences.py | missing-union-attribute | return context.preferences.addons[__package__].preferences
+scatter_tools/ui.py | blender-assumed-list-item | instance = item.instance
+scatter_tools/ui.py | blender-assumed-list-item | layout.label(text=item.name, icon="OBJECT_DATA" if instance else "ERROR")
+scatter_tools/ui.py | missing-union-attribute | layout.label(text=item.name, icon="OBJECT_DATA" if instance else "ERROR")
+scatter_tools/ui.py | missing-attribute | settings = context.scene.scatter_tools
+scatter_tools/ui.py | missing-union-attribute | settings = context.scene.scatter_tools
+scatter_tools/ui.py | missing-attribute | shading = context.space_data.shading
+scatter_tools/ui.py | missing-union-attribute | shading = context.space_data.shading
+scatter_tools/ui.py | missing-attribute | settings = context.scene.scatter_tools #2
+scatter_tools/ui.py | missing-union-attribute | settings = context.scene.scatter_tools #2
+scatter_tools/ui.py | missing-union-attribute | return context.active_object is not None
+scatter_tools/ui.py | missing-attribute | settings = context.scene.scatter_tools #3
+scatter_tools/ui.py | missing-union-attribute | settings = context.scene.scatter_tools #3
+scatter_tools/ui.py | blender-narrowed-by-poll | layout.label(text=f"Source: {context.active_object.name}")
+scatter_tools/ui.py | missing-union-attribute | layout.label(text=f"Source: {context.active_object.name}")
+viewport_tools/__init__.py | invalid-argument-type | key=(bpy.types.LayerObjects, "active"),
+viewport_tools/check_viewport_tools.py | unused-ignore-comment | layout.operator("view3d.viewport_tools_measure").snapping = True  # ty: ignore[invalid-assignment]
+viewport_tools/check_viewport_tools.py | missing-attribute | assert_type(arrow.draw_style, Literal["NORMAL", "CROSS", "BOX", "CONE", "PLANE"])
+viewport_tools/check_viewport_tools.py | type-assertion-failure | assert_type(arrow.draw_style, Literal["NORMAL", "CROSS", "BOX", "CONE", "PLANE"])
+viewport_tools/gizmos.py | missing-union-attribute | ob = context.object
+viewport_tools/gizmos.py | blender-narrowed-by-poll | light = context.object.data
+viewport_tools/gizmos.py | missing-union-attribute | light = context.object.data
+viewport_tools/gizmos.py | missing-attribute | arrow.draw_style = "BOX"
+viewport_tools/gizmos.py | missing-attribute | button.icon = "DRIVER_DISTANCE"
+viewport_tools/gizmos.py | missing-attribute | button.draw_options = {"BACKDROP", "OUTLINE"}
+viewport_tools/gizmos.py | blender-narrowed-by-poll | matrix = context.object.matrix_world.normalized()
+viewport_tools/gizmos.py | missing-union-attribute | matrix = context.object.matrix_world.normalized()
+viewport_tools/measure.py | missing-union-attribute | return context.area is not None and context.area.type == "VIEW_3D"
+viewport_tools/measure.py | missing-union-attribute | context.window_manager.modal_handler_add(self)
+viewport_tools/measure.py | blender-narrowed-by-poll | context.area.tag_redraw()
+viewport_tools/measure.py | missing-union-attribute | context.area.tag_redraw()
+viewport_tools/measure.py | missing-union-attribute | context.area.tag_redraw() #2
+viewport_tools/measure.py | missing-union-attribute | if event.type in {"RIGHTMOUSE", "ESC"}:
+viewport_tools/measure.py | missing-union-attribute | if event.type != "LEFTMOUSE" or event.value != "PRESS":
+viewport_tools/measure.py | invalid-argument-type | context.region,
+viewport_tools/measure.py | missing-union-attribute | context.region,
+viewport_tools/measure.py | missing-attribute | context.space_data.region_3d,
+viewport_tools/measure.py | missing-union-attribute | context.space_data.region_3d,
+viewport_tools/measure.py | missing-union-attribute | (event.mouse_region_x, event.mouse_region_y),
+viewport_tools/measure.py | missing-union-attribute | context.scene.cursor.location,
+viewport_tools/measure.py | missing-union-attribute | return bool(overlay.points) and context.mode == "OBJECT"
+viewport_tools/measure.py | invalid-assignment | context.object.name = f"Measure {index + 1}"
+viewport_tools/measure.py | missing-union-attribute | context.object.name = f"Measure {index + 1}"
+viewport_tools/overlay.py | blender-assumed-editor-member | region = bpy.context.region
+viewport_tools/overlay.py | blender-assumed-editor-member | region_3d = bpy.context.space_data.region_3d
+viewport_tools/overlay.py | invalid-argument-type | view3d_utils.location_3d_to_region_2d(region, region_3d, point)
+viewport_tools/ui.py | blender-narrowed-by-bl-context | mesh = context.edit_object.data
+viewport_tools/ui.py | missing-union-attribute | mesh = context.edit_object.data
+viewport_tools/ui.py | invalid-argument-type | bm = bmesh.from_edit_mesh(mesh)
+viewport_tools/ui.py | missing-attribute | settings = context.space_data.overlay
+viewport_tools/ui.py | missing-union-attribute | settings = context.space_data.overlay
+viewport_tools/ui.py | missing-union-attribute | layout.prop(context.object, "name")
+viewport_tools/ui.py | blender-assumed-complete-registration | return [value for name, value in globals().items() if name.startswith("VIEW3D_PT_")]

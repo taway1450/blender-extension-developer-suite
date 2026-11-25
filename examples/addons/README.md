@@ -24,7 +24,9 @@ folder is a Workspace: every sub-folder is one add-on, and [ty.toml](ty.toml) co
   that does not work yet. [coverage.toml](coverage.toml) describes the `later/` topics and lists the rules the examples
   leave to the feature tests, because they need code that Blender rejects or that silently does nothing.
 - **The results are recorded** in `examples/expected/<generator>/<version>.txt`: every diagnostic on the add-ons' own
-  code and every marker that does not hold yet. A behaviour that starts to work shows as a change there.
+  code and every marker that does not hold yet. A behaviour that starts to work shows as a change there. The
+  results for Blender 5.2 are much longer than those for main: its stubs type a callback's `context` parameter
+  `Context | None`, so almost every read of the context is an error there.
 
 ## Running the checks
 
