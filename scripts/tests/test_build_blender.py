@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from test_stub_cache import git
 
+import _common
 import build_blender
 import download_blender
 import generate_stubs
@@ -183,3 +184,66 @@ def test_explicit_ref_moves_an_existing_worktree(tmp_path, monkeypatch):
     assert git(worktree, "rev-parse", "HEAD") == first
     generate_stubs.ensure_worktree("feature", "other")
     assert git(worktree, "rev-parse", "HEAD") == git(upstream, "rev-parse", "other")
+
+
+@pytest.fixture
+def lfs_commands(monkeypatch):
+    """A repo whose LFS listing has one pointer file; records the commands ``pull_lfs_files`` runs."""
+    commands = []
+    monkeypatch.setattr(build_blender, "git_output", lambda repo, *args: "0a1b * full.png\n2c3d - pointer.png")
+    monkeypatch.setattr(build_blender, "run_fetch", commands.append)
+    return commands
+
+
+def test_lfs_pull_uses_the_repo_remote_by_default(lfs_commands):
+    build_blender.pull_lfs_files(Path("repo"))
+    assert lfs_commands == [["git", "-C", Path("repo"), "lfs", "pull"]]
+
+
+def test_lfs_pull_from_another_server_is_for_that_command_only(lfs_commands):
+    build_blender.pull_lfs_files(Path("repo"), "https://example.com/lfs")
+    assert lfs_commands == [["git", "-C", Path("repo"), "-c", "lfs.url=https://example.com/lfs", "lfs", "pull"]]
+
+
+def test_no_lfs_pull_without_pointer_files(monkeypatch, lfs_commands):
+    monkeypatch.setattr(build_blender, "git_output", lambda repo, *args: "0a1b * full.png")
+    build_blender.pull_lfs_files(Path("repo"), "https://example.com/lfs")
+    assert lfs_commands == []
+
+
+@pytest.fixture
+def failing_runs(monkeypatch):
+    """Makes ``_common.run`` fail the given number of times first; records the calls and the sleeps."""
+    state = {"failures": 0, "runs": 0, "sleeps": []}
+
+    def run(cmd, *, cwd=None, env=None):
+        state["runs"] += 1
+        if state["runs"] <= state["failures"]:
+            raise StepError("refused")
+
+    monkeypatch.setattr(_common, "run", run)
+    monkeypatch.setattr(_common.time, "sleep", state["sleeps"].append)
+    return state
+
+
+def test_fetch_is_not_retried_without_the_variable(monkeypatch, failing_runs):
+    monkeypatch.delenv(_common.FETCH_RETRY_WAITS, raising=False)
+    failing_runs["failures"] = 1
+    with pytest.raises(StepError):
+        _common.run_fetch(["git", "fetch"])
+    assert failing_runs["runs"] == 1
+
+
+def test_fetch_is_retried_after_each_wait(monkeypatch, failing_runs):
+    monkeypatch.setenv(_common.FETCH_RETRY_WAITS, "1 2 3")
+    failing_runs["failures"] = 2
+    _common.run_fetch(["git", "fetch"])
+    assert (failing_runs["runs"], failing_runs["sleeps"]) == (3, [1.0, 2.0])
+
+
+def test_fetch_fails_after_the_last_wait(monkeypatch, failing_runs):
+    monkeypatch.setenv(_common.FETCH_RETRY_WAITS, "1 2")
+    failing_runs["failures"] = 5
+    with pytest.raises(StepError):
+        _common.run_fetch(["git", "fetch"])
+    assert (failing_runs["runs"], failing_runs["sleeps"]) == (3, [1.0, 2.0])

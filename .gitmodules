@@ -1,6 +1,6 @@
 [submodule "blender"]
 	path = blender
-	url = https://projects.blender.org/Simon-Sak/blender.git
+	url = https://github.com/taway1450/blender.git
 [submodule "fake-bpy-module"]
 	path = fake-bpy-module
 	url = https://github.com/taway1450/fake-bpy-module.git

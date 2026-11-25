@@ -73,5 +73,11 @@ Blender's own stubs goes to `.cache/flag-report/<version>/builtin/`.
 Building Blender needs the tools from the [Blender build docs](https://developer.blender.org/docs/handbook/building_blender/)
 and git LFS: on Windows Visual Studio 2022 or newer with the "Desktop development with C++" workload (the
 task loads the Visual Studio environment itself), on macOS Xcode and on Linux the packages from
-`build_files/build_environment/install_linux_packages.py`. CMake and Ninja come from PyPI. Branches that only exist on a
-fork need that fork as the `origin` of the `blender` submodule (`git submodule sync blender`).
+`build_files/build_environment/install_linux_packages.py`. CMake and Ninja come from PyPI.
+
+The `blender` submodule is the fork [taway1450/blender](https://github.com/taway1450/blender), a fork of Blender's
+GitHub mirror, and a fresh clone has it as `origin`. Branches that only exist on a fork need that fork as the `origin`
+of the `blender` submodule (`git submodule sync blender`). GitHub's mirror has no git LFS files, so the tasks pull the
+source's LFS files from upstream (`projects.blender.org/blender/blender`); the precompiled libraries come from there
+too. Two rules follow for the fork's branches: no commit adds an LFS file, and a push goes out with
+`GIT_LFS_SKIP_PUSH=1 git push`, since git LFS would otherwise try to upload upstream's files to GitHub.

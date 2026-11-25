@@ -40,7 +40,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _common import CACHE_DIR, REPO_ROOT, StepError, git_output, log, main_wrapper, run, validate_build_name
+from _common import (
+    BLENDER_LFS_URL,
+    CACHE_DIR,
+    REPO_ROOT,
+    StepError,
+    git_output,
+    log,
+    main_wrapper,
+    run,
+    run_fetch,
+    validate_build_name,
+)
 from download_blender import BLENDER_BIN_DIR, BUILD_INFO, blender_executable
 from generate_stubs import blender_binary_version, ensure_worktree, tree_revision
 
@@ -109,7 +120,7 @@ def ensure_libraries(source: Path) -> Path:
         log(f"Cloning the precompiled libraries {url} into {libs}")
         shutil.rmtree(libs, ignore_errors=True)
         libs.parent.mkdir(parents=True, exist_ok=True)
-        run(["git", "clone", "--no-checkout", "--filter=blob:none", url, libs])
+        run_fetch(["git", "clone", "--no-checkout", "--filter=blob:none", url, libs])
     if (
         subprocess.run(
             ["git", "-C", str(libs), "cat-file", "-e", f"{commit}^{{commit}}"], capture_output=True
@@ -117,7 +128,7 @@ def ensure_libraries(source: Path) -> Path:
         != 0
     ):
         log(f"Fetching library commit {commit[:10]}")
-        run(["git", "-C", libs, "fetch", "origin"])
+        run_fetch(["git", "-C", libs, "fetch", "origin"])
 
     # Check out only when needed: `checkout --force` rewrites every file whose timestamps differ from the index,
     # even with the same content, and the newer timestamps make Ninja rebuild everything that includes them.
@@ -126,7 +137,7 @@ def ensure_libraries(source: Path) -> Path:
         log(f"Precompiled libraries {name} are checked out at {commit[:10]}")
     else:
         log(f"Checking out precompiled libraries {name} at {commit[:10]} (downloads the changed git LFS files)")
-        run(["git", "-C", libs, "-c", "advice.detachedHead=false", "checkout", "--force", "--detach", commit])
+        run_fetch(["git", "-C", libs, "-c", "advice.detachedHead=false", "checkout", "--force", "--detach", commit])
     # A checkout interrupted while downloading leaves LFS pointer files behind; this completes it.
     pull_lfs_files(libs)
     log(f"Precompiled libraries: {libs} ({commit[:10]})")
@@ -139,8 +150,9 @@ def is_clean_checkout(repo: Path, commit: str) -> bool:
     return head.stdout.strip() == commit and not git_output(repo, "status", "--porcelain", "--untracked-files=no")
 
 
-def pull_lfs_files(repo: Path) -> None:
-    """Download the git LFS files of ``repo`` that are still pointer files, if any.
+def pull_lfs_files(repo: Path, lfs_url: str | None = None) -> None:
+    """Download the git LFS files of ``repo`` that are still pointer files, if any, from ``lfs_url`` instead of
+    the LFS server of the repo's remote if given.
 
     Not unconditionally: `git lfs pull` also rewrites the empty files of the checkout, and so their timestamps,
     which made Ninja recompile what includes them (e.g. ``source/blender/render/hydra/settings.hh``) on every build.
@@ -148,8 +160,10 @@ def pull_lfs_files(repo: Path) -> None:
     # Each line is `<oid> <*|-> <path>`; `-` marks a file that is still a pointer.
     listing = git_output(repo, "lfs", "ls-files")
     if any(line.split(maxsplit=2)[1] == "-" for line in listing.splitlines() if line.strip()):
-        log(f"Pulling git LFS files of {repo}")
-        run(["git", "-C", repo, "lfs", "pull"])
+        log(f"Pulling git LFS files of {repo}" + (f" from {lfs_url}" if lfs_url else ""))
+        # For this command only: a stored `lfs.url` would also be where a push from the repo uploads to.
+        endpoint = ["-c", f"lfs.url={lfs_url}"] if lfs_url else []
+        run_fetch(["git", "-C", repo, *endpoint, "lfs", "pull"])
 
 
 def visual_studio_env() -> dict[str, str]:
@@ -309,7 +323,7 @@ def build_blender(
         available = sorted(p.stem.removeprefix("blender_") for p in config_file.parent.glob("blender_*.cmake"))
         raise StepError(f"Unknown build configuration {config!r} (available: {', '.join(available)})")
 
-    pull_lfs_files(source)
+    pull_lfs_files(source, BLENDER_LFS_URL)
     libs = ensure_libraries(source)
     env, cmake, ninja = build_env()
 

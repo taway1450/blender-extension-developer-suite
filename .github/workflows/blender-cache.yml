@@ -4,9 +4,10 @@
 # session so that its next `blender:build` is incremental instead of a two-hour cold build
 # (docs/research/blender-build-cache-hosting.md); `--release <tag>` restores an older one.
 #
-# The default build is typecheck-fixes, the fork branch the blender submodule tracks: it changes headers nearly every
-# file includes (BLI_utildefines.hh, BKE_global.hh, DNA and RNA headers), so a cache of upstream main leaves about 90%
-# of the build to redo when a session moves to the fork. Dispatch with name main for an upstream cache.
+# The default build is typecheck-fixes, the branch the blender submodule pins, of the fork github.com/taway1450/blender
+# (a fork of Blender's GitHub mirror). It changes headers nearly every file includes (BLI_utildefines.hh, BKE_global.hh,
+# DNA and RNA headers), so a cache of upstream main leaves about 90% of the build to redo when a session moves to the
+# fork. Dispatch with name main for an upstream cache (the fork's main; `gh repo sync taway1450/blender` updates it).
 #
 # The cache only works at the absolute path it was built at, with the same compiler and ccache paths, so this job
 # builds the way a Claude Code cloud session does: repo at /home/user/blender-extension-developer-suite,
@@ -64,6 +65,10 @@ jobs:
       CCACHE_DIR: /home/user/blender-extension-developer-suite/.cache/ccache
       # Keeps the published ccache archive small (a full build is about 0.4 GB compressed).
       CCACHE_MAXSIZE: 3G
+      # The source comes from GitHub, but its git LFS files and the precompiled libraries only exist on
+      # projects.blender.org, which has refused runners with HTTP 403 for hours at a time (runs 4 and 7): the scripts
+      # retry those downloads after each of these waits (seconds).
+      SUITE_FETCH_RETRY_WAITS: "60 180 420 900 1800"
     steps:
       - name: Free disk space
         run: |
@@ -102,13 +107,8 @@ jobs:
           git -C "$REPO_DIR" checkout --detach "${{ github.sha }}"
           cd "$REPO_DIR"
           mise trust -q .
-          # Blobs are fetched on demand when the build's worktree is created. projects.blender.org has refused a
-          # runner's anonymous clone with HTTP 403 before, so retry with backoff.
-          for wait in 60 180 420 0; do
-            GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --filter=blob:none blender && break
-            [ "$wait" = 0 ] && exit 1
-            echo "::warning::Cloning blender failed; retrying in $wait s"; sleep "$wait"
-          done
+          # Blobs are fetched on demand when the build's worktree is created.
+          GIT_LFS_SKIP_SMUDGE=1 git submodule update --init --filter=blob:none blender
 
       - name: Start from the previous cache
         if: ${{ !inputs.cold }}

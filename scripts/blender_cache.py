@@ -62,6 +62,7 @@ from _build_cache import (
     write_manifest,
 )
 from _common import (
+    BLENDER_LFS_URL,
     BLENDER_SUBMODULE,
     CACHE_DIR,
     REPO_ROOT,
@@ -291,7 +292,7 @@ def restore(name: str, url: str | None = None, *, force: bool = False, ccache_on
     else:
         ensure_blender_commit(commit, name)
         source = ensure_worktree(name, commit)
-    pull_lfs_files(source)
+    pull_lfs_files(source, BLENDER_LFS_URL)
     libs = ensure_libraries(source)
     if not (LIBS_DIR / manifest["libs"]["platform"]).samefile(libs):
         raise StepError(f"The cache used the {manifest['libs']['platform']} libraries, this machine uses {libs.name}")

@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -17,6 +18,12 @@ TY_SUBMODULE = REPO_ROOT / "ty-blender"
 EXAMPLE_ADDONS_DIR = REPO_ROOT / "examples" / "addons"
 TYPECHECK_TESTS_DIR = REPO_ROOT / "tests" / "typecheck"
 CACHE_DIR = REPO_ROOT / ".cache"
+
+# Where the git LFS files of the Blender source are: upstream's server. The fork is on GitHub, whose mirror of Blender
+# has no LFS objects, and no commit of the fork adds an LFS file, so upstream has every object a fork checkout needs.
+BLENDER_LFS_URL = "https://projects.blender.org/blender/blender.git/info/lfs"
+# Seconds to wait before each retry of `run_fetch`, space separated; unset or empty: no retry.
+FETCH_RETRY_WAITS = "SUITE_FETCH_RETRY_WAITS"
 
 COMPLETE_MARKER = ".complete"
 
@@ -47,6 +54,29 @@ def run(cmd: list[str | Path], *, cwd: Path | None = None, env: dict[str, str] |
     result = subprocess.run([str(c) for c in cmd], cwd=cwd, env=env)
     if result.returncode != 0:
         raise StepError(f"Command failed with exit code {result.returncode}: {printable}")
+
+
+def fetch_retry_waits() -> list[float]:
+    try:
+        return [float(wait) for wait in os.environ.get(FETCH_RETRY_WAITS, "").split()]
+    except ValueError as error:
+        raise StepError(f"{FETCH_RETRY_WAITS} must be numbers of seconds separated by spaces: {error}") from None
+
+
+def run_fetch(cmd: list[str | Path], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
+    """``run`` for a command that downloads from projects.blender.org, which refuses a client now and then (CI runners
+    have got HTTP 403 for hours): after a failure, wait for each of the ``SUITE_FETCH_RETRY_WAITS`` seconds in turn and
+    run it again. Without the variable a failure is final, so a wrong URL or a missing login fails at once."""
+    waits = fetch_retry_waits()
+    for attempt, wait in enumerate([*waits, None], start=1):
+        try:
+            run(cmd, cwd=cwd, env=env)
+            return
+        except StepError:
+            if wait is None:
+                raise
+            log(f"Attempt {attempt} of {len(waits) + 1} failed; retrying in {wait:.0f} s")
+            time.sleep(wait)
 
 
 def blender_script_command(
