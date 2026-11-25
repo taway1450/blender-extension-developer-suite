@@ -118,6 +118,16 @@ def download_manifest(url: str, downloads: Path) -> tuple[dict, str]:
     return manifest, url
 
 
+def set_mtime(path: str | os.PathLike[str], when: float) -> None:
+    """Give ``path`` itself the access and modification time ``when``. A symlink gets its own time where the
+    platform can set it (Linux, macOS); elsewhere (Windows) it is left alone, since setting it would change the
+    file it points to."""
+    if os.utime in os.supports_follow_symlinks:
+        os.utime(path, (when, when), follow_symlinks=False)
+    elif not os.path.islink(path):
+        os.utime(path, (when, when))
+
+
 def walk_paths(repo: Path, skip: tuple[str, ...] = ()) -> Iterator[str]:
     """Every file and directory under ``repo``, except ``.git`` anywhere and the top-level entries ``skip``."""
     for directory, subdirs, files in os.walk(repo):
@@ -137,7 +147,7 @@ def backdate(repo: Path, skip: tuple[str, ...] = ()) -> int:
     """Give every path of ``repo`` (see ``walk_paths``) the time ``EPOCH``; return how many."""
     count = 0
     for path in walk_paths(repo, skip):
-        os.utime(path, (EPOCH, EPOCH), follow_symlinks=False)
+        set_mtime(path, EPOCH)
         count += 1
     return count
 
@@ -168,7 +178,7 @@ def repair_timestamps(repo: Path, base_commit: str, skip: tuple[str, ...] = ()) 
     for name in differing:
         path = repo / name
         if path.exists() or path.is_symlink():
-            os.utime(path, (now, now), follow_symlinks=False)
+            set_mtime(path, now)
             count += 1
     # Store the new timestamps in the index, so the next `git status` does not rehash every file.
     subprocess.run(["git", "-C", str(repo), "update-index", "-q", "--refresh"], capture_output=True)

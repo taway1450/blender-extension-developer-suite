@@ -54,6 +54,7 @@ from _build_cache import (
     repair_timestamps,
     require_linux,
     require_tools,
+    set_mtime,
     tar_create,
     tar_extract,
     walk_paths,
@@ -105,7 +106,7 @@ def mark_manifests_newest(repo: Path) -> int:
         if "Cargo.toml" in files:
             path = os.path.join(directory, "Cargo.toml")
             if os.lstat(path).st_mtime == EPOCH:
-                os.utime(path, (EPOCH + 1, EPOCH + 1), follow_symlinks=False)
+                set_mtime(path, EPOCH + 1)
                 count += 1
     return count
 
@@ -198,7 +199,7 @@ def touch_all(repo: Path, skip: tuple[str, ...]) -> None:
     recompiles)."""
     now = time.time()
     for path in walk_paths(repo, skip):
-        os.utime(path, (now, now), follow_symlinks=False)
+        set_mtime(path, now)
 
 
 def restore(url: str | None = None, *, force: bool = False) -> None:
