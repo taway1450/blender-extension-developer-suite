@@ -27,18 +27,20 @@ and writes ``docs/catalog/`` (``pages``).
 from __future__ import annotations
 
 import ast
+import functools
 import hashlib
 import re
+import subprocess
 import sys
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from _baseline import CATALOG, EXAMPLES_EXPECTED_DIR, SEPARATOR, entry_path, type_entry
-from _common import BLENDER_SUBMODULE, CATALOG_DIR, REPO_ROOT
+from _baseline import CATALOG, EXAMPLES_EXPECTED_DIR, entry_path, type_entry
+from _common import BLENDER_SUBMODULE, CATALOG_DIR, REPO_ROOT, entry_key
 from _features import FEATURES_DIR, Addon
 from _markers import ASSERT, EXPECTED, EXPECTED_ERROR, TypeMarker, parse_type_file
-from examples_coverage import RULE_LEVEL, Demo, file_demos, table
+from examples_coverage import Demo, file_demos, read_results, table
 
 HEADER_START = "# /// catalog"
 HEADER_END = "# ///"
@@ -53,7 +55,7 @@ TY_TOML = CATALOG_DIR / "ty.toml"
 PAGES_DIR = REPO_ROOT / "docs" / "catalog"
 COVERAGE_TOML = REPO_ROOT / "examples" / "addons" / "coverage.toml"
 REMAINING_CAUSES = REPO_ROOT / "docs" / "reports" / "remaining-causes.md"
-BLENDER_DOCS_RST = BLENDER_SUBMODULE / "doc" / "python_api" / "rst"
+BLENDER_DOCS_RST = "doc/python_api/rst"  # in the Blender source
 # The results every verdict is read from (as for examples:coverage): the builtin stubs know the most, main is newest.
 REFERENCE = ("builtin", "main")
 # The other recorded results an entry is compared with (``[differs]``).
@@ -61,6 +63,12 @@ OTHERS = (("fake-bpy-module", "main"), ("builtin", "5.2"), ("fake-bpy-module", "
 RULES_URL = "https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md"
 BLENDER_DOCS_URL = "https://docs.blender.org/api/current"
 ANY_RULE_HEADING = re.compile(r"^## `(?P<rule>[a-z][a-z0-9-]*)`$")
+
+
+def is_other(key: str) -> bool:
+    """Whether ``key`` (``generator/version``) names one of the other recorded results."""
+    return tuple(key.split("/", 1)) in OTHERS
+
 
 STATUSES = {"handled": "Handled", "partial": "Partial", "not-handled": "Not handled", "unknown": "Unknown"}
 # Safeguards, in page order. The first six find a problem before the add-on runs (a checked marker shows it); the
@@ -100,6 +108,8 @@ HEADER_KEYS = {
 }
 FUTURE_KEYS = {"class", "note", "tracked"}
 RUNTIME_KEYS = {"register", "error", "reason", "probe"}
+# `[evidence]`: a feature-test add-on, and what its _expected/runtime.toml must say for the entry's claim to hold.
+EVIDENCE_KEYS = {"addon", "register", "says"}
 PROBE_KEYS = {"code", "expect", "reason"}
 DOCS_PAGE = re.compile(r"^(info_[a-z_]+|[a-z][a-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)$")
 # Modules of Blender's Python an entry may import, which an entry's file stem would shadow.
@@ -185,8 +195,7 @@ class Recorded:
 
 def read_recorded(path: Path) -> Recorded:
     recorded = Recorded()
-    for line in CATALOG.read(path):
-        file, rule, key = line.split(SEPARATOR, 2)
+    for file, rule, key in read_results(path, CATALOG):
         if rule == CHECKED:
             recorded.hashes[file] = key
         else:
@@ -268,7 +277,7 @@ def read_topics(text: str) -> Topics:
         if not safeguard.get("title") or not safeguard.get("description"):
             result.problems.append(f"topics.toml: [safeguard.{name}] needs a title and a description")
     for key in result.differs:
-        if tuple(key.split("/", 1)) not in OTHERS:
+        if not is_other(key):
             result.problems.append(f"topics.toml: [differs] `{key}` is no other recorded generator/version")
     return result
 
@@ -285,7 +294,7 @@ class Header:
     features: tuple[str, ...] = ()
     later: str = ""
     note: str = ""
-    evidence: str = ""
+    evidence: dict = field(default_factory=dict)
     blender_docs: tuple[str, ...] = ()
     see: tuple[str, ...] = ()
     future: dict = field(default_factory=dict)
@@ -339,12 +348,12 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
     header = Header(
         title=text("title"),
         section=text("section"),
-        status=text("status"),
+        status=text("status") or "unknown",
         safeguards=texts("safeguards"),
         features=texts("features"),
         later=text("later"),
         note=text("note"),
-        evidence=text("evidence"),
+        evidence=mapping("evidence", EVIDENCE_KEYS),
         blender_docs=texts("blender-docs"),
         see=texts("see"),
         future=mapping("future", FUTURE_KEYS),
@@ -378,10 +387,15 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
         if header.status not in ("not-handled", "partial"):
             problems.append(f"{where}: only a not-handled or partial entry has a [future] table")
     for key, note in header.differs.items():
-        if tuple(key.split("/", 1)) not in OTHERS:
+        if not is_other(key):
             problems.append(f"{where}: [differs] `{key}` is no other recorded generator/version")
         if not isinstance(note, str) or not note:
             problems.append(f"{where}: [differs] `{key}` needs the reason as a string")
+    if header.evidence:
+        if not header.evidence.get("addon"):
+            problems.append(f"{where}: [evidence] names the feature-test `addon`")
+        if header.evidence.get("register", "ok") not in ("ok", "fails"):
+            problems.append(f"{where}: [evidence] register is `ok` or `fails`")
     if "blender-runtime" in header.safeguards and not (header.evidence or header.runtime):
         problems.append(f"{where}: `blender-runtime` needs `evidence` or a [runtime] table")
     if header.runtime:
@@ -408,7 +422,7 @@ class Entry:
 
     @property
     def anchor(self) -> str:
-        return self.stem.replace("_", "-")
+        return entry_key(self.stem)
 
     @property
     def id(self) -> str:
@@ -617,6 +631,23 @@ def differs_problems(entry: Entry, found: dict[str, bool], blanket: dict[str, st
     return problems
 
 
+def evidence_problems(where: str, evidence: dict) -> list[str]:
+    """Whether the feature-test add-on's ``_expected/runtime.toml`` says what ``[evidence]`` claims: the same
+    ``register`` outcome, and ``says`` in its ``reason`` or ``error``."""
+    path = FEATURES_DIR / evidence["addon"] / "_expected" / "runtime.toml"
+    if not path.is_file():
+        return [f"{where}: evidence `{evidence['addon']}` is no feature-test add-on with _expected/runtime.toml"]
+    spec = tomllib.loads(path.read_text(encoding="utf-8"))
+    problems = []
+    claimed, recorded = evidence.get("register", "ok"), spec.get("register", "ok")
+    if claimed != recorded:
+        problems.append(f"{where}: [evidence] says register `{claimed}`, but {evidence['addon']} says `{recorded}`")
+    says = evidence.get("says", "")
+    if says and not any(says in spec.get(key, "") for key in ("reason", "error")):
+        problems.append(f"{where}: [evidence] `{says}` is not in the reason or error of {evidence['addon']}")
+    return problems
+
+
 def header_problems(entry: Entry, topics: Topics, features: list[str], later: set[str]) -> list[str]:
     """What the header names that does not exist: its section, features, `later` topic, tracker, evidence, docs."""
     where, header, problems = entry.main, entry.header, []
@@ -642,45 +673,51 @@ def header_problems(entry: Entry, topics: Topics, features: list[str], later: se
             problems.append(f"{where}: tracked `{tracked}` is not in docs/reports/remaining-causes.md")
     elif tracked and not re.fullmatch(r"later/.+|remaining-causes/.+|#\d+", tracked):
         problems.append(f"{where}: tracked `{tracked}` is none of later/<topic>, remaining-causes/<id>, #<issue>")
-    if header.evidence:
-        addon = FEATURES_DIR / header.evidence
-        if not (addon / "_expected" / "runtime.toml").is_file():
-            problems.append(
-                f"{where}: evidence `{header.evidence}` is no feature-test add-on with _expected/runtime.toml"
-            )
+    if header.evidence.get("addon"):
+        problems += evidence_problems(where, header.evidence)
     if header.runtime and not entry.is_addon:
         problems.append(f"{where}: an entry with a [runtime] table is an add-on (a package, or a module with bl_info)")
     for page in header.blender_docs:
         if not DOCS_PAGE.match(page):
             problems.append(f"{where}: blender-docs `{page}` is no page name (info_gotcha, bpy.props, ...)")
-        elif (
-            page.startswith("info_") and BLENDER_DOCS_RST.is_dir() and not (BLENDER_DOCS_RST / f"{page}.rst").is_file()
-        ):
-            problems.append(f"{where}: blender-docs `{page}` is not in blender/doc/python_api/rst/")
+        elif page.startswith("info_") and in_blender_source(f"{BLENDER_DOCS_RST}/{page}.rst") is False:
+            problems.append(f"{where}: blender-docs `{page}` is not in blender/{BLENDER_DOCS_RST}/")
     for path in header.see:
         if not path.startswith("blender/"):
             problems.append(f"{where}: see `{path}` is a path in the Blender source, starting with blender/")
-        elif BLENDER_SUBMODULE.joinpath("README.md").is_file() and not (REPO_ROOT / path).exists():
+        elif in_blender_source(path.removeprefix("blender/")) is False:
             problems.append(f"{where}: see `{path}` does not exist")
     return problems
 
 
+@functools.cache
+def blender_commit() -> str | None:
+    """The Blender commit this repository pins, when the ``blender`` submodule has it: its tree is enough, so CI
+    fetches it without file contents (``.github/workflows/scripts.yml``)."""
+    pinned = subprocess.run(["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD:blender"], capture_output=True, text=True)
+    commit = pinned.stdout.strip()
+    if pinned.returncode or not (BLENDER_SUBMODULE / ".git").exists():
+        return None
+    known = subprocess.run(
+        ["git", "-C", str(BLENDER_SUBMODULE), "cat-file", "-e", f"{commit}^{{commit}}"], capture_output=True
+    )
+    return commit if known.returncode == 0 else None
+
+
+def in_blender_source(path: str) -> bool | None:
+    """Whether ``path`` (relative to the Blender source) exists at the pinned commit; None when that cannot be told."""
+    commit = blender_commit()
+    if commit is None:
+        return None
+    listed = subprocess.run(
+        ["git", "-C", str(BLENDER_SUBMODULE), "ls-tree", "--name-only", commit, "--", path.rstrip("/")],
+        capture_output=True,
+        text=True,
+    )
+    return bool(listed.stdout.strip())
+
+
 # --- the pages --------------------------------------------------------------------------------------------------------
-
-
-def read_levels(path: Path) -> dict[str, str]:
-    """Every rule of the rule reference with its default level."""
-    levels: dict[str, str] = {}
-    current = None
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if heading := ANY_RULE_HEADING.match(line):
-            current = heading["rule"]
-            levels[current] = ""
-        elif line.startswith("## "):
-            current = None
-        elif current and not levels[current] and (level := RULE_LEVEL.match(line)):
-            levels[current] = level["level"]
-    return levels
 
 
 def rule_link(rule: str, levels: dict[str, str]) -> str:
@@ -718,8 +755,9 @@ def what_you_see(entry: Entry, levels: dict[str, str]) -> str:
     """What the holding markers show: the types, then the rules reported on the marked lines."""
     parts = []
     rules: list[str] = []
-    expected = [m for m in entry.holding_markers() if m.kind == EXPECTED]
-    for marker in entry.holding_markers():
+    holding = entry.holding_markers()
+    expected = [m for m in holding if m.kind == EXPECTED]
+    for marker in holding:
         if marker.kind == ASSERT and (pair := asserted(marker)):
             parts.append(f"`{pair[0]}` is `{pair[1]}`")
     for marker in expected:
@@ -732,14 +770,14 @@ def what_you_see(entry: Entry, levels: dict[str, str]) -> str:
 
 def today(entry: Entry, reference: Recorded, levels: dict[str, str]) -> str:
     gaps = entry.gaps()
-    rules = sorted({rule for result in reference.of(entry.rel) if in_gap(result, gaps) for rule in [result[1]]})
+    rules = sorted({result[1] for result in reference.of(entry.rel) if in_gap(result, gaps)})
     if not rules:
         return ""
     where = "line" if len(gaps) == 1 else "lines"
     return f"ty reports {joined([rule_link(r, levels) for r in rules])} on the {where} marked *not handled yet*"
 
 
-def future_line(entry: Entry, topics: Topics) -> str:
+def future_line(entry: Entry) -> str:
     future = entry.header.future
     if not future:
         return ""
@@ -753,10 +791,8 @@ def more_links(entry: Entry) -> str:
     links = [
         f"[feature tests: {name}](../../tests/typecheck/features/{name}/README.md)" for name in entry.header.features
     ]
-    if entry.header.evidence:
-        links.append(
-            f"[runtime evidence](../../tests/typecheck/features/{entry.header.evidence}/_expected/runtime.toml)"
-        )
+    if addon := entry.header.evidence.get("addon"):
+        links.append(f"[runtime evidence](../../tests/typecheck/features/{addon}/_expected/runtime.toml)")
     links += [f"[{page}]({BLENDER_DOCS_URL}/{page}.html)" for page in entry.header.blender_docs]
     links += [
         f"[`{path.removeprefix('blender/')}`](https://projects.blender.org/blender/blender/src/branch/main/{path.removeprefix('blender/')})"
@@ -766,9 +802,8 @@ def more_links(entry: Entry) -> str:
     return " · ".join(links)
 
 
-def render_entry(
-    entry: Entry, topics: Topics, reference: Recorded, levels: dict[str, str], differ: dict[str, bool]
-) -> list[str]:
+def render_entry(entry: Entry, catalog: Catalog) -> list[str]:
+    topics, levels, differ = catalog.topics, catalog.levels, catalog.differ.get(entry.id, {})
     out = [
         f'<a id="{entry.anchor}"></a>',
         f"### {entry.header.title}",
@@ -792,9 +827,9 @@ def render_entry(
         bullets.append(f"**Not yet:** {entry.header.note}")
     elif entry.header.note:
         bullets.append(f"**Note:** {entry.header.note}")
-    if entry.header.status in ("partial", "not-handled") and (now := today(entry, reference, levels)):
+    if entry.header.status in ("partial", "not-handled") and (now := today(entry, catalog.reference, levels)):
         bullets.append(f"**Today:** {now}.")
-    if future := future_line(entry, topics):
+    if future := future_line(entry):
         bullets.append(f"**Future:** {future}")
     notes = []
     for key, differs in differ.items():
@@ -845,9 +880,7 @@ def topic_page(catalog: Catalog, topic: Topic) -> str:
         out += [f'<a id="{section.id}"></a>', f"## {section.title}", ""]
         entries = catalog.of_section(topic.id, section.id)
         for entry in entries:
-            out += render_entry(
-                entry, catalog.topics, catalog.reference, catalog.levels, catalog.differ.get(entry.id, {})
-            )
+            out += render_entry(entry, catalog)
         if section.to_come:
             out += ["To come in this section: " + "; ".join(section.to_come) + ".", ""]
         elif not entries:

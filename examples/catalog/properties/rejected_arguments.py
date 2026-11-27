@@ -4,7 +4,11 @@
 # status = "handled"
 # safeguards = ["typechecker"]
 # features = ["properties"]
-# evidence = "properties/props_defaults"
+#
+# [evidence]
+# addon = "properties/props_defaults"
+# register = "fails"
+# says = "ValueError at registration"
 # ///
 """Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default
 that is not one of the enum's items, a `set` callback without `get`, a vector `size` above

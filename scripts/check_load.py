@@ -98,8 +98,9 @@ def main() -> int:
         help="Features or addons (feature/addon), or with --examples addon directory names (default: all)",
     )
     parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
-    parser.add_argument("--examples", action="store_true", help="Load the example add-ons in examples/addons/")
-    parser.add_argument("--catalog", action="store_true", help="Load the catalog entries with a [runtime] table")
+    kind = parser.add_mutually_exclusive_group()
+    kind.add_argument("--examples", action="store_true", help="Load the example add-ons in examples/addons/")
+    kind.add_argument("--catalog", action="store_true", help="Load the catalog entries with a [runtime] table")
     args = parser.parse_args()
 
     if args.catalog:
@@ -117,6 +118,9 @@ def main() -> int:
                 {"name": name, "root": str(package.parent), "module": package.stem, "probes": spec.get("probe", [])}
             )
             expectations[name] = spec
+    if not entries:
+        log("Nothing to load: no selected add-on or entry has a runtime spec that loads it")
+        return 0
 
     blender = find_blender(args.version, args.blender)
     work = TYPECHECK_RESULTS_DIR / args.version

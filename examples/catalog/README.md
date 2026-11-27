@@ -58,7 +58,7 @@ def example(settings: ExportSettings) -> None:
 - **Header**: the `# /// catalog` TOML block (the PEP 723 comment form). Unknown keys are errors. A `handled` or
   `partial` entry names `safeguards`; `partial` says in `note` what is missing; `not-handled` has a `[future]`
   table with `class` and `note`, and `planned` also says where it is `tracked`. `unknown` means not classified yet.
-  Other keys: `evidence` (a feature-test add-on whose `_expected/runtime.toml` shows a runtime claim),
+  Other keys: `[evidence]` (a feature-test add-on whose `_expected/runtime.toml` shows a runtime claim, below),
   `blender-docs` (page names such as `info_gotcha` or `bpy.props`), `see` (paths in the Blender source, starting
   `blender/`), `[differs]` and `[runtime]` (below).
 - **Prose**: the module docstring, in Markdown, in the terms of [GLOSSARY.md](../../GLOSSARY.md). Its first
@@ -85,15 +85,21 @@ def example(settings: ExportSettings) -> None:
 4. the entry was recorded as its code is now (the `checked` line holds a hash of the code without the header);
 5. where another recorded generator or version (fake-bpy-module on main, both generators on 5.2) gives another
    outcome, the entry says why in `[differs]` (`"builtin/5.2" = "why"`), and a note without a difference is stale;
-6. the header names only what exists, and the pages and `ty.toml`'s roots are current.
+6. the header names only what exists (its `[evidence]` says what the add-on's `_expected/runtime.toml` records; the
+   Blender docs pages and source paths exist at the pinned Blender commit, checked only when the `blender`
+   submodule has it, as CI does), and the pages and `ty.toml`'s roots are current.
 
 ## Runtime claims
 
 An entry that says what Blender does at runtime (rejects a declaration, keeps a value) shows evidence: a feature-test
-add-on in `evidence`, or a `[runtime]` table with the keys of `_expected/runtime.toml` (`register`, `error`, `reason`,
+add-on in an `[evidence]` table, or a `[runtime]` table with the keys of `_expected/runtime.toml` (`register`, `error`, `reason`,
 `[[runtime.probe]]`), which makes it an add-on-form entry that `mise run check:load main --catalog` loads in Blender,
-or Blender's docs or source in `blender-docs` / `see`. `blender-runtime` in `safeguards` needs `evidence` or a
+or Blender's docs or source in `blender-docs` / `see`. `blender-runtime` in `safeguards` needs `[evidence]` or a
 `[runtime]` table. A claim with none of these is left out.
+
+`[evidence]` names the feature-test add-on (`addon = "properties/props_defaults"`), what it records for registration
+(`register = "fails"`, `ok` when left out) and, in `says`, a phrase its `reason` or `error` must contain; the check
+fails when the add-on's `_expected/runtime.toml` says otherwise.
 
 ## Workflow
 
