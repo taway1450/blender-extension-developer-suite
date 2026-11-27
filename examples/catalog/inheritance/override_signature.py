@@ -2,7 +2,7 @@
 # title = "An override with another signature"
 # section = "overrides"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["inheritance"]
 #
 # [evidence]

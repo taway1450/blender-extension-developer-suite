@@ -84,6 +84,13 @@ out-of-scope = "A static tool could check it, but it is not this project's to ch
 # A `[differs]` table here ("generator/version" = "why") excuses every entry whose outcome differs with that stub
 # generator or Blender version. None does yet: each entry says why in its own `[differs]` table.
 
+# --- coverage: rules and feature directories no entry shows -------------------------------------------------------------
+# `catalog:generate --check` fails unless every `blender-*` rule of the rule reference is a marker of some entry and every
+# directory of tests/typecheck/features/ is in some entry's `features`, or this table says why not.
+
+[exempt]
+blender-assumed-default-addon = "Reported only when a default add-on's source is on ty's search path, which the catalog's checks do not set up; addons/default-addon-properties shows the read without it."
+
 # --- the topics -------------------------------------------------------------------------------------------------------
 
 [topic.addons]
@@ -161,12 +168,12 @@ to-come = []
 [[topic.properties.sections]]
 id = "value-types"
 title = "Value types"
-to-come = ["vector writes", "read-only properties"]
+to-come = []
 
 [[topic.properties.sections]]
 id = "registered"
 title = "Registered properties"
-to-come = ["a property registered outside `register()`"]
+to-come = []
 
 [[topic.properties.sections]]
 id = "callbacks"
@@ -357,32 +364,32 @@ the entries say why and link Blender's own gotcha pages.
 [[topic.hazards.sections]]
 id = "stale-data"
 title = "Stale data"
-to-come = ["a reference kept across undo", "a collection item after `add()`", "an edit-mode mesh's data"]
+to-come = []
 
 [[topic.hazards.sections]]
 id = "restricted"
 title = "Restricted context"
-to-come = ["`bpy.data` during registration", "writes in a draw function"]
+to-come = []
 
 [[topic.hazards.sections]]
 id = "threads"
 title = "Threads and crashes"
-to-come = ["`bpy` in a thread", "a callback that crashes Blender"]
+to-come = []
 
 [topic.tooling]
 title = "Tooling"
-covers = "ruff rules that misfire on add-on code, format, Strictness"
+covers = "ruff rules that misfire on add-on code, Strictness"
 intro = """
-General Python tools meet Blender conventions: lint rules that misfire on add-on code, formatting, and the Strictness
-presets of the add-on typechecker.
+General Python tools meet Blender conventions: ruff rules that misfire on add-on code or that the linter profile
+narrows, and the Strictness presets and rule levels of the add-on typechecker.
 """
 
 [[topic.tooling.sections]]
 id = "lint"
 title = "Lint rules"
-to-come = ["`F821` on a property annotation", "class names Blender requires", "star imports in templates"]
+to-come = []
 
 [[topic.tooling.sections]]
 id = "strictness"
 title = "Strictness"
-to-come = ["the Strictness presets", "rule levels per add-on"]
+to-come = []

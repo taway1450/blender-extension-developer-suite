@@ -27,7 +27,7 @@ description = "The values of an `EnumProperty` whose `items` unpack another tupl
 description = "The parameters of a function appended to `bpy.app.handlers` (a save handler's file path)"
 
 [later.msgbus-keys]
-description = "A `(type, \"property\")` key of `bpy.msgbus.subscribe_rna`, which the builtin stubs reject"
+description = "A `(type, \"property\")` key of `bpy.msgbus.subscribe_rna`, which Blender 5.2's builtin stubs reject"
 
 [later.own-node-sockets]
 description = "The sockets a node's `init` creates, by name (`node.inputs[\"A\"]`)"

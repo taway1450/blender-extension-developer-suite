@@ -99,6 +99,33 @@ class Apply(Operator):
 <a id="calls"></a>
 ## Calling through `bpy.ops`
 
+<a id="added-object"></a>
+### The object an `*_add` operator adds
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/added-object`
+
+`bpy.ops.mesh.primitive_cube_add()` and the other `*_add` operators add an object and make it the active one, so
+code reads it as `context.object` right after the call. Whether the call added an object does not show in the code.
+The checker takes the read as the added object, a mesh object for
+`primitive_cube_add`, and reports it as an Assumption.
+
+```python
+import bpy
+from bpy.types import Context, Mesh
+
+
+def add_cube(context: Context) -> None:
+    bpy.ops.mesh.primitive_cube_add(size=2.0)
+    cube = context.object  # reported: blender-assumed-added-object
+    assert_type(cube.data, Mesh)
+    cube.name = "Cube"
+```
+
+- **What you see:** `cube.data` is `Mesh`; ty reports [`blender-assumed-added-object`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-added-object) (warn) on the line marked *reported*.
+- **Levels:** [`blender-assumed-added-object`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-added-object) is `warn` under the lenient preset, `warn` under default and `error` under strict.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `context.object` as `Object`, so nothing is assumed, and with no Tag views `cube.data` stays the base type. · fake-bpy-module stubs, Blender 5.2: These stubs have no Tag views, so `cube.data` stays the base type.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [strictness evidence](../../tests/typecheck/features/assumptions/asm_added_object/_expected/strictness.toml) · [`source/blender/editors/object/object_add.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/editors/object/object_add.cc) · [source](../../examples/catalog/operators/added_object.py)
+
 <a id="builtin-operator-call"></a>
 ### Calling Blender's operators
 

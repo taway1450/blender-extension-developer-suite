@@ -20,26 +20,30 @@ fail until the entry is updated.
 | --- | --- | --- | --- | --- | --- | --- |
 | [Add-ons](addons.md) | manifest and `bl_info`, entry points, reload, other add-ons | 12 |  | 1 |  |  |
 | [Registration](registration.md) | classes, idnames and naming, order, what `register()` reaches | 12 |  |  |  |  |
-| [Properties](properties.md) | declaring, Value types, Registered properties, callbacks, wrappers | 19 | 1 | 4 |  | 3 |
-| [Operators](operators.md) | callbacks and return sets, `bpy.ops`, idname strings, modal | 12 |  | 1 |  |  |
-| [Context](context.md) | Guaranteed context members, editors, outside callbacks, narrowings | 9 |  |  |  |  |
-| [Data](data.md) | never-None, Type tags, collections, node sockets, enums | 9 | 3 |  |  |  |
+| [Properties](properties.md) | declaring, Value types, Registered properties, callbacks, wrappers | 21 | 2 | 4 |  |  |
+| [Operators](operators.md) | callbacks and return sets, `bpy.ops`, idname strings, modal | 13 |  | 1 |  |  |
+| [Context](context.md) | Guaranteed context members, editors, outside callbacks, narrowings | 11 |  |  |  |  |
+| [Data](data.md) | never-None, Type tags, collections, node sockets, enums | 10 | 3 |  |  |  |
 | [UI](ui.md) | draw code, lists, popovers, gizmos, tools | 7 |  | 3 |  |  |
 | [Inheritance](inheritance.md) | overrides, mixins, bases | 8 |  |  |  |  |
 | [Modules](modules.md) | mathutils, bmesh, gpu, handlers, timers, msgbus, previews | 5 | 2 | 2 |  |  |
 | [Blend files](blend-files.md) | data by name, shipped files, libraries, custom properties | 1 | 1 | 2 |  |  |
-| [Hazards](hazards.md) | stale data, undo, crashes, restricted context, threads |  |  |  |  | 7 |
-| [Tooling](tooling.md) | ruff rules that misfire on add-on code, format, Strictness |  |  |  |  | 5 |
+| [Hazards](hazards.md) | stale data, undo, crashes, restricted context, threads |  |  | 7 |  |  |
+| [Tooling](tooling.md) | ruff rules that misfire on add-on code, Strictness | 6 |  | 2 |  |  |
 
 <a id="reading-an-entry"></a>
 ## Reading an entry
 
 - **Status**: *Handled* (something deals with it for you), *Partial*, *Not handled* (with what can change: planned, possible, not statically checkable, out of scope; see the [roadmap](roadmap.md)) or *Unknown* (not classified yet). *To come* counts the entries a topic still lacks: their titles are listed on its page.
-- **checked with Blender main, builtin stubs**: the example was type-checked by ty-blender against the stubs Blender itself generates for its development version. *Not machine-checked* entries make no claim a type checker could test.
-- **Code**: `assert_type(x, T)` (from `typing`) states the type you get for `x`; `# reported: rule` marks a line ty-blender reports under that rule; `# not handled yet: why` marks the line that still goes wrong.
+- *ty* is ty-blender, the add-on typechecker: a fork of the Python type checker ty that knows Blender's conventions.
+- **checked with Blender main, builtin stubs**: the example was type-checked by ty-blender against the stubs Blender itself generates for Blender main, its development branch. **checked with ruff**: the ruff run the entry describes was recorded too. *Not machine-checked* entries assert nothing a tool could test (their code is still type-checked, so the API names in it exist).
+- The last item of that line, such as `properties/annotated-property`, is the entry's id: `mise run check:catalog main properties/annotated-property` checks that entry alone.
+- **Code**: `assert_type(x, T)` (from `typing`) states the type you get for `x`; `# reported: rule` marks a line ty-blender reports under that rule; `# not handled yet: why` marks the line below it that still goes wrong, and `# would be reported: rule` on that line names what a check would report there.
 - **Script or add-on**: an example is a plain script unless it needs an add-on (registration checks, preferences, metadata): then it has a `bl_info` or a `blender_manifest.toml`, and its `register()` is what Blender calls. A script's classes are not checked for registration.
-- **What you see**: the types and diagnostics those lines show, with each rule's default level (`error`, `warn`) linked to its description. **Today** says what is reported on a line not handled yet, **Future** what would handle it.
+- **What you see**: the types and diagnostics those lines show, with each rule's default level (`error`, `warn`) linked to its description. **Not yet** says what a partial entry lacks, **Today** what is reported on a line not handled yet, **Future** what would handle it.
 - **Checked in Blender**: what loading the example in Blender showed (`mise run check:load main --catalog`).
+- **Levels**: a rule's level (`ignore`, `warn` or `error`) under each Strictness preset, lenient, default and strict, as the project's feature test records it.
+- **With ruff**: ruff run twice with the entry's rule selected, once with its stock settings and once with the [linter profile](by-safeguard.md#linter-profile), and whether each run reports the rule (`mise run lint:catalog`).
 - **With other stubs**: where fake-bpy-module's stubs or Blender 5.2 give another result, and why.
 - **More**: the project's own tests for the feature, Blender's documentation, and the example's source.
 - Capitalised terms such as *Property host*, *Value type* or *Assumption* are defined in the [glossary](../../GLOSSARY.md).
@@ -90,10 +94,12 @@ fail until the entry is updated.
 - [The old `x = IntProperty()` form](properties.md#legacy-assignment) (handled): Before Blender 2.80 properties were class attributes, `count = IntProperty()`.
 - [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range.
 - [Properties declared on a mixin](properties.md#mixin-annotations) (handled): Annotations of a base class, and of a mixin that is no Blender class at all, become properties of every class that derives from them.
+- [A property registered outside `register()`](properties.md#on-demand-property) (partial): An add-on can register a property later than `register()`, say in an `update` callback when an option is turned on.
 - [Pointers to a group and to a data-block](properties.md#pointer-properties) (handled): A `PointerProperty` to a `PropertyGroup` always holds an instance of it: Blender creates it with its owner, and it cannot be replaced.
 - [Classes that ignore property annotations](properties.md#property-hosts) (handled): Only some Blender classes are Property hosts: `PropertyGroup`, `Operator`, `Macro`, `AddonPreferences`, `UIList`, `Node`, `NodeSocket`, `NodeTree`, `Gizmo` and a few more.
 - [Constants, `partial` and wrapper functions](properties.md#property-wrappers) (handled): Add-ons share declarations: a module constant, `functools.partial`, a small function that returns a property.
 - [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call.
+- [Read-only properties](properties.md#read-only-properties) (handled): A property declared with `options={"READ_ONLY"}` can be read but not assigned: Blender raises `AttributeError` on a write.
 - [A property assigned to a Blender class](properties.md#registered-property) (handled): `bpy.types.Scene.x = PointerProperty(...)` adds a Registered property to every scene.
 - [Arguments Blender rejects at registration](properties.md#rejected-arguments) (handled): Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default that is not one of the enum's items, a `set` callback without `get`, a vector `size` above 32.
 - [Scalar Value types](properties.md#scalar-types) (handled): `IntProperty`, `FloatProperty`, `BoolProperty` and `StringProperty` give `int`, `float`, `bool` and `str`.
@@ -101,9 +107,11 @@ fail until the entry is updated.
 - [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked.
 - [Classes that take no Registered properties](properties.md#unsupported-target) (handled): Registered properties work on every data-block type and on bones, nodes, sockets, view layers and strips, but not on `Area`, `Window`, `Modifier`, `Preferences`, `Context` or a `SpaceView3D`.
 - [Vector properties and their subtype](properties.md#vector-subtypes) (handled): A `FloatVectorProperty` gives a `mathutils` type chosen by its `subtype` and `size`: `Color` for a colour of size 3, `Vector` for a translation or direction, `Euler` and `Quaternion` for rotations, `Matrix` for a `MATRIX` of size (4, 4) or 16.
+- [Writing a vector property](properties.md#vector-writes) (handled): A vector property reads as a `mathutils` object or an array, but takes any sequence of the right element type: a tuple or a list, of rows for a `Matrix`.
 
 ## [Operators](operators.md)
 
+- [The object an `*_add` operator adds](operators.md#added-object) (handled): `bpy.ops.mesh.primitive_cube_add()` and the other `*_add` operators add an object and make it the active one, so code reads it as `context.object` right after the call.
 - [Calling Blender's operators](operators.md#builtin-operator-call) (handled): Blender's own operators take their properties as keyword arguments, typed from the stubs: an enum property takes one of its identifiers, and any other string is reported.
 - [An execution context as the first argument](operators.md#execution-context) (handled): Before the keywords, an operator call takes an execution context, such as `"INVOKE_DEFAULT"` to run `invoke` as a click would, and an undo flag.
 - [An internal operator](operators.md#internal-operator) (handled): `"INTERNAL"` in `bl_options` hides an operator from the operator search, so in ordinary use only the add-on's own button or key calls it, where the context has what it needs.
@@ -125,9 +133,11 @@ fail until the entry is updated.
 - [`context.scene` and its siblings in a callback](context.md#guaranteed-members) (handled): The stubs type every context member `X | None`, since some context has none of them.
 - [`bpy.context` in an application handler](context.md#handler-context) (handled): A function in `bpy.app.handlers` runs when Blender reaches that moment: after a file loads, before a frame changes.
 - [`bpy.context` at import time](context.md#import-time-context) (handled): While Blender imports and registers an add-on, `bpy.context` is a restricted context with no `scene` at all: reading it raises `AttributeError`.
+- [Editor members in a menu's `poll`](context.md#menu-poll-editor) (handled): A menu is usually shown in an editor, where `area`, `region` and `space_data` are set, but nothing in a menu class names that editor.
 - [A menu's idname prefix](context.md#menu-prefix) (handled): A menu has no `bl_space_type` and can be opened from any editor, but by convention its idname starts with the prefix of the editor it belongs to: `VIEW3D_MT_` for the 3D Viewport.
 - [A poll that checks the mode](context.md#mode-poll) (handled): `context.mode == "EDIT_MESH"` in a poll says more than the mode: there is an object in edit mode, and it is a mesh.
 - [`context.object` after a poll](context.md#poll-narrowing) (handled): Blender calls an operator's `execute` or `invoke`, and a panel's `draw`, only right after its `poll()` returned `True`, with the same context.
+- [The context of a preset file](context.md#preset-file) (handled): A preset is a Python file that Blender runs with the context of the panel or menu that applies it, so a camera preset reads `bpy.context.camera` at module level and finds the camera of the Properties editor's camera tab.
 - [`bpy.context` in a timer](context.md#timer-context) (handled): A function given to `bpy.app.timers.register` runs later, outside any callback.
 
 ## [Data](data.md)
@@ -142,6 +152,7 @@ fail until the entry is updated.
 - [`nodes.new("ShaderNodeBsdfPrincipled")`](data.md#node-by-type) (handled): `nodes.new` takes the idname of the node to create, as a string.
 - [Pointers `None` until set](data.md#nullable-pointers) (handled): Some data is created only on demand: an object has no `animation_data` until it is animated or `animation_data_create()` is called.
 - [`object.data` by type](data.md#object-data-type) (handled): After a test of `object.type`, in an `if` or a `match`, the checker narrows `object.data` to the data-block that type holds: a `Mesh` for `"MESH"`.
+- [Pointers Blender keeps in step](data.md#pointer-alias) (handled): Blender's C code keeps some pointers in step: in the node editor, `space_data.node_tree` being set means `space_data.edit_tree` is set too, since Blender sets and clears the two together.
 - [Sockets by name](data.md#socket-by-name) (partial): A built-in node's sockets are looked up by name, identifier or index, and each has its own socket type: the Principled BSDF's `"Base Color"` input is a `NodeSocketColor`.
 - [A socket's `default_value`](data.md#socket-default-value) (partial): Every socket type that holds a value has a `default_value`, but the base `NodeSocket` does not.
 
@@ -190,8 +201,21 @@ fail until the entry is updated.
 
 ## [Hazards](hazards.md)
 
-Nothing here yet.
+- [A collection item after `add()`](hazards.md#added-item-reference) (not handled): Adding points to a curve, or vertices, edges and faces to a mesh, re-allocates the array that holds them, so an item read before the `add()` points to freed memory and can crash Blender.
+- [An operator in a property callback](hazards.md#callback-operator) (not handled): A property's `update` callback should be fast.
+- [Writes in a draw function](hazards.md#draw-write) (not handled): Blender calls a panel's, menu's or header's `draw` with writes to data-blocks turned off: setting a property of a scene, an object or any other data-block there raises `AttributeError` ("Writing to ID classes in this context is not allowed").
+- [An edit-mode mesh's data](hazards.md#edit-mode-mesh) (not handled): In Edit Mode a mesh has its own edit data, written back to the mesh only when Blender leaves Edit Mode: the mesh's `vertices` are out of sync until then.
+- [`bpy.data` during registration](hazards.md#restricted-data) (not handled): While Blender imports an add-on and runs its `register()`, `bpy.data` is an empty stand-in, so reading any collection raises `AttributeError` and the add-on fails to enable.
+- [`bpy` in a thread](hazards.md#thread-access) (not handled): Blender's Python is not thread-safe: a thread that still runs after the script returns can crash Blender later, in its drawing, a render or a driver.
+- [A reference kept across undo](hazards.md#undo-reference) (not handled): Undo and redo may free every data-block and its sub-data, and a Python object that still points to one then reads freed memory, which can crash Blender.
 
 ## [Tooling](tooling.md)
 
-Nothing here yet.
+- [Imports only property annotations use](tooling.md#annotation-imports) (handled): With `from __future__ import annotations`, an import that only annotations use looks needed for typing alone, and `TC002` asks to move it under `if TYPE_CHECKING:`.
+- [Class names Blender requires](tooling.md#class-names) (handled): A panel's or menu's `bl_idname` defaults to its class name, and Blender wants `_PT_` or `_MT_` in it, so these classes are named `CATEGORY_PT_name`; operators follow the same convention, `CATEGORY_OT_name`.
+- [`bl_options` as a set](tooling.md#mutable-class-default) (handled): An operator's `bl_options` is a set literal on the class, as in Blender's own templates.
+- [`UP037` on a dictionary key in an annotation](tooling.md#quoted-annotation-key) (handled): With `from __future__ import annotations`, `UP037` takes the key in `weight: PROPS["weight"]` for a quoted type and its fix rewrites it to `PROPS[weight]`, which breaks the add-on.
+- [`F821` in the reload guard](tooling.md#reload-guard-names) (not handled): Blender's own add-ons start with a guard that reloads their submodules when Blender re-enables the add-on: the module runs again in its old namespace, so `ops` is still bound (see [Reloading with `importlib.reload`](addons.md#reload-guard)).
+- [Rule levels per add-on](tooling.md#rule-levels) (handled): A level set for a Rule category or a single rule wins over the Strictness preset, and ty's `[[overrides]]` table in `ty.toml` sets it for one add-on's files: `blender-imprecise-annotations = "error"` makes the whole category an error there under every preset, and a rule set on its own, such as `blender-imprecise-enum-value = "ignore"`, wins over its category.
+- [The Strictness presets](tooling.md#strictness-presets) (handled): The checker sorts its Blender rules into Rule categories, and `strictness` in the `[blender]` table of `ty.toml` sets the level of every category at once: `"lenient"`, `"default"` or `"strict"`.
+- [`F821` on a property annotation](tooling.md#undefined-annotation-key) (not handled): An annotation can take its property from a dictionary, `weight: PROPS["weight"]`, and Blender evaluates it as the value it is when it registers the class.

@@ -2,7 +2,7 @@
 # title = "Arguments Blender rejects at registration"
 # section = "declaring"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["properties"]
 #
 # [evidence]

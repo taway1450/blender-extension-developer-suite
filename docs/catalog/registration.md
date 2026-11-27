@@ -70,7 +70,7 @@ def example() -> None:
 <a id="registered-twice"></a>
 ### A class registered twice
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/registered-twice`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `registration/registered-twice`
 
 Registering a class that is already registered raises `ValueError`, so the add-on fails to enable. It happens
 when a class is both registered by hand and listed in the tuple a loop registers. The checker reports the class where
@@ -117,7 +117,7 @@ def unregister():
 <a id="unregister-mismatch"></a>
 ### `unregister()` that does not undo `register()`
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/unregister-mismatch`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `registration/unregister-mismatch`
 
 `unregister()` should remove what `register()` added: what it leaves behind stays in Blender after the add-on is
 disabled, and `unregister_class` for a class that was never registered raises. The checker compares the two
@@ -172,7 +172,7 @@ def unregister():
 <a id="operator-idname"></a>
 ### An operator idname Blender rejects
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/operator-idname`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `registration/operator-idname`
 
 An operator's `bl_idname` is `category.name` in lower-case letters, digits and underscores; it becomes
 `bpy.ops.category.name`. Blender refuses any other form when the class is registered, the class-name form
@@ -291,7 +291,7 @@ register, unregister = bpy.utils.register_classes_factory(classes)
 <a id="property-group-order"></a>
 ### A PropertyGroup registered after the class pointing to it
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/property-group-order`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `registration/property-group-order`
 
 A `PointerProperty` or `CollectionProperty` needs its PropertyGroup registered first: Blender raises `ValueError`
 for a class whose property points to an unregistered one. The checker follows the order of `register()` and reports

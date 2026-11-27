@@ -2,7 +2,7 @@
 # title = "`register()` without `unregister()`"
 # section = "entry-points"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["addon_discovery"]
 #
 # [evidence]

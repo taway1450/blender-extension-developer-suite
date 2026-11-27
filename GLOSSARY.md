@@ -148,7 +148,7 @@ What deals with a Catalog entry so that the add-on author does not have to: the 
 _Avoid_: tool, provider, handler (a handler is a function in `bpy.app.handlers`)
 
 **Gap tag**:
-A `# gap: <reason>` comment line in a Catalog entry that says the statement below it fails today. The check fails both when such a statement passes (the gap is closed: remove the tag and review the status) and when a statement without one fails.
+A `# gap: <reason>` comment line in a Catalog entry that says the statement below it fails today; the generated pages show it as `# not handled yet: <reason>`. The check fails both when such a statement passes (the gap is closed: remove the tag and review the status) and when a statement without one fails.
 _Avoid_: xfail, todo marker
 
 ## Add-on code

@@ -24,7 +24,8 @@ Only `ty:test`, `ty:generate` (which builds `ruff_dev`) and six check tasks buil
 ## Editing the catalog (`examples/catalog/`)
 
 - Read [examples/catalog/README.md](examples/catalog/README.md) for the entry format. The pages in `docs/catalog/` are generated: edit the entries or `topics.toml`, then `mise run catalog:generate`.
-- Per entry: `mise run check:catalog main <topic>/<entry>`, read the summary, then `--update`, and `5.2 ... --update` for the other recorded results; a runtime claim needs evidence (`check:load main --catalog` for a `[runtime]` table).
+- Per entry: `mise run check:catalog main <topic>/<entry>`, read the summary, then `--update`, and `5.2 ... --update` for the other recorded results; a runtime claim needs evidence (`check:load main --catalog` for a `[runtime]` table). An entry with a `[lint]` table also needs `mise run lint:catalog <topic>/<entry> --update` (stock ruff, builds nothing).
+- `catalog:generate --check` also fails when a `blender-*` rule or a feature directory is in no entry: add an entry, or an `[exempt]` line in `topics.toml` with the reason.
 - Write in the terms of [GLOSSARY.md](GLOSSARY.md); a claim that cannot be checked or evidenced is left out, not guessed.
 
 ## Editing the scripts (`scripts/`)

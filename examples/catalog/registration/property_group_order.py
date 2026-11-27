@@ -2,7 +2,7 @@
 # title = "A PropertyGroup registered after the class pointing to it"
 # section = "order"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["registration_checks"]
 #
 # [evidence]

@@ -3,7 +3,7 @@
 # `mise run check:catalog 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | checked | hash, or path | rule | source line (with #2, #3 ... for a repeated text)
 addons/classes_factory.py | checked | ecdd4a1b5ba0
-addons/declared_dependency | checked | ee96f6bc5997
+addons/declared_dependency | checked | 545d00eec289
 addons/default_addon_properties.py | checked | 675d51ebf872
 addons/default_addon_properties.py | missing-union-attribute | assert_type(scene.cycles.samples, int)
 addons/default_addon_properties.py | type-assertion-failure | assert_type(scene.cycles.samples, int)
@@ -51,7 +51,13 @@ context/guaranteed_members.py | type-assertion-failure | assert_type(context.sce
 context/guaranteed_members.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer)
 context/guaranteed_members.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)
 context/handler_context.py | checked | 666d433d0846
-context/import_time_context.py | checked | 709f93cb3486
+context/import_time_context.py | checked | f7a31afc7da5
+context/menu_poll_editor.py | checked | 188115c1174b
+context/menu_poll_editor.py | missing-union-attribute | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+context/menu_poll_editor.py | type-assertion-failure | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+context/menu_poll_editor.py | unused-ignore-comment | assert_type(context.area, Area)  # ty: ignore[blender-assumed-editor-member]
+context/menu_poll_editor.py | missing-union-attribute | if context.region is None:
+context/menu_poll_editor.py | missing-union-attribute | return context.region.type == "WINDOW"
 context/menu_prefix.py | checked | 473070af26bd
 context/menu_prefix.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
 context/menu_prefix.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
@@ -69,6 +75,9 @@ context/poll_narrowing.py | missing-union-attribute | context.object.name = "Ren
 context/poll_narrowing.py | unused-ignore-comment | context.object.name = "Renamed"  # ty: ignore[blender-narrowed-by-poll]
 context/poll_narrowing.py | missing-union-attribute | context.active_bone.name = "Renamed"  # ty: ignore[invalid-assignment]
 context/poll_narrowing.py | unused-ignore-comment | context.active_bone.name = "Renamed"  # ty: ignore[invalid-assignment]
+context/preset_file | checked | 21367f86e23e
+context/preset_file/__init__.py | incompatible-method-override | draw = Menu.draw_preset
+context/preset_file/presets/preset_file/small_sensor.py | unused-ignore-comment | camera = bpy.context.camera  # ty: ignore[blender-assumed-preset-context]
 context/timer_context.py | checked | 323b0163243c
 context/timer_context.py | type-assertion-failure | assert_type(bpy.context.object, Object | None)
 data/collection_by_name.py | checked | 829f9a98150b
@@ -92,6 +101,16 @@ data/nullable_pointers.py | checked | db547e183b4c
 data/object_data_type.py | checked | 578012753492
 data/object_data_type.py | type-assertion-failure | assert_type(ob.data, Mesh)
 data/object_data_type.py | type-assertion-failure | assert_type(ob.data, Camera)
+data/pointer_alias.py | checked | 1621b8b91b75
+data/pointer_alias.py | missing-attribute | return context.space_data.node_tree is not None
+data/pointer_alias.py | missing-union-attribute | return context.space_data.node_tree is not None
+data/pointer_alias.py | missing-attribute | assert_type(context.space_data.node_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+data/pointer_alias.py | missing-union-attribute | assert_type(context.space_data.node_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+data/pointer_alias.py | type-assertion-failure | assert_type(context.space_data.node_tree, NodeTree)  # ty: ignore[blender-narrowed-by-poll]
+data/pointer_alias.py | blender-narrowed-by-poll | assert_type(context.space_data.edit_tree, NodeTree)
+data/pointer_alias.py | missing-attribute | assert_type(context.space_data.edit_tree, NodeTree)
+data/pointer_alias.py | missing-union-attribute | assert_type(context.space_data.edit_tree, NodeTree)
+data/pointer_alias.py | type-assertion-failure | assert_type(context.space_data.edit_tree, NodeTree)
 data/socket_by_name.py | checked | fdd32f0b50e0
 data/socket_by_name.py | type-assertion-failure | assert_type(principled.inputs["Base Color"], NodeSocketColor)
 data/socket_by_name.py | type-assertion-failure | assert_type(principled.outputs["BSDF"], NodeSocketShader)
@@ -100,6 +119,22 @@ data/socket_default_value.py | checked | a09410d1e5c8
 data/socket_default_value.py | missing-attribute | print(socket.default_value)  # ty: ignore[blender-assumed-subclass-member]
 data/socket_default_value.py | unused-ignore-comment | print(socket.default_value)  # ty: ignore[blender-assumed-subclass-member]
 data/socket_default_value.py | missing-attribute | socket.default_value = 0.5
+hazards/added_item_reference.py | checked | 357aa7b126ae
+hazards/callback_operator.py | checked | 6b21d12738b6
+hazards/draw_write.py | checked | effd31884f80
+hazards/draw_write.py | invalid-argument-type | self.layout.prop(context.scene, "frame_current")
+hazards/draw_write.py | missing-union-attribute | self.layout.prop(context.scene, "frame_current")
+hazards/draw_write.py | missing-union-attribute | context.scene.frame_current = 1  # ty: ignore[invalid-assignment]
+hazards/edit_mode_mesh.py | checked | c2808f93ef40
+hazards/edit_mode_mesh.py | not-iterable | return sum(v.select for v in edit.verts)
+hazards/restricted_data.py | checked | 50a0dbff6158
+hazards/restricted_data.py | unused-ignore-comment | print(len(bpy.data.objects))  # ty: ignore[missing-attribute]
+hazards/thread_access.py | checked | 1e18b8880e1a
+hazards/undo_reference.py | checked | 5b277764a7d8
+hazards/undo_reference.py | invalid-assignment | REMEMBERED["last"] = context.scene  # may point to freed data after an undo
+hazards/undo_reference.py | missing-union-attribute | REMEMBERED["last"] = context.scene  # may point to freed data after an undo
+hazards/undo_reference.py | missing-union-attribute | SCENE_NAMES.append(context.scene.name)  # a name stays valid
+hazards/undo_reference.py | invalid-explicit-return | return bpy.data.scenes.get(SCENE_NAMES[-1]) if SCENE_NAMES else None
 inheritance/class_variable.py | checked | 32f880d5ae03
 inheritance/missing_draw.py | checked | 215788f3c3db
 inheritance/mixin_order.py | checked | 78b5ad7c9493
@@ -133,6 +168,9 @@ modules/preview_icons.py | not-subscriptable | assert_type(ICONS["ruler"].icon_i
 modules/preview_icons.py | type-assertion-failure | assert_type(ICONS["ruler"].icon_id, int)
 modules/timer_return.py | checked | a95d140bc536
 modules/vector_arithmetic.py | checked | a178db517d08
+operators/added_object.py | checked | 055600b3e67c
+operators/added_object.py | unused-ignore-comment | cube = context.object  # ty: ignore[blender-assumed-added-object]
+operators/added_object.py | type-assertion-failure | assert_type(cube.data, Mesh)
 operators/builtin_operator_call.py | checked | c770a9e969bb
 operators/execution_context.py | checked | 3676a881746b
 operators/internal_operator.py | checked | 03b4ac3bc48b
@@ -180,12 +218,15 @@ properties/legacy_assignment.py | checked | 67e9d40dc081
 properties/min_above_max.py | checked | f5cab6fe3ca0
 properties/min_above_max.py | unused-ignore-comment | level: IntProperty(min=10, max=0)  # ty: ignore[blender-invalid-property]
 properties/mixin_annotations.py | checked | ed60068c8afe
+properties/on_demand_property.py | checked | 2d0568ed557f
+properties/on_demand_property.py | missing-attribute | bpy.types.Scene.on_demand_count = IntProperty()
 properties/pointer_properties.py | checked | e7fa870399c7
 properties/property_hosts.py | checked | 9e7efa7473d3
 properties/property_wrappers.py | checked | 3ebebc6475e2
 properties/quoted_wrapper_call.py | checked | e794c3b4b876
 properties/quoted_wrapper_call.py | invalid-type-form | size: "distance('Size')"
 properties/quoted_wrapper_call.py | type-assertion-failure | assert_type(shape.size, float)
+properties/read_only_properties.py | checked | 326e70ca655e
 properties/registered_property.py | checked | 0e6b3ba349d4
 properties/rejected_arguments.py | checked | 2f9ba2b68856
 properties/scalar_types.py | checked | 2142f47ec734
@@ -194,6 +235,8 @@ properties/unevaluated_annotation.py | checked | 06e225583119
 properties/unevaluated_annotation.py | type-assertion-failure | assert_type(settings.count, int)
 properties/unsupported_target.py | checked | 4e93d0f4bf60
 properties/vector_subtypes.py | checked | 2c247f51d78e
+properties/vector_writes.py | checked | 910301e77842
+properties/vector_writes.py | invalid-assignment | ob.location = (1, 2, 3)
 registration/conditional_registration.py | checked | 984956f416a4
 registration/helper_registration.py | checked | ce51200a7394
 registration/never_registered.py | checked | 9d59b3ebf8d9
@@ -206,6 +249,14 @@ registration/registration_loop.py | checked | e162efd5d0de
 registration/subpanel_order.py | checked | 8dc4bdd7f057
 registration/unreachable_registration.py | checked | c66f51ece12f
 registration/unregister_mismatch.py | checked | f14a24b4185a
+tooling/annotation_imports.py | checked | 915b2aaabe6d
+tooling/class_names.py | checked | 734be7d66412
+tooling/mutable_class_default.py | checked | 6090d429d236
+tooling/quoted_annotation_key.py | checked | 192cd37612da
+tooling/reload_guard_names | checked | 42963bfc450b
+tooling/rule_levels.py | checked | 70039fc489ab
+tooling/strictness_presets.py | checked | 7191a7b3926b
+tooling/undefined_annotation_key.py | checked | e58305b3606d
 ui/appended_popover.py | checked | 7e9b2ece7f5a
 ui/appended_popover.py | missing-union-attribute | self.layout.label(text=context.object.name)
 ui/appended_popover.py | missing-attribute | bpy.types.VIEW3D_HT_header.append(draw_popover)

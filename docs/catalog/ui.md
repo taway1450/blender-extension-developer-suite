@@ -84,10 +84,10 @@ class LocationPanel(Panel):
     def draw(self, context):
         if context.object is not None:
             # not handled yet: the name is not checked against the Object's properties
-            self.layout.prop(context.object, "locaton")  # reported: invalid-argument-type
+            self.layout.prop(context.object, "locaton")  # would be reported: invalid-argument-type
 ```
 
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Possible: Check the property name against the properties of `data`'s type.
 - **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so `context.object` is not narrowed and passing it to `layout.prop` is reported. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so its reads are reported.
 - **More:** [source](../../examples/catalog/ui/prop_name.py)

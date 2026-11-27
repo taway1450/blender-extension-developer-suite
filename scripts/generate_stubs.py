@@ -167,12 +167,19 @@ def ensure_worktree(version: str, ref: str | None = None, force: bool = False, u
     return worktree
 
 
-def blender_python_version(source: Path) -> str:
-    versions_cmake = source / "build_files" / "build_environment" / "cmake" / "versions.cmake"
-    match = re.search(r"set\(PYTHON_SHORT_VERSION (\d+\.\d+)\)", versions_cmake.read_text(encoding="utf-8"))
+VERSIONS_CMAKE = "build_files/build_environment/cmake/versions.cmake"  # in the Blender source
+
+
+def python_short_version(versions_cmake: str) -> str:
+    """Blender's Python, X.Y, from the text of its ``versions.cmake``."""
+    match = re.search(r"set\(PYTHON_SHORT_VERSION (\d+\.\d+)\)", versions_cmake)
     if not match:
-        raise StepError(f"Could not find PYTHON_SHORT_VERSION in {versions_cmake}")
+        raise StepError(f"Could not find PYTHON_SHORT_VERSION in {VERSIONS_CMAKE}")
     return match.group(1)
+
+
+def blender_python_version(source: Path) -> str:
+    return python_short_version((source / VERSIONS_CMAKE).read_text(encoding="utf-8"))
 
 
 def blender_version_output(blender: Path) -> str:

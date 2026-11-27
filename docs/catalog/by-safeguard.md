@@ -32,6 +32,7 @@ fake-bpy-module. A convention the stubs can state as plain Python typing needs n
 - [A timer's return value](modules.md#timer-return) (handled): A function given to `bpy.app.timers.register` returns the seconds until its next call, or `None` to stop.
 - [`Vector` arithmetic](modules.md#vector-arithmetic) (handled): `mathutils` types work with Python's operators: a `Vector` times a number is a `Vector`, a `Matrix` times a `Vector` with `@` is a `Vector`.
 - [Property arguments are keyword-only](properties.md#keyword-arguments) (handled): Every argument of the `bpy.props` functions is keyword-only, so `StringProperty("Name")` raises `TypeError`.
+- [Writing a vector property](properties.md#vector-writes) (handled): A vector property reads as a `mathutils` object or an array, but takes any sequence of the right element type: a tuple or a list, of rows for a `Matrix`.
 - [Functions appended to Blender's menus and headers](ui.md#header-append) (handled): `append` on one of Blender's menus or headers adds a draw function, which Blender calls with the menu as `self`.
 - [Icons by name](ui.md#icon-name) (handled): A layout function takes an icon by its name, such as `icon="ERROR"`.
 
@@ -73,13 +74,16 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [`context.scene` and its siblings in a callback](context.md#guaranteed-members) (handled): The stubs type every context member `X | None`, since some context has none of them.
 - [`bpy.context` in an application handler](context.md#handler-context) (handled): A function in `bpy.app.handlers` runs when Blender reaches that moment: after a file loads, before a frame changes.
 - [`bpy.context` at import time](context.md#import-time-context) (handled): While Blender imports and registers an add-on, `bpy.context` is a restricted context with no `scene` at all: reading it raises `AttributeError`.
+- [Editor members in a menu's `poll`](context.md#menu-poll-editor) (handled): A menu is usually shown in an editor, where `area`, `region` and `space_data` are set, but nothing in a menu class names that editor.
 - [A menu's idname prefix](context.md#menu-prefix) (handled): A menu has no `bl_space_type` and can be opened from any editor, but by convention its idname starts with the prefix of the editor it belongs to: `VIEW3D_MT_` for the 3D Viewport.
 - [A poll that checks the mode](context.md#mode-poll) (handled): `context.mode == "EDIT_MESH"` in a poll says more than the mode: there is an object in edit mode, and it is a mesh.
 - [`context.object` after a poll](context.md#poll-narrowing) (handled): Blender calls an operator's `execute` or `invoke`, and a panel's `draw`, only right after its `poll()` returned `True`, with the same context.
+- [The context of a preset file](context.md#preset-file) (handled): A preset is a Python file that Blender runs with the context of the panel or menu that applies it, so a camera preset reads `bpy.context.camera` at module level and finds the camera of the Properties editor's camera tab.
 - [`bpy.context` in a timer](context.md#timer-context) (handled): A function given to `bpy.app.timers.register` runs later, outside any callback.
 - [`new()` and `remove()`](data.md#new-and-remove) (handled): `new()` creates an element of a collection and returns it; `remove()` deletes one, and takes only an element of that collection's type.
 - [`nodes.new("ShaderNodeBsdfPrincipled")`](data.md#node-by-type) (handled): `nodes.new` takes the idname of the node to create, as a string.
 - [`object.data` by type](data.md#object-data-type) (handled): After a test of `object.type`, in an `if` or a `match`, the checker narrows `object.data` to the data-block that type holds: a `Mesh` for `"MESH"`.
+- [Pointers Blender keeps in step](data.md#pointer-alias) (handled): Blender's C code keeps some pointers in step: in the node editor, `space_data.node_tree` being set means `space_data.edit_tree` is set too, since Blender sets and clears the two together.
 - [A socket's `default_value`](data.md#socket-default-value) (partial): Every socket type that holds a value has a `default_value`, but the base `NodeSocket` does not.
 - [A panel without `draw`](inheritance.md#missing-draw) (handled): Most callbacks are optional, but a `Panel`, `Menu`, `Header` or `NodeSocket` must define `draw`: Blender refuses to register the class without one.
 - [A mixin listed after the Blender base](inheritance.md#mixin-order) (handled): Blender finds callbacks, `bl_*` variables and property annotations anywhere among a class's bases, so for them the order does not matter.
@@ -88,6 +92,7 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [A subclass of a registered class](inheritance.md#registered-subclass) (handled): A registered class must not derive from another registered class.
 - [Two Blender bases](inheritance.md#two-bases) (handled): A class that derives from two Blender classes, say `Operator` and `Panel`, registers as the first of them only; the other base's callbacks are never called.
 - [An override without annotations](inheritance.md#unannotated-override) (handled): Add-ons write `def execute(self, context):` without annotations.
+- [The object an `*_add` operator adds](operators.md#added-object) (handled): `bpy.ops.mesh.primitive_cube_add()` and the other `*_add` operators add an object and make it the active one, so code reads it as `context.object` right after the call.
 - [Calling Blender's operators](operators.md#builtin-operator-call) (handled): Blender's own operators take their properties as keyword arguments, typed from the stubs: an enum property takes one of its identifiers, and any other string is reported.
 - [An execution context as the first argument](operators.md#execution-context) (handled): Before the keywords, an operator call takes an execution context, such as `"INVOKE_DEFAULT"` to run `invoke` as a click would, and an undo flag.
 - [An internal operator](operators.md#internal-operator) (handled): `"INTERNAL"` in `bl_options` hides an operator from the operator search, so in ordinary use only the add-on's own button or key calls it, where the context has what it needs.
@@ -109,9 +114,11 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [The data-block that owns a group](properties.md#group-id-data) (handled): Every `PropertyGroup` instance knows the data-block it is stored on, `id_data`.
 - [The old `x = IntProperty()` form](properties.md#legacy-assignment) (handled): Before Blender 2.80 properties were class attributes, `count = IntProperty()`.
 - [Properties declared on a mixin](properties.md#mixin-annotations) (handled): Annotations of a base class, and of a mixin that is no Blender class at all, become properties of every class that derives from them.
+- [A property registered outside `register()`](properties.md#on-demand-property) (partial): An add-on can register a property later than `register()`, say in an `update` callback when an option is turned on.
 - [Pointers to a group and to a data-block](properties.md#pointer-properties) (handled): A `PointerProperty` to a `PropertyGroup` always holds an instance of it: Blender creates it with its owner, and it cannot be replaced.
 - [Classes that ignore property annotations](properties.md#property-hosts) (handled): Only some Blender classes are Property hosts: `PropertyGroup`, `Operator`, `Macro`, `AddonPreferences`, `UIList`, `Node`, `NodeSocket`, `NodeTree`, `Gizmo` and a few more.
 - [Constants, `partial` and wrapper functions](properties.md#property-wrappers) (handled): Add-ons share declarations: a module constant, `functools.partial`, a small function that returns a property.
+- [Read-only properties](properties.md#read-only-properties) (handled): A property declared with `options={"READ_ONLY"}` can be read but not assigned: Blender raises `AttributeError` on a write.
 - [A property assigned to a Blender class](properties.md#registered-property) (handled): `bpy.types.Scene.x = PointerProperty(...)` adds a Registered property to every scene.
 - [Arguments Blender rejects at registration](properties.md#rejected-arguments) (handled): Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default that is not one of the enum's items, a `set` callback without `get`, a vector `size` above 32.
 - [Scalar Value types](properties.md#scalar-types) (handled): `IntProperty`, `FloatProperty`, `BoolProperty` and `StringProperty` give `int`, `float`, `bool` and `str`.
@@ -119,6 +126,7 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked.
 - [Classes that take no Registered properties](properties.md#unsupported-target) (handled): Registered properties work on every data-block type and on bones, nodes, sockets, view layers and strips, but not on `Area`, `Window`, `Modifier`, `Preferences`, `Context` or a `SpaceView3D`.
 - [Vector properties and their subtype](properties.md#vector-subtypes) (handled): A `FloatVectorProperty` gives a `mathutils` type chosen by its `subtype` and `size`: `Color` for a colour of size 3, `Vector` for a translation or direction, `Euler` and `Quaternion` for rotations, `Matrix` for a `MATRIX` of size (4, 4) or 16.
+- [Writing a vector property](properties.md#vector-writes) (handled): A vector property reads as a `mathutils` object or an array, but takes any sequence of the right element type: a tuple or a list, of rows for a `Matrix`.
 - [Registration under a condition](registration.md#conditional-registration) (handled): A class that `register()` registers only under a condition (a Blender version check, an environment variable) exists only when the condition held.
 - [Registration in a helper function](registration.md#helper-registration) (handled): `register()` often hands the work to helper functions.
 - [A class that is never registered](registration.md#never-registered) (handled): A Blender class does nothing until `register()` registers it: an operator missing from the list is not in `bpy.ops`, a panel never shows.
@@ -131,6 +139,8 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [A child panel registered before its parent](registration.md#subpanel-order) (handled): A panel with `bl_parent_id` is drawn inside the panel of that idname, which must be registered first: otherwise Blender reports that the parent was not found and the registration fails.
 - [Registration outside `register()`](registration.md#unreachable-registration) (handled): Only what `register()` reaches is registered when the add-on is enabled.
 - [`unregister()` that does not undo `register()`](registration.md#unregister-mismatch) (handled): `unregister()` should remove what `register()` added: what it leaves behind stays in Blender after the add-on is disabled, and `unregister_class` for a class that was never registered raises.
+- [Rule levels per add-on](tooling.md#rule-levels) (handled): A level set for a Rule category or a single rule wins over the Strictness preset, and ty's `[[overrides]]` table in `ty.toml` sets it for one add-on's files: `blender-imprecise-annotations = "error"` makes the whole category an error there under every preset, and a rule set on its own, such as `blender-imprecise-enum-value = "ignore"`, wins over its category.
+- [The Strictness presets](tooling.md#strictness-presets) (handled): The checker sorts its Blender rules into Rule categories, and `strictness` in the `[blender]` table of `ty.toml` sets the level of every category at once: `"lenient"`, `"default"` or `"strict"`.
 - [An annotated `draw_item`](ui.md#draw-item-annotation) (handled): An annotation of `draw_item`'s `item` with the type the list shows is accepted, and the body sees that type.
 - [`template_list` and a `UIList`](ui.md#list-item) (handled): `layout.template_list` draws a collection as a list, one row per item through the `UIList`'s `draw_item`.
 - [`layout.operator` and its properties](ui.md#operator-button) (handled): `layout.operator` draws a button for an operator and returns the properties the button will run it with.
@@ -158,7 +168,10 @@ No entry yet.
 The ruff configuration for add-on code (`config/ruff/`): rules that misfire on Blender conventions are turned off or
 narrowed, and rules that catch Blender mistakes are turned on.
 
-No entry yet.
+- [Imports only property annotations use](tooling.md#annotation-imports) (handled): With `from __future__ import annotations`, an import that only annotations use looks needed for typing alone, and `TC002` asks to move it under `if TYPE_CHECKING:`.
+- [Class names Blender requires](tooling.md#class-names) (handled): A panel's or menu's `bl_idname` defaults to its class name, and Blender wants `_PT_` or `_MT_` in it, so these classes are named `CATEGORY_PT_name`; operators follow the same convention, `CATEGORY_OT_name`.
+- [`bl_options` as a set](tooling.md#mutable-class-default) (handled): An operator's `bl_options` is a set literal on the class, as in Blender's own templates.
+- [`UP037` on a dictionary key in an annotation](tooling.md#quoted-annotation-key) (handled): With `from __future__ import annotations`, `UP037` takes the key in `weight: PROPS["weight"]` for a quoted type and its fix rewrites it to `PROPS[weight]`, which breaks the add-on.
 
 <a id="blender-runtime"></a>
 ## Blender at runtime
@@ -166,7 +179,15 @@ No entry yet.
 Blender itself, when the add-on runs: it raises, prints a warning or rejects the class. The entry says what it does
 and shows the evidence.
 
-No entry yet.
+- [`register()` without `unregister()`](addons.md#no-unregister) (handled): Blender calls `register()` when the add-on is enabled and `unregister()` when it is disabled; an add-on without one of them cannot be enabled.
+- [A preferences `bl_idname` that is not the add-on's module](addons.md#preferences-idname) (handled): Blender finds an add-on's preferences by their `bl_idname`, which must be the add-on's module: `__package__` in an extension, which is `bl_ext.<repository>.<id>`, not the bare `id`.
+- [A panel without `draw`](inheritance.md#missing-draw) (handled): Most callbacks are optional, but a `Panel`, `Menu`, `Header` or `NodeSocket` must define `draw`: Blender refuses to register the class without one.
+- [An override with another signature](inheritance.md#override-signature) (handled): Blender checks each callback when it registers the class: the number of positional parameters (defaults included), and whether it is a classmethod (`poll`) or a plain function (`execute`).
+- [Arguments Blender rejects at registration](properties.md#rejected-arguments) (handled): Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default that is not one of the enum's items, a `set` callback without `get`, a vector `size` above 32.
+- [An operator idname Blender rejects](registration.md#operator-idname) (handled): An operator's `bl_idname` is `category.name` in lower-case letters, digits and underscores; it becomes `bpy.ops.category.name`.
+- [A PropertyGroup registered after the class pointing to it](registration.md#property-group-order) (handled): A `PointerProperty` or `CollectionProperty` needs its PropertyGroup registered first: Blender raises `ValueError` for a class whose property points to an unregistered one.
+- [A class registered twice](registration.md#registered-twice) (handled): Registering a class that is already registered raises `ValueError`, so the add-on fails to enable.
+- [`unregister()` that does not undo `register()`](registration.md#unregister-mismatch) (handled): `unregister()` should remove what `register()` added: what it leaves behind stays in Blender after the add-on is disabled, and `unregister_class` for a class that was never registered raises.
 
 <a id="not-handled"></a>
 ## Nothing
@@ -176,6 +197,13 @@ Entries nothing handles yet, or not classified yet.
 - [The properties of add-ons Blender enables by default](addons.md#default-addon-properties) (not handled): Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is Cycles'.
 - [`obj["key"]`](blend-files.md#custom-property) (not handled): Custom properties, set and read with `obj["key"]` on a data-block and on some other structs such as bones, are not known before Blender runs.
 - [Data a shipped file holds](blend-files.md#shipped-blend-file) (not handled): An add-on that ships a `.blend` file loads data-blocks from it with `bpy.data.libraries.load`: the names in `data_to.materials` before the block ends, the loaded materials after it.
+- [A collection item after `add()`](hazards.md#added-item-reference) (not handled): Adding points to a curve, or vertices, edges and faces to a mesh, re-allocates the array that holds them, so an item read before the `add()` points to freed memory and can crash Blender.
+- [An operator in a property callback](hazards.md#callback-operator) (not handled): A property's `update` callback should be fast.
+- [Writes in a draw function](hazards.md#draw-write) (not handled): Blender calls a panel's, menu's or header's `draw` with writes to data-blocks turned off: setting a property of a scene, an object or any other data-block there raises `AttributeError` ("Writing to ID classes in this context is not allowed").
+- [An edit-mode mesh's data](hazards.md#edit-mode-mesh) (not handled): In Edit Mode a mesh has its own edit data, written back to the mesh only when Blender leaves Edit Mode: the mesh's `vertices` are out of sync until then.
+- [`bpy.data` during registration](hazards.md#restricted-data) (not handled): While Blender imports an add-on and runs its `register()`, `bpy.data` is an empty stand-in, so reading any collection raises `AttributeError` and the add-on fails to enable.
+- [`bpy` in a thread](hazards.md#thread-access) (not handled): Blender's Python is not thread-safe: a thread that still runs after the script returns can crash Blender later, in its drawing, a render or a driver.
+- [A reference kept across undo](hazards.md#undo-reference) (not handled): Undo and redo may free every data-block and its sub-data, and a Python object that still points to one then reads freed memory, which can crash Blender.
 - [A handler's parameters](modules.md#handler-parameters) (not handled): A function in `bpy.app.handlers` gets parameters that depend on the list: a frame-change handler the scene and the depsgraph, a save handler the file path.
 - [Preview icons by name](modules.md#preview-icons) (not handled): `bpy.utils.previews` holds the add-on's own icons, loaded from image files and found by name for `icon_value`.
 - [`context.area` in `modal`](operators.md#modal-area) (not handled): A modal operator started from an editor gets its later events in `modal`, with that editor's area.
@@ -183,6 +211,8 @@ Entries nothing handles yet, or not classified yet.
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type.
 - [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range.
 - [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call.
+- [`F821` in the reload guard](tooling.md#reload-guard-names) (not handled): Blender's own add-ons start with a guard that reloads their submodules when Blender re-enables the add-on: the module runs again in its old namespace, so `ops` is still bound (see [Reloading with `importlib.reload`](addons.md#reload-guard)).
+- [`F821` on a property annotation](tooling.md#undefined-annotation-key) (not handled): An annotation can take its property from a dictionary, `weight: PROPS["weight"]`, and Blender evaluates it as the value it is when it registers the class.
 - [A popover opened by an appended function](ui.md#appended-popover) (not handled): What a function appended to one of Blender's headers checked before it opens a popover is not known in the popover.
 - [Blender's own gizmo types](ui.md#builtin-gizmo) (not handled): A gizmo group creates its gizmos with `self.gizmos.new("GIZMO_GT_arrow_3d")`, and each of Blender's gizmo types has its own properties, such as an arrow's `draw_style`.
 - [`layout.prop(data, "name")`](ui.md#prop-name) (not handled): `layout.prop` draws one property of `data`, named by a string, which Blender looks up only while it draws.

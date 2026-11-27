@@ -57,12 +57,12 @@ from bmesh.types import BMesh, BMLayerItem
 def example(bm: BMesh) -> None:
     assert_type(bm.verts.layers.float.new("weight"), BMLayerItem)
     # not handled yet: the `None` of `.get()` is not typed
-    print(bm.verts.layers.float.get("weight").name)  # reported: missing-union-attribute
+    print(bm.verts.layers.float.get("weight").name)  # would be reported: missing-union-attribute
 ```
 
 - **What you see:** `bm.verts.layers.float.new("weight")` is `BMLayerItem`.
 - **Not yet:** `.get()` is typed loosely in the stubs, so a layer used without a check is not reported.
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Possible: Type `.get()` on a BMesh layer collection as `BMLayerItem | None` in the stubs.
 - **With other stubs:** fake-bpy-module stubs, Blender main: fake-bpy-module types a new BMesh layer as `Any`. · fake-bpy-module stubs, Blender 5.2: These stubs type a new BMesh layer as `Any`.
 - **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/modules/bmesh_layer.py)
@@ -108,14 +108,14 @@ import bpy
 
 def on_save(filepath, _):
     # not handled yet: the file path is not typed as `str`
-    print(filepath.upper_case())  # reported: missing-attribute
+    print(filepath.upper_case())  # would be reported: missing-attribute
 
 
 def register() -> None:
     bpy.app.handlers.save_pre.append(on_save)
 ```
 
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Planned: Type a handler's parameters by the list it is appended to: a save handler's file path as `str`. (tracked: `later/handler-callback-types`)
 - **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type a `save_pre` handler as `(str) -> None`, so `on_save`, which takes two parameters, is reported.
 - **More:** [feature tests: bpy_symbols](../../tests/typecheck/features/bpy_symbols/README.md) · [bpy.app.handlers](https://docs.blender.org/api/current/bpy.app.handlers.html) · [source](../../examples/catalog/modules/handler_parameters.py)
@@ -234,12 +234,12 @@ def draw_dot() -> None:
 def register() -> None:
     SpaceView3D.draw_handler_add(draw_dot, (), "WINDOW", "POST_VIEW")
     # not handled yet: the draw stage is a plain string
-    SpaceView3D.draw_handler_add(draw_dot, (), "WINDOW", "POST_VEIW")  # reported: invalid-argument-type
+    SpaceView3D.draw_handler_add(draw_dot, (), "WINDOW", "POST_VEIW")  # would be reported: invalid-argument-type
 ```
 
 - **What you see:** `SHADER` is `GPUShader`.
 - **Not yet:** The region and the draw stage of `draw_handler_add` are plain strings: a misspelt one is not reported.
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Possible: Type the region and the draw stage of `draw_handler_add` as their enums in the stubs.
 - **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [bpy.types.Space](https://docs.blender.org/api/current/bpy.types.Space.html) · [source](../../examples/catalog/modules/draw_handler.py)
 
