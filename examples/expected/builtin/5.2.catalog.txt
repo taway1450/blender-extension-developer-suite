@@ -3,7 +3,7 @@
 # `mise run check:catalog 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | checked | hash, or path | rule | source line (with #2, #3 ... for a repeated text)
 addons/legacy_scene_counter.py | checked | a0d9c66afb44
-addons/own_preferences | checked | d660b8040df6
+addons/own_preferences | checked | 20596b9e98ef
 addons/own_preferences/__init__.py | missing-union-attribute | preferences = context.preferences.addons[__package__].preferences
 properties/annotated_property.py | checked | 2be26238542d
 properties/callback_self.py | checked | d44ed0deaae0
