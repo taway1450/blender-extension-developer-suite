@@ -12,12 +12,62 @@ What makes a module an add-on to Blender, and what Blender does with it: the man
 <a id="metadata"></a>
 ## Metadata
 
+<a id="extension-package"></a>
+### A manifest makes the package an extension
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/extension-package`
+
+The checker reads a package with a `blender_manifest.toml` as an extension, even with a `bl_info` left over from
+before. Installed, the extension is the package `bl_ext.<repository>.<id>`, and the repository is only known then, so
+`__package__` is typed `str` rather than the `str | None` of a plain module.
+
+```python
+bl_info = {
+    "name": "Left over from before the manifest",
+    "version": (0, 1, 0),
+    "blender": (2, 80, 0),
+    "category": "Development",
+}
+
+
+def example() -> None:
+    assert_type(__package__, str)
+
+
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+`extension_package/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "extension_package"
+version = "1.0.0"
+name = "Catalog: an extension's package name"
+tagline = "an extension's package name"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** `__package__` is `str`.
+- **More:** [feature tests: addon_discovery](../../tests/typecheck/features/addon_discovery/README.md) · [source](../../examples/catalog/addons/extension_package)
+
 <a id="legacy-scene-counter"></a>
 ### A legacy single-file add-on
 
 **Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/legacy-scene-counter`
 
-A module with a `bl_info` dict is a legacy add-on. Its `register()` adds a Registered property, which the rest of
+A module with a `bl_info` dict and no manifest is a legacy add-on. Its `register()` adds a Registered property, which the rest of
 the add-on reads with its Value type.
 
 ```python
@@ -48,15 +98,261 @@ def bump(scene: bpy.types.Scene) -> None:
 - **What you see:** `scene.counter` is `int`.
 - **More:** [feature tests: addon_discovery](../../tests/typecheck/features/addon_discovery/README.md) · [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/addons/legacy_scene_counter.py)
 
-To come in this section: a manifest Blender refuses; `bl_info` keys Blender ignores; the add-on's module name as an extension (`bl_ext`).
+<a id="malformed-bl-info"></a>
+### A malformed `bl_info`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/malformed-bl-info`
+
+A legacy add-on describes itself in `bl_info`: `name` is required and `blender` is a tuple of three ints. The
+checker reports a missing key on the dict and a wrong value on its entry.
+
+```python
+bl_info = {  # reported: blender-invalid-addon-metadata
+    "version": (1, 0, 0),
+    "blender": "4.2",  # reported: blender-invalid-addon-metadata
+    "category": "Development",
+}
+
+
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+- **What you see:** ty reports [`blender-invalid-addon-metadata`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-addon-metadata) (error) on the lines marked *reported*.
+- **More:** [feature tests: addon_discovery](../../tests/typecheck/features/addon_discovery/README.md) · [source](../../examples/catalog/addons/malformed_bl_info.py)
+
+<a id="refused-manifest"></a>
+### A manifest Blender refuses
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/refused-manifest`
+
+Blender validates an extension's `blender_manifest.toml` before it runs any of its code: `id` must be there and be
+a Python identifier, and `type` must be one of the types it supports. This manifest has no `id` and a `type` of
+`"add-in"`. The checker reads the manifest too and reports both on the first line of `__init__.py`, since a TOML file
+cannot carry a marker.
+
+```python
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+`refused_manifest/blender_manifest.toml`
+
+```toml
+# Wrong on purpose: no id, and a type Blender does not know.
+schema_version = "1.0.0"
+
+version = "1.0.0"
+name = "Catalog: a manifest Blender refuses"
+tagline = "a manifest Blender refuses"
+maintainer = "Blender Extension Developer Suite"
+type = "add-in"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** ty reports [`blender-invalid-addon-metadata`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-addon-metadata) (error) on the first line of `__init__.py`.
+- **More:** [feature tests: addon_discovery](../../tests/typecheck/features/addon_discovery/README.md) · [`scripts/addons_core/bl_pkg/cli/blender_ext.py`](https://projects.blender.org/blender/blender/src/branch/main/scripts/addons_core/bl_pkg/cli/blender_ext.py) · [source](../../examples/catalog/addons/refused_manifest)
 
 <a id="entry-points"></a>
 ## Entry points
 
-To come in this section: `register()` without `unregister()`; `register_classes_factory`; reloading with `importlib.reload`.
+<a id="classes-factory"></a>
+### `register` and `unregister` from `register_classes_factory`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/classes-factory`
+
+`bpy.utils.register_classes_factory(classes)` returns a `register` and an `unregister` function for a tuple of
+classes. The checker follows the assignment as it follows a `def register()`, so the operator it registers is known
+in `bpy.ops` with its properties.
+
+```python
+import bpy
+from bpy.props import IntProperty
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: register_classes_factory",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class CLASSES_FACTORY_OT_run(Operator):
+    bl_idname = "classes_factory.run"
+    bl_label = "Run"
+
+    count: IntProperty()
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+classes = (CLASSES_FACTORY_OT_run,)
+
+register, unregister = bpy.utils.register_classes_factory(classes)
+
+
+def example() -> None:
+    bpy.ops.classes_factory.run(count=2)
+    bpy.ops.classes_factory.run(count="2")  # reported: invalid-argument-type
+```
+
+- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **More:** [feature tests: addon_discovery](../../tests/typecheck/features/addon_discovery/README.md) · [feature tests: registration](../../tests/typecheck/features/registration/README.md) · [source](../../examples/catalog/addons/classes_factory.py)
+
+<a id="no-unregister"></a>
+### `register()` without `unregister()`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/no-unregister`
+
+Blender calls `register()` when the add-on is enabled and `unregister()` when it is disabled; an add-on without
+one of them cannot be enabled. The checker reports the missing function on the first line of `__init__.py`.
+
+```python
+import bpy
+from bpy.props import IntProperty
+
+
+def register():
+    bpy.types.Scene.marker = IntProperty()
+```
+
+`no_unregister/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "no_unregister"
+version = "1.0.0"
+name = "Catalog: register() without unregister()"
+tagline = "register() without unregister()"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** ty reports [`blender-invalid-register`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-register) (error) on the first line of `__init__.py`.
+- **More:** [feature tests: addon_discovery](../../tests/typecheck/features/addon_discovery/README.md) · [runtime evidence](../../tests/typecheck/features/addon_discovery/disc_no_unregister/_expected/runtime.toml) · [source](../../examples/catalog/addons/no_unregister)
+
+<a id="reload-guard"></a>
+### Reloading with `importlib.reload`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/reload-guard`
+
+When an add-on's file changed on disk, Blender re-enables it with `importlib.reload`, which runs the module again
+in its old namespace: `"bpy" in locals()` is true only then, and the submodules imported on the first run are still
+bound. So the guard can use `ops` before the line that imports it; the checker reads the guard the same way and
+does not report `ops` as unresolved.
+
+`reload_guard/__init__.py`
+
+```python
+if "bpy" in locals():
+    import importlib
+
+    assert_type(ops.LABEL, Literal["Run"])
+    importlib.reload(ops)
+
+import bpy
+
+from . import ops
+
+
+def register():
+    ops.register()
+
+
+def unregister():
+    ops.unregister()
+```
+
+`reload_guard/ops.py`
+
+```python
+import bpy
+from bpy.types import Operator
+
+LABEL = "Run"
+
+
+class RELOAD_GUARD_OT_run(Operator):
+    bl_idname = "reload_guard.run"
+    bl_label = LABEL
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(RELOAD_GUARD_OT_run)
+
+
+def unregister():
+    bpy.utils.unregister_class(RELOAD_GUARD_OT_run)
+```
+
+`reload_guard/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "reload_guard"
+version = "1.0.0"
+name = "Catalog: reloading with importlib.reload"
+tagline = "reloading with importlib.reload"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** `ops.LABEL` is `Literal["Run"]`.
+- **More:** [feature tests: registration](../../tests/typecheck/features/registration/README.md) · [`scripts/modules/addon_utils.py`](https://projects.blender.org/blender/blender/src/branch/main/scripts/modules/addon_utils.py) · [source](../../examples/catalog/addons/reload_guard)
 
 <a id="preferences"></a>
 ## Preferences
+
+<a id="other-addon-preferences"></a>
+### Preferences of another add-on
+
+**Handled** by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `addons/other-addon-preferences`
+
+Another add-on's `preferences` are `None` until it registers its class, and their class is not known to this
+add-on. The stub type `AddonPreferences | None` says so, so a read needs a check first. (Indexing `addons` with the
+name of an add-on that is not enabled raises `KeyError`; `addons.get()` gives `None` instead.)
+
+```python
+from bpy.types import AddonPreferences, Preferences
+
+
+def example(preferences: Preferences) -> None:
+    other = preferences.addons["node_wrangler"].preferences
+    assert_type(other, AddonPreferences | None)
+    other.bl_idname  # reported: missing-union-attribute
+    if other is not None:
+        print(other.bl_idname)
+```
+
+- **What you see:** `other` is `AddonPreferences | None`; ty reports [`missing-union-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-union-attribute) (error) on the line marked *reported*.
+- **More:** [feature tests: addon_preferences](../../tests/typecheck/features/addon_preferences/README.md) · [source](../../examples/catalog/addons/other_addon_preferences.py)
 
 <a id="own-preferences"></a>
 ### The add-on's own preferences
@@ -91,13 +387,225 @@ def unregister():
     bpy.utils.unregister_class(OWN_PREFERENCES_Preferences)
 ```
 
+`own_preferences/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "own_preferences"
+version = "1.0.0"
+name = "Catalog: the add-on's own preferences"
+tagline = "the add-on's own preferences"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
 - **What you see:** `preferences` is `OWN_PREFERENCES_Preferences`.
 - **With other stubs:** builtin stubs, Blender 5.2: `context.preferences` is `Preferences | None` in Blender 5.2's stubs, so the read is reported. · fake-bpy-module stubs, Blender 5.2: `context.preferences` is `Preferences | None` in these stubs, so the read is reported.
 - **More:** [feature tests: addon_preferences](../../tests/typecheck/features/addon_preferences/README.md) · [source](../../examples/catalog/addons/own_preferences)
 
-To come in this section: preferences of another add-on; preferences read before they are registered.
+<a id="preferences-before-registration"></a>
+### Preferences read before they are registered
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/preferences-before-registration`
+
+Blender adds the add-on's entry to `preferences.addons` before it calls `register()`, but the entry's
+`preferences` stay `None` until the preferences class is registered. The checker still types them as the add-on's
+class there and reports the read as an Assumption, since the code relies on the class being registered; after
+`register_class` it says nothing.
+
+```python
+import bpy
+from bpy.props import BoolProperty
+from bpy.types import AddonPreferences
+
+
+class PREFERENCES_BEFORE_REGISTRATION_Preferences(AddonPreferences):
+    bl_idname = __package__
+
+    use_keymap: BoolProperty(default=True)
+
+
+def register():
+    entry = bpy.context.preferences.addons.get(__package__)
+    if entry is not None:
+        print(entry.preferences.use_keymap)  # reported: blender-assumed-preferences
+    bpy.utils.register_class(PREFERENCES_BEFORE_REGISTRATION_Preferences)
+    if entry is not None:
+        print(entry.preferences.use_keymap)
+
+
+def unregister():
+    bpy.utils.unregister_class(PREFERENCES_BEFORE_REGISTRATION_Preferences)
+```
+
+`preferences_before_registration/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "preferences_before_registration"
+version = "1.0.0"
+name = "Catalog: preferences read before they are registered"
+tagline = "preferences read before they are registered"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** ty reports [`blender-assumed-preferences`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-preferences) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: `context.preferences` is `Preferences | None` in Blender 5.2's stubs, and `addons.get()` gives a plain `bpy_struct` there, which has no `preferences`. · fake-bpy-module stubs, Blender 5.2: `context.preferences` is `Preferences | None` in these stubs, so the read is reported.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [feature tests: addon_preferences](../../tests/typecheck/features/addon_preferences/README.md) · [source](../../examples/catalog/addons/preferences_before_registration)
+
+<a id="preferences-idname"></a>
+### A preferences `bl_idname` that is not the add-on's module
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/preferences-idname`
+
+Blender finds an add-on's preferences by their `bl_idname`, which must be the add-on's module: `__package__` in
+an extension, which is `bl_ext.<repository>.<id>`, not the bare `id`. A class named by the `id`, or by
+`__name__.split(".")[0]` (that is `bl_ext`), registers but is never the add-on's preferences. A second class named by
+the module replaces the first, so unregistering the add-on fails. The checker reports each.
+
+```python
+import bpy
+from bpy.props import IntProperty
+from bpy.types import AddonPreferences
+
+
+class PREFERENCES_IDNAME_Literal(AddonPreferences):
+    bl_idname = "preferences_idname"  # reported: blender-preferences-idname
+
+    value: IntProperty()
+
+
+class PREFERENCES_IDNAME_FirstComponent(AddonPreferences):
+    bl_idname = __name__.split(".")[0]  # reported: blender-preferences-idname
+
+    value: IntProperty()
+
+
+class PREFERENCES_IDNAME_First(AddonPreferences):
+    bl_idname = __package__
+
+    value: IntProperty()
+
+
+class PREFERENCES_IDNAME_Second(AddonPreferences):
+    bl_idname = __package__  # reported: blender-preferences-idname
+
+    other: IntProperty()
+
+
+classes = (
+    PREFERENCES_IDNAME_Literal,
+    PREFERENCES_IDNAME_FirstComponent,
+    PREFERENCES_IDNAME_First,
+    PREFERENCES_IDNAME_Second,
+)
+register, unregister = bpy.utils.register_classes_factory(classes)
+```
+
+`preferences_idname/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "preferences_idname"
+version = "1.0.0"
+name = "Catalog: a preferences bl_idname that names another add-on"
+tagline = "a preferences bl_idname that names another add-on"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** ty reports [`blender-preferences-idname`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-preferences-idname) (warn) on the lines marked *reported*.
+- **More:** [feature tests: addon_preferences](../../tests/typecheck/features/addon_preferences/README.md) · [runtime evidence](../../tests/typecheck/features/addon_preferences/prefs_bad/_expected/runtime.toml) · [source](../../examples/catalog/addons/preferences_idname)
 
 <a id="other-addons"></a>
 ## Other add-ons
 
-To come in this section: `[tool.blender] uses`; the properties of add-ons Blender enables by default.
+<a id="declared-dependency"></a>
+### The add-ons it relies on: `[tool.blender] uses`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/declared-dependency`
+
+An add-on that reads what another add-on registers lists that add-on's module in its manifest, under
+`[tool.blender] uses`, a table Blender ignores. The checker then counts the other add-on's Registered properties as
+this one's; without the line it reports them as missing. Here `scene.render_presets` comes from the add-on in
+`addons/_render_presets` (no entry of its own, hence the `_`).
+
+```python
+from bpy.types import Scene
+
+
+def samples(scene: Scene) -> int:
+    return scene.render_presets.samples
+
+
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+`declared_dependency/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "declared_dependency"
+version = "1.0.0"
+name = "Catalog: the properties of an add-on it relies on"
+tagline = "the properties of an add-on it relies on"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+# Blender ignores the [tool] table; the checker reads the add-ons this one relies on from it.
+[tool.blender]
+uses = ["_render_presets"]
+```
+
+- **What you see:** `scene.render_presets.samples` is `int`.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [source](../../examples/catalog/addons/declared_dependency)
+
+<a id="default-addon-properties"></a>
+### The properties of add-ons Blender enables by default
+
+**Not handled** (planned) · checked with Blender main, builtin stubs · `addons/default-addon-properties`
+
+Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is
+Cycles'. Code that reads them works in a default Blender, but the stubs do not have them. The checker knows them
+only when the default add-on's source is on its search path (it then reports the read as an Assumption,
+`blender-assumed-default-addon`); with the stubs alone, as here, the read is reported as missing.
+
+```python
+from bpy.types import Scene
+
+
+def example(scene: Scene) -> None:
+    # not handled yet: the default add-on's properties are not known
+    assert_type(scene.cycles.samples, int)
+```
+
+- **Today:** ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) and [`type-assertion-failure`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#type-assertion-failure) (error) on the line marked *not handled yet*.
+- **Future:** Planned: Give the stubs the registrations of the add-ons Blender enables by default, so the read is known without their source. (tracked: `later/default-addon-properties`)
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs declare `scene.cycles` as `Any | None`, so the read is reported on `None` instead.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/addons/default_addon_properties.py)

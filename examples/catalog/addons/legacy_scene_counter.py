@@ -5,7 +5,7 @@
 # safeguards = ["typechecker"]
 # features = ["addon_discovery", "properties"]
 # ///
-"""A module with a `bl_info` dict is a legacy add-on. Its `register()` adds a Registered property, which the rest of
+"""A module with a `bl_info` dict and no manifest is a legacy add-on. Its `register()` adds a Registered property, which the rest of
 the add-on reads with its Value type."""
 
 # catalog: hide

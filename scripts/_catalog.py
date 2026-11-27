@@ -44,6 +44,10 @@ from examples_coverage import Demo, file_demos, read_results, table
 
 HEADER_START = "# /// catalog"
 HEADER_END = "# ///"
+# The header's opening line may carry the marker of a result ty reports on a module's first line (a missing entry
+# point, a problem in the manifest), since the header takes that line.
+HEADER_START_LINE = re.compile(r"^# /// catalog(?P<marker>\s+#\s*ty:\s*ignore\[[^\]]+\])?\s*$")
+MANIFEST = "blender_manifest.toml"  # shown on a package entry's page after its Python files
 CHECKED = "checked"  # the rule column of an entry's ``checked`` line in the recorded results
 HASH_LENGTH = 12
 GAP = re.compile(r"^\s*#\s*gap:\s*(?P<id>.*?)\s*$")
@@ -146,12 +150,19 @@ def split_header(text: str) -> tuple[list[str], list[str]]:
     an empty header."""
     lines = text.splitlines()
     for start, line in enumerate(lines):
-        if line.rstrip() == HEADER_START:
+        if HEADER_START_LINE.match(line):
             for end in range(start + 1, len(lines)):
                 if lines[end].rstrip() == HEADER_END:
                     return lines[start + 1 : end], lines[:start] + lines[end + 1 :]
             break
     return [], lines
+
+
+def opening_marker(text: str) -> str:
+    """The ``# ty: ignore[...]`` the header's opening line carries, or ``""``."""
+    first = text.splitlines()[:1]
+    match = HEADER_START_LINE.match(first[0]) if first else None
+    return match["marker"].strip() if match and match["marker"] else ""
 
 
 def entry_files(entry: Addon) -> list[Path]:
@@ -164,11 +175,16 @@ def entry_files(entry: Addon) -> list[Path]:
 
 def code_hash(entry: Addon) -> str:
     """A short hash of the entry's code: every file of it, the Python files without their header, so editing only
-    the header (its status, its notes) does not ask for another ``check:catalog`` run. Line endings do not count."""
+    the header (its status, its notes) does not ask for another ``check:catalog`` run. A marker on the header's
+    opening line counts, since ty reads it. Line endings do not count."""
     digest = hashlib.sha256()
     for path in entry_files(entry):
         text = path.read_text(encoding="utf-8")
-        code = split_header(text)[1] if path.suffix == ".py" else text.splitlines()
+        if path.suffix == ".py":
+            marker = opening_marker(text)
+            code = ([marker] if marker else []) + split_header(text)[1]
+        else:
+            code = text.splitlines()
         digest.update(path.relative_to(entry.path.parent).as_posix().encode())
         digest.update(b"\0" + "\n".join(code).encode() + b"\0")
     return digest.hexdigest()[:HASH_LENGTH]
@@ -801,16 +817,19 @@ def status_line(entry: Entry, topics: Topics) -> str:
 def what_you_see(entry: Entry, levels: dict[str, str]) -> str:
     """What the holding markers show: the types, then the rules reported on the marked lines."""
     parts = []
-    rules: list[str] = []
     holding = entry.holding_markers()
     expected = [m for m in holding if m.kind == EXPECTED]
+    opening = [m for m in expected if m.line == 1 and opening_marker(entry.texts[m.path])]
+    marked = [m for m in expected if m not in opening]
     for marker in holding:
         if marker.kind == ASSERT and (pair := asserted(marker, entry.texts[marker.path])):
             parts.append(f"`{pair[0]}` is `{pair[1]}`")
-    for marker in expected:
-        rules += [r for r in marker.rules if r not in rules]
+    for marker in opening:
+        rules = joined([rule_link(r, levels) for r in marker.rules])
+        parts.append(f"ty reports {rules} on the first line of `{marker.path.rsplit('/', 1)[-1]}`")
+    rules = list(dict.fromkeys(r for m in marked for r in m.rules))
     if rules:
-        lines = "the line" if len(expected) == 1 else "the lines"
+        lines = "the line" if len(marked) == 1 else "the lines"
         parts.append(f"ty reports {joined([rule_link(r, levels) for r in rules])} on {lines} marked *reported*")
     return "; ".join(parts)
 
@@ -832,6 +851,19 @@ def future_line(entry: Entry) -> str:
     if future.get("tracked"):
         text += f" (tracked: `{future['tracked']}`)"
     return text
+
+
+def in_blender(entry: Entry) -> str:
+    """What the ``[runtime]`` table says ``check:load`` saw: whether the add-on registers, and each probe's reason."""
+    runtime = entry.header.runtime
+    if not runtime:
+        return ""
+    fails = runtime.get("register") == "fails"
+    text = "the add-on fails to register" if fails else "the add-on registers"
+    if reason := runtime.get("reason"):
+        text += f" ({reason})"
+    reasons = [p["reason"] for p in runtime.get("probe", []) if p.get("reason")]
+    return "; ".join([text, *reasons]) + "."
 
 
 def more_links(entry: Entry) -> str:
@@ -867,6 +899,8 @@ def render_entry(entry: Entry, catalog: Catalog) -> list[str]:
         if len(entry.texts) > 1:
             out += [f"`{path.removeprefix(entry.topic + '/')}`", ""]
         out += ["```python", code, "```", ""]
+    if (manifest := CATALOG_DIR / entry.rel / MANIFEST).is_file():
+        out += [f"`{entry.stem}/{MANIFEST}`", "", "```toml", manifest.read_text(encoding="utf-8").strip(), "```", ""]
     bullets = []
     if entry.header.status in ("handled", "partial") and (seen := what_you_see(entry, levels)):
         bullets.append(f"**What you see:** {seen}.")
@@ -878,6 +912,8 @@ def render_entry(entry: Entry, catalog: Catalog) -> list[str]:
         bullets.append(f"**Today:** {now}.")
     if future := future_line(entry):
         bullets.append(f"**Future:** {future}")
+    if blender := in_blender(entry):
+        bullets.append(f"**Checked in Blender:** {blender}")
     notes = []
     for key, differs in differ.items():
         if differs:
@@ -952,11 +988,16 @@ possible, not statically checkable, out of scope; see the [roadmap](roadmap.md))
 itself generates for its development version. *Not machine-checked* entries make no claim a type checker could test.
 - **Code**: `assert_type(x, T)` (from `typing`) states the type you get for `x`; `# reported: rule` marks a line \
 ty-blender reports under that rule; `# not handled yet: why` marks the line that still goes wrong.
+- **Script or add-on**: an example is a plain script unless it needs an add-on (registration checks, preferences, \
+metadata): then it has a `bl_info` or a `blender_manifest.toml`, and its `register()` is what Blender calls. A script's \
+classes are not checked for registration.
 - **What you see**: the types and diagnostics those lines show, with each rule's default level (`error`, `warn`) \
 linked to its description. **Today** says what is reported on a line not handled yet, **Future** what would handle it.
+- **Checked in Blender**: what loading the example in Blender showed (`mise run check:load main --catalog`).
 - **With other stubs**: where fake-bpy-module's stubs or Blender 5.2 give another result, and why.
 - **More**: the project's own tests for the feature, Blender's documentation, and the example's source.
-- Terms in *italics* such as *Property host* or *Value type* are defined in the [glossary](../../GLOSSARY.md).\
+- Capitalised terms such as *Property host*, *Value type* or *Assumption* are defined in the \
+[glossary](../../GLOSSARY.md).\
 """.splitlines()
 
 

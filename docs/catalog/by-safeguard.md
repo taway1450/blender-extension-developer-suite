@@ -12,6 +12,8 @@ What deals with each entry of the catalog for you, and what each safeguard is.
 The bpy stubs (`.pyi` files) any Python type checker or editor reads: Blender's own (builtin, 5.2 and later) or
 fake-bpy-module. A convention the stubs can state as plain Python typing needs nothing else.
 
+- [Preferences of another add-on](addons.md#other-addon-preferences) (handled): Another add-on's `preferences` are `None` until it registers its class, and their class is not known to this add-on.
+- [A class variable Blender reads](inheritance.md#class-variable) (handled): The stubs declare the class variables Blender reads at registration, such as `bl_options` and `bl_space_type`, with their allowed values, so a misspelt value is reported like any other wrong value.
 - [Property arguments are keyword-only](properties.md#keyword-arguments) (handled): Every argument of the `bpy.props` functions is keyword-only, so `StringProperty("Name")` raises `TypeError`.
 
 <a id="runtime-probe"></a>
@@ -36,8 +38,24 @@ No entry yet.
 ty-blender, a fork of ty that reads an add-on as Blender loads it: property annotations, what `register()` adds,
 operator idnames, the members a poll guarantees. It reports what Blender would reject as `blender-*` diagnostics.
 
-- [A legacy single-file add-on](addons.md#legacy-scene-counter) (handled): A module with a `bl_info` dict is a legacy add-on.
+- [`register` and `unregister` from `register_classes_factory`](addons.md#classes-factory) (handled): `bpy.utils.register_classes_factory(classes)` returns a `register` and an `unregister` function for a tuple of classes.
+- [The add-ons it relies on: `[tool.blender] uses`](addons.md#declared-dependency) (handled): An add-on that reads what another add-on registers lists that add-on's module in its manifest, under `[tool.blender] uses`, a table Blender ignores.
+- [A manifest makes the package an extension](addons.md#extension-package) (handled): The checker reads a package with a `blender_manifest.toml` as an extension, even with a `bl_info` left over from before.
+- [A legacy single-file add-on](addons.md#legacy-scene-counter) (handled): A module with a `bl_info` dict and no manifest is a legacy add-on.
+- [A malformed `bl_info`](addons.md#malformed-bl-info) (handled): A legacy add-on describes itself in `bl_info`: `name` is required and `blender` is a tuple of three ints.
+- [`register()` without `unregister()`](addons.md#no-unregister) (handled): Blender calls `register()` when the add-on is enabled and `unregister()` when it is disabled; an add-on without one of them cannot be enabled.
 - [The add-on's own preferences](addons.md#own-preferences) (handled): `preferences.addons[__package__].preferences` is the add-on's own `AddonPreferences` subclass when the key names the add-on, not the stub's `AddonPreferences | None`.
+- [Preferences read before they are registered](addons.md#preferences-before-registration) (handled): Blender adds the add-on's entry to `preferences.addons` before it calls `register()`, but the entry's `preferences` stay `None` until the preferences class is registered.
+- [A preferences `bl_idname` that is not the add-on's module](addons.md#preferences-idname) (handled): Blender finds an add-on's preferences by their `bl_idname`, which must be the add-on's module: `__package__` in an extension, which is `bl_ext.<repository>.<id>`, not the bare `id`.
+- [A manifest Blender refuses](addons.md#refused-manifest) (handled): Blender validates an extension's `blender_manifest.toml` before it runs any of its code: `id` must be there and be a Python identifier, and `type` must be one of the types it supports.
+- [Reloading with `importlib.reload`](addons.md#reload-guard) (handled): When an add-on's file changed on disk, Blender re-enables it with `importlib.reload`, which runs the module again in its old namespace: `"bpy" in locals()` is true only then, and the submodules imported on the first run are still bound.
+- [A panel without `draw`](inheritance.md#missing-draw) (handled): Most callbacks are optional, but a `Panel`, `Menu`, `Header` or `NodeSocket` must define `draw`: Blender refuses to register the class without one.
+- [A mixin listed after the Blender base](inheritance.md#mixin-order) (handled): Blender finds callbacks, `bl_*` variables and property annotations anywhere among a class's bases, so for them the order does not matter.
+- [A mixin's `self`](inheritance.md#mixin-self) (handled): A mixin shares code between Blender classes without deriving from one, so Python alone types `self` in its methods as the bare mixin, with no `layout`.
+- [An override with another signature](inheritance.md#override-signature) (handled): Blender checks each callback when it registers the class: the number of positional parameters (defaults included), and whether it is a classmethod (`poll`) or a plain function (`execute`).
+- [A subclass of a registered class](inheritance.md#registered-subclass) (handled): A registered class must not derive from another registered class.
+- [Two Blender bases](inheritance.md#two-bases) (handled): A class that derives from two Blender classes, say `Operator` and `Panel`, registers as the first of them only; the other base's callbacks are never called.
+- [An override without annotations](inheritance.md#unannotated-override) (handled): Add-ons write `def execute(self, context):` without annotations.
 - [A property declared as an annotation](properties.md#annotated-property) (handled): A Property host declares its properties as class annotations, `name: IntProperty(...)`.
 - [`self` in property callbacks](properties.md#callback-self) (handled): Blender calls a property's `update`, `get`, `set`, `poll` and `items` callbacks with the instance that holds the property as `self`, though they are plain functions.
 - [The class attribute of a declared property](properties.md#class-attribute) (handled): A declared property exists on instances only.
@@ -57,6 +75,18 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked.
 - [Classes that take no Registered properties](properties.md#unsupported-target) (handled): Registered properties work on every data-block type and on bones, nodes, sockets, view layers and strips, but not on `Area`, `Window`, `Modifier`, `Preferences`, `Context` or a `SpaceView3D`.
 - [Vector properties and their subtype](properties.md#vector-subtypes) (handled): A `FloatVectorProperty` gives a `mathutils` type chosen by its `subtype` and `size`: `Color` for a colour of size 3, `Vector` for a translation or direction, `Euler` and `Quaternion` for rotations, `Matrix` for a `MATRIX` of size (4, 4) or 16.
+- [Registration under a condition](registration.md#conditional-registration) (handled): A class that `register()` registers only under a condition (a Blender version check, an environment variable) exists only when the condition held.
+- [Registration in a helper function](registration.md#helper-registration) (handled): `register()` often hands the work to helper functions.
+- [A class that is never registered](registration.md#never-registered) (handled): A Blender class does nothing until `register()` registers it: an operator missing from the list is not in `bpy.ops`, a panel never shows.
+- [An operator idname Blender rejects](registration.md#operator-idname) (handled): An operator's `bl_idname` is `category.name` in lower-case letters, digits and underscores; it becomes `bpy.ops.category.name`.
+- [Panel and menu idnames without `_PT_` or `_MT_`](registration.md#panel-menu-idname) (handled): A panel's `bl_idname` contains `_PT_` and a menu's `_MT_`, with text before and after: `OBJECT_PT_tools`.
+- [A PropertyGroup registered after the class pointing to it](registration.md#property-group-order) (handled): A `PointerProperty` or `CollectionProperty` needs its PropertyGroup registered first: Blender raises `ValueError` for a class whose property points to an unregistered one.
+- [A class registered twice](registration.md#registered-twice) (handled): Registering a class that is already registered raises `ValueError`, so the add-on fails to enable.
+- [Classes `register()` finds at runtime](registration.md#registration-at-runtime) (handled): When `register()` registers classes it finds while it runs (`getattr` on a module, an `auto_load` helper), the checker counts every Blender class of the add-on as registered and says so once, as an Assumption.
+- [Registration in a loop over a tuple](registration.md#registration-loop) (handled): The usual `register()` loops over a tuple of classes, and `unregister()` over the same tuple reversed.
+- [A child panel registered before its parent](registration.md#subpanel-order) (handled): A panel with `bl_parent_id` is drawn inside the panel of that idname, which must be registered first: otherwise Blender reports that the parent was not found and the registration fails.
+- [Registration outside `register()`](registration.md#unreachable-registration) (handled): Only what `register()` reaches is registered when the add-on is enabled.
+- [`unregister()` that does not undo `register()`](registration.md#unregister-mismatch) (handled): `unregister()` should remove what `register()` added: what it leaves behind stays in Blender after the add-on is disabled, and `unregister_class` for a class that was never registered raises.
 
 <a id="runtime-typechecker"></a>
 ## the runtime add-on typechecker
@@ -94,6 +124,7 @@ No entry yet.
 
 Entries nothing handles yet, or not classified yet.
 
+- [The properties of add-ons Blender enables by default](addons.md#default-addon-properties) (not handled): Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is Cycles'.
 - [Strings returned by dynamic enum items](properties.md#enum-item-strings) (not handled): Blender does not copy the strings an `items` callback returns.
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type.
 - [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range.

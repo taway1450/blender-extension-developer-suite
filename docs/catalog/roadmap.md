@@ -11,6 +11,7 @@ Everything the catalog says is not handled or handled in part, by what can chang
 
 A safeguard can check it and the work is tracked.
 
+- [The properties of add-ons Blender enables by default](addons.md#default-addon-properties) (not handled): Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is Cycles'. *Give the stubs the registrations of the add-ons Blender enables by default, so the read is known without their source.*
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type. *Read `*NAME` inside static `items` through the constant, as items joined with `+` already are.*
 
 <a id="possible"></a>

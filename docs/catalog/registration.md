@@ -12,19 +12,658 @@ what the rest of the add-on can rely on once `register()` has run.
 <a id="classes"></a>
 ## Registered classes
 
-To come in this section: a class registered twice; a class registered as its first Blender base only; unregistering in reverse order.
+<a id="never-registered"></a>
+### A class that is never registered
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/never-registered`
+
+A Blender class does nothing until `register()` registers it: an operator missing from the list is not in
+`bpy.ops`, a panel never shows. The checker reports a class the add-on defines but never registers. A class that only
+serves as a base or a mixin for registered classes is not reported.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: a class that is never registered",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class NEVER_REGISTERED_OT_base(Operator):
+    bl_label = "Base"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class NEVER_REGISTERED_OT_used(NEVER_REGISTERED_OT_base):
+    bl_idname = "never_registered.used"
+    bl_label = "Used"
+
+
+class NEVER_REGISTERED_OT_forgotten(NEVER_REGISTERED_OT_base):  # reported: blender-unregistered-class
+    bl_idname = "never_registered.forgotten"
+    bl_label = "Forgotten"
+
+
+def register():
+    bpy.utils.register_class(NEVER_REGISTERED_OT_used)
+
+
+def unregister():
+    bpy.utils.unregister_class(NEVER_REGISTERED_OT_used)
+
+
+def example() -> None:
+    bpy.ops.never_registered.used()
+    bpy.ops.never_registered.forgotten()  # reported: missing-attribute
+```
+
+- **What you see:** ty reports [`blender-unregistered-class`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-unregistered-class) (warn) and [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the lines marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [source](../../examples/catalog/registration/never_registered.py)
+
+<a id="registered-twice"></a>
+### A class registered twice
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/registered-twice`
+
+Registering a class that is already registered raises `ValueError`, so the add-on fails to enable. It happens
+when a class is both registered by hand and listed in the tuple a loop registers. The checker reports the class where
+it is registered again: here, its place in the tuple.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: a class registered twice",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class REGISTERED_TWICE_OT_run(Operator):
+    bl_idname = "registered_twice.run"
+    bl_label = "Run"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+classes = (REGISTERED_TWICE_OT_run,)  # reported: blender-duplicate-registration
+
+
+def register():
+    bpy.utils.register_class(REGISTERED_TWICE_OT_run)
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+```
+
+- **What you see:** ty reports [`blender-duplicate-registration`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-duplicate-registration) (error) on the line marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [runtime evidence](../../tests/typecheck/features/registration_checks/regchk_duplicate/_expected/runtime.toml) · [source](../../examples/catalog/registration/registered_twice.py)
+
+<a id="unregister-mismatch"></a>
+### `unregister()` that does not undo `register()`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/unregister-mismatch`
+
+`unregister()` should remove what `register()` added: what it leaves behind stays in Blender after the add-on is
+disabled, and `unregister_class` for a class that was never registered raises. The checker compares the two
+functions and reports each difference; a class only `unregister()` names is also never registered.
+
+```python
+import bpy
+from bpy.props import IntProperty
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: unregister() that does not undo register()",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class UNREGISTER_MISMATCH_OT_run(Operator):
+    bl_idname = "unregister_mismatch.run"
+    bl_label = "Run"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class UNREGISTER_MISMATCH_OT_other(Operator):  # reported: blender-unregistered-class
+    bl_idname = "unregister_mismatch.other"
+    bl_label = "Other"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(UNREGISTER_MISMATCH_OT_run)
+    bpy.types.Scene.mismatch_count = IntProperty()  # reported: blender-unregister-mismatch
+
+
+def unregister():
+    bpy.utils.unregister_class(UNREGISTER_MISMATCH_OT_run)
+    bpy.utils.unregister_class(UNREGISTER_MISMATCH_OT_other)  # reported: blender-unregister-mismatch
+```
+
+- **What you see:** ty reports [`blender-unregistered-class`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-unregistered-class) (warn) and [`blender-unregister-mismatch`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-unregister-mismatch) (warn) on the lines marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [runtime evidence](../../tests/typecheck/features/registration_checks/regchk_unregister_unknown/_expected/runtime.toml) · [source](../../examples/catalog/registration/unregister_mismatch.py)
 
 <a id="idnames"></a>
 ## Idnames and naming
 
-To come in this section: `bl_idname` conventions per type; an idname Blender rejects; panel and menu names Blender warns about.
+<a id="operator-idname"></a>
+### An operator idname Blender rejects
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/operator-idname`
+
+An operator's `bl_idname` is `category.name` in lower-case letters, digits and underscores; it becomes
+`bpy.ops.category.name`. Blender refuses any other form when the class is registered, the class-name form
+`OBJECT_OT_run` included, and an operator without `bl_idname` gets its class name, which fails too. The checker
+reports each.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: an operator idname Blender rejects",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class OPERATOR_IDNAME_OT_valid(Operator):
+    bl_idname = "operator_idname.valid_name_2"
+    bl_label = "Valid"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class OPERATOR_IDNAME_OT_class_form(Operator):
+    bl_idname = "OPERATOR_IDNAME_OT_class_form"  # reported: blender-invalid-idname
+    bl_label = "Class form"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class OPERATOR_IDNAME_OT_dash(Operator):
+    bl_idname = "operator_idname.has-dash"  # reported: blender-invalid-idname
+    bl_label = "Dash"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class OPERATOR_IDNAME_OT_missing(Operator):  # reported: blender-invalid-idname
+    bl_label = "Missing"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+classes = (OPERATOR_IDNAME_OT_valid, OPERATOR_IDNAME_OT_class_form, OPERATOR_IDNAME_OT_dash, OPERATOR_IDNAME_OT_missing)
+register, unregister = bpy.utils.register_classes_factory(classes)
+```
+
+- **What you see:** ty reports [`blender-invalid-idname`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-idname) (error) on the lines marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [runtime evidence](../../tests/typecheck/features/registration_checks/regchk_idname/_expected/runtime.toml) · [source](../../examples/catalog/registration/operator_idname.py)
+
+<a id="panel-menu-idname"></a>
+### Panel and menu idnames without `_PT_` or `_MT_`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/panel-menu-idname`
+
+A panel's `bl_idname` contains `_PT_` and a menu's `_MT_`, with text before and after: `OBJECT_PT_tools`. Without
+`bl_idname` the class name is used. Blender still registers a class that breaks the convention, with a warning its
+source marks as temporary until add-ons update; the checker reports it as an error already.
+
+```python
+import bpy
+from bpy.types import Menu, Panel
+
+bl_info = {
+    "name": "Catalog: panel and menu idnames",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class PANEL_MENU_IDNAME_PT_tools(Panel):
+    bl_label = "Tools"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        pass
+
+
+class ToolsPanel(Panel):  # reported: blender-invalid-idname
+    bl_label = "Tools"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        pass
+
+
+class PANEL_MENU_IDNAME_MT_tools(Menu):
+    bl_idname = "panel_menu_idname.tools"  # reported: blender-invalid-idname
+    bl_label = "Tools"
+
+    def draw(self, context):
+        pass
+
+
+classes = (PANEL_MENU_IDNAME_PT_tools, ToolsPanel, PANEL_MENU_IDNAME_MT_tools)
+register, unregister = bpy.utils.register_classes_factory(classes)
+```
+
+- **What you see:** ty reports [`blender-invalid-idname`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-idname) (error) on the lines marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [`source/blender/makesrna/intern/rna_access.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/makesrna/intern/rna_access.cc) · [`source/blender/makesrna/intern/rna_ui.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/makesrna/intern/rna_ui.cc) · [source](../../examples/catalog/registration/panel_menu_idname.py)
 
 <a id="order"></a>
 ## Order
 
-To come in this section: a PropertyGroup registered after the class pointing to it; a child panel registered before its parent.
+<a id="property-group-order"></a>
+### A PropertyGroup registered after the class pointing to it
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/property-group-order`
+
+A `PointerProperty` or `CollectionProperty` needs its PropertyGroup registered first: Blender raises `ValueError`
+for a class whose property points to an unregistered one. The checker follows the order of `register()` and reports
+the early registration. Unregistering in another order works, so it is not reported.
+
+```python
+import bpy
+from bpy.props import PointerProperty
+from bpy.types import PropertyGroup
+
+bl_info = {
+    "name": "Catalog: a PropertyGroup registered after the class pointing to it",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class PROPERTY_GROUP_ORDER_Leaf(PropertyGroup):
+    pass
+
+
+class PROPERTY_GROUP_ORDER_Tree(PropertyGroup):
+    leaf: PointerProperty(type=PROPERTY_GROUP_ORDER_Leaf)
+
+
+classes = (
+    PROPERTY_GROUP_ORDER_Tree,  # reported: blender-register-order
+    PROPERTY_GROUP_ORDER_Leaf,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+```
+
+- **What you see:** ty reports [`blender-register-order`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-register-order) (error) on the line marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [runtime evidence](../../tests/typecheck/features/registration_checks/regchk_order/_expected/runtime.toml) · [source](../../examples/catalog/registration/property_group_order.py)
+
+<a id="subpanel-order"></a>
+### A child panel registered before its parent
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/subpanel-order`
+
+A panel with `bl_parent_id` is drawn inside the panel of that idname, which must be registered first: otherwise
+Blender reports that the parent was not found and the registration fails. The checker reports the child
+registered too early.
+
+```python
+import bpy
+from bpy.types import Panel
+
+bl_info = {
+    "name": "Catalog: a child panel registered before its parent",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class SUBPANEL_ORDER_PT_parent(Panel):
+    bl_label = "Parent"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        pass
+
+
+class SUBPANEL_ORDER_PT_child(Panel):
+    bl_label = "Child"
+    bl_parent_id = "SUBPANEL_ORDER_PT_parent"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        pass
+
+
+def register():
+    bpy.utils.register_class(SUBPANEL_ORDER_PT_child)  # reported: blender-register-order
+    bpy.utils.register_class(SUBPANEL_ORDER_PT_parent)
+
+
+def unregister():
+    bpy.utils.unregister_class(SUBPANEL_ORDER_PT_parent)
+    bpy.utils.unregister_class(SUBPANEL_ORDER_PT_child)
+```
+
+- **What you see:** ty reports [`blender-register-order`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-register-order) (error) on the line marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [`source/blender/makesrna/intern/rna_ui.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/makesrna/intern/rna_ui.cc) · [source](../../examples/catalog/registration/subpanel_order.py)
 
 <a id="reach"></a>
 ## What `register()` reaches
 
-To come in this section: registration in a helper function; registration in a loop over a tuple; registration outside `register()`.
+<a id="conditional-registration"></a>
+### Registration under a condition
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/conditional-registration`
+
+A class that `register()` registers only under a condition (a Blender version check, an environment variable)
+exists only when the condition held. The checker counts it as registered, so its operator is in `bpy.ops`, and reports
+each use as an Assumption.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: registration under a condition",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class CONDITIONAL_REGISTRATION_OT_new(Operator):
+    bl_idname = "conditional_registration.new"
+    bl_label = "New"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    if bpy.app.version >= (4, 3, 0):
+        bpy.utils.register_class(CONDITIONAL_REGISTRATION_OT_new)
+
+
+def unregister():
+    if bpy.app.version >= (4, 3, 0):
+        bpy.utils.unregister_class(CONDITIONAL_REGISTRATION_OT_new)
+
+
+def example() -> None:
+    bpy.ops.conditional_registration.new()  # reported: blender-assumed-registration
+```
+
+- **What you see:** ty reports [`blender-assumed-registration`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-registration) (warn) on the line marked *reported*.
+- **More:** [feature tests: registration](../../tests/typecheck/features/registration/README.md) · [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/registration/conditional_registration.py)
+
+<a id="helper-registration"></a>
+### Registration in a helper function
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/helper-registration`
+
+`register()` often hands the work to helper functions. The checker follows every call `register()` makes, also into
+the `register()` of a submodule, so an operator a helper registers is in `bpy.ops` with its properties.
+
+```python
+import bpy
+from bpy.props import IntProperty
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: registration in a helper function",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class HELPER_REGISTRATION_OT_run(Operator):
+    bl_idname = "helper_registration.run"
+    bl_label = "Run"
+
+    count: IntProperty()
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register_operators():
+    bpy.utils.register_class(HELPER_REGISTRATION_OT_run)
+
+
+def register():
+    register_operators()
+
+
+def unregister():
+    bpy.utils.unregister_class(HELPER_REGISTRATION_OT_run)
+
+
+def example() -> None:
+    bpy.ops.helper_registration.run(count=2)
+    bpy.ops.helper_registration.run(count="2")  # reported: invalid-argument-type
+```
+
+- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **More:** [feature tests: registration](../../tests/typecheck/features/registration/README.md) · [source](../../examples/catalog/registration/helper_registration.py)
+
+<a id="registration-at-runtime"></a>
+### Classes `register()` finds at runtime
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/registration-at-runtime`
+
+When `register()` registers classes it finds while it runs (`getattr` on a module, an `auto_load` helper), the
+checker counts every Blender class of the add-on as registered and says so once, as an Assumption. It cannot tell
+which classes they are, so it turns off its checks for classes missing from `register()`.
+
+```python
+import sys
+
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: classes register() finds at runtime",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+CLASS_NAMES = ("REGISTRATION_AT_RUNTIME_OT_run",)
+
+
+class REGISTRATION_AT_RUNTIME_OT_run(Operator):
+    bl_idname = "registration_at_runtime.run"
+    bl_label = "Run"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    module = sys.modules[__name__]
+    for name in CLASS_NAMES:
+        bpy.utils.register_class(getattr(module, name))  # reported: blender-assumed-complete-registration
+
+
+def unregister():
+    module = sys.modules[__name__]
+    for name in reversed(CLASS_NAMES):
+        bpy.utils.unregister_class(getattr(module, name))
+
+
+def example() -> None:
+    bpy.ops.registration_at_runtime.run()
+```
+
+- **What you see:** ty reports [`blender-assumed-complete-registration`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-complete-registration) (warn) on the line marked *reported*.
+- **More:** [feature tests: registration](../../tests/typecheck/features/registration/README.md) · [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/registration/registration_at_runtime.py)
+
+<a id="registration-loop"></a>
+### Registration in a loop over a tuple
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/registration-loop`
+
+The usual `register()` loops over a tuple of classes, and `unregister()` over the same tuple reversed. The checker
+reads the loop as one registration per class: the operators are in `bpy.ops`, and each class counts as registered
+and unregistered.
+
+```python
+import bpy
+from bpy.props import IntProperty
+from bpy.types import Operator, Panel
+
+bl_info = {
+    "name": "Catalog: registration in a loop over a tuple",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class REGISTRATION_LOOP_OT_run(Operator):
+    bl_idname = "registration_loop.run"
+    bl_label = "Run"
+
+    count: IntProperty()
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class REGISTRATION_LOOP_PT_tools(Panel):
+    bl_label = "Tools"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        self.layout.operator("registration_loop.run")
+
+
+classes = (REGISTRATION_LOOP_OT_run, REGISTRATION_LOOP_PT_tools)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+
+
+def example() -> None:
+    bpy.ops.registration_loop.run(count=2)
+    bpy.ops.registration_loop.run(count="2")  # reported: invalid-argument-type
+```
+
+- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **More:** [feature tests: registration](../../tests/typecheck/features/registration/README.md) · [source](../../examples/catalog/registration/registration_loop.py)
+
+<a id="unreachable-registration"></a>
+### Registration outside `register()`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `registration/unreachable-registration`
+
+Only what `register()` reaches is registered when the add-on is enabled. A function that registers a class but
+that `register()` never calls, directly or through other functions (a timer it starts counts), is reported, and its
+operator is not in `bpy.ops`.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: registration outside register()",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class UNREACHABLE_REGISTRATION_OT_run(Operator):
+    bl_idname = "unreachable_registration.run"
+    bl_label = "Run"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class UNREACHABLE_REGISTRATION_OT_extra(Operator):
+    bl_idname = "unreachable_registration.extra"
+    bl_label = "Extra"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register_extra():  # reported: blender-unreachable-registration
+    bpy.utils.register_class(UNREACHABLE_REGISTRATION_OT_extra)
+
+
+def register():
+    bpy.utils.register_class(UNREACHABLE_REGISTRATION_OT_run)
+
+
+def unregister():
+    bpy.utils.unregister_class(UNREACHABLE_REGISTRATION_OT_run)
+
+
+def example() -> None:
+    bpy.ops.unreachable_registration.run()
+    bpy.ops.unreachable_registration.extra()  # reported: missing-attribute
+```
+
+- **What you see:** ty reports [`blender-unreachable-registration`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-unreachable-registration) (warn) and [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the lines marked *reported*.
+- **More:** [feature tests: registration_checks](../../tests/typecheck/features/registration_checks/README.md) · [source](../../examples/catalog/registration/unreachable_registration.py)

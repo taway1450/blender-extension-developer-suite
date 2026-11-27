@@ -12,14 +12,323 @@ bases it accepts, and how mixins see the members of the class they are mixed int
 <a id="overrides"></a>
 ## Overrides
 
-To come in this section: an override with another signature; a class variable Blender reads.
+<a id="class-variable"></a>
+### A class variable Blender reads
+
+**Handled** by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `inheritance/class-variable`
+
+The stubs declare the class variables Blender reads at registration, such as `bl_options` and `bl_space_type`,
+with their allowed values, so a misspelt value is reported like any other wrong value.
+
+```python
+from bpy.types import Operator, Panel
+
+
+class Apply(Operator):
+    bl_idname = "inheritance.apply"
+    bl_label = "Apply"
+    bl_options = {"REGISTER", "UNDOO"}  # reported: invalid-assignment
+
+
+class Tools(Panel):
+    bl_label = "Tools"
+    bl_space_type = "VIEW3D"  # reported: invalid-assignment
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        pass
+```
+
+- **What you see:** ty reports [`invalid-assignment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-assignment) (error) on the lines marked *reported*.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/inheritance/class_variable.py)
+
+<a id="missing-draw"></a>
+### A panel without `draw`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/missing-draw`
+
+Most callbacks are optional, but a `Panel`, `Menu`, `Header` or `NodeSocket` must define `draw`: Blender refuses
+to register the class without one. The checker reports the class.
+
+```python
+import bpy
+from bpy.types import Panel
+
+bl_info = {
+    "name": "Catalog: a panel without draw",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class MISSING_DRAW_PT_tools(Panel):  # reported: blender-missing-callback
+    bl_label = "Tools"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+
+def register():
+    bpy.utils.register_class(MISSING_DRAW_PT_tools)
+
+
+def unregister():
+    bpy.utils.unregister_class(MISSING_DRAW_PT_tools)
+```
+
+- **What you see:** ty reports [`blender-missing-callback`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-missing-callback) (error) on the line marked *reported*.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [runtime evidence](../../tests/typecheck/features/inheritance/generated/inh_invalid_panel_no_draw/_expected/runtime.toml) · [source](../../examples/catalog/inheritance/missing_draw.py)
+
+<a id="override-signature"></a>
+### An override with another signature
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/override-signature`
+
+Blender checks each callback when it registers the class: the number of positional parameters (defaults
+included), and whether it is a classmethod (`poll`) or a plain function (`execute`). Parameter names do not matter,
+since Blender passes the arguments by position. The checker reports an override Blender would refuse, here an
+`execute` without its `context` parameter.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: an override with another signature",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class OVERRIDE_SIGNATURE_OT_run(Operator):
+    bl_idname = "override_signature.run"
+    bl_label = "Run"
+
+    def execute(self):  # reported: blender-invalid-override
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(OVERRIDE_SIGNATURE_OT_run)
+
+
+def unregister():
+    bpy.utils.unregister_class(OVERRIDE_SIGNATURE_OT_run)
+```
+
+- **What you see:** ty reports [`blender-invalid-override`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-override) (error) on the line marked *reported*.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [runtime evidence](../../tests/typecheck/features/inheritance/generated/inh_invalid_execute_fewer/_expected/runtime.toml) · [source](../../examples/catalog/inheritance/override_signature.py)
+
+<a id="unannotated-override"></a>
+### An override without annotations
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/unannotated-override`
+
+Add-ons write `def execute(self, context):` without annotations. The checker types the parameters of an override
+of a Blender callback from the method it overrides, so `context` is a `Context`, and checks the value it returns
+against the parent's return type.
+
+```python
+from bpy.types import Context, Operator
+
+
+class Report(Operator):
+    bl_idname = "inheritance.report"
+    bl_label = "Report"
+
+    def execute(self, context):
+        assert_type(context, Context)
+        print(context.scene.name)
+        return {"DONE"}  # reported: invalid-explicit-return
+```
+
+- **What you see:** `context` is `Context`; ty reports [`invalid-explicit-return`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-explicit-return) (error) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type `execute`'s `context` as `Context | None`, so `context.scene` is reported. · fake-bpy-module stubs, Blender 5.2: These stubs type `execute`'s `context` as `Context | None`, so `context.scene` is reported.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/inheritance/unannotated_override.py)
 
 <a id="mixins"></a>
 ## Mixins
 
-To come in this section: a mixin's `self`; properties declared on a mixin.
+<a id="mixin-order"></a>
+### A mixin listed after the Blender base
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/mixin-order`
+
+Blender finds callbacks, `bl_*` variables and property annotations anywhere among a class's bases, so for them the
+order does not matter. It matters for the helper methods Blender's own Python base classes define
+(`Operator.as_keywords`, `Menu.append`): a mixin listed after the Blender base loses to them, without a word. The
+checker reports the order.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: a mixin listed after the Blender base",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class KeywordsMixin:
+    def as_keywords(self, *, ignore=()):
+        return {"mode": "mixin"}
+
+
+class MIXIN_ORDER_OT_first(KeywordsMixin, Operator):
+    bl_idname = "mixin_order.first"
+    bl_label = "Mixin first"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class MIXIN_ORDER_OT_last(Operator, KeywordsMixin):  # reported: blender-mixin-order
+    bl_idname = "mixin_order.last"
+    bl_label = "Mixin last"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+classes = (MIXIN_ORDER_OT_first, MIXIN_ORDER_OT_last)
+register, unregister = bpy.utils.register_classes_factory(classes)
+```
+
+- **What you see:** ty reports [`blender-mixin-order`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-mixin-order) (warn) on the line marked *reported*.
+- **Checked in Blender:** the add-on registers; the Operator base's own method wins over the mixin's.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/inheritance/mixin_order.py)
+
+<a id="mixin-self"></a>
+### A mixin's `self`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/mixin-self`
+
+A mixin shares code between Blender classes without deriving from one, so Python alone types `self` in its methods
+as the bare mixin, with no `layout`. In Blender `self` is always one of the classes that use the mixin, and the
+checker types it so: here both are panels, so `self` is a `Panel` too. Only members that every class using the mixin
+has resolve: a panel has no `report`.
+
+```python
+from bpy.types import Panel, UILayout
+
+
+class ToolsMixin:
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw_header_row(self, context):
+        assert_type(self.layout, UILayout)
+        self.layout.label(text=self.bl_label)
+        self.report({"INFO"}, "drawn")  # reported: missing-attribute
+
+
+class MeshTools(ToolsMixin, Panel):
+    bl_label = "Mesh tools"
+
+    def draw(self, context):
+        self.draw_header_row(context)
+
+
+class CurveTools(ToolsMixin, Panel):
+    bl_label = "Curve tools"
+
+    def draw(self, context):
+        self.draw_header_row(context)
+```
+
+- **What you see:** `self.layout` is `UILayout`; ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the line marked *reported*.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/inheritance/mixin_self.py)
 
 <a id="bases"></a>
 ## Bases
 
-To come in this section: two Blender bases; a subclass of an add-on's registered class.
+<a id="registered-subclass"></a>
+### A subclass of a registered class
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/registered-subclass`
+
+A registered class must not derive from another registered class. Registering the subclass after its parent
+detaches the parent: Blender no longer calls its callbacks, and only logs a warning. Share code through an
+unregistered base or a mixin instead. The checker reports the subclass.
+
+```python
+import bpy
+from bpy.types import Operator
+
+bl_info = {
+    "name": "Catalog: a subclass of a registered class",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class REGISTERED_SUBCLASS_OT_parent(Operator):
+    bl_idname = "registered_subclass.parent"
+    bl_label = "Parent"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+class REGISTERED_SUBCLASS_OT_child(REGISTERED_SUBCLASS_OT_parent):  # reported: blender-registered-base
+    bl_idname = "registered_subclass.child"
+    bl_label = "Child"
+
+
+classes = (REGISTERED_SUBCLASS_OT_parent, REGISTERED_SUBCLASS_OT_child)
+register, unregister = bpy.utils.register_classes_factory(classes)
+```
+
+- **What you see:** ty reports [`blender-registered-base`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-registered-base) (error) on the line marked *reported*.
+- **Checked in Blender:** the add-on registers; registering the subclass detached the parent's Python class; the subclass works.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/inheritance/registered_subclass.py)
+
+<a id="two-bases"></a>
+### Two Blender bases
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/two-bases`
+
+A class that derives from two Blender classes, say `Operator` and `Panel`, registers as the first of them only;
+the other base's callbacks are never called. The checker reports the class. Mixins that are no Blender class are
+fine.
+
+```python
+import bpy
+from bpy.types import Operator, Panel
+
+bl_info = {
+    "name": "Catalog: two Blender bases",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class TWO_BASES_OT_two(Operator, Panel):  # reported: blender-invalid-base
+    bl_idname = "two_bases.two"
+    bl_label = "Two bases"
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(TWO_BASES_OT_two)
+
+
+def unregister():
+    bpy.utils.unregister_class(TWO_BASES_OT_two)
+```
+
+- **What you see:** ty reports [`blender-invalid-base`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-base) (error) on the line marked *reported*.
+- **Checked in Blender:** the add-on registers; Blender registers the class as its first Blender base.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/inheritance/two_bases.py)

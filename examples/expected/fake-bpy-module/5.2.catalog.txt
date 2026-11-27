@@ -2,9 +2,33 @@
 # its code, then the diagnostics ty reports and the markers that do not hold (the Gap-tagged ones).
 # `mise run check:catalog 5.2` fails when they change; `--update` rewrites this file.
 # Format: path | checked | hash, or path | rule | source line (with #2, #3 ... for a repeated text)
-addons/legacy_scene_counter.py | checked | a0d9c66afb44
+addons/classes_factory.py | checked | ecdd4a1b5ba0
+addons/declared_dependency | checked | ee96f6bc5997
+addons/default_addon_properties.py | checked | 675d51ebf872
+addons/default_addon_properties.py | missing-attribute | assert_type(scene.cycles.samples, int)
+addons/default_addon_properties.py | type-assertion-failure | assert_type(scene.cycles.samples, int)
+addons/extension_package | checked | cadb63897cf7
+addons/legacy_scene_counter.py | checked | 2ce966d5020b
+addons/malformed_bl_info.py | checked | c3d3c8a343a7
+addons/no_unregister | checked | 76a64b78960a
+addons/other_addon_preferences.py | checked | 61819a8e9ff3
 addons/own_preferences | checked | 20596b9e98ef
 addons/own_preferences/__init__.py | missing-union-attribute | preferences = context.preferences.addons[__package__].preferences
+addons/preferences_before_registration | checked | 3499eb6ba56e
+addons/preferences_before_registration/__init__.py | missing-union-attribute | entry = bpy.context.preferences.addons.get(__package__)
+addons/preferences_idname | checked | 76d3948cf510
+addons/refused_manifest | checked | e0c0570662ff
+addons/reload_guard | checked | 343249fa9d23
+inheritance/class_variable.py | checked | 32f880d5ae03
+inheritance/missing_draw.py | checked | 215788f3c3db
+inheritance/mixin_order.py | checked | 78b5ad7c9493
+inheritance/mixin_self.py | checked | da0f947dcc6b
+inheritance/override_signature.py | checked | 57fc558cb08e
+inheritance/registered_subclass.py | checked | 024ff357945c
+inheritance/two_bases.py | checked | 62f929dd61bd
+inheritance/unannotated_override.py | checked | 266b3f0c2c77
+inheritance/unannotated_override.py | type-assertion-failure | assert_type(context, Context)
+inheritance/unannotated_override.py | missing-union-attribute | print(context.scene.name)
 properties/annotated_property.py | checked | 2be26238542d
 properties/callback_self.py | checked | d44ed0deaae0
 properties/class_attribute.py | checked | abf3e15b4be5
@@ -34,3 +58,15 @@ properties/unevaluated_annotation.py | checked | 06e225583119
 properties/unevaluated_annotation.py | type-assertion-failure | assert_type(settings.count, int)
 properties/unsupported_target.py | checked | 4e93d0f4bf60
 properties/vector_subtypes.py | checked | 2c247f51d78e
+registration/conditional_registration.py | checked | 984956f416a4
+registration/helper_registration.py | checked | ce51200a7394
+registration/never_registered.py | checked | 9d59b3ebf8d9
+registration/operator_idname.py | checked | cd93924b1086
+registration/panel_menu_idname.py | checked | 58e934498810
+registration/property_group_order.py | checked | 24c627536130
+registration/registered_twice.py | checked | d4a5b30905e8
+registration/registration_at_runtime.py | checked | 3e0799c9e9fb
+registration/registration_loop.py | checked | e162efd5d0de
+registration/subpanel_order.py | checked | 8dc4bdd7f057
+registration/unreachable_registration.py | checked | c66f51ece12f
+registration/unregister_mismatch.py | checked | f14a24b4185a

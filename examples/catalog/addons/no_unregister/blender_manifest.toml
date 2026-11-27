@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+
+id = "no_unregister"
+version = "1.0.0"
+name = "Catalog: register() without unregister()"
+tagline = "register() without unregister()"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
