@@ -12,19 +12,346 @@ the classes for gizmos and tools.
 <a id="draw"></a>
 ## Draw code
 
-To come in this section: `layout.prop(data, "name")`; `layout.operator` and its properties; icons by name.
+<a id="icon-name"></a>
+### Icons by name
+
+**Handled** by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `ui/icon-name`
+
+A layout function takes an icon by its name, such as `icon="ERROR"`. The stubs type `icon` as the set of Blender's
+icon names, so a misspelt name is reported.
+
+```python
+from bpy.types import Panel
+
+
+class WarningPanel(Panel):
+    bl_label = "Warning"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        self.layout.label(text="Check the scale", icon="ERRORR")  # reported: invalid-argument-type
+```
+
+- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/ui/icon_name.py)
+
+<a id="operator-button"></a>
+### `layout.operator` and its properties
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `ui/operator-button`
+
+`layout.operator` draws a button for an operator and returns the properties the button will run it with. The
+checker finds the operator by its idname, Blender's or the add-on's own, and types the returned properties as that
+operator's, so each property has its own type and a wrong value is reported.
+
+```python
+from bpy.types import Panel
+
+
+class SelectPanel(Panel):
+    bl_label = "Select"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        props = self.layout.operator("object.select_all")
+        assert_type(props.action, Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"])
+        props.action = "ALL"  # reported: invalid-assignment
+```
+
+- **What you see:** `props.action` is `Literal["TOGGLE", "SELECT", "DESELECT", "INVERT"]`; ty reports [`invalid-assignment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-assignment) (error) on the line marked *reported*.
+- **More:** [feature tests: operator_properties](../../tests/typecheck/features/operator_properties/README.md) · [source](../../examples/catalog/ui/operator_button.py)
+
+<a id="prop-name"></a>
+### `layout.prop(data, "name")`
+
+**Not handled** (possible) · checked with Blender main, builtin stubs · `ui/prop-name`
+
+`layout.prop` draws one property of `data`, named by a string, which Blender looks up only while it draws. The stubs
+type the name as a plain `str`, so a misspelt name is not reported today: the marked line shows the result a check
+would give.
+
+```python
+from bpy.types import Panel
+
+
+class LocationPanel(Panel):
+    bl_label = "Location"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        if context.object is not None:
+            # not handled yet: the name is not checked against the Object's properties
+            self.layout.prop(context.object, "locaton")  # reported: invalid-argument-type
+```
+
+- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Future:** Possible: Check the property name against the properties of `data`'s type.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so `context.object` is not narrowed and passing it to `layout.prop` is reported. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so its reads are reported.
+- **More:** [source](../../examples/catalog/ui/prop_name.py)
 
 <a id="lists"></a>
 ## Lists
 
-To come in this section: `template_list` and a `UIList`; `draw_item`.
+<a id="draw-item-annotation"></a>
+### An annotated `draw_item`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `ui/draw-item-annotation`
+
+An annotation of `draw_item`'s `item` with the type the list shows is accepted, and the body sees that type. The
+stubs type `data` and `item` as `bpy_struct`, any Blender struct, and an override's parameter may not be narrower
+than its parent's; but Blender passes what the add-on gave `template_list`, so it is right. Against the parent's
+signature, which the stubs state precisely, the annotation is the less precise form, so the checker reports it as an
+Imprecise annotation. Left unannotated, `item` is typed from `template_list` anyway.
+
+```python
+from bpy.props import StringProperty
+from bpy.types import PropertyGroup, UIList
+
+
+class Layer(PropertyGroup):
+    label: StringProperty()
+
+
+class LAYERS_UL_list(UIList):
+    def draw_item(self, context, layout, data, item: Layer, icon, active_data, active_property):  # reported: blender-imprecise-callback-parameter
+        layout.label(text=item.label)
+```
+
+- **What you see:** ty reports [`blender-imprecise-callback-parameter`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-imprecise-callback-parameter) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `draw_item`'s parameters as `AnyType`, which the annotation does not narrow, so the override is reported; `layout` is `UILayout | None` there. · fake-bpy-module stubs, Blender 5.2: These stubs type `draw_item`'s `layout` as `UILayout | None`, so its read is reported.
+- **More:** [feature tests: imprecise_annotations](../../tests/typecheck/features/imprecise_annotations/README.md) · [source](../../examples/catalog/ui/draw_item_annotation.py)
+
+<a id="list-item"></a>
+### `template_list` and a `UIList`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `ui/list-item`
+
+`layout.template_list` draws a collection as a list, one row per item through the `UIList`'s `draw_item`. The
+checker reads which collection the add-on gives the list and types `item` as its element type and `data` as the
+collection's owner. The stubs allow `None` for `item`; the checker takes it as set, since an add-on's own collection
+has no empty items, and reports the read as an Assumption.
+
+```python
+import bpy
+from bpy.props import CollectionProperty, IntProperty, StringProperty
+from bpy.types import Panel, PropertyGroup, Scene, UIList
+
+
+class LIST_ITEM_Entry(PropertyGroup):
+    label: StringProperty()
+
+
+class LIST_ITEM_UL_entries(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        assert_type(data, Scene)
+        assert_type(item, LIST_ITEM_Entry)  # reported: blender-assumed-list-item
+        layout.label(text=item.label)  # reported: blender-assumed-list-item
+
+
+class LIST_ITEM_PT_entries(Panel):
+    bl_label = "Entries"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        self.layout.template_list(
+            "LIST_ITEM_UL_entries", "", context.scene, "list_item_entries", context.scene, "list_item_index"
+        )
+
+
+classes = (LIST_ITEM_Entry, LIST_ITEM_UL_entries, LIST_ITEM_PT_entries)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+    Scene.list_item_entries = CollectionProperty(type=LIST_ITEM_Entry)
+    Scene.list_item_index = IntProperty()
+
+
+def unregister():
+    del Scene.list_item_index
+    del Scene.list_item_entries
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+```
+
+- **What you see:** `data` is `Scene`; ty reports [`blender-assumed-list-item`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-list-item) (warn) on the lines marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `draw_item`'s `data` and `item` as `AnyType` and `layout` as `UILayout | None`, which the checker does not narrow. · fake-bpy-module stubs, Blender 5.2: These stubs type the callbacks' `context` and `layout` with `| None`, so their reads are reported.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/ui/list_item.py)
 
 <a id="popovers"></a>
 ## Popovers and menus
 
-To come in this section: a popover opened by an appended function; menus appended to Blender's headers.
+<a id="appended-popover"></a>
+### A popover opened by an appended function
+
+**Not handled** (planned) · checked with Blender main, builtin stubs · `ui/appended-popover`
+
+What a function appended to one of Blender's headers checked before it opens a popover is not known in the popover.
+A popover is drawn with the context of the editor that opened it, so what the opener checked in that context holds
+there too. The checker reads this from the add-on's own headers, but not from an appended function: here the function
+opens the popover only when there is an active object, and the popover's read of `context.object` is still
+reported.
+
+```python
+import bpy
+from bpy.types import Panel
+
+
+class APPENDED_POPOVER_PT_object(Panel):
+    bl_label = "Object"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "HEADER"
+
+    def draw(self, context):
+        # not handled yet: the check in the appended function is not known here
+        self.layout.label(text=context.object.name)
+
+
+def draw_popover(self, context):
+    if context.object is not None:
+        self.layout.popover("APPENDED_POPOVER_PT_object")
+
+
+def register():
+    bpy.utils.register_class(APPENDED_POPOVER_PT_object)
+    bpy.types.VIEW3D_HT_header.append(draw_popover)
+
+
+def unregister():
+    bpy.types.VIEW3D_HT_header.remove(draw_popover)
+    bpy.utils.unregister_class(APPENDED_POPOVER_PT_object)
+```
+
+- **Today:** ty reports [`missing-union-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-union-attribute) (error) on the line marked *not handled yet*.
+- **Future:** Planned: Give a popover what the function appended to Blender's header checked before it opens it. (tracked: `later/popover-opened-by-appended-function`)
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs have no `VIEW3D_HT_header` in `bpy.types`, so `append` and `remove` on it are reported.
+- **More:** [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [source](../../examples/catalog/ui/appended_popover.py)
+
+<a id="header-append"></a>
+### Functions appended to Blender's menus and headers
+
+**Handled** by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `ui/header-append`
+
+`append` on one of Blender's menus or headers adds a draw function, which Blender calls with the menu as `self`.
+The function is plain, outside any class, so nothing says what `self` is; annotate it with `Menu` (or `Header`) and
+`self.layout` is a `UILayout`, and a misspelt layout call is reported.
+
+```python
+import bpy
+from bpy.types import Context, Menu, UILayout
+
+
+def draw_scatter(self: Menu, context: Context) -> None:
+    assert_type(self.layout, UILayout)
+    self.layout.separator()
+    self.layout.opertor("object.select_all")  # reported: missing-attribute
+
+
+def register() -> None:
+    bpy.types.VIEW3D_MT_object.append(draw_scatter)
+```
+
+- **What you see:** `self.layout` is `UILayout`; ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs have no `VIEW3D_MT_object` in `bpy.types`, so `append` on it is reported.
+- **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/ui/header_append.py)
+
+<a id="popover-panel"></a>
+### A panel opened as a popover
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `ui/popover-panel`
+
+In a panel the add-on opens as a popover, `context.space_data` is reported as an Implied narrowing. A panel is
+drawn in its `bl_space_type`, so `space_data` there is that editor's `Space` subclass; opened as a popover, from
+`layout.popover` or `wm.call_panel`, it is drawn with the area of whatever editor opened it, which is the same editor
+only by convention. The checker keeps the subclass and reports the read.
+
+```python
+from bpy.types import Panel, SpaceView3D
+
+
+class POPOVER_PANEL_PT_lens(Panel):
+    bl_label = "Lens"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "HEADER"
+
+    def draw(self, context):
+        assert_type(context.space_data, SpaceView3D)  # reported: blender-narrowed-by-popover
+
+
+class POPOVER_PANEL_PT_view(Panel):
+    bl_label = "View"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        self.layout.popover("POPOVER_PANEL_PT_lens")
+```
+
+- **What you see:** ty reports [`blender-narrowed-by-popover`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-narrowed-by-popover) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported and `space_data` stays `Space | None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and `space_data` stays `Space | None`.
+- **More:** [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [source](../../examples/catalog/ui/popover_panel.py)
 
 <a id="gizmos-tools"></a>
 ## Gizmos and tools
 
-To come in this section: Blender's own gizmo types; a workspace tool.
+<a id="builtin-gizmo"></a>
+### Blender's own gizmo types
+
+**Not handled** (planned) · checked with Blender main, builtin stubs · `ui/builtin-gizmo`
+
+A gizmo group creates its gizmos with `self.gizmos.new("GIZMO_GT_arrow_3d")`, and each of Blender's gizmo types has
+its own properties, such as an arrow's `draw_style`. The stubs return a plain `Gizmo`, which has none of them, so
+setting one is reported.
+
+```python
+from bpy.types import GizmoGroup
+
+
+class LightGizmos(GizmoGroup):
+    bl_label = "Light"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "WINDOW"
+    bl_options = {"3D", "PERSISTENT"}
+
+    def setup(self, context):
+        arrow = self.gizmos.new("GIZMO_GT_arrow_3d")
+        # not handled yet: the arrow's own properties are not known
+        arrow.draw_style = "BOX"
+```
+
+- **Today:** ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the line marked *not handled yet*.
+- **Future:** Planned: Type `gizmos.new` by the gizmo type it names, with that type's properties. (tracked: `later/builtin-gizmo-types`)
+- **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/ui/builtin_gizmo.py)
+
+<a id="workspace-tool"></a>
+### A workspace tool
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `ui/workspace-tool`
+
+A `WorkSpaceTool`'s `bl_keymap` names the operators the tool runs, with their property values, in plain tuples.
+To the type system they are only tuples, so the checker reads them itself: it checks each idname and each property
+value against the operator, and reports a value the property cannot take.
+
+```python
+from bpy.types import WorkSpaceTool
+
+
+class SelectTool(WorkSpaceTool):
+    bl_space_type = "VIEW_3D"
+    bl_context_mode = "OBJECT"
+    bl_idname = "workspace_tool.select"
+    bl_label = "Select"
+    bl_keymap = (
+        ("object.select_all", {"type": "LEFTMOUSE", "value": "PRESS"}, {"properties": [("action", "SELECT")]}),
+        ("object.select_all", {"type": "RIGHTMOUSE", "value": "PRESS"},
+         {"properties": [("action", "ALL")]}),  # reported: blender-invalid-operator-property
+    )
+```
+
+- **What you see:** ty reports [`blender-invalid-operator-property`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-operator-property) (error) on the line marked *reported*.
+- **More:** [feature tests: operator_properties](../../tests/typecheck/features/operator_properties/README.md) · [source](../../examples/catalog/ui/workspace_tool.py)

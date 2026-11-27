@@ -13,19 +13,435 @@ name an operator have to match.
 <a id="callbacks"></a>
 ## Callbacks and return sets
 
-To come in this section: `execute` returning a set of literals; `invoke` with an event; a return set Blender rejects.
+<a id="invoke-event"></a>
+### `invoke` with an event
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/invoke-event`
+
+An unannotated `invoke` gets its `event` typed as an `Event`, from `Operator.invoke`. Blender calls `invoke` when the
+operator is started from the UI, with the event that started it: a key or a mouse click, and where the mouse was.
+
+```python
+from bpy.types import Event, Operator
+
+
+class Place(Operator):
+    bl_idname = "operators.place"
+    bl_label = "Place"
+
+    def invoke(self, context, event):
+        assert_type(event, Event)
+        print(event.mouse_region_x, event.mouse_region_y)
+        return self.execute(context)
+
+    def execute(self, context):
+        return {"FINISHED"}
+```
+
+- **What you see:** `event` is `Event`.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type `invoke`'s `event` as `Event | None`, so its reads are reported. · fake-bpy-module stubs, Blender 5.2: These stubs type `invoke`'s `event` as `Event | None`, so its reads are reported.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [source](../../examples/catalog/operators/invoke_event.py)
+
+<a id="return-set"></a>
+### `execute` returns a set of result names
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/return-set`
+
+`execute`, `invoke` and `modal` return a set of result names such as `{"FINISHED"}` or `{"CANCELLED"}`, and Blender
+checks each name when the method returns: a misspelt one raises. The checker types an unannotated `execute` from
+`Operator.execute`, so each name is checked against the allowed ones.
+
+```python
+from bpy.types import Operator
+
+
+class Apply(Operator):
+    bl_idname = "operators.apply"
+    bl_label = "Apply"
+
+    def execute(self, context):
+        if context.object is None:
+            return {"CANCELLED"}
+        return {"FINSHED"}  # reported: invalid-explicit-return
+```
+
+- **What you see:** ty reports [`invalid-explicit-return`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-explicit-return) (error) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so the read of `context.object` is reported too. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so the read of `context.object` is reported too.
+- **More:** [feature tests: inheritance](../../tests/typecheck/features/inheritance/README.md) · [`source/blender/python/intern/bpy_rna.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/python/intern/bpy_rna.cc) · [source](../../examples/catalog/operators/return_set.py)
+
+<a id="set-str-return"></a>
+### `-> set[str]` on `execute`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/set-str-return`
+
+The result names exist as `Literal` types only in the stubs, so add-ons often annotate `execute` with
+`-> set[str]`. That is right in Blender but less precise than the parent's type. The checker accepts it, reports it as
+an Imprecise annotation, and still checks each name returned.
+
+```python
+from bpy.types import Operator
+
+
+class Apply(Operator):
+    bl_idname = "operators.apply_set"
+    bl_label = "Apply"
+
+    def execute(self, context) -> set[str]:  # reported: blender-imprecise-operator-return
+        if context.object is None:
+            return {"CANCELLED"}
+        return {"FINSHED"}  # reported: invalid-explicit-return
+```
+
+- **What you see:** ty reports [`blender-imprecise-operator-return`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-imprecise-operator-return) (warn) and [`invalid-explicit-return`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-explicit-return) (error) on the lines marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so the read of `context.object` is reported too. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so the read of `context.object` is reported too.
+- **More:** [feature tests: imprecise_annotations](../../tests/typecheck/features/imprecise_annotations/README.md) · [source](../../examples/catalog/operators/set_str_return.py)
 
 <a id="calls"></a>
 ## Calling through `bpy.ops`
 
-To come in this section: the add-on's own operator; Blender's operators; an execution context as the first argument; `temp_override`.
+<a id="builtin-operator-call"></a>
+### Calling Blender's operators
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/builtin-operator-call`
+
+Blender's own operators take their properties as keyword arguments, typed from the stubs: an enum property takes
+one of its identifiers, and any other string is reported.
+
+```python
+import bpy
+
+
+def example() -> None:
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.ops.object.select_all(action="ALL")  # reported: invalid-argument-type
+```
+
+- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **More:** [feature tests: operator_calls](../../tests/typecheck/features/operator_calls/README.md) · [source](../../examples/catalog/operators/builtin_operator_call.py)
+
+<a id="execution-context"></a>
+### An execution context as the first argument
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/execution-context`
+
+Before the keywords, an operator call takes an execution context, such as `"INVOKE_DEFAULT"` to run `invoke` as a
+click would, and an undo flag. The checker accepts both and reports an execution context Blender does not know.
+
+```python
+import bpy
+
+bl_info = {
+    "name": "Catalog: an execution context as the first argument",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+def example() -> None:
+    bpy.ops.wm.call_menu("INVOKE_DEFAULT", name="VIEW3D_MT_add")
+    bpy.ops.wm.call_menu("INVOKE_DEFAULT", True, name="VIEW3D_MT_add")
+    bpy.ops.wm.call_menu("INVOKE_WRONG", name="VIEW3D_MT_add")  # reported: no-matching-overload
+
+
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+- **What you see:** ty reports [`no-matching-overload`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#no-matching-overload) (error) on the line marked *reported*.
+- **Checked in Blender:** the add-on registers; an unknown execution context raises.
+- **More:** [feature tests: operator_calls](../../tests/typecheck/features/operator_calls/README.md) · [source](../../examples/catalog/operators/execution_context.py)
+
+<a id="operator-id-pointer"></a>
+### A data-block pointer on an operator
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/operator-id-pointer`
+
+An operator cannot hold a pointer to a data-block (an `Object`, a `Material`): Blender registers the class but
+drops that property and every property declared after it. Pass a name instead. The checker reports the property.
+
+```python
+import bpy
+from bpy.props import IntProperty, PointerProperty, StringProperty
+from bpy.types import Object, Operator
+
+bl_info = {
+    "name": "Catalog: a data-block pointer on an operator",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+class OPERATOR_ID_POINTER_OT_run(Operator):
+    bl_idname = "operator_id_pointer.run"
+    bl_label = "Run"
+
+    before: StringProperty()
+    target: PointerProperty(type=Object)  # reported: blender-invalid-operator-property
+    after: IntProperty()
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(OPERATOR_ID_POINTER_OT_run)
+
+
+def unregister():
+    bpy.utils.unregister_class(OPERATOR_ID_POINTER_OT_run)
+```
+
+- **What you see:** ty reports [`blender-invalid-operator-property`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-invalid-operator-property) (error) on the line marked *reported*.
+- **Checked in Blender:** the add-on registers; the operator has no `target`, nor any property declared after it.
+- **More:** [feature tests: operator_calls](../../tests/typecheck/features/operator_calls/README.md) · [source](../../examples/catalog/operators/operator_id_pointer.py)
+
+<a id="own-operator-call"></a>
+### Calling the add-on's own operator
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/own-operator-call`
+
+Once registered, an operator is called as `bpy.ops.<category>.<name>(...)`, one keyword argument per property. The
+checker reads the registered class, so each keyword is typed as its property: an `IntProperty` takes an `int`, an
+`EnumProperty` with static items one of its identifiers.
+
+```python
+import bpy
+from bpy.props import EnumProperty, IntProperty
+from bpy.types import Operator
+
+
+class Scatter(Operator):
+    bl_idname = "operators.scatter"
+    bl_label = "Scatter"
+
+    count: IntProperty(default=10)
+    mode: EnumProperty(items=[("GRID", "Grid", ""), ("RANDOM", "Random", "")])
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(Scatter)
+
+
+def example() -> None:
+    bpy.ops.operators.scatter(count=20, mode="GRID")
+    bpy.ops.operators.scatter(count=20, mode="CIRCLE")  # reported: invalid-argument-type
+```
+
+- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **More:** [feature tests: operator_calls](../../tests/typecheck/features/operator_calls/README.md) · [source](../../examples/catalog/operators/own_operator_call.py)
+
+<a id="temp-override"></a>
+### `context.temp_override`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/temp-override`
+
+Inside a `with context.temp_override(member=value)` block the checker gives the member the value's type. An operator
+acts on the context it is called in, and `temp_override` replaces members for the length of the block, to run an
+operator on another object or in another editor.
+
+```python
+import bpy
+from bpy.types import Context, Object
+
+
+def edit(context: Context, ob: Object) -> None:
+    with context.temp_override(object=ob, active_object=ob):
+        assert_type(context.object, Object)
+        bpy.ops.object.mode_set(mode="EDIT")
+```
+
+- **What you see:** `context.object` is `Object`.
+- **More:** [feature tests: context_members](../../tests/typecheck/features/context_members/README.md) · [source](../../examples/catalog/operators/temp_override.py)
 
 <a id="idnames"></a>
 ## Idname strings
 
-To come in this section: `layout.operator("x.y")`; a keymap item; an internal operator.
+<a id="internal-operator"></a>
+### An internal operator
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/internal-operator`
+
+`"INTERNAL"` in `bl_options` hides an operator from the operator search, so in ordinary use only the add-on's own
+button or key calls it, where the context has what it needs. The checker takes the context members it reads as not
+`None` and reports each read as an Assumption: a script can still call it anywhere, and then the read fails. A member
+its `poll` checks is narrowed by the poll instead.
+
+```python
+from bpy.types import Operator
+
+
+class ShowSettings(Operator):
+    bl_idname = "operators.show_settings"
+    bl_label = "Show settings"
+    bl_options = {"REGISTER", "INTERNAL"}
+
+    def execute(self, context):
+        print(context.object.name)  # reported: blender-assumed-internal-operator
+        return {"FINISHED"}
+```
+
+- **What you see:** ty reports [`blender-assumed-internal-operator`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-internal-operator) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so the read is reported on `None` instead of as an Assumption. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so the read is reported on `None` instead of as an Assumption.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/operators/internal_operator.py)
+
+<a id="keymap-item"></a>
+### A key map item's properties
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/keymap-item`
+
+`keymap_items.new("category.name", ...)` binds a key to an operator; its `properties` are the values the key passes.
+The checker maps the idname to the operator, so `properties` has that operator's properties with their Value types,
+not the stubs' generic `OperatorProperties`.
+
+```python
+import bpy
+from bpy.props import IntProperty
+from bpy.types import KeyMap, Operator
+
+
+class Nudge(Operator):
+    bl_idname = "operators.nudge"
+    bl_label = "Nudge"
+
+    steps: IntProperty(default=1)
+
+    def execute(self, context):
+        return {"FINISHED"}
+
+
+def register():
+    bpy.utils.register_class(Nudge)
+
+
+def bind(keymap: KeyMap) -> None:
+    item = keymap.keymap_items.new("operators.nudge", "RIGHT_ARROW", "PRESS", ctrl=True)
+    assert_type(item.properties.steps, int)
+    item.properties.steps = "5"  # reported: invalid-assignment
+```
+
+- **What you see:** `item.properties.steps` is `int`; ty reports [`invalid-assignment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-assignment) (error) on the line marked *reported*.
+- **More:** [feature tests: operator_properties](../../tests/typecheck/features/operator_properties/README.md) · [source](../../examples/catalog/operators/keymap_item.py)
+
+<a id="unknown-operator"></a>
+### An idname no operator has
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/unknown-operator`
+
+An idname no operator has, given to `layout.operator`, a key map item or a tool's key map, is reported inside an
+add-on. There the checker knows Blender's operators and the add-on's own, and reports any other idname; in a file
+outside an add-on it reports nothing, since the operator may be registered elsewhere.
+
+```python
+from bpy.types import UILayout
+
+bl_info = {
+    "name": "Catalog: an idname no operator has",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+def draw_buttons(layout: UILayout) -> None:
+    layout.operator("object.select_all")
+    layout.operator("object.select_al")  # reported: blender-unknown-operator
+
+
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+- **What you see:** ty reports [`blender-unknown-operator`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-unknown-operator) (warn) on the line marked *reported*.
+- **More:** [feature tests: operator_properties](../../tests/typecheck/features/operator_properties/README.md) · [source](../../examples/catalog/operators/unknown_operator.py)
 
 <a id="modal"></a>
 ## Modal operators
 
-To come in this section: `context.area` in `modal`; timers and `modal_handler_add`.
+<a id="modal-area"></a>
+### `context.area` in `modal`
+
+**Not handled** (planned) · checked with Blender main, builtin stubs · `operators/modal-area`
+
+A modal operator started from an editor gets its later events in `modal`, with that editor's area. The stubs type
+`context.area` as `Area | None`, and the checker does not narrow it there yet, so a redraw of the area is reported.
+
+```python
+from bpy.types import Operator
+
+
+class Drag(Operator):
+    bl_idname = "operators.drag"
+    bl_label = "Drag"
+
+    def invoke(self, context, event):
+        context.window_manager.modal_handler_add(self)
+        return {"RUNNING_MODAL"}
+
+    def modal(self, context, event):
+        # not handled yet: the editor's area is not known in modal
+        context.area.tag_redraw()
+        if event.type in {"LEFTMOUSE", "ESC"}:
+            return {"FINISHED"}
+        return {"RUNNING_MODAL"}
+```
+
+- **Today:** ty reports [`missing-union-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-union-attribute) (error) on the line marked *not handled yet*.
+- **Future:** Planned: Narrow `area`, `region` and `space_data` in `modal` of an operator started from an editor. (tracked: `later/editor-members-in-modal`)
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so the read of `context` is reported as well as the one of `area`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so the read of `context` is reported as well as the one of `area`.
+- **More:** [feature tests: context_members](../../tests/typecheck/features/context_members/README.md) · [source](../../examples/catalog/operators/modal_area.py)
+
+<a id="modal-timer"></a>
+### Timers and `modal_handler_add`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `operators/modal-timer`
+
+`context.window_manager`, which a modal operator needs for `modal_handler_add` and its timers, is always set, so
+the checker drops the stubs' `None` from it. The operator adds itself as a handler in `invoke` and returns
+`{"RUNNING_MODAL"}`; Blender then calls `modal` for every event, a timer's `TIMER` events among them, until it returns
+`{"FINISHED"}` or `{"CANCELLED"}`.
+
+```python
+from bpy.types import Operator, Timer, WindowManager
+
+
+class Watch(Operator):
+    bl_idname = "operators.watch"
+    bl_label = "Watch"
+
+    timer: Timer | None = None
+
+    def invoke(self, context, event):
+        assert_type(context.window_manager, WindowManager)
+        self.timer = context.window_manager.event_timer_add(0.5, window=context.window)
+        context.window_manager.modal_handler_add(self)
+        return {"RUNNING_MODAL"}
+
+    def modal(self, context, event):
+        if event.type == "TIMER":
+            print("tick")
+        if event.type == "ESC":
+            if self.timer is not None:
+                context.window_manager.event_timer_remove(self.timer)
+            return {"CANCELLED"}
+        return {"PASS_THROUGH"}
+```
+
+- **What you see:** `context.window_manager` is `WindowManager`.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so `window_manager` keeps `None` and every read of `context` and `event` is reported. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so `window_manager` keeps `None` and every read of `context` and `event` is reported.
+- **More:** [feature tests: context_members](../../tests/typecheck/features/context_members/README.md) · [source](../../examples/catalog/operators/modal_timer.py)

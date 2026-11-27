@@ -12,14 +12,276 @@ a panel's `bl_context` narrows, and what is gone outside callbacks.
 <a id="members"></a>
 ## Guaranteed context members
 
-To come in this section: `context.scene` and `context.view_layer`; `context.object` after a poll; members per editor.
+<a id="editor-space"></a>
+### `space_data` in a panel of an editor
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/editor-space`
+
+A panel is drawn only in the editor its `bl_space_type` names, so `context.space_data` there is that editor's
+`Space` subclass: `SpaceView3D` for `"VIEW_3D"`. The checker types it so. A menu or an operator has no editor of its
+own, and keeps the stubs' `Space | None`.
+
+```python
+from bpy.types import Panel, SpaceView3D
+
+
+class Overlay(Panel):
+    bl_label = "Overlay"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        assert_type(context.space_data, SpaceView3D)
+        self.layout.label(text=f"Lens: {context.space_data.lens}")
+```
+
+- **What you see:** `context.space_data` is `SpaceView3D`.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported and `space_data` stays `Space | None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and `space_data` stays `Space | None`.
+- **More:** [feature tests: context_members](../../tests/typecheck/features/context_members/README.md) · [source](../../examples/catalog/context/editor_space.py)
+
+<a id="guaranteed-members"></a>
+### `context.scene` and its siblings in a callback
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/guaranteed-members`
+
+The stubs type every context member `X | None`, since some context has none of them. But whenever Blender calls a
+callback, `scene`, `view_layer`, `tool_settings`, `preferences`, `window_manager` and `blend_data` are set: they are
+Guaranteed context members. The checker drops `None` from them inside the callback; in a helper function it reports
+the read as an Assumption.
+
+```python
+from bpy.types import Context, Operator, Scene, ViewLayer
+
+
+class Report(Operator):
+    bl_idname = "context.report_scene"
+    bl_label = "Report"
+
+    def execute(self, context):
+        assert_type(context.scene, Scene)
+        assert_type(context.view_layer, ViewLayer)
+        return {"FINISHED"}
+
+
+def frame(context: Context) -> int:
+    return context.scene.frame_current  # reported: blender-assumed-context-member
+```
+
+- **What you see:** `context.scene` is `Scene`; `context.view_layer` is `ViewLayer`; ty reports [`blender-assumed-context-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-context-member) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported and `scene` keeps `None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and `scene` keeps `None`.
+- **More:** [feature tests: context_members](../../tests/typecheck/features/context_members/README.md) · [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/context/guaranteed_members.py)
+
+<a id="poll-narrowing"></a>
+### `context.object` after a poll
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/poll-narrowing`
+
+Blender calls an operator's `execute` or `invoke`, and a panel's `draw`, only right after its `poll()` returned
+`True`, with the same context. So a pointer the poll checked is set in those callbacks. The checker reads what the
+poll checks, narrows the pointer there and reports the read as an Implied narrowing; a pointer the poll did not
+check stays an error.
+
+```python
+from bpy.types import Object, Operator
+
+
+class Rename(Operator):
+    bl_idname = "context.rename_object"
+    bl_label = "Rename"
+
+    @classmethod
+    def poll(cls, context):
+        return context.object is not None
+
+    def execute(self, context):
+        assert_type(context.object, Object)  # reported: blender-narrowed-by-poll
+        context.object.name = "Renamed"  # reported: blender-narrowed-by-poll
+        context.active_bone.name = "Renamed"  # reported: invalid-assignment
+        return {"FINISHED"}
+```
+
+- **What you see:** ty reports [`blender-narrowed-by-poll`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-narrowed-by-poll) (warn) and [`invalid-assignment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-assignment) (error) on the lines marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so the poll's check is not read and every read of `context` is reported. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so the poll's check is not read and every read of `context` is reported.
+- **More:** [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [source](../../examples/catalog/context/poll_narrowing.py)
 
 <a id="narrowings"></a>
 ## Narrowings
 
-To come in this section: `bl_context` of a panel; a menu's prefix; a poll that checks the mode.
+<a id="bl-context-tab"></a>
+### The `bl_context` of a panel
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/bl-context-tab`
+
+A panel of the Properties editor with `bl_context = "object"` is drawn only in the Object tab, which Blender shows
+only while there is an object. So `context.object` is set in its `poll` and `draw`. The checker narrows it and
+reports the read as an Implied narrowing. The tab's object is not always the active one, so `active_object` stays
+`Object | None`.
+
+```python
+from bpy.types import Object, Panel
+
+
+class ObjectNotes(Panel):
+    bl_label = "Notes"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "object"
+
+    def draw(self, context):
+        assert_type(context.object, Object)  # reported: blender-narrowed-by-bl-context
+        assert_type(context.active_object, Object | None)
+```
+
+- **What you see:** `context.active_object` is `Object | None`; ty reports [`blender-narrowed-by-bl-context`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-narrowed-by-bl-context) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported, and the narrowing is applied to `active_object` too. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and the narrowing is not applied.
+- **More:** [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [source](../../examples/catalog/context/bl_context_tab.py)
+
+<a id="menu-prefix"></a>
+### A menu's idname prefix
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/menu-prefix`
+
+A menu has no `bl_space_type` and can be opened from any editor, but by convention its idname starts with the
+prefix of the editor it belongs to: `VIEW3D_MT_` for the 3D Viewport. The checker takes `space_data` in such a menu as
+that editor's `Space` subclass and reports the read as an Implied narrowing.
+
+```python
+from bpy.types import Menu, SpaceView3D
+
+
+class VIEW3D_MT_overlay_extras(Menu):
+    bl_label = "Overlay extras"
+
+    def draw(self, context):
+        assert_type(context.space_data, SpaceView3D)  # reported: blender-narrowed-by-menu-prefix
+```
+
+- **What you see:** ty reports [`blender-narrowed-by-menu-prefix`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-narrowed-by-menu-prefix) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported and `space_data` stays `Space | None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and `space_data` stays `Space | None`.
+- **More:** [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [source](../../examples/catalog/context/menu_prefix.py)
+
+<a id="mode-poll"></a>
+### A poll that checks the mode
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/mode-poll`
+
+`context.mode == "EDIT_MESH"` in a poll says more than the mode: there is an object in edit mode, and it is a
+mesh. The checker gives the callbacks the poll gates what the mode implies, `context.edit_object` set and its `data`
+a `Mesh`, and reports the read as an Implied narrowing.
+
+```python
+from bpy.types import Mesh, Operator
+
+
+class Flatten(Operator):
+    bl_idname = "context.flatten"
+    bl_label = "Flatten"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == "EDIT_MESH"
+
+    def execute(self, context):
+        assert_type(context.edit_object.data, Mesh)  # reported: blender-narrowed-by-poll
+        return {"FINISHED"}
+```
+
+- **What you see:** ty reports [`blender-narrowed-by-poll`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-narrowed-by-poll) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so the poll's check is not read and `edit_object` is not narrowed. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so the poll's check is not read and `edit_object` is not narrowed.
+- **More:** [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [source](../../examples/catalog/context/mode_poll.py)
 
 <a id="outside-callbacks"></a>
 ## Outside callbacks
 
-To come in this section: `bpy.context` at import time; in a timer; in an application handler.
+<a id="handler-context"></a>
+### `bpy.context` in an application handler
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/handler-context`
+
+A function in `bpy.app.handlers` runs when Blender reaches that moment: after a file loads, before a frame
+changes. Its `bpy.context.scene` is the loaded file's scene, set in ordinary use but not guaranteed. The checker takes
+it as set and reports the read as an Assumption.
+
+```python
+import bpy
+from bpy.app.handlers import persistent
+
+
+@persistent
+def on_load(filepath, _):
+    print(bpy.context.scene.name)  # reported: blender-assumed-context-member
+
+
+def register() -> None:
+    bpy.app.handlers.load_post.append(on_load)
+
+
+def unregister() -> None:
+    bpy.app.handlers.load_post.remove(on_load)
+```
+
+- **What you see:** ty reports [`blender-assumed-context-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-context-member) (warn) on the line marked *reported*.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/context/handler_context.py)
+
+<a id="import-time-context"></a>
+### `bpy.context` at import time
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/import-time-context`
+
+While Blender imports and registers an add-on, `bpy.context` is a restricted context with no `scene` at all:
+reading it raises `AttributeError`. A module-level read belongs in `register()` or later. The checker does not tell
+import time from other code outside callbacks: it reports the read only as the Assumption it makes for `scene` there,
+a warning.
+
+```python
+import bpy
+
+bl_info = {
+    "name": "Catalog: bpy.context at import time",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+START = bpy.context.scene.frame_start  # reported: blender-assumed-context-member
+
+
+def register():
+    pass
+
+
+def unregister():
+    pass
+```
+
+- **What you see:** ty reports [`blender-assumed-context-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-context-member) (warn) on the line marked *reported*.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/context/import_time_context.py)
+
+<a id="timer-context"></a>
+### `bpy.context` in a timer
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/timer-context`
+
+A function given to `bpy.app.timers.register` runs later, outside any callback. `bpy.context.scene` there is the
+scene of the first window, so in ordinary use it is set, but nothing guarantees it. The checker takes it as set and
+reports the read as an Assumption. Other members, such as `object`, keep `X | None`.
+
+```python
+import bpy
+from bpy.types import Object
+
+
+def autosave_frame() -> float | None:
+    print(bpy.context.scene.frame_current)  # reported: blender-assumed-context-member
+    assert_type(bpy.context.object, Object | None)
+    return 10.0
+
+
+def register() -> None:
+    bpy.app.timers.register(autosave_frame, first_interval=10.0)
+```
+
+- **What you see:** `bpy.context.object` is `Object | None`; ty reports [`blender-assumed-context-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-context-member) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `context.object` as `Object`, without `None`.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/context/timer_context.py)

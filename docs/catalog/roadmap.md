@@ -12,7 +12,10 @@ Everything the catalog says is not handled or handled in part, by what can chang
 A safeguard can check it and the work is tracked.
 
 - [The properties of add-ons Blender enables by default](addons.md#default-addon-properties) (not handled): Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is Cycles'. *Give the stubs the registrations of the add-ons Blender enables by default, so the read is known without their source.*
+- [`context.area` in `modal`](operators.md#modal-area) (not handled): A modal operator started from an editor gets its later events in `modal`, with that editor's area. *Narrow `area`, `region` and `space_data` in `modal` of an operator started from an editor.*
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type. *Read `*NAME` inside static `items` through the constant, as items joined with `+` already are.*
+- [A popover opened by an appended function](ui.md#appended-popover) (not handled): What a function appended to one of Blender's headers checked before it opens a popover is not known in the popover. *Give a popover what the function appended to Blender's header checked before it opens it.*
+- [Blender's own gizmo types](ui.md#builtin-gizmo) (not handled): A gizmo group creates its gizmos with `self.gizmos.new("GIZMO_GT_arrow_3d")`, and each of Blender's gizmo types has its own properties, such as an arrow's `draw_style`. *Type `gizmos.new` by the gizmo type it names, with that type's properties.*
 
 <a id="possible"></a>
 ## Possible
@@ -22,6 +25,7 @@ A safeguard could check it; the note says how. Nothing tracks it yet.
 - [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range. *Compare literal `min` and `max` (and `soft_min` and `soft_max`) in `blender-invalid-property`.*
 - [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call. *Evaluate a string annotation that holds a call as the call, as Blender does when it registers the class.*
 - [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked. *Follow a declaration built in a loop or read from a registry, as far as its values are literals.*
+- [`layout.prop(data, "name")`](ui.md#prop-name) (not handled): `layout.prop` draws one property of `data`, named by a string, which Blender looks up only while it draws. *Check the property name against the properties of `data`'s type.*
 
 <a id="not-checkable"></a>
 ## Not statically checkable
