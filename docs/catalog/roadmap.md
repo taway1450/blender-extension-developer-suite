@@ -12,6 +12,11 @@ Everything the catalog says is not handled or handled in part, by what can chang
 A safeguard can check it and the work is tracked.
 
 - [The properties of add-ons Blender enables by default](addons.md#default-addon-properties) (not handled): Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is Cycles'. *Give the stubs the registrations of the add-ons Blender enables by default, so the read is known without their source.*
+- [`bpy.data.materials["Rust"]`](blend-files.md#materials-by-name) (partial): What a material found by name holds, such as the nodes of its tree, is not known: only the `.blend` file it comes from says. *Read the `.blend` files the add-on ships and type their data-blocks by name, with the nodes of their trees.*
+- [Data a shipped file holds](blend-files.md#shipped-blend-file) (not handled): An add-on that ships a `.blend` file loads data-blocks from it with `bpy.data.libraries.load`: the names in `data_to.materials` before the block ends, the loaded materials after it. *Read the `.blend` files the add-on ships, so the names it loads and what they give are typed.*
+- [A socket's `default_value`](data.md#socket-default-value) (partial): Every socket type that holds a value has a `default_value`, but the base `NodeSocket` does not. *Accept a write to a member only a subclass has, as the read is.*
+- [A handler's parameters](modules.md#handler-parameters) (not handled): A function in `bpy.app.handlers` gets parameters that depend on the list: a frame-change handler the scene and the depsgraph, a save handler the file path. *Type a handler's parameters by the list it is appended to: a save handler's file path as `str`.*
+- [Preview icons by name](modules.md#preview-icons) (not handled): `bpy.utils.previews` holds the add-on's own icons, loaded from image files and found by name for `icon_value`. *Type the previews of a `bpy.utils.previews` collection by name in the builtin stubs.*
 - [`context.area` in `modal`](operators.md#modal-area) (not handled): A modal operator started from an editor gets its later events in `modal`, with that editor's area. *Narrow `area`, `region` and `space_data` in `modal` of an operator started from an editor.*
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type. *Read `*NAME` inside static `items` through the constant, as items joined with `+` already are.*
 - [A popover opened by an appended function](ui.md#appended-popover) (not handled): What a function appended to one of Blender's headers checked before it opens a popover is not known in the popover. *Give a popover what the function appended to Blender's header checked before it opens it.*
@@ -22,6 +27,10 @@ A safeguard can check it and the work is tracked.
 
 A safeguard could check it; the note says how. Nothing tracks it yet.
 
+- [`foreach_get`](data.md#foreach-get) (partial): `collection.foreach_get(name, values)` reads one attribute of every element into a flat sequence in one call, much faster than a loop. *Check the attribute name against the element type's properties.*
+- [Sockets by name](data.md#socket-by-name) (partial): A built-in node's sockets are looked up by name, identifier or index, and each has its own socket type: the Principled BSDF's `"Base Color"` input is a `NodeSocketColor`. *Type the lookup by the node's socket names only, so another name is reported, as fake-bpy-module does for 5.2.*
+- [A BMesh layer by name](modules.md#bmesh-layer) (partial): A BMesh keeps extra per-element data in layers, found by name: `bm.verts.layers.float.get("weight")` is the layer, or `None` when there is none, and `.new("weight")` creates it. *Type `.get()` on a BMesh layer collection as `BMLayerItem | None` in the stubs.*
+- [A draw callback](modules.md#draw-handler) (partial): `SpaceView3D.draw_handler_add` makes Blender call a function each time it draws the 3D Viewport, with `gpu` to draw in it. *Type the region and the draw stage of `draw_handler_add` as their enums in the stubs.*
 - [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range. *Compare literal `min` and `max` (and `soft_min` and `soft_max`) in `blender-invalid-property`.*
 - [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call. *Evaluate a string annotation that holds a call as the call, as Blender does when it registers the class.*
 - [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked. *Follow a declaration built in a loop or read from a registry, as far as its values are literals.*
@@ -32,6 +41,7 @@ A safeguard could check it; the note says how. Nothing tracks it yet.
 
 No static tool can know it: it depends on what happens while Blender runs. The note says why.
 
+- [`obj["key"]`](blend-files.md#custom-property) (not handled): Custom properties, set and read with `obj["key"]` on a data-block and on some other structs such as bones, are not known before Blender runs. *Custom properties are added by any script, the user or a file while Blender runs, so no static tool knows which keys a data-block has.*
 - [Strings returned by dynamic enum items](properties.md#enum-item-strings) (not handled): Blender does not copy the strings an `items` callback returns. *Whether Python still holds the strings depends on what the callback built and kept while Blender runs.*
 
 <a id="out-of-scope"></a>

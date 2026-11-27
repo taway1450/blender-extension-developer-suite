@@ -12,9 +12,112 @@ properties set on them.
 <a id="by-name"></a>
 ## Data by name
 
-To come in this section: `bpy.data.materials["Rust"]`; data a shipped file holds.
+<a id="materials-by-name"></a>
+### `bpy.data.materials["Rust"]`
+
+**Partial**: handled in part by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `blend-files/materials-by-name`
+
+What a material found by name holds, such as the nodes of its tree, is not known: only the `.blend` file it comes
+from says. `bpy.data.materials["Rust"]` is a `Material`, as any lookup by name gives its collection's type, and its
+`node_tree` is set, but a node found by name there is a plain `Node`.
+
+```python
+import bpy
+from bpy.types import Material, ShaderNodeBsdfPrincipled
+
+
+def example() -> None:
+    rust = bpy.data.materials["Rust"]
+    assert_type(rust, Material)
+    # not handled yet: the nodes of a material in a file are not known
+    assert_type(rust.node_tree.nodes["Principled BSDF"], ShaderNodeBsdfPrincipled)
+```
+
+- **What you see:** `rust` is `Material`.
+- **Not yet:** A material found by name is a `Material`, but the nodes it holds in the file are not known.
+- **Today:** ty reports [`type-assertion-failure`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#type-assertion-failure) (error) on the line marked *not handled yet*.
+- **Future:** Planned: Read the `.blend` files the add-on ships and type their data-blocks by name, with the nodes of their trees. (tracked: `later/blend-file-typing`)
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `material.node_tree` as `NodeTree | None`, so the read of `nodes` is reported too. · fake-bpy-module stubs, Blender 5.2: These stubs type `material.node_tree` as `NodeTree | None`, so the read of `nodes` is reported too.
+- **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [info_quickstart](https://docs.blender.org/api/current/info_quickstart.html) · [source](../../examples/catalog/blend-files/materials_by_name.py)
+
+<a id="shipped-blend-file"></a>
+### Data a shipped file holds
+
+**Not handled** (planned) · checked with Blender main, builtin stubs · `blend-files/shipped-blend-file`
+
+An add-on that ships a `.blend` file loads data-blocks from it with `bpy.data.libraries.load`: the names in
+`data_to.materials` before the block ends, the loaded materials after it. The stubs type both sides of the load as
+`Any`, so nothing about the file is checked: a name it does not hold is not reported, and after the block
+`data_to.materials` keeps the type of the list of names the code assigned.
+
+```python
+from pathlib import Path
+
+import bpy
+from bpy.types import Material
+
+ASSETS = Path(__file__).parent / "assets.blend"
+
+
+def load_rust() -> None:
+    with bpy.data.libraries.load(str(ASSETS)) as (data_from, data_to):
+        data_to.materials = ["Rust"]
+    # not handled yet: what the load gives is not typed
+    assert_type(data_to.materials, list[Material])
+```
+
+- **Today:** ty reports [`type-assertion-failure`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#type-assertion-failure) (error) on the line marked *not handled yet*.
+- **Future:** Planned: Read the `.blend` files the add-on ships, so the names it loads and what they give are typed. (tracked: `later/blend-file-typing`)
+- **With other stubs:** fake-bpy-module stubs, Blender main: fake-bpy-module types `libraries.load` as returning `None`, so the `with` is reported too. · builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `libraries.load` as returning `None`, so the `with` is reported too. · fake-bpy-module stubs, Blender 5.2: These stubs type `libraries.load` as returning `None`, so the `with` is reported too.
+- **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [bpy.types.BlendDataLibraries](https://docs.blender.org/api/current/bpy.types.BlendDataLibraries.html) · [source](../../examples/catalog/blend-files/shipped_blend_file.py)
 
 <a id="custom-properties"></a>
 ## Custom properties
 
-To come in this section: `obj["key"]`; `id_properties_ui`.
+<a id="custom-property"></a>
+### `obj["key"]`
+
+**Not handled** (not statically checkable) · not machine-checked · `blend-files/custom-property`
+
+Custom properties, set and read with `obj["key"]` on a data-block and on some other structs such as bones, are not
+known before Blender runs. A script, the user in the Custom Properties panel or the loaded file adds them, so whether a
+key exists and what it holds is decided then; the stubs accept any key.
+
+```python
+from bpy.types import Object
+
+
+def example(ob: Object) -> None:
+    ob["scatter_seed"] = 7
+    print(ob["scatter_seed"] + 1)
+```
+
+- **Future:** Not statically checkable: Custom properties are added by any script, the user or a file while Blender runs, so no static tool knows which keys a data-block has.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `Object.__getitem__` as taking an `int`, so a key by name is reported.
+- **Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted.
+- **More:** [info_quickstart](https://docs.blender.org/api/current/info_quickstart.html) · [source](../../examples/catalog/blend-files/custom_property.py)
+
+<a id="id-properties-ui"></a>
+### `id_properties_ui`
+
+**Handled** by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `blend-files/id-properties-ui`
+
+`obj.id_properties_ui("key")` gives the settings Blender shows for a custom property: its range, its step, its
+description. The stubs type it as an `IDPropertyUIManager`, so its methods are checked.
+
+```python
+from bpy.types import Object
+from idprop.types import IDPropertyUIManager
+
+
+def example(ob: Object) -> None:
+    ob["scatter_seed"] = 7
+    ui = ob.id_properties_ui("scatter_seed")
+    assert_type(ui, IDPropertyUIManager)
+    ui.update(min=0, max=100, description="The seed of the scatter")
+    ui.updte(min=0)  # reported: missing-attribute
+```
+
+- **What you see:** `ui` is `IDPropertyUIManager`; ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs have no `idprop.types.IDPropertyUIManager`, and type an `Object` key as an `int`. · fake-bpy-module stubs, Blender 5.2: These stubs have no `idprop.types.IDPropertyUIManager` and type `id_properties_ui` as returning `None`.
+- **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/blend-files/id_properties_ui.py)

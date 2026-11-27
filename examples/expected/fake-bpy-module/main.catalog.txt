@@ -17,6 +17,13 @@ addons/preferences_before_registration | checked | 3499eb6ba56e
 addons/preferences_idname | checked | 76d3948cf510
 addons/refused_manifest | checked | e0c0570662ff
 addons/reload_guard | checked | 343249fa9d23
+blend-files/custom_property.py | checked | 0d06e46c0f9e
+blend-files/id_properties_ui.py | checked | 5eda09946bc8
+blend-files/materials_by_name.py | checked | 602c648353f0
+blend-files/materials_by_name.py | type-assertion-failure | assert_type(rust.node_tree.nodes["Principled BSDF"], ShaderNodeBsdfPrincipled)
+blend-files/shipped_blend_file.py | checked | b154061ca769
+blend-files/shipped_blend_file.py | invalid-context-manager | with bpy.data.libraries.load(str(ASSETS)) as (data_from, data_to):
+blend-files/shipped_blend_file.py | type-assertion-failure | assert_type(data_to.materials, list[Material])
 context/bl_context_tab.py | checked | ad6eb0aa5daa
 context/editor_space.py | checked | 73699f8645da
 context/guaranteed_members.py | checked | f9b5562ac580
@@ -26,6 +33,23 @@ context/menu_prefix.py | checked | 473070af26bd
 context/mode_poll.py | checked | 2efa8326490f
 context/poll_narrowing.py | checked | f78c072d5a8a
 context/timer_context.py | checked | 323b0163243c
+data/collection_by_name.py | checked | 829f9a98150b
+data/collection_get.py | checked | cb90a4e91ec5
+data/enum_flag_set.py | checked | 53434ab2f691
+data/enum_string.py | checked | ed50a1158926
+data/foreach_get.py | checked | 7392cca8f22f
+data/foreach_get.py | unused-ignore-comment | mesh.vertices.foreach_get("coo", coords)  # ty: ignore[invalid-argument-type]
+data/never_none_pointers.py | checked | 5657b08cce3a
+data/new_and_remove.py | checked | 3721755db30e
+data/new_and_remove.py | type-assertion-failure | assert_type(constraint, CopyLocationConstraint)
+data/new_and_remove.py | type-assertion-failure | assert_type(bpy.data.lights.new("Key", "SPOT"), SpotLight)
+data/node_by_type.py | checked | de6271e83aa8
+data/nullable_pointers.py | checked | db547e183b4c
+data/object_data_type.py | checked | 578012753492
+data/socket_by_name.py | checked | fdd32f0b50e0
+data/socket_by_name.py | unused-ignore-comment | print(principled.inputs["Base Colour"])  # ty: ignore[invalid-argument-type]
+data/socket_default_value.py | checked | a09410d1e5c8
+data/socket_default_value.py | missing-attribute | socket.default_value = 0.5
 inheritance/class_variable.py | checked | 32f880d5ae03
 inheritance/missing_draw.py | checked | 215788f3c3db
 inheritance/mixin_order.py | checked | 78b5ad7c9493
@@ -34,6 +58,20 @@ inheritance/override_signature.py | checked | 57fc558cb08e
 inheritance/registered_subclass.py | checked | 024ff357945c
 inheritance/two_bases.py | checked | 62f929dd61bd
 inheritance/unannotated_override.py | checked | 266b3f0c2c77
+modules/bmesh_edit_mesh.py | checked | 83bab5891b3b
+modules/bmesh_edit_mesh.py | type-assertion-failure | assert_type(face.loops[0], BMLoop)
+modules/bmesh_layer.py | checked | 2005e7ce9c30
+modules/bmesh_layer.py | type-assertion-failure | assert_type(bm.verts.layers.float.new("weight"), BMLayerItem)
+modules/bmesh_layer.py | unused-ignore-comment | print(bm.verts.layers.float.get("weight").name)  # ty: ignore[missing-union-attribute]
+modules/draw_handler.py | checked | f949a706d375
+modules/draw_handler.py | unused-ignore-comment | SpaceView3D.draw_handler_add(draw_dot, (), "WINDOW", "POST_VEIW")  # ty: ignore[invalid-argument-type]
+modules/handler_parameters.py | checked | f8bbb656d7c8
+modules/handler_parameters.py | unused-ignore-comment | print(filepath.upper_case())  # ty: ignore[missing-attribute]
+modules/msgbus_keys.py | checked | 50efe0d046f9
+modules/persistent_handler.py | checked | 474035706dd9
+modules/preview_icons.py | checked | d84b858fa73c
+modules/timer_return.py | checked | a95d140bc536
+modules/vector_arithmetic.py | checked | a178db517d08
 operators/builtin_operator_call.py | checked | c770a9e969bb
 operators/execution_context.py | checked | 3676a881746b
 operators/internal_operator.py | checked | 03b4ac3bc48b

@@ -6,8 +6,11 @@
 # BEGIN generated roots (scripts/generate_catalog.py)
 root = [
     "addons",
+    "blend-files",
     "context",
+    "data",
     "inheritance",
+    "modules",
     "operators",
     "properties",
     "registration",

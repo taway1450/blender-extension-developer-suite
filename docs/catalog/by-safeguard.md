@@ -13,7 +13,24 @@ The bpy stubs (`.pyi` files) any Python type checker or editor reads: Blender's 
 fake-bpy-module. A convention the stubs can state as plain Python typing needs nothing else.
 
 - [Preferences of another add-on](addons.md#other-addon-preferences) (handled): Another add-on's `preferences` are `None` until it registers its class, and their class is not known to this add-on.
+- [`id_properties_ui`](blend-files.md#id-properties-ui) (handled): `obj.id_properties_ui("key")` gives the settings Blender shows for a custom property: its range, its step, its description.
+- [`bpy.data.materials["Rust"]`](blend-files.md#materials-by-name) (partial): What a material found by name holds, such as the nodes of its tree, is not known: only the `.blend` file it comes from says.
+- [`collection["name"]`](data.md#collection-by-name) (handled): A collection of Blender data is looked up by name or by index, and both give its element type: an `Object` from `bpy.data.objects`.
+- [`.get()`](data.md#collection-get) (handled): `collection.get(name)` gives the element, or `None` when there is none of that name.
+- [An enum-flag set](data.md#enum-flag-set) (handled): An enum-flag property holds a set of identifiers, such as an operator's `bl_options`.
+- [An enum value as a string](data.md#enum-string) (handled): An enum property of Blender's takes and gives one of its identifiers as a string.
+- [`foreach_get`](data.md#foreach-get) (partial): `collection.foreach_get(name, values)` reads one attribute of every element into a flat sequence in one call, much faster than a loop.
+- [Never-None pointers](data.md#never-none-pointers) (handled): The stubs type a pointer that can never be `None` without `None`, so it is read directly.
+- [Pointers `None` until set](data.md#nullable-pointers) (handled): Some data is created only on demand: an object has no `animation_data` until it is animated or `animation_data_create()` is called.
+- [Sockets by name](data.md#socket-by-name) (partial): A built-in node's sockets are looked up by name, identifier or index, and each has its own socket type: the Principled BSDF's `"Base Color"` input is a `NodeSocketColor`.
 - [A class variable Blender reads](inheritance.md#class-variable) (handled): The stubs declare the class variables Blender reads at registration, such as `bl_options` and `bl_space_type`, with their allowed values, so a misspelt value is reported like any other wrong value.
+- [`bmesh.from_edit_mesh`](modules.md#bmesh-edit-mesh) (handled): `bmesh.from_edit_mesh` gives the `BMesh` of a mesh in edit mode, whose vertices, edges and faces are typed sequences: an item of `bm.verts` is a `BMVert`, of a face's `loops` a `BMLoop`.
+- [A BMesh layer by name](modules.md#bmesh-layer) (partial): A BMesh keeps extra per-element data in layers, found by name: `bm.verts.layers.float.get("weight")` is the layer, or `None` when there is none, and `.new("weight")` creates it.
+- [A draw callback](modules.md#draw-handler) (partial): `SpaceView3D.draw_handler_add` makes Blender call a function each time it draws the 3D Viewport, with `gpu` to draw in it.
+- [msgbus keys](modules.md#msgbus-keys) (handled): `bpy.msgbus.subscribe_rna` calls a function when a property changes.
+- [`@persistent`](modules.md#persistent-handler) (handled): Blender removes the handlers when it loads another file, except those marked `@persistent`.
+- [A timer's return value](modules.md#timer-return) (handled): A function given to `bpy.app.timers.register` returns the seconds until its next call, or `None` to stop.
+- [`Vector` arithmetic](modules.md#vector-arithmetic) (handled): `mathutils` types work with Python's operators: a `Vector` times a number is a `Vector`, a `Matrix` times a `Vector` with `@` is a `Vector`.
 - [Property arguments are keyword-only](properties.md#keyword-arguments) (handled): Every argument of the `bpy.props` functions is keyword-only, so `StringProperty("Name")` raises `TypeError`.
 - [Functions appended to Blender's menus and headers](ui.md#header-append) (handled): `append` on one of Blender's menus or headers adds a draw function, which Blender calls with the menu as `self`.
 - [Icons by name](ui.md#icon-name) (handled): A layout function takes an icon by its name, such as `icon="ERROR"`.
@@ -24,7 +41,7 @@ fake-bpy-module. A convention the stubs can state as plain Python typing needs n
 Facts read from a running Blender and written into the stubs: what its startup scripts register, the Value types of
 properties defined in C, the members a context really has.
 
-No entry yet.
+- [Sockets by name](data.md#socket-by-name) (partial): A built-in node's sockets are looked up by name, identifier or index, and each has its own socket type: the Principled BSDF's `"Base Color"` input is a `NodeSocketColor`.
 
 <a id="source-parser"></a>
 ## the Blender source parser
@@ -60,6 +77,10 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [A poll that checks the mode](context.md#mode-poll) (handled): `context.mode == "EDIT_MESH"` in a poll says more than the mode: there is an object in edit mode, and it is a mesh.
 - [`context.object` after a poll](context.md#poll-narrowing) (handled): Blender calls an operator's `execute` or `invoke`, and a panel's `draw`, only right after its `poll()` returned `True`, with the same context.
 - [`bpy.context` in a timer](context.md#timer-context) (handled): A function given to `bpy.app.timers.register` runs later, outside any callback.
+- [`new()` and `remove()`](data.md#new-and-remove) (handled): `new()` creates an element of a collection and returns it; `remove()` deletes one, and takes only an element of that collection's type.
+- [`nodes.new("ShaderNodeBsdfPrincipled")`](data.md#node-by-type) (handled): `nodes.new` takes the idname of the node to create, as a string.
+- [`object.data` by type](data.md#object-data-type) (handled): After a test of `object.type`, in an `if` or a `match`, the checker narrows `object.data` to the data-block that type holds: a `Mesh` for `"MESH"`.
+- [A socket's `default_value`](data.md#socket-default-value) (partial): Every socket type that holds a value has a `default_value`, but the base `NodeSocket` does not.
 - [A panel without `draw`](inheritance.md#missing-draw) (handled): Most callbacks are optional, but a `Panel`, `Menu`, `Header` or `NodeSocket` must define `draw`: Blender refuses to register the class without one.
 - [A mixin listed after the Blender base](inheritance.md#mixin-order) (handled): Blender finds callbacks, `bl_*` variables and property annotations anywhere among a class's bases, so for them the order does not matter.
 - [A mixin's `self`](inheritance.md#mixin-self) (handled): A mixin shares code between Blender classes without deriving from one, so Python alone types `self` in its methods as the bare mixin, with no `layout`.
@@ -153,6 +174,10 @@ No entry yet.
 Entries nothing handles yet, or not classified yet.
 
 - [The properties of add-ons Blender enables by default](addons.md#default-addon-properties) (not handled): Some properties come from an add-on Blender enables by default, not from Blender itself: `scene.cycles` is Cycles'.
+- [`obj["key"]`](blend-files.md#custom-property) (not handled): Custom properties, set and read with `obj["key"]` on a data-block and on some other structs such as bones, are not known before Blender runs.
+- [Data a shipped file holds](blend-files.md#shipped-blend-file) (not handled): An add-on that ships a `.blend` file loads data-blocks from it with `bpy.data.libraries.load`: the names in `data_to.materials` before the block ends, the loaded materials after it.
+- [A handler's parameters](modules.md#handler-parameters) (not handled): A function in `bpy.app.handlers` gets parameters that depend on the list: a frame-change handler the scene and the depsgraph, a save handler the file path.
+- [Preview icons by name](modules.md#preview-icons) (not handled): `bpy.utils.previews` holds the add-on's own icons, loaded from image files and found by name for `icon_value`.
 - [`context.area` in `modal`](operators.md#modal-area) (not handled): A modal operator started from an editor gets its later events in `modal`, with that editor's area.
 - [Strings returned by dynamic enum items](properties.md#enum-item-strings) (not handled): Blender does not copy the strings an `items` callback returns.
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type.
