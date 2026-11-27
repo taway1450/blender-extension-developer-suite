@@ -1,0 +1,16 @@
+schema_version = "1.0.0"
+
+id = "declared_dependency"
+version = "1.0.0"
+name = "Catalog: the properties of an add-on it relies on"
+tagline = "the properties of an add-on it relies on"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+
+# Blender ignores the [tool] table; the checker reads the add-ons this one relies on from it.
+[tool.blender]
+uses = ["_render_presets"]

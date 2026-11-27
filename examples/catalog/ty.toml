@@ -6,7 +6,9 @@
 # BEGIN generated roots (scripts/generate_catalog.py)
 root = [
     "addons",
+    "inheritance",
     "properties",
+    "registration",
 ]
 # END generated roots
 

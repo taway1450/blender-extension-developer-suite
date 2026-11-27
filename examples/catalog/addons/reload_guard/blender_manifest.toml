@@ -1,0 +1,12 @@
+schema_version = "1.0.0"
+
+id = "reload_guard"
+version = "1.0.0"
+name = "Catalog: reloading with importlib.reload"
+tagline = "reloading with importlib.reload"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]

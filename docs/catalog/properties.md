@@ -654,6 +654,7 @@ def unregister():
 
 - **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
 - **Future:** Possible: Compare literal `min` and `max` (and `soft_min` and `soft_max`) in `blender-invalid-property`.
+- **Checked in Blender:** the add-on registers; Blender keeps the minimum as given.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/min_above_max.py)
 
 <a id="property-wrappers"></a>

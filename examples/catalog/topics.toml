@@ -97,22 +97,22 @@ What makes a module an add-on to Blender, and what Blender does with it: the man
 [[topic.addons.sections]]
 id = "metadata"
 title = "Metadata"
-to-come = ["a manifest Blender refuses", "`bl_info` keys Blender ignores", "the add-on's module name as an extension (`bl_ext`)"]
+to-come = []
 
 [[topic.addons.sections]]
 id = "entry-points"
 title = "Entry points"
-to-come = ["`register()` without `unregister()`", "`register_classes_factory`", "reloading with `importlib.reload`"]
+to-come = []
 
 [[topic.addons.sections]]
 id = "preferences"
 title = "Preferences"
-to-come = ["preferences of another add-on", "preferences read before they are registered"]
+to-come = []
 
 [[topic.addons.sections]]
 id = "other-addons"
 title = "Other add-ons"
-to-come = ["`[tool.blender] uses`", "the properties of add-ons Blender enables by default"]
+to-come = []
 
 [topic.registration]
 title = "Registration"
@@ -125,22 +125,22 @@ what the rest of the add-on can rely on once `register()` has run.
 [[topic.registration.sections]]
 id = "classes"
 title = "Registered classes"
-to-come = ["a class registered twice", "a class registered as its first Blender base only", "unregistering in reverse order"]
+to-come = []
 
 [[topic.registration.sections]]
 id = "idnames"
 title = "Idnames and naming"
-to-come = ["`bl_idname` conventions per type", "an idname Blender rejects", "panel and menu names Blender warns about"]
+to-come = []
 
 [[topic.registration.sections]]
 id = "order"
 title = "Order"
-to-come = ["a PropertyGroup registered after the class pointing to it", "a child panel registered before its parent"]
+to-come = []
 
 [[topic.registration.sections]]
 id = "reach"
 title = "What `register()` reaches"
-to-come = ["registration in a helper function", "registration in a loop over a tuple", "registration outside `register()`"]
+to-come = []
 
 [topic.properties]
 title = "Properties"
@@ -292,17 +292,17 @@ bases it accepts, and how mixins see the members of the class they are mixed int
 [[topic.inheritance.sections]]
 id = "overrides"
 title = "Overrides"
-to-come = ["an override with another signature", "a class variable Blender reads"]
+to-come = []
 
 [[topic.inheritance.sections]]
 id = "mixins"
 title = "Mixins"
-to-come = ["a mixin's `self`", "properties declared on a mixin"]
+to-come = []
 
 [[topic.inheritance.sections]]
 id = "bases"
 title = "Bases"
-to-come = ["two Blender bases", "a subclass of an add-on's registered class"]
+to-come = []
 
 [topic.modules]
 title = "Modules"

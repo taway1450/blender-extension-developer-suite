@@ -18,7 +18,8 @@ examples/catalog/
 
 Every topic folder is an import root, so each entry is a top-level module, as Blender or a script runner loads it.
 A script sees its own Registered properties and operators and no other entry's; an entry about registration
-checks, preferences, `uses` or metadata takes the add-on form. File stems are unique across topics and never the
+checks, preferences, `uses` or metadata takes the add-on form. A file or folder whose name starts with `_` is no
+entry, but it is importable: another add-on an entry relies on (`addons/_render_presets`) lives there. File stems are unique across topics and never the
 name of a module an entry may import (`enum.py`, `bpy.py`). The id of an entry is `<topic>/<stem with - for _>`;
 it is also the anchor on its page.
 
@@ -66,7 +67,9 @@ def example(settings: ExportSettings) -> None:
 - **Markers**: the feature tests' own (`assert_type`, `# ty: ignore[rule]`, see
   [tests/typecheck/README.md](../../tests/typecheck/README.md)), plus the Gap tag: a `# gap: <reason>` comment line
   says the statement below it fails today. On the page `# ty: ignore[rule]` reads `# reported: rule` and a Gap tag
-  `# not handled yet: reason`.
+  `# not handled yet: reason`. A result ty reports on a module's first line (a missing `register()` or
+  `unregister()`, a problem in `blender_manifest.toml`) is marked on the header's opening line,
+  `# /// catalog  # ty: ignore[rule]`, which the page states under "What you see".
 - **Shown code**: `# catalog: hide` and `# catalog: show` lines keep imports and helpers off the page. A shown part
   indented deeper than the hide line before it is dedented by the difference; prefer a visible `example()` function
   over a hidden wrapper, so the page shows where the names come from.

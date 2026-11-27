@@ -531,6 +531,55 @@ def test_the_hash_covers_a_package_entrys_manifest(tmp_path):
     assert code_hash(addon) != first
 
 
+OPENING_MARKER = """\
+    # /// catalog  # ty: ignore[blender-invalid-register]
+    # title = "No unregister"
+    # section = "declaring"
+    # status = "handled"
+    # safeguards = ["typechecker"]
+    # ///
+    \"\"\"An add-on without `unregister()`.\"\"\"
+
+
+    def register():
+        pass
+"""
+
+
+def test_the_opening_line_carries_a_first_line_marker():
+    made = entry(OPENING_MARKER, "properties/kit/__init__.py")
+    assert made.problems == []
+    assert made.header.title == "No unregister"
+    (marker,) = made.markers()
+    assert (marker.line, marker.rules) == (1, ("blender-invalid-register",))
+    seen = what_you_see(made, {"blender-invalid-register": "error"})
+    assert seen.startswith("ty reports [`blender-invalid-register`](")
+    assert seen.endswith("(error) on the first line of `__init__.py`")
+    assert "# ty: ignore" not in shown_code(made.texts[made.main])
+
+
+def test_a_runtime_table_shows_what_blender_did():
+    text = HANDLED.replace(
+        "    # ///\n",
+        '    # [runtime]\n    # register = "ok"\n    # [[runtime.probe]]\n    # code = "1"\n    # expect = 1\n'
+        '    # reason = "the probe holds"\n    # ///\n',
+        1,
+    )
+    made = entry(text)
+    rendered = "\n".join(render_entry(made, Catalog(read_topics(TOPICS), [made], Recorded(), {}, {})))
+    assert "**Checked in Blender:** the add-on registers; the probe holds." in rendered
+
+
+def test_the_hash_covers_the_opening_lines_marker(tmp_path):
+    path = tmp_path / "t" / "a.py"
+    path.parent.mkdir()
+    addon = Addon("t", path, tmp_path, path.parent)
+    path.write_text("# /// catalog\n# status = 'handled'\n# ///\nx = 1\n", encoding="utf-8")
+    first = code_hash(addon)
+    path.write_text("# /// catalog  # ty: ignore[blender-invalid-register]\n# status = 'handled'\n# ///\nx = 1\n")
+    assert code_hash(addon) != first
+
+
 def test_two_entries_of_one_id_are_an_error(tmp_path, monkeypatch):
     monkeypatch.setattr(_common, "CATALOG_DIR", tmp_path)
     (tmp_path / "t").mkdir()
