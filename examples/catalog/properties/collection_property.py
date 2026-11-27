@@ -2,7 +2,7 @@
 # title = "Collection properties"
 # section = "value-types"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 #
 # [differs]

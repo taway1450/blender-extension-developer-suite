@@ -63,9 +63,9 @@ BLENDER_DOCS_URL = "https://docs.blender.org/api/current"
 ANY_RULE_HEADING = re.compile(r"^## `(?P<rule>[a-z][a-z0-9-]*)`$")
 
 STATUSES = {"handled": "Handled", "partial": "Partial", "not-handled": "Not handled", "unknown": "Unknown"}
-# Handlers, in page order. The first six find a problem before the add-on runs (a checked marker shows it); the
+# Safeguards, in page order. The first six find a problem before the add-on runs (a checked marker shows it); the
 # linter profile and Blender itself do not type-check, so their entries need no marker.
-HANDLERS = (
+SAFEGUARDS = (
     "stub-generator",
     "runtime-probe",
     "source-parser",
@@ -75,7 +75,7 @@ HANDLERS = (
     "linter-profile",
     "blender-runtime",
 )
-STATIC_HANDLERS = HANDLERS[:6]
+STATIC_SAFEGUARDS = SAFEGUARDS[:6]
 CLASSES = {
     "planned": "Planned",
     "possible": "Possible",
@@ -87,7 +87,7 @@ HEADER_KEYS = {
     "title",
     "section",
     "status",
-    "handled-by",
+    "safeguards",
     "features",
     "later",
     "note",
@@ -219,12 +219,12 @@ class Topic:
 
 @dataclass
 class Topics:
-    """``examples/catalog/topics.toml``: the catalog's intro, its topics in order, what each handler and class is,
+    """``examples/catalog/topics.toml``: the catalog's intro, its topics in order, what each safeguard and class is,
     and blanket notes for results that differ with another stub generator or Blender version."""
 
     intro: str = ""
     topics: list[Topic] = field(default_factory=list)
-    handlers: dict[str, dict[str, str]] = field(default_factory=dict)  # id -> title, description
+    safeguards: dict[str, dict[str, str]] = field(default_factory=dict)  # id -> title, description
     classes: dict[str, str] = field(default_factory=dict)  # id -> description
     differs: dict[str, str] = field(default_factory=dict)  # "generator/version" -> note
     problems: list[str] = field(default_factory=list)
@@ -237,11 +237,11 @@ def read_topics(text: str) -> Topics:
     data = tomllib.loads(text)
     result = Topics(
         intro=data.get("intro", ""),
-        handlers=data.get("handler", {}),
+        safeguards=data.get("safeguard", {}),
         classes=data.get("class", {}),
         differs=data.get("differs", {}),
     )
-    for unknown in sorted(set(data) - {"intro", "topic", "handler", "class", "differs"}):
+    for unknown in sorted(set(data) - {"intro", "topic", "safeguard", "class", "differs"}):
         result.problems.append(f"topics.toml: unknown key `{unknown}`")
     for topic_id, topic in data.get("topic", {}).items():
         sections = []
@@ -261,12 +261,12 @@ def read_topics(text: str) -> Topics:
                 topic_id, topic.get("title", topic_id), topic.get("covers", ""), topic.get("intro", ""), tuple(sections)
             )
         )
-    for kind, known, given in (("handler", HANDLERS, result.handlers), ("class", CLASSES, result.classes)):
+    for kind, known, given in (("safeguard", SAFEGUARDS, result.safeguards), ("class", CLASSES, result.classes)):
         result.problems += [f"topics.toml: no [{kind}.{name}]" for name in known if name not in given]
         result.problems += [f"topics.toml: [{kind}.{name}] is no {kind}" for name in given if name not in known]
-    for name, handler in result.handlers.items():
-        if not handler.get("title") or not handler.get("description"):
-            result.problems.append(f"topics.toml: [handler.{name}] needs a title and a description")
+    for name, safeguard in result.safeguards.items():
+        if not safeguard.get("title") or not safeguard.get("description"):
+            result.problems.append(f"topics.toml: [safeguard.{name}] needs a title and a description")
     for key in result.differs:
         if tuple(key.split("/", 1)) not in OTHERS:
             result.problems.append(f"topics.toml: [differs] `{key}` is no other recorded generator/version")
@@ -281,7 +281,7 @@ class Header:
     title: str = ""
     section: str = ""
     status: str = "unknown"
-    handled_by: tuple[str, ...] = ()
+    safeguards: tuple[str, ...] = ()
     features: tuple[str, ...] = ()
     later: str = ""
     note: str = ""
@@ -340,7 +340,7 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
         title=text("title"),
         section=text("section"),
         status=text("status"),
-        handled_by=texts("handled-by"),
+        safeguards=texts("safeguards"),
         features=texts("features"),
         later=text("later"),
         note=text("note"),
@@ -357,12 +357,12 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
     if header.status and header.status not in STATUSES:
         problems.append(f"{where}: status `{header.status}` is none of {', '.join(STATUSES)}")
     problems += [
-        f"{where}: `{h}` is no handler ({', '.join(HANDLERS)})" for h in header.handled_by if h not in HANDLERS
+        f"{where}: `{h}` is no safeguard ({', '.join(SAFEGUARDS)})" for h in header.safeguards if h not in SAFEGUARDS
     ]
-    if header.status in ("handled", "partial") and not header.handled_by:
-        problems.append(f"{where}: a {header.status} entry names its `handled-by`")
-    if header.status in ("not-handled", "unknown") and header.handled_by:
-        problems.append(f"{where}: a {header.status} entry has no `handled-by`")
+    if header.status in ("handled", "partial") and not header.safeguards:
+        problems.append(f"{where}: a {header.status} entry names its `safeguards`")
+    if header.status in ("not-handled", "unknown") and header.safeguards:
+        problems.append(f"{where}: a {header.status} entry has no `safeguards`")
     if header.status == "partial" and not header.note:
         problems.append(f"{where}: a partial entry says in `note` what is missing")
     if header.status == "not-handled" and not header.future:
@@ -382,7 +382,7 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
             problems.append(f"{where}: [differs] `{key}` is no other recorded generator/version")
         if not isinstance(note, str) or not note:
             problems.append(f"{where}: [differs] `{key}` needs the reason as a string")
-    if "blender-runtime" in header.handled_by and not (header.evidence or header.runtime):
+    if "blender-runtime" in header.safeguards and not (header.evidence or header.runtime):
         problems.append(f"{where}: `blender-runtime` needs `evidence` or a [runtime] table")
     if header.runtime:
         if header.runtime.get("register", "ok") not in ("ok", "fails"):
@@ -560,12 +560,12 @@ def verdict(entry: Entry, reference: Recorded, current_hash: str) -> list[str]:
         if not any(in_gap(r, [gap]) for r in results):
             problems.append(f"{gap.where}: the gap holds now: remove the tag and review `status`")
     status, holding = entry.header.status, entry.holding_markers()
-    static = any(h in STATIC_HANDLERS for h in entry.header.handled_by)
+    static = any(h in STATIC_SAFEGUARDS for h in entry.header.safeguards)
     cls = entry.header.future.get("class", "")
     if status == "handled" and gaps:
         problems.append(f"{where}: a handled entry has no Gap tag")
     if status == "handled" and static and not holding:
-        problems.append(f"{where}: a handled entry shows what the handler does with a marker")
+        problems.append(f"{where}: a handled entry shows what the safeguard does with a marker")
     if status == "partial" and not (holding and gaps):
         problems.append(f"{where}: a partial entry has a marker that holds and a Gap tag")
     if status == "not-handled" and cls in NEEDS_GAP and not gaps:
@@ -693,9 +693,9 @@ def joined(items: list[str]) -> str:
     return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} and {items[-1]}"
 
 
-def handler_links(entry: Entry, topics: Topics) -> str:
+def safeguard_links(entry: Entry, topics: Topics) -> str:
     return joined(
-        [f"[{topics.handlers.get(h, {}).get('title', h)}](by-handler.md#{h})" for h in entry.header.handled_by]
+        [f"[{topics.safeguards.get(h, {}).get('title', h)}](by-safeguard.md#{h})" for h in entry.header.safeguards]
     )
 
 
@@ -703,9 +703,9 @@ def status_line(entry: Entry, topics: Topics) -> str:
     header = entry.header
     label = f"**{STATUSES.get(header.status, header.status)}**"
     if header.status == "handled":
-        label += f" by {handler_links(entry, topics)}"
+        label += f" by {safeguard_links(entry, topics)}"
     elif header.status == "partial":
-        label += f": handled in part by {handler_links(entry, topics)}"
+        label += f": handled in part by {safeguard_links(entry, topics)}"
     elif header.status == "not-handled":
         label += f" ({CLASSES.get(header.future.get('class', ''), '').lower()})"
     else:
@@ -837,7 +837,7 @@ def counts(entries: list[Entry]) -> list[str]:
 def topic_page(catalog: Catalog, topic: Topic) -> str:
     out = [f"# {topic.title}", "", GENERATED_NOTE, "", topic.intro.strip(), ""]
     out += [
-        "[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)",
+        "[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)",
         "",
     ]
     out += [" · ".join(f"[{s.title}](#{s.id})" for s in topic.sections), ""]
@@ -887,7 +887,7 @@ def index_page(catalog: Catalog) -> str:
         to_come = sum(len(s.to_come) for s in topic.sections)
         rows.append([f"[{topic.title}]({topic.id}.md)", topic.covers, *counts(entries), str(to_come or "")])
     out = ["# Blender Python feature catalog", "", GENERATED_NOTE, "", catalog.topics.intro.strip(), ""]
-    out += ["[By handler](by-handler.md) · [Roadmap](roadmap.md)", ""]
+    out += ["[By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)", ""]
     out += table(["Topic", "Covers", *STATUSES.values(), "To come"], rows)
     out += ["", *READING]
     for topic in catalog.topics.topics:
@@ -897,29 +897,29 @@ def index_page(catalog: Catalog) -> str:
     return "\n".join(out) + "\n"
 
 
-def handler_page(catalog: Catalog) -> str:
+def safeguard_page(catalog: Catalog) -> str:
     out = [
-        "# By handler",
+        "# By safeguard",
         "",
         GENERATED_NOTE,
         "",
-        "What handles each entry of the catalog, and what that handler is.",
+        "What deals with each entry of the catalog for you, and what each safeguard is.",
         "",
     ]
     out += ["[All topics](README.md) · [Roadmap](roadmap.md)", ""]
-    for handler in HANDLERS:
-        info = catalog.topics.handlers.get(handler, {})
+    for safeguard in SAFEGUARDS:
+        info = catalog.topics.safeguards.get(safeguard, {})
         out += [
-            f'<a id="{handler}"></a>',
-            f"## {info.get('title', handler)}",
+            f'<a id="{safeguard}"></a>',
+            f"## {info.get('title', safeguard)}",
             "",
             info.get("description", "").strip(),
             "",
         ]
-        entries = [e for e in catalog.entries if handler in e.header.handled_by]
+        entries = [e for e in catalog.entries if safeguard in e.header.safeguards]
         out += [index_line(e) for e in entries] or ["No entry yet."]
         out.append("")
-    unhandled = [e for e in catalog.entries if not e.header.handled_by]
+    unhandled = [e for e in catalog.entries if not e.header.safeguards]
     out += ['<a id="not-handled"></a>', "## Nothing", "", "Entries nothing handles yet, or not classified yet.", ""]
     out += [index_line(e) for e in unhandled] or ["No entry."]
     return "\n".join(out).rstrip("\n") + "\n"
@@ -934,7 +934,7 @@ def roadmap_page(catalog: Catalog) -> str:
         "Everything the catalog says is not handled or handled in part, by what can change.",
         "",
     ]
-    out += ["[All topics](README.md) · [By handler](by-handler.md)", ""]
+    out += ["[All topics](README.md) · [By safeguard](by-safeguard.md)", ""]
     for cls, title in CLASSES.items():
         entries = [e for e in catalog.entries if e.header.future.get("class") == cls]
         out += [f'<a id="{cls}"></a>', f"## {title}", "", catalog.topics.classes.get(cls, "").strip(), ""]
@@ -954,7 +954,7 @@ def pages(catalog: Catalog) -> dict[str, str]:
     """Every page of ``docs/catalog/`` by file name."""
     files = {
         "README.md": index_page(catalog),
-        "by-handler.md": handler_page(catalog),
+        "by-safeguard.md": safeguard_page(catalog),
         "roadmap.md": roadmap_page(catalog),
     }
     for topic in catalog.topics.topics:

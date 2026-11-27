@@ -2,7 +2,7 @@
 # title = "The add-on's own preferences"
 # section = "preferences"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["addon_preferences"]
 #
 # [differs]

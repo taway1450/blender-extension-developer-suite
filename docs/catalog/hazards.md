@@ -6,7 +6,7 @@ What only goes wrong while Blender runs: references that go stale after undo or 
 Blender, a restricted context during registration, and Python threads. Most of these cannot be checked statically;
 the entries say why and link Blender's own gotcha pages.
 
-[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 [Stale data](#stale-data) · [Restricted context](#restricted) · [Threads and crashes](#threads)
 

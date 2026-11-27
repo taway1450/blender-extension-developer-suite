@@ -2,7 +2,7 @@
 # title = "A property declared as an annotation"
 # section = "declaring"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """A Property host declares its properties as class annotations, `name: IntProperty(...)`. The annotation is a call,

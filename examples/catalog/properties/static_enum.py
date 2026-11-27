@@ -2,7 +2,7 @@
 # title = "Enum properties with static items"
 # section = "value-types"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """An `EnumProperty` with a literal `items` sequence gives a `Literal` of its identifiers, so a typo in a comparison or

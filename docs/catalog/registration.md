@@ -5,7 +5,7 @@
 Blender only knows a class once it is registered. Which classes register, under which idname, in which order, and
 what the rest of the add-on can rely on once `register()` has run.
 
-[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 [Registered classes](#classes) · [Idnames and naming](#idnames) · [Order](#order) · [What `register()` reaches](#reach)
 

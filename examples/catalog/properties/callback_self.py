@@ -2,7 +2,7 @@
 # title = "`self` in property callbacks"
 # section = "callbacks"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """Blender calls a property's `update`, `get`, `set`, `poll` and `items` callbacks with the instance that holds the

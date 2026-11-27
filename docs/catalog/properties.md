@@ -8,7 +8,7 @@ expects an annotation to name a type, not to call a function, so a plain type ch
 know what `self.count` is. The add-on typechecker reads it as Blender does: `self.count` is an `int` (the property's
 *Value type*), and `bpy.types.Scene.x = IntProperty()` gives every scene an `x` (a *Registered property*).
 
-[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 [Declaring properties](#declaring) · [Value types](#value-types) · [Registered properties](#registered) · [Callbacks and wrappers](#callbacks)
 
@@ -18,7 +18,7 @@ know what `self.count` is. The add-on typechecker reads it as Blender does: `sel
 <a id="annotated-property"></a>
 ### A property declared as an annotation
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/annotated-property`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/annotated-property`
 
 A Property host declares its properties as class annotations, `name: IntProperty(...)`. The annotation is a call,
 which the typing spec rejects, but the checker reads it as a declaration: the attribute has the property's Value
@@ -44,7 +44,7 @@ def example(settings: Settings) -> None:
 <a id="future-annotations"></a>
 ### `from __future__ import annotations`
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/future-annotations`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/future-annotations`
 
 With `from __future__ import annotations` every annotation is a string, which Blender evaluates when it registers
 the class. A `PointerProperty` can then name a class defined further down the module. The checker evaluates the
@@ -75,7 +75,7 @@ def radius(brush: Brush) -> float:
 <a id="keyword-arguments"></a>
 ### Property arguments are keyword-only
 
-**Handled** by [the stubs](by-handler.md#stub-generator) · checked with Blender main, builtin stubs · `properties/keyword-arguments`
+**Handled** by [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `properties/keyword-arguments`
 
 Every argument of the `bpy.props` functions is keyword-only, so `StringProperty("Name")` raises `TypeError`. The
 stubs say so, and any type checker reports it.
@@ -96,7 +96,7 @@ class Settings(PropertyGroup):
 <a id="legacy-assignment"></a>
 ### The old `x = IntProperty()` form
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/legacy-assignment`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/legacy-assignment`
 
 Before Blender 2.80 properties were class attributes, `count = IntProperty()`. Blender now ignores that form
 without a word: the class registers, but has no such property. The checker reports the assignment, so it is not
@@ -118,7 +118,7 @@ class Settings(PropertyGroup):
 <a id="mixin-annotations"></a>
 ### Properties declared on a mixin
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/mixin-annotations`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/mixin-annotations`
 
 Annotations of a base class, and of a mixin that is no Blender class at all, become properties of every class that
 derives from them. A subclass can replace one by declaring the name again.
@@ -152,7 +152,7 @@ def example(item: Item, counted: Counted) -> None:
 <a id="property-hosts"></a>
 ### Classes that ignore property annotations
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/property-hosts`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/property-hosts`
 
 Only some Blender classes are Property hosts: `PropertyGroup`, `Operator`, `Macro`, `AddonPreferences`, `UIList`,
 `Node`, `NodeSocket`, `NodeTree`, `Gizmo` and a few more. A `Panel`, `Menu`, `Header` or `RenderEngine` registers with
@@ -184,7 +184,7 @@ class OBJECT_OT_tidy(Operator):
 <a id="rejected-arguments"></a>
 ### Arguments Blender rejects at registration
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/rejected-arguments`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/rejected-arguments`
 
 Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default
 that is not one of the enum's items, a `set` callback without `get`, a vector `size` above
@@ -216,7 +216,7 @@ class Settings(PropertyGroup):
 <a id="collection-property"></a>
 ### Collection properties
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/collection-property`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/collection-property`
 
 A `CollectionProperty` holds a list of `PropertyGroup` instances that Blender owns: `add()` creates one and returns
 it, and items are looked up by index or by their `name`.
@@ -246,7 +246,7 @@ def example(library: Library) -> None:
 <a id="dynamic-enum"></a>
 ### Enum properties with dynamic items
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/dynamic-enum`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/dynamic-enum`
 
 When `items` is a function, Blender calls it each time it needs the list, so the identifiers are only known at
 runtime. The value is a `str`. Blender may call the function with `context=None`, and the stubs say so: a callback
@@ -309,7 +309,7 @@ def example(settings: ExportSettings) -> None:
 <a id="pointer-properties"></a>
 ### Pointers to a group and to a data-block
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/pointer-properties`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/pointer-properties`
 
 A `PointerProperty` to a `PropertyGroup` always holds an instance of it: Blender creates it with its owner, and it
 cannot be replaced. A pointer to a data-block type (`Object`, `Material`, ...) is `None` until it is set.
@@ -339,7 +339,7 @@ def example(layout: Layout) -> None:
 <a id="scalar-types"></a>
 ### Scalar Value types
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/scalar-types`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/scalar-types`
 
 `IntProperty`, `FloatProperty`, `BoolProperty` and `StringProperty` give `int`, `float`, `bool` and `str`. A string
 with `subtype="BYTE_STRING"` gives `bytes`. A write of another type is an error.
@@ -373,7 +373,7 @@ def example(settings: Settings) -> None:
 <a id="static-enum"></a>
 ### Enum properties with static items
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/static-enum`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/static-enum`
 
 An `EnumProperty` with a literal `items` sequence gives a `Literal` of its identifiers, so a typo in a comparison or
 a write is reported. With `options={"ENUM_FLAG"}` the value is a `set` of them.
@@ -402,7 +402,7 @@ def example(settings: Settings) -> None:
 <a id="vector-subtypes"></a>
 ### Vector properties and their subtype
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/vector-subtypes`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/vector-subtypes`
 
 A `FloatVectorProperty` gives a `mathutils` type chosen by its `subtype` and `size`: `Color` for a colour of size
 3, `Vector` for a translation or direction, `Euler` and `Quaternion` for rotations, `Matrix` for a `MATRIX` of size
@@ -441,7 +441,7 @@ To come in this section: vector writes; read-only properties.
 <a id="class-attribute"></a>
 ### The class attribute of a declared property
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/class-attribute`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/class-attribute`
 
 A declared property exists on instances only. Once the class is registered, `Settings.count` raises
 `AttributeError`: registration has turned the annotation into an RNA property. The checker reports the read.
@@ -465,7 +465,7 @@ def default_count() -> int:
 <a id="group-id-data"></a>
 ### The data-block that owns a group
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/group-id-data`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/group-id-data`
 
 Every `PropertyGroup` instance knows the data-block it is stored on, `id_data`. The stubs can only say `ID`; the
 checker narrows it to the types the group is registered on, here `Object`.
@@ -495,7 +495,7 @@ def owner_name(physics: Physics) -> str:
 <a id="registered-property"></a>
 ### A property assigned to a Blender class
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/registered-property`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/registered-property`
 
 `bpy.types.Scene.x = PointerProperty(...)` adds a Registered property to every scene. The checker reads the
 assignment wherever the add-on (or here, the script) makes it, and gives the attribute its Value type; `del` removes it
@@ -531,7 +531,7 @@ def pass_count(scene: Scene) -> int:
 <a id="unsupported-target"></a>
 ### Classes that take no Registered properties
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/unsupported-target`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/unsupported-target`
 
 Registered properties work on every data-block type and on bones, nodes, sockets, view layers and strips, but not
 on `Area`, `Window`, `Modifier`, `Preferences`, `Context` or a `SpaceView3D`. The checker reports the assignment.
@@ -557,7 +557,7 @@ To come in this section: a property registered outside `register()`.
 <a id="callback-self"></a>
 ### `self` in property callbacks
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/callback-self`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/callback-self`
 
 Blender calls a property's `update`, `get`, `set`, `poll` and `items` callbacks with the instance that holds the
 property as `self`, though they are plain functions. The checker knows which class that is: a lambda's `self` is the
@@ -659,7 +659,7 @@ def unregister():
 <a id="property-wrappers"></a>
 ### Constants, `partial` and wrapper functions
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/property-wrappers`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/property-wrappers`
 
 Add-ons share declarations: a module constant, `functools.partial`, a small function that returns a property. The
 checker evaluates the annotation as a value, so each gives the Value type of the call it stands for.
@@ -728,7 +728,7 @@ def example(shape: Shape) -> None:
 <a id="unevaluated-annotation"></a>
 ### An annotation the checker cannot evaluate
 
-**Partial**: handled in part by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `properties/unevaluated-annotation`
+**Partial**: handled in part by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/unevaluated-annotation`
 
 When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a
 dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked.

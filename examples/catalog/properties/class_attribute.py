@@ -2,7 +2,7 @@
 # title = "The class attribute of a declared property"
 # section = "registered"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """A declared property exists on instances only. Once the class is registered, `Settings.count` raises

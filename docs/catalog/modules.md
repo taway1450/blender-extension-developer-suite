@@ -5,7 +5,7 @@
 The modules beside `bpy`: math, mesh editing, drawing, callbacks Blender calls at given moments, and the modules
 written in C that stubs describe from their docs.
 
-[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 [mathutils and bmesh](#math-mesh) · [Handlers, timers and msgbus](#callbacks) · [gpu and previews](#drawing)
 

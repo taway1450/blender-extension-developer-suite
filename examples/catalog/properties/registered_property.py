@@ -2,7 +2,7 @@
 # title = "A property assigned to a Blender class"
 # section = "registered"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """`bpy.types.Scene.x = PointerProperty(...)` adds a Registered property to every scene. The checker reads the

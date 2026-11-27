@@ -2,7 +2,7 @@
 # title = "An annotation the checker cannot evaluate"
 # section = "callbacks"
 # status = "partial"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["property_wrappers"]
 # note = "The attribute is `Any` instead of its Value type."
 #

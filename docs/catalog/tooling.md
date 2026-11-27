@@ -5,7 +5,7 @@
 General Python tools meet Blender conventions: lint rules that misfire on add-on code, formatting, and the Strictness
 presets of the add-on typechecker.
 
-[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 [Lint rules](#lint) · [Strictness](#strictness)
 

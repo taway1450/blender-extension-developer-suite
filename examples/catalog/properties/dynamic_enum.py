@@ -2,7 +2,7 @@
 # title = "Enum properties with dynamic items"
 # section = "value-types"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """When `items` is a function, Blender calls it each time it needs the list, so the identifiers are only known at

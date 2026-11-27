@@ -8,7 +8,7 @@ results, so edit the entries, never the pages.
 
 ```text
 examples/catalog/
-├── topics.toml             # topic order, titles, intros, sections, titles to come, handlers, classes
+├── topics.toml             # topic order, titles, intros, sections, titles to come, safeguards, classes
 ├── ty.toml                 # marker rules; import roots written by catalog:generate
 ├── properties/             # a topic folder: one entry per file or package
 │   └── scalar_types.py     # a script outside any add-on (the default form)
@@ -29,7 +29,7 @@ it is also the anchor on its page.
 # title = "Enum items that unpack another tuple"
 # section = "value-types"           # a section of the topic in topics.toml
 # status = "not-handled"            # handled | partial | not-handled | unknown
-# handled-by = []                   # stub-generator, runtime-probe, source-parser, typechecker,
+# safeguards = []                   # stub-generator, runtime-probe, source-parser, typechecker,
 #                                   # runtime-typechecker, blender-fix, linter-profile, blender-runtime
 # features = ["properties"]         # feature-test directories, linked from the page
 # later = "enum-items-unpacked"     # a [later.*] topic of examples/addons/coverage.toml
@@ -56,7 +56,7 @@ def example(settings: ExportSettings) -> None:
 ```
 
 - **Header**: the `# /// catalog` TOML block (the PEP 723 comment form). Unknown keys are errors. A `handled` or
-  `partial` entry names `handled-by`; `partial` says in `note` what is missing; `not-handled` has a `[future]`
+  `partial` entry names `safeguards`; `partial` says in `note` what is missing; `not-handled` has a `[future]`
   table with `class` and `note`, and `planned` also says where it is `tracked`. `unknown` means not classified yet.
   Other keys: `evidence` (a feature-test add-on whose `_expected/runtime.toml` shows a runtime claim),
   `blender-docs` (page names such as `info_gotcha` or `bpy.props`), `see` (paths in the Blender source, starting
@@ -80,7 +80,7 @@ def example(settings: ExportSettings) -> None:
 
 1. every recorded result lies in a Gap-tagged statement;
 2. every Gap-tagged statement still fails; otherwise "the gap holds now: remove the tag and review `status`";
-3. the status agrees: `handled` by a static handler (all but `linter-profile` and `blender-runtime`) has a marker and
+3. the status agrees: `handled` by a static safeguard (all but `linter-profile` and `blender-runtime`) has a marker and
    no Gap tag, `partial` has a marker that holds and a Gap tag, `not-handled` `planned` or `possible` has a Gap tag;
 4. the entry was recorded as its code is now (the `checked` line holds a hash of the code without the header);
 5. where another recorded generator or version (fake-bpy-module on main, both generators on 5.2) gives another
@@ -92,7 +92,7 @@ def example(settings: ExportSettings) -> None:
 An entry that says what Blender does at runtime (rejects a declaration, keeps a value) shows evidence: a feature-test
 add-on in `evidence`, or a `[runtime]` table with the keys of `_expected/runtime.toml` (`register`, `error`, `reason`,
 `[[runtime.probe]]`), which makes it an add-on-form entry that `mise run check:load main --catalog` loads in Blender,
-or Blender's docs or source in `blender-docs` / `see`. `blender-runtime` in `handled-by` needs `evidence` or a
+or Blender's docs or source in `blender-docs` / `see`. `blender-runtime` in `safeguards` needs `evidence` or a
 `[runtime]` table. A claim with none of these is left out.
 
 ## Workflow

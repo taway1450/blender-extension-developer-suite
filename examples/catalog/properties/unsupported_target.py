@@ -2,7 +2,7 @@
 # title = "Classes that take no Registered properties"
 # section = "registered"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """Registered properties work on every data-block type and on bones, nodes, sockets, view layers and strips, but not

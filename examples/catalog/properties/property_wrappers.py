@@ -2,7 +2,7 @@
 # title = "Constants, `partial` and wrapper functions"
 # section = "callbacks"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["property_wrappers"]
 # ///
 """Add-ons share declarations: a module constant, `functools.partial`, a small function that returns a property. The
