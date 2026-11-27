@@ -141,7 +141,10 @@ def test_a_handled_entry_parses_without_problems():
         ('title = "t"\nsection = "s"\nstatus = "handled"\nhandled-by = ["blender-runtime"]', "needs `evidence`"),
         ('title = "t"\nsection = "s"\nstatus = "unknown"\nhandled-by = ["typechecker"]', "has no `handled-by`"),
         ('title = "t"\nsection = "s"\nstatus = "unknown"\n[differs]\n"mypy/1" = "x"', "no other recorded"),
-        ('title = "t"\nsection = "s"\nstatus = "handled"\nhandled-by = ["typechecker"]\n[future]\nclass = "possible"\nnote = "n"', "only a not-handled or partial"),
+        (
+            'title = "t"\nsection = "s"\nstatus = "handled"\nhandled-by = ["typechecker"]\n[future]\nclass = "possible"\nnote = "n"',
+            "only a not-handled or partial",
+        ),
     ],
 )
 def test_header_rules(lines, problem):
@@ -221,7 +224,10 @@ def test_checked_lines_come_before_each_entrys_results(tmp_path):
     b.mkdir()
     (b / "__init__.py").write_text("y = 2\n", encoding="utf-8")
     entries = [Addon("topic", a, tmp_path, a.parent), Addon("topic", b, tmp_path, b.parent)]
-    results = {"topic/b/__init__.py | invalid-assignment | y = 2": "msg", "topic/a.py | unresolved-reference | x = 1": ""}
+    results = {
+        "topic/b/__init__.py | invalid-assignment | y = 2": "msg",
+        "topic/a.py | unresolved-reference | x = 1": "",
+    }
     lines = list(checked_entries(entries, results))
     assert [line.split(" | ")[:2] for line in lines] == [
         ["topic/a.py", "checked"],
@@ -287,33 +293,50 @@ def test_a_gap_that_holds_now_fails_the_check():
 
 
 def test_handled_entries_need_a_marker_and_no_gap():
-    no_marker = entry(HANDLED.replace("assert_type(settings.count, int)", "settings.count").replace(
-        '  # ty: ignore[invalid-assignment]', ""))
+    no_marker = entry(
+        HANDLED.replace("assert_type(settings.count, int)", "settings.count").replace(
+            "  # ty: ignore[invalid-assignment]", ""
+        )
+    )
     assert any("with a marker" in p for p in verdict(no_marker, recorded(no_marker), "abc"))
-    linter = entry(HANDLED.replace('["typechecker"]', '["linter-profile"]').replace(
-        "assert_type(settings.count, int)", "settings.count").replace('  # ty: ignore[invalid-assignment]', ""))
+    linter = entry(
+        HANDLED.replace('["typechecker"]', '["linter-profile"]')
+        .replace("assert_type(settings.count, int)", "settings.count")
+        .replace("  # ty: ignore[invalid-assignment]", "")
+    )
     assert verdict(linter, recorded(linter), "abc") == []
     gapped = entry(GAPPED.replace('status = "not-handled"', 'status = "handled"\n    # handled-by = ["typechecker"]'))
     assert any("has no Gap tag" in p for p in verdict(gapped, recorded(gapped, [GAP_RESULT]), "abc"))
 
 
 def test_partial_needs_a_holding_marker_and_a_gap():
-    text = GAPPED.replace('status = "not-handled"', 'status = "partial"\n    # handled-by = ["typechecker"]\n    # note = "n"')
+    text = GAPPED.replace(
+        'status = "not-handled"', 'status = "partial"\n    # handled-by = ["typechecker"]\n    # note = "n"'
+    )
     only_gap = entry(text)
-    assert any("a partial entry has a marker that holds" in p for p in verdict(only_gap, recorded(only_gap, [GAP_RESULT]), "abc"))
+    assert any(
+        "a partial entry has a marker that holds" in p
+        for p in verdict(only_gap, recorded(only_gap, [GAP_RESULT]), "abc")
+    )
     both = entry(text.replace("        # gap:", "        assert_type(settings, Settings)\n        # gap:"))
     assert verdict(both, recorded(both, [GAP_RESULT]), "abc") == []
 
 
 def test_planned_entries_need_a_gap():
-    made = entry(GAPPED.replace("        # gap: the unpacked values are not read\n", "").replace(
-        'assert_type(settings.mode, Literal["A", "B"])', "settings.mode"))
+    made = entry(
+        GAPPED.replace("        # gap: the unpacked values are not read\n", "").replace(
+            'assert_type(settings.mode, Literal["A", "B"])', "settings.mode"
+        )
+    )
     assert any("a planned entry shows with a Gap tag" in p for p in verdict(made, recorded(made), "abc"))
 
 
 def test_not_checkable_entries_need_nothing():
-    made = entry(GAPPED.replace('class = "planned"', 'class = "not-checkable"').replace(
-        "        # gap: the unpacked values are not read\n", "").replace('assert_type(settings.mode, Literal["A", "B"])', "settings.mode"))
+    made = entry(
+        GAPPED.replace('class = "planned"', 'class = "not-checkable"')
+        .replace("        # gap: the unpacked values are not read\n", "")
+        .replace('assert_type(settings.mode, Literal["A", "B"])', "settings.mode")
+    )
     assert verdict(made, recorded(made), "abc") == []
     assert not made.checked
 
@@ -396,7 +419,10 @@ def test_pages_list_every_entry_and_what_is_to_come():
     assert "- [A sample](properties.md#sample) (handled): The prose." in files["README.md"]
     assert "| [Properties](properties.md) | declaring | 1 |  | 1 |  | 1 |" in files["README.md"]
     assert "To come in this section: vectors." in files["properties.md"]
-    assert "- [A gap](properties.md#gap) (not handled): Unpacked items are not read. *Read the unpacked tuple.*" in files["roadmap.md"]
+    assert (
+        "- [A gap](properties.md#gap) (not handled): Unpacked items are not read. *Read the unpacked tuple.*"
+        in files["roadmap.md"]
+    )
     assert "- [A sample](properties.md#sample)" in files["by-handler.md"]
 
 
@@ -417,7 +443,11 @@ def test_entries_are_selected_by_topic_and_id():
 
 def test_catalog_entries_are_addons_of_their_topic():
     (first,) = catalog_entry_list(["properties/annotated-property"])
-    assert (first.feature, first.rel, first.name) == ("properties", "properties/annotated_property.py", "annotated_property.py")
+    assert (first.feature, first.rel, first.name) == (
+        "properties",
+        "properties/annotated_property.py",
+        "annotated_property.py",
+    )
 
 
 @pytest.mark.skipif(not RULES_MD.is_file(), reason="the ruff-blender submodule is not checked out")

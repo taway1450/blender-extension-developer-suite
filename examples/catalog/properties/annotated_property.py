@@ -21,8 +21,6 @@ class Settings(PropertyGroup):
     count: IntProperty(default=2, min=0)
 
 
-# catalog: hide
-def _(settings: Settings) -> None:
-    # catalog: show
+def example(settings: Settings) -> None:
     assert_type(settings.count, int)
     settings.count = "two"  # ty: ignore[invalid-assignment]

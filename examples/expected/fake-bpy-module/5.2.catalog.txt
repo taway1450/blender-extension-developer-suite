@@ -1,0 +1,36 @@
+# Catalog entry results, fake-bpy-module stubs, Blender 5.2: a `checked` line per entry with the hash of
+# its code, then the diagnostics ty reports and the markers that do not hold (the Gap-tagged ones).
+# `mise run check:catalog 5.2` fails when they change; `--update` rewrites this file.
+# Format: path | checked | hash, or path | rule | source line (with #2, #3 ... for a repeated text)
+addons/legacy_scene_counter.py | checked | a0d9c66afb44
+addons/own_preferences | checked | d660b8040df6
+addons/own_preferences/__init__.py | missing-union-attribute | preferences = context.preferences.addons[__package__].preferences
+properties/annotated_property.py | checked | 2be26238542d
+properties/callback_self.py | checked | d44ed0deaae0
+properties/class_attribute.py | checked | abf3e15b4be5
+properties/collection_property.py | checked | c6b8dd2a0c97
+properties/dynamic_enum.py | checked | a57ce4fe6340
+properties/enum_item_strings.py | checked | d66b33b48266
+properties/enum_items_unpacked.py | checked | 213916c9e805
+properties/enum_items_unpacked.py | type-assertion-failure | assert_type(settings.file_format, Literal["SCENE", "OBJ", "STL"])
+properties/future_annotations.py | checked | cd42967c0265
+properties/group_id_data.py | checked | 62534f312650
+properties/keyword_arguments.py | checked | 7b0cc8d82424
+properties/legacy_assignment.py | checked | 67e9d40dc081
+properties/min_above_max.py | checked | f5cab6fe3ca0
+properties/min_above_max.py | unused-ignore-comment | level: IntProperty(min=10, max=0)  # ty: ignore[blender-invalid-property]
+properties/mixin_annotations.py | checked | ed60068c8afe
+properties/pointer_properties.py | checked | e7fa870399c7
+properties/property_hosts.py | checked | 9e7efa7473d3
+properties/property_wrappers.py | checked | 3ebebc6475e2
+properties/quoted_wrapper_call.py | checked | e794c3b4b876
+properties/quoted_wrapper_call.py | invalid-type-form | size: "distance('Size')"
+properties/quoted_wrapper_call.py | type-assertion-failure | assert_type(shape.size, float)
+properties/registered_property.py | checked | 0e6b3ba349d4
+properties/rejected_arguments.py | checked | 4a07469f1206
+properties/scalar_types.py | checked | 2142f47ec734
+properties/static_enum.py | checked | 69c602838de7
+properties/unevaluated_annotation.py | checked | 06e225583119
+properties/unevaluated_annotation.py | type-assertion-failure | assert_type(settings.count, int)
+properties/unsupported_target.py | checked | 4e93d0f4bf60
+properties/vector_subtypes.py | checked | 2c247f51d78e

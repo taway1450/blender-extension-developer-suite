@@ -12,7 +12,7 @@ What handles each entry of the catalog, and what that handler is.
 The bpy stubs (`.pyi` files) any Python type checker or editor reads: Blender's own (builtin, 5.2 and later) or
 fake-bpy-module. A convention the stubs can state as plain Python typing needs nothing else.
 
-No entry yet.
+- [Property arguments are keyword-only](properties.md#keyword-arguments) (handled): Every argument of the `bpy.props` functions is keyword-only, so `StringProperty("Name")` raises `TypeError`.
 
 <a id="runtime-probe"></a>
 ## the runtime probe
@@ -39,6 +39,24 @@ operator idnames, the members a poll guarantees. It reports what Blender would r
 - [A legacy single-file add-on](addons.md#legacy-scene-counter) (handled): A module with a `bl_info` dict is a legacy add-on.
 - [The add-on's own preferences](addons.md#own-preferences) (handled): `preferences.addons[__package__].preferences` is the add-on's own `AddonPreferences` subclass when the key names the add-on, not the stub's `AddonPreferences | None`.
 - [A property declared as an annotation](properties.md#annotated-property) (handled): A Property host declares its properties as class annotations, `name: IntProperty(...)`.
+- [`self` in property callbacks](properties.md#callback-self) (handled): Blender calls a property's `update`, `get`, `set`, `poll` and `items` callbacks with the instance that holds the property as `self`, though they are plain functions.
+- [The class attribute of a declared property](properties.md#class-attribute) (handled): A declared property exists on instances only.
+- [Collection properties](properties.md#collection-property) (handled): A `CollectionProperty` holds a list of `PropertyGroup` instances that Blender owns: `add()` creates one and returns it, and items are looked up by index or by their `name`.
+- [Enum properties with dynamic items](properties.md#dynamic-enum) (handled): When `items` is a function, Blender calls it each time it needs the list, so the identifiers are only known at runtime.
+- [`from __future__ import annotations`](properties.md#future-annotations) (handled): With `from __future__ import annotations` every annotation is a string, which Blender evaluates when it registers the class.
+- [The data-block that owns a group](properties.md#group-id-data) (handled): Every `PropertyGroup` instance knows the data-block it is stored on, `id_data`.
+- [The old `x = IntProperty()` form](properties.md#legacy-assignment) (handled): Before Blender 2.80 properties were class attributes, `count = IntProperty()`.
+- [Properties declared on a mixin](properties.md#mixin-annotations) (handled): Annotations of a base class, and of a mixin that is no Blender class at all, become properties of every class that derives from them.
+- [Pointers to a group and to a data-block](properties.md#pointer-properties) (handled): A `PointerProperty` to a `PropertyGroup` always holds an instance of it: Blender creates it with its owner, and it cannot be replaced.
+- [Classes that ignore property annotations](properties.md#property-hosts) (handled): Only some Blender classes are Property hosts: `PropertyGroup`, `Operator`, `Macro`, `AddonPreferences`, `UIList`, `Node`, `NodeSocket`, `NodeTree`, `Gizmo` and a few more.
+- [Constants, `partial` and wrapper functions](properties.md#property-wrappers) (handled): Add-ons share declarations: a module constant, `functools.partial`, a small function that returns a property.
+- [A property assigned to a Blender class](properties.md#registered-property) (handled): `bpy.types.Scene.x = PointerProperty(...)` adds a Registered property to every scene.
+- [Arguments Blender rejects at registration](properties.md#rejected-arguments) (handled): Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default that is not one of the enum's items, a `set` callback without `get`, a name starting with `_`, a vector `size` above 32.
+- [Scalar Value types](properties.md#scalar-types) (handled): `IntProperty`, `FloatProperty`, `BoolProperty` and `StringProperty` give `int`, `float`, `bool` and `str`.
+- [Enum properties with static items](properties.md#static-enum) (handled): An `EnumProperty` with a literal `items` sequence gives a `Literal` of its identifiers, so a typo in a comparison or a write is reported.
+- [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked.
+- [Classes that take no Registered properties](properties.md#unsupported-target) (handled): Registered properties work on every data-block type and on bones, nodes, sockets, view layers and strips, but not on `Area`, `Window`, `Modifier`, `Preferences`, `Context` or a `SpaceView3D`.
+- [Vector properties and their subtype](properties.md#vector-subtypes) (handled): A `FloatVectorProperty` gives a `mathutils` type chosen by its `subtype` and `size`: `Color` for a colour of size 3, `Vector` for a translation or direction, `Euler` and `Quaternion` for rotations, `Matrix` for a `MATRIX` of size (4, 4) or 16.
 
 <a id="runtime-typechecker"></a>
 ## the runtime add-on typechecker
@@ -76,4 +94,7 @@ No entry yet.
 
 Entries nothing handles yet, or not classified yet.
 
-No entry.
+- [Strings returned by dynamic enum items](properties.md#enum-item-strings) (not handled): Blender does not copy the strings an `items` callback returns.
+- [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type.
+- [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range.
+- [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call.

@@ -11,21 +11,23 @@ Everything the catalog says is not handled or handled in part, by what can chang
 
 A handler can check it and the work is tracked.
 
-No entry yet.
+- [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type. *Read `*NAME` inside static `items` through the constant, as items joined with `+` already are.*
 
 <a id="possible"></a>
 ## Possible
 
 A handler could check it; the note says how. Nothing tracks it yet.
 
-No entry yet.
+- [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range. *Compare literal `min` and `max` (and `soft_min` and `soft_max`) in `blender-invalid-property`.*
+- [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call. *Evaluate a string annotation that holds a call as the call, as Blender does when it registers the class.*
+- [An annotation the checker cannot evaluate](properties.md#unevaluated-annotation) (partial): When the checker cannot tell what an annotation evaluates to (a declaration built in a loop and picked from a dict), it does not report the annotation as an invalid type: the attribute is `Any`, so nothing on it is checked. *Follow a declaration built in a loop or read from a registry, as far as its values are literals.*
 
 <a id="not-checkable"></a>
 ## Not statically checkable
 
 No static tool can know it: it depends on what happens while Blender runs. The note says why.
 
-No entry yet.
+- [Strings returned by dynamic enum items](properties.md#enum-item-strings) (not handled): Blender does not copy the strings an `items` callback returns. *Whether Python still holds the strings depends on what the callback built and kept while Blender runs.*
 
 <a id="out-of-scope"></a>
 ## Out of scope

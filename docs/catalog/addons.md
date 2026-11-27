@@ -92,6 +92,7 @@ def unregister():
 ```
 
 - **What you see:** `preferences` is `OWN_PREFERENCES_Preferences`.
+- **With other stubs:** builtin stubs, Blender 5.2: `context.preferences` is `Preferences | None` in Blender 5.2's stubs, so the read is reported. · fake-bpy-module stubs, Blender 5.2: `context.preferences` is `Preferences | None` in these stubs, so the read is reported.
 - **More:** [feature tests: addon_preferences](../../tests/typecheck/features/addon_preferences/README.md) · [source](../../examples/catalog/addons/own_preferences)
 
 To come in this section: preferences of another add-on; preferences read before they are registered.

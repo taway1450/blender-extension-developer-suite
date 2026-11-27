@@ -517,13 +517,15 @@ def shown_code(text: str) -> str:
 
 def asserted(marker: TypeMarker) -> tuple[str, str] | None:
     """The expression and type of an ``assert_type`` marker's line, as written."""
+    source = marker.source.split("  #", 1)[0].strip()
     try:
-        call = ast.parse(marker.source.split("#", 1)[0].strip()).body[0]
+        call = ast.parse(source).body[0]
     except (SyntaxError, IndexError):
         return None
     value = getattr(call, "value", None)
     if isinstance(value, ast.Call) and len(value.args) == 2:
-        return ast.unparse(value.args[0]), ast.unparse(value.args[1])
+        expression, type_ = (ast.get_source_segment(source, arg) for arg in value.args)
+        return (expression, type_) if expression and type_ else None
     return None
 
 
