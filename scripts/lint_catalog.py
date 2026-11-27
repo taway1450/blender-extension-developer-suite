@@ -69,7 +69,9 @@ def rule_name(ruff: list[str], rule: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("entries", nargs="*", help="Topics or entries (topic/entry) of examples/catalog/ (default: all)")
+    parser.add_argument(
+        "entries", nargs="*", help="Topics or entries (topic/entry) of examples/catalog/ (default: all)"
+    )
     parser.add_argument("--update", action="store_true", help=f"Rewrite {LINT_RECORDED.name} instead of comparing")
     args = parser.parse_args()
 
@@ -89,7 +91,11 @@ def main() -> int:
         default = ruff_output(ruff, ["--isolated", "--extend-select", rule], entry.rel)
         profile = ruff_output(ruff, ["--config", str(copy)], entry.rel)
         found[entry.rel] = LintResult(
-            code_hash(addon), rule, names.get(rule) or names.setdefault(rule, rule_name(ruff, rule)), count_findings(default, rule), count_findings(profile, rule)
+            code_hash(addon),
+            rule,
+            names.get(rule) or names.setdefault(rule, rule_name(ruff, rule)),
+            count_findings(default, rule),
+            count_findings(profile, rule),
         )
         log(f"{entry.id}: {rule} default {found[entry.rel].default}, profile {found[entry.rel].profile}")
 
