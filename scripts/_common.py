@@ -16,6 +16,7 @@ FAKE_BPY_MODULE = REPO_ROOT / "fake-bpy-module"
 FAKE_BPY_SRC = FAKE_BPY_MODULE / "src"
 TY_SUBMODULE = REPO_ROOT / "ty-blender"
 EXAMPLE_ADDONS_DIR = REPO_ROOT / "examples" / "addons"
+CATALOG_DIR = REPO_ROOT / "examples" / "catalog"  # the catalog's entries, one folder per topic
 TYPECHECK_TESTS_DIR = REPO_ROOT / "tests" / "typecheck"
 CACHE_DIR = REPO_ROOT / ".cache"
 
@@ -44,6 +45,36 @@ def example_addons(names: list[str]) -> list[Path]:
     if unknown:
         raise StepError(f"Unknown addons {', '.join(sorted(unknown))} (available: {', '.join(available) or 'none'})")
     return [EXAMPLE_ADDONS_DIR / name for name in (names or available)]
+
+
+def catalog_topics() -> list[str]:
+    """The topic folders of ``examples/catalog/``."""
+    found = CATALOG_DIR.iterdir() if CATALOG_DIR.is_dir() else []
+    return sorted(p.name for p in found if p.is_dir() and not p.name.startswith((".", "_")))
+
+
+def catalog_entries(names: list[str]) -> list[Path]:
+    """The catalog's entries, or only those of the named topics (``properties``) and entries (``properties/<id>``,
+    where ``<id>`` is the file stem with ``-`` for ``_``); none is not an error. An entry is a ``.py`` file or a
+    package directory in a topic folder."""
+    available = {}
+    for topic in catalog_topics():
+        for path in sorted((CATALOG_DIR / topic).iterdir()):
+            if path.name.startswith((".", "_")):
+                continue
+            if path.suffix == ".py" or (path / "__init__.py").is_file():
+                available[f"{topic}/{path.stem.replace('_', '-')}"] = path
+    if not names:
+        return list(available.values())
+    selected: list[Path] = []
+    for name in names:
+        key = name.strip("/").replace("_", "-")
+        matches = [path for entry, path in available.items() if key in (entry, entry.partition("/")[0])]
+        if not matches:
+            topics = ", ".join(catalog_topics()) or "none"
+            raise StepError(f"Unknown catalog topic or entry {name!r} (topics: {topics})")
+        selected += [path for path in matches if path not in selected]
+    return selected
 
 
 def run(cmd: list[str | Path], *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:

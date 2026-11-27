@@ -4,7 +4,7 @@ Tooling runs as mise tasks: `mise tasks` lists them, `mise run <task> --help` gi
 
 Run cargo, ty and Blender only through the mise tasks, never directly (not even `target/debug/ty.exe`). The tasks share one machine-wide lock across every checkout and worktree, so parallel agents queue instead of piling up, and they use half the CPUs and at most half the RAM (`scripts/_resources.py`; `SUITE_JOBS` and `SUITE_MEMORY_LIMIT_GB` override). A run outside the tasks has none of these limits, and parallel runs have exhausted the machine's memory before.
 
-Only `ty:test`, `ty:generate` (which builds `ruff_dev`) and five check tasks build from ty-blender: `check:features`, `check:ide`, `check:addons`, `check:stubs` and `check:blender`. They build with the incremental `dev` profile by default, and a build with nothing changed is a cargo no-op. Every other task needs no build: `check:oracle` runs stock ty and `lint:*` / `format:*` run stock ruff (both through `uvx`, pinned to the fork's base version), while `check:load`, `features:generate`, `stubs:generate` and the `*:scripts` tasks never touch ty.
+Only `ty:test`, `ty:generate` (which builds `ruff_dev`) and six check tasks build from ty-blender: `check:features`, `check:ide`, `check:addons`, `check:catalog`, `check:stubs` and `check:blender`. They build with the incremental `dev` profile by default, and a build with nothing changed is a cargo no-op. Every other task needs no build: `check:oracle` runs stock ty and `lint:*` / `format:*` run stock ruff (both through `uvx`, pinned to the fork's base version), while `check:load`, `features:generate`, `catalog:generate`, `stubs:generate` and the `*:scripts` tasks never touch ty.
 
 ## Editing the typechecker (`ty-blender/ruff-blender`)
 
@@ -14,11 +14,18 @@ Only `ty:test`, `ty:generate` (which builds `ruff_dev`) and five check tasks bui
 - Before committing, `mise run ty:test` runs upstream's tests and mdtests as a regression check (`--mdtest <path>` for one file); a failure there is a regression to fix.
 - After a change to a lint rule (a new `blender-*` rule, its documentation or level), `mise run ty:generate` rewrites `crates/ty/docs/rules.md` and `ty.schema.json`; commit them with the change.
 - A change ships as three commits: in `ruff-blender`, then the pointer bump in `ty-blender`, then the pointer bump here alongside the test changes.
+- The bump here also re-records the catalog (`mise run check:catalog main --update`, then `5.2`) and regenerates its pages (`mise run catalog:generate`): a closed gap or a changed rule level shows there, and CI's `catalog:generate --check` reads the rule reference at the committed pointer.
 
 ## Editing the feature tests (`tests/typecheck/`)
 
 - Read [tests/typecheck/README.md](tests/typecheck/README.md) for markers and layout. Files under `features/*/generated/` are written by `scripts/feature_generators/`: edit the generator, then `mise run features:generate`.
 - Validate new markers first with the tasks that build nothing: `check:oracle` (the markers agree with the `_expected/` reference stubs) and `check:load` (the add-on behaves so in Blender). Then run `check:features` / `check:ide`, and `--update` only after reviewing the diff.
+
+## Editing the catalog (`examples/catalog/`)
+
+- Read [examples/catalog/README.md](examples/catalog/README.md) for the entry format. The pages in `docs/catalog/` are generated: edit the entries or `topics.toml`, then `mise run catalog:generate`.
+- Per entry: `mise run check:catalog main <topic>/<entry>`, read the summary, then `--update`, and `5.2 ... --update` for the other recorded results; a runtime claim needs evidence (`check:load main --catalog` for a `[runtime]` table).
+- Write in the terms of [GLOSSARY.md](GLOSSARY.md); a claim that cannot be checked or evidenced is left out, not guessed.
 
 ## Editing the scripts (`scripts/`)
 

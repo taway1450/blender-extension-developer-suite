@@ -1,6 +1,7 @@
 # Checks the tooling in scripts/ on every pull request and every push to main: its unit tests (`mise run
 # test:scripts`), the prek hooks (`mise run lint:scripts` without fixing: the job fails if a hook would change a
-# file) and that the generated feature-test add-ons are current (`mise run features:generate --check`).
+# file), that the generated feature-test add-ons are current (`mise run features:generate --check`) and that the
+# catalog entries hold against their recorded results and its pages are current (`mise run catalog:generate --check`).
 #
 # None of these builds ty or needs Blender. Only ty-blender and its nested ruff-blender are checked out (shallowly,
 # at their pinned commits), so that ty's rule reference is there and the tests that read it do not skip; the blender
@@ -52,3 +53,6 @@ jobs:
 
       - name: Generated feature tests are current (features:generate --check)
         run: mise run features:generate --check
+
+      - name: Catalog entries hold and their pages are current (catalog:generate --check)
+        run: mise run catalog:generate --check

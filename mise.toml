@@ -207,18 +207,43 @@ uv run scripts/check_oracle.py {{usage.version}}
 '''
 
 [tasks."check:load"]
-description = "Load every feature-test addon in Blender (import, register, unregister) and compare with its _expected/runtime.toml; with --examples, load the example addons"
+description = "Load every feature-test addon in Blender (import, register, unregister) and compare with its _expected/runtime.toml; with --examples the example addons, with --catalog the catalog entries with a [runtime] table"
 usage = '''
 arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
-arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/, or with --examples addon directory names in examples/addons/ (default: all)"
+arg "[features]" var=#true help="Features or addons (feature/addon) in tests/typecheck/features/, or with --examples addon directory names in examples/addons/, or with --catalog topics and entries of examples/catalog/ (default: all)"
 flag "--examples" help="Load the example addons in examples/addons/ instead of the feature-test addons"
+flag "--catalog" help="Load the catalog entries in examples/catalog/ that carry a [runtime] table"
 flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
 '''
 run = '''
 uv run scripts/check_load.py {{usage.version}}
 {%- for feature in usage.features %} {{feature}}{% endfor %}
 {%- if usage.examples %} --examples{% endif %}
+{%- if usage.catalog %} --catalog{% endif %}
 {%- if usage.blender %} --blender "{{usage.blender}}"{% endif %}
+'''
+
+[tasks."check:catalog"]
+description = "Type-check the catalog entries in examples/catalog/ with ty and compare with examples/expected/<generator>/<version>.catalog.txt"
+usage = '''
+arg "<version>" help="Blender version as X.Y (e.g. 5.2), or the name of a blender:build build (e.g. main)"
+arg "[entries]" var=#true help="Topics (properties) or entries (properties/annotated-property) of examples/catalog/ (default: all)"
+flag "--update" help="Rewrite examples/expected/<generator>/<version>.catalog.txt instead of comparing"
+flag "--profile <profile>" default="dev" help="Cargo profile to build ty with: dev (incremental, fastest rebuild), profiling (optimised, no LTO) or release (LTO, slow)" {
+  choices "dev" "profiling" "release"
+}
+flag "--ty <path>" help="Use this ty binary instead of building one (skips the build)"
+flag "--blender <path>" help="Blender binary (or its directory) to use instead of downloading one"
+flag "--generator <generator>" default="all" help="Stub generator: fake-bpy-module, builtin (Blender's own, 5.2+), runtime (the fork's, from a running Blender) or all (fake-bpy-module and builtin where available)" {
+  choices "fake-bpy-module" "builtin" "runtime" "all"
+}
+'''
+run = '''
+uv run scripts/check_addons.py {{usage.version}} --catalog
+{%- for entry in usage.entries %} {{entry}}{% endfor %}
+{%- if usage.update %} --update{% endif %} --profile "{{usage.profile}}"
+{%- if usage.ty %} --ty "{{usage.ty}}"{% endif %}
+{%- if usage.blender %} --blender "{{usage.blender}}"{% endif %} --generator "{{usage.generator}}"
 '''
 
 [tasks."features:generate"]
@@ -227,6 +252,13 @@ usage = '''
 flag "--check" help="Fail if the generated files are out of date instead of writing them"
 '''
 run = 'uv run scripts/generate_features.py {% if usage.check %}--check{% endif %}'
+
+[tasks."catalog:generate"]
+description = "Judge the catalog entries in examples/catalog/ against their recorded results and write docs/catalog/ and the import roots in examples/catalog/ty.toml"
+usage = '''
+flag "--check" help="Fail if an entry does not hold or the pages are out of date instead of writing them"
+'''
+run = 'uv run scripts/generate_catalog.py {% if usage.check %}--check{% endif %}'
 
 [tasks."examples:coverage"]
 description = "Check the `# demo:` tags of the example add-ons against their recorded results and write the coverage tables in examples/addons/README.md"

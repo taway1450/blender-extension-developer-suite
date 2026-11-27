@@ -1,0 +1,388 @@
+# The catalog's topics in page order, their sections, and the titles still to come (see README.md).
+# `mise run catalog:generate` writes docs/catalog/ from this file and the entries in the topic folders.
+
+intro = """
+Blender's Python API has conventions no Python tool knows on its own: properties declared as annotations that are
+calls, classes that only exist once registered, a `context` whose members depend on the editor, collections looked up
+by name. This catalog lists them by what an add-on author is doing. Each entry has a short example and says what
+deals with it for you (its handler: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
+for add-on code, Blender itself when the add-on runs, or nothing yet). When nothing does, the entry says whether that
+can change. [By handler](by-handler.md) explains each handler.
+
+The examples are not just illustrations. Each one is type-checked with ty-blender and the stubs, and these pages are
+written from the results. So "handled" means the example shows what you get in your editor today, and "not handled"
+means the example shows the line that still goes wrong: when a new ty-blender gets it right, the catalog's own checks
+fail until the entry is updated.
+"""
+
+# --- handlers: what can handle an entry (the `handled-by` values) -----------------------------------------------------
+
+[handler.stub-generator]
+title = "the stubs"
+description = """
+The bpy stubs (`.pyi` files) any Python type checker or editor reads: Blender's own (builtin, 5.2 and later) or
+fake-bpy-module. A convention the stubs can state as plain Python typing needs nothing else.
+"""
+
+[handler.runtime-probe]
+title = "the runtime probe"
+description = """
+Facts read from a running Blender and written into the stubs: what its startup scripts register, the Value types of
+properties defined in C, the members a context really has.
+"""
+
+[handler.source-parser]
+title = "the Blender source parser"
+description = """
+Facts read from Blender's C and Python source that no running Blender reports: which pointers are never `None`, which
+enum values a function accepts.
+"""
+
+[handler.typechecker]
+title = "the add-on typechecker"
+description = """
+ty-blender, a fork of ty that reads an add-on as Blender loads it: property annotations, what `register()` adds,
+operator idnames, the members a poll guarantees. It reports what Blender would reject as `blender-*` diagnostics.
+"""
+
+[handler.runtime-typechecker]
+title = "the runtime add-on typechecker"
+description = """
+The add-on typechecker run inside Blender, against the add-on as it is registered: for what only exists once the
+add-on runs.
+"""
+
+[handler.blender-fix]
+title = "a fix in Blender"
+description = """
+A change to Blender itself (its stubs, its API or its docs) that makes the convention checkable by any tool.
+"""
+
+[handler.linter-profile]
+title = "the linter profile"
+description = """
+The ruff configuration for add-on code (`config/ruff/`): rules that misfire on Blender conventions are turned off or
+narrowed, and rules that catch Blender mistakes are turned on.
+"""
+
+[handler.blender-runtime]
+title = "Blender at runtime"
+description = """
+Blender itself, when the add-on runs: it raises, prints a warning or rejects the class. The entry says what it does
+and shows the evidence.
+"""
+
+# --- classes: what can change for an entry that is not handled (`[future] class`) -------------------------------------
+
+[class]
+planned = "A handler can check it and the work is tracked."
+possible = "A handler could check it; the note says how. Nothing tracks it yet."
+not-checkable = "No static tool can know it: it depends on what happens while Blender runs. The note says why."
+out-of-scope = "A static tool could check it, but it is not this project's to check. The note says whose it is."
+
+# --- differences that hold for every entry ----------------------------------------------------------------------------
+# A `[differs]` table here ("generator/version" = "why") excuses every entry whose outcome differs with that stub
+# generator or Blender version. None does yet: each entry says why in its own `[differs]` table.
+
+# --- the topics -------------------------------------------------------------------------------------------------------
+
+[topic.addons]
+title = "Add-ons"
+covers = "manifest and `bl_info`, entry points, reload, other add-ons"
+intro = """
+What makes a module an add-on to Blender, and what Blender does with it: the manifest or `bl_info`, `register()` and
+`unregister()`, reloading, preferences, and add-ons that use one another.
+"""
+
+[[topic.addons.sections]]
+id = "metadata"
+title = "Metadata"
+to-come = ["a manifest Blender refuses", "`bl_info` keys Blender ignores", "the add-on's module name as an extension (`bl_ext`)"]
+
+[[topic.addons.sections]]
+id = "entry-points"
+title = "Entry points"
+to-come = ["`register()` without `unregister()`", "`register_classes_factory`", "reloading with `importlib.reload`"]
+
+[[topic.addons.sections]]
+id = "preferences"
+title = "Preferences"
+to-come = ["preferences of another add-on", "preferences read before they are registered"]
+
+[[topic.addons.sections]]
+id = "other-addons"
+title = "Other add-ons"
+to-come = ["`[tool.blender] uses`", "the properties of add-ons Blender enables by default"]
+
+[topic.registration]
+title = "Registration"
+covers = "classes, idnames and naming, order, what `register()` reaches"
+intro = """
+Blender only knows a class once it is registered. Which classes register, under which idname, in which order, and
+what the rest of the add-on can rely on once `register()` has run.
+"""
+
+[[topic.registration.sections]]
+id = "classes"
+title = "Registered classes"
+to-come = ["a class registered twice", "a class registered as its first Blender base only", "unregistering in reverse order"]
+
+[[topic.registration.sections]]
+id = "idnames"
+title = "Idnames and naming"
+to-come = ["`bl_idname` conventions per type", "an idname Blender rejects", "panel and menu names Blender warns about"]
+
+[[topic.registration.sections]]
+id = "order"
+title = "Order"
+to-come = ["a PropertyGroup registered after the class pointing to it", "a child panel registered before its parent"]
+
+[[topic.registration.sections]]
+id = "reach"
+title = "What `register()` reaches"
+to-come = ["registration in a helper function", "registration in a loop over a tuple", "registration outside `register()`"]
+
+[topic.properties]
+title = "Properties"
+covers = "declaring, Value types, Registered properties, callbacks, wrappers"
+intro = """
+Blender properties are declared as class annotations whose value is a call, `count: IntProperty()`, on a class that
+takes properties (a *Property host*: a `PropertyGroup`, an `Operator`, `AddonPreferences` and a few more). Python
+expects an annotation to name a type, not to call a function, so a plain type checker reports the call and does not
+know what `self.count` is. The add-on typechecker reads it as Blender does: `self.count` is an `int` (the property's
+*Value type*), and `bpy.types.Scene.x = IntProperty()` gives every scene an `x` (a *Registered property*).
+"""
+
+[[topic.properties.sections]]
+id = "declaring"
+title = "Declaring properties"
+to-come = []
+
+[[topic.properties.sections]]
+id = "value-types"
+title = "Value types"
+to-come = ["vector writes", "read-only properties"]
+
+[[topic.properties.sections]]
+id = "registered"
+title = "Registered properties"
+to-come = ["a property registered outside `register()`"]
+
+[[topic.properties.sections]]
+id = "callbacks"
+title = "Callbacks and wrappers"
+to-come = []
+
+[topic.operators]
+title = "Operators"
+covers = "callbacks and return sets, `bpy.ops`, idname strings, modal"
+intro = """
+Operators are classes Blender calls back (`execute`, `invoke`, `modal`, `poll`) and that scripts call through
+`bpy.ops` by idname. What their callbacks must return, what a call through `bpy.ops` accepts, and what the strings that
+name an operator have to match.
+"""
+
+[[topic.operators.sections]]
+id = "callbacks"
+title = "Callbacks and return sets"
+to-come = ["`execute` returning a set of literals", "`invoke` with an event", "a return set Blender rejects"]
+
+[[topic.operators.sections]]
+id = "calls"
+title = "Calling through `bpy.ops`"
+to-come = ["the add-on's own operator", "Blender's operators", "an execution context as the first argument", "`temp_override`"]
+
+[[topic.operators.sections]]
+id = "idnames"
+title = "Idname strings"
+to-come = ["`layout.operator(\"x.y\")`", "a keymap item", "an internal operator"]
+
+[[topic.operators.sections]]
+id = "modal"
+title = "Modal operators"
+to-come = ["`context.area` in `modal`", "timers and `modal_handler_add`"]
+
+[topic.context]
+title = "Context"
+covers = "Guaranteed context members, editors, outside callbacks, narrowings"
+intro = """
+`bpy.context` has different members in every editor and at every moment. What a callback can rely on, what a poll or
+a panel's `bl_context` narrows, and what is gone outside callbacks.
+"""
+
+[[topic.context.sections]]
+id = "members"
+title = "Guaranteed context members"
+to-come = ["`context.scene` and `context.view_layer`", "`context.object` after a poll", "members per editor"]
+
+[[topic.context.sections]]
+id = "narrowings"
+title = "Narrowings"
+to-come = ["`bl_context` of a panel", "a menu's prefix", "a poll that checks the mode"]
+
+[[topic.context.sections]]
+id = "outside-callbacks"
+title = "Outside callbacks"
+to-come = ["`bpy.context` at import time", "in a timer", "in an application handler"]
+
+[topic.data]
+title = "Data"
+covers = "never-None, Type tags, collections, setters, node sockets, enums"
+intro = """
+The data API: pointers that are never `None` though the stubs say `X | None`, subtypes chosen by a Type tag, collections
+looked up by name, enum values as strings, and node sockets.
+"""
+
+[[topic.data.sections]]
+id = "pointers"
+title = "Pointers and `None`"
+to-come = ["never-None pointers", "pointers `None` until set", "`object.data` by type"]
+
+[[topic.data.sections]]
+id = "collections"
+title = "Collections"
+to-come = ["`collection[\"name\"]`", "`.get()`", "`new()` and `remove()`", "`foreach_get`"]
+
+[[topic.data.sections]]
+id = "enums"
+title = "Enum values"
+to-come = ["an enum value as a string", "an enum-flag set", "dynamic enum values"]
+
+[[topic.data.sections]]
+id = "nodes"
+title = "Nodes and sockets"
+to-come = ["`nodes.new(\"ShaderNodeBsdfPrincipled\")`", "sockets by name", "a socket's `default_value`"]
+
+[topic.ui]
+title = "UI"
+covers = "draw code, lists, popovers, gizmos, tools"
+intro = """
+Draw code runs often and with a narrow context. What `layout` calls accept, how lists and popovers find their data, and
+the classes for gizmos and tools.
+"""
+
+[[topic.ui.sections]]
+id = "draw"
+title = "Draw code"
+to-come = ["`layout.prop(data, \"name\")`", "`layout.operator` and its properties", "icons by name"]
+
+[[topic.ui.sections]]
+id = "lists"
+title = "Lists"
+to-come = ["`template_list` and a `UIList`", "`draw_item`"]
+
+[[topic.ui.sections]]
+id = "popovers"
+title = "Popovers and menus"
+to-come = ["a popover opened by an appended function", "menus appended to Blender's headers"]
+
+[[topic.ui.sections]]
+id = "gizmos-tools"
+title = "Gizmos and tools"
+to-come = ["Blender's own gizmo types", "a workspace tool"]
+
+[topic.inheritance]
+title = "Inheritance"
+covers = "overrides, mixins, bases"
+intro = """
+Add-on classes derive from Blender's bases, and often from mixins of their own. Which overrides Blender calls, which
+bases it accepts, and how mixins see the members of the class they are mixed into.
+"""
+
+[[topic.inheritance.sections]]
+id = "overrides"
+title = "Overrides"
+to-come = ["an override with another signature", "a class variable Blender reads"]
+
+[[topic.inheritance.sections]]
+id = "mixins"
+title = "Mixins"
+to-come = ["a mixin's `self`", "properties declared on a mixin"]
+
+[[topic.inheritance.sections]]
+id = "bases"
+title = "Bases"
+to-come = ["two Blender bases", "a subclass of an add-on's registered class"]
+
+[topic.modules]
+title = "Modules"
+covers = "mathutils, bmesh, gpu, handlers, timers, msgbus, previews, C modules"
+intro = """
+The modules beside `bpy`: math, mesh editing, drawing, callbacks Blender calls at given moments, and the modules
+written in C that stubs describe from their docs.
+"""
+
+[[topic.modules.sections]]
+id = "math-mesh"
+title = "mathutils and bmesh"
+to-come = ["`Vector` arithmetic", "`bmesh.from_edit_mesh`", "a BMesh layer by name"]
+
+[[topic.modules.sections]]
+id = "callbacks"
+title = "Handlers, timers and msgbus"
+to-come = ["a handler's parameters", "`@persistent`", "a timer's return value", "msgbus keys"]
+
+[[topic.modules.sections]]
+id = "drawing"
+title = "gpu and previews"
+to-come = ["a draw handler", "preview icons by name"]
+
+[topic.blend-files]
+title = "Blend files"
+covers = "data by name, shipped files, libraries, custom properties"
+intro = """
+Data-blocks in `.blend` files: looked up by name, shipped with the add-on, linked from libraries, and custom
+properties set on them.
+"""
+
+[[topic.blend-files.sections]]
+id = "by-name"
+title = "Data by name"
+to-come = ["`bpy.data.materials[\"Rust\"]`", "data a shipped file holds"]
+
+[[topic.blend-files.sections]]
+id = "custom-properties"
+title = "Custom properties"
+to-come = ["`obj[\"key\"]`", "`id_properties_ui`"]
+
+[topic.hazards]
+title = "Hazards"
+covers = "stale data, undo, crashes, restricted context, threads"
+intro = """
+What only goes wrong while Blender runs: references that go stale after undo or a reallocation, code that crashes
+Blender, a restricted context during registration, and Python threads. Most of these cannot be checked statically;
+the entries say why and link Blender's own gotcha pages.
+"""
+
+[[topic.hazards.sections]]
+id = "stale-data"
+title = "Stale data"
+to-come = ["a reference kept across undo", "a collection item after `add()`", "an edit-mode mesh's data"]
+
+[[topic.hazards.sections]]
+id = "restricted"
+title = "Restricted context"
+to-come = ["`bpy.data` during registration", "writes in a draw function"]
+
+[[topic.hazards.sections]]
+id = "threads"
+title = "Threads and crashes"
+to-come = ["`bpy` in a thread", "a callback that crashes Blender"]
+
+[topic.tooling]
+title = "Tooling"
+covers = "ruff rules that misfire on add-on code, format, Strictness"
+intro = """
+General Python tools meet Blender conventions: lint rules that misfire on add-on code, formatting, and the Strictness
+presets of the add-on typechecker.
+"""
+
+[[topic.tooling.sections]]
+id = "lint"
+title = "Lint rules"
+to-come = ["`F821` on a property annotation", "class names Blender requires", "star imports in templates"]
+
+[[topic.tooling.sections]]
+id = "strictness"
+title = "Strictness"
+to-come = ["the Strictness presets", "rule levels per add-on"]

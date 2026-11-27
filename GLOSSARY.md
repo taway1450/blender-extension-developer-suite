@@ -137,6 +137,20 @@ _Avoid_: sample, demo add-on
 A `# demo: <id>` comment line in an Example add-on that names what the statement below it shows: a feature of the feature tests, a `blender-*` rule, or a `later/` topic that does not work yet. Whether the claim holds is checked against the recorded results.
 _Avoid_: demo marker (a marker is an `assert_type` call or a `# ty: ignore[...]` comment)
 
+## Catalog
+
+**Catalog entry**:
+One Blender-Python feature or quirk in the catalog for add-on authors (`docs/catalog/`): a checked example in `examples/catalog/<topic>/` with a header that says its status, its Handlers and, when nothing handles it, what can change. A script outside any add-on unless it needs to be an Add-on.
+_Avoid_: feature (a feature is a directory of the feature tests), catalog item
+
+**Handler**:
+What deals with a Catalog entry so that the add-on author does not have to: the stubs, the runtime probe, the Blender source parser, the add-on typechecker, the runtime add-on typechecker, a fix in Blender, the linter profile, or Blender itself at runtime.
+_Avoid_: tool, provider
+
+**Gap tag**:
+A `# gap: <reason>` comment line in a Catalog entry that says the statement below it fails today. The check fails both when such a statement passes (the gap is closed: remove the tag and review the status) and when a statement without one fails.
+_Avoid_: xfail, todo marker
+
 ## Add-on code
 
 **Add-on index**:

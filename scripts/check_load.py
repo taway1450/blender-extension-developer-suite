@@ -29,12 +29,15 @@ says so in ``<addon>/_expected/runtime.toml``::
 The task fails when an addon does not do what it says.
 
 With ``--examples`` it loads the example add-ons in ``examples/addons/`` instead. They have no ``runtime.toml``:
-every one of them has to register and unregister.
+every one of them has to register and unregister. With ``--catalog`` it loads the catalog entries in
+``examples/catalog/`` that carry a ``[runtime]`` table in their header (the keys of ``runtime.toml``); the others make
+no claim about Blender at runtime and are not loaded.
 
 Usage:
   uv run scripts/check_load.py main
   uv run scripts/check_load.py 5.4 registration_checks
   uv run scripts/check_load.py main --examples scatter_tools
+  uv run scripts/check_load.py main --catalog properties
 """
 
 from __future__ import annotations
@@ -44,8 +47,9 @@ import json
 import tomllib
 from pathlib import Path
 
-from _common import REPO_ROOT, StepError, log, main_wrapper, validate_version
-from _features import Addon, example_addon_list, select
+from _catalog import load_entry
+from _common import CATALOG_DIR, REPO_ROOT, StepError, log, main_wrapper, validate_version
+from _features import Addon, catalog_entry_list, example_addon_list, select
 from _target import TYPECHECK_RESULTS_DIR
 from generate_stubs import find_blender, run_blender_script
 
@@ -53,6 +57,8 @@ LOADER = REPO_ROOT / "scripts" / "blender" / "load_feature_addons.py"
 
 
 def runtime_spec(addon: Addon) -> dict:
+    if addon.base == CATALOG_DIR:
+        return load_entry(addon).header.runtime
     path = addon.path / "_expected" / "runtime.toml" if addon.path.is_dir() else None
     return tomllib.loads(path.read_text(encoding="utf-8")) if path and path.is_file() else {}
 
@@ -93,12 +99,17 @@ def main() -> int:
     )
     parser.add_argument("--blender", type=Path, help="Blender binary (or its directory) to use")
     parser.add_argument("--examples", action="store_true", help="Load the example add-ons in examples/addons/")
+    parser.add_argument("--catalog", action="store_true", help="Load the catalog entries with a [runtime] table")
     args = parser.parse_args()
 
+    if args.catalog:
+        addons = catalog_entry_list(args.features)
+    else:
+        addons = example_addon_list(args.features) if args.examples else select(args.features)
     entries, expectations = [], {}
-    for addon in example_addon_list(args.features) if args.examples else select(args.features):
+    for addon in addons:
         spec = runtime_spec(addon)
-        if spec.get("load", True) is False:
+        if spec.get("load", True) is False or (args.catalog and not spec):
             continue
         for package in packages(addon, spec):
             name = f"{addon.feature}/{package.relative_to(addon.path.parent).as_posix()}"
@@ -110,7 +121,7 @@ def main() -> int:
     blender = find_blender(args.version, args.blender)
     work = TYPECHECK_RESULTS_DIR / args.version
     work.mkdir(parents=True, exist_ok=True)
-    stem = "load-examples" if args.examples else "load"
+    stem = "load-catalog" if args.catalog else "load-examples" if args.examples else "load"
     (work / f"{stem}-input.json").write_text(json.dumps(entries, indent=1), encoding="utf-8")
     log(f"Loading {len(entries)} addons in Blender")
     run_blender_script(blender, LOADER, work / f"{stem}-input.json", work / f"{stem}.json")

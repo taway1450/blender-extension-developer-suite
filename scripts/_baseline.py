@@ -194,6 +194,20 @@ EXAMPLES = Kind(
     ],
     progress=False,
 )
+CATALOG = Kind(
+    "check:catalog",
+    ".catalog.txt",
+    False,
+    read_lines,
+    write_lines,
+    lambda generator, version: [
+        f"Catalog entry results, {generator} stubs, Blender {version}: a `checked` line per entry with the hash of",
+        "its code, then the diagnostics ty reports and the markers that do not hold (the Gap-tagged ones).",
+        f"`mise run check:catalog {version}` fails when they change; `--update` rewrites this file.",
+        "Format: path | checked | hash, or path | rule | source line (with #2, #3 ... for a repeated text)",
+    ],
+    progress=False,
+)
 IDE = Kind(
     "check:ide",
     ".ide.md",

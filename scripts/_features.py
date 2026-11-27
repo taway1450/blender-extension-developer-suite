@@ -13,7 +13,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from _common import EXAMPLE_ADDONS_DIR, TYPECHECK_TESTS_DIR, StepError, example_addons
+from _common import CATALOG_DIR, EXAMPLE_ADDONS_DIR, TYPECHECK_TESTS_DIR, StepError, catalog_entries, example_addons
 from _markers import (
     ASSERT,
     EXPECTED,
@@ -49,6 +49,7 @@ class Addon:
     feature: str
     path: Path
     base: Path = TYPECHECK_TESTS_DIR
+    home: Path | None = None  # what ``name`` is relative to, when it is not the feature's directory
 
     @property
     def rel(self) -> str:
@@ -58,7 +59,7 @@ class Addon:
     @property
     def name(self) -> str:
         """Path relative to the feature, e.g. ``props_hosts`` or ``generated/props_float_vector``."""
-        home = self.base if self.feature == EXAMPLES else FEATURES_DIR / self.feature
+        home = self.home or (self.base if self.feature == EXAMPLES else FEATURES_DIR / self.feature)
         return self.path.relative_to(home).as_posix()
 
     @property
@@ -142,9 +143,15 @@ def example_addon_list(names: list[str]) -> list[Addon]:
     return [Addon(EXAMPLES, path, EXAMPLE_ADDONS_DIR) for path in example_addons(names)]
 
 
+def catalog_entry_list(names: list[str]) -> list[Addon]:
+    """The catalog's entries (``_common.catalog_entries``) as addons of their topic, checked in the
+    ``examples/catalog`` project."""
+    return [Addon(path.parent.name, path, CATALOG_DIR, path.parent) for path in catalog_entries(names)]
+
+
 def import_roots(addons: list[Addon]) -> list[str]:
-    """The ty ``environment.root`` entries (relative to tests/typecheck) that make every addon top-level."""
-    return sorted({a.root.relative_to(TYPECHECK_TESTS_DIR).as_posix() for a in addons})
+    """The ty ``environment.root`` entries (relative to the addons' base) that make every addon top-level."""
+    return sorted({a.root.relative_to(a.base).as_posix() for a in addons})
 
 
 def select(names: list[str]) -> list[Addon]:
