@@ -274,10 +274,8 @@ def test_never_checked_and_changed_entries():
 def test_a_result_outside_a_gap_is_a_surprise():
     made = entry(HANDLED)
     problems = verdict(made, recorded(made, [("type-assertion-failure", "assert_type(settings.count, int)")]), "abc")
-    assert problems == [
-        f"{PATH}: `type-assertion-failure` on `assert_type(settings.count, int)`, which no Gap tag marks: "
-        "fix the entry or tag it"
-    ]
+    surprise = "`type-assertion-failure` on `assert_type(settings.count, int)`, which no Gap tag marks"
+    assert problems == [f"{PATH}: {surprise}: fix the entry or tag it"]
 
 
 def test_a_gap_that_fails_holds():
