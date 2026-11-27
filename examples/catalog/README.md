@@ -121,7 +121,8 @@ no runtime evidence, so it does not satisfy `blender-runtime`.
 A `[lint]` table names a ruff rule and says whether ruff reports it on the entry with the rule turned on: `default`
 with stock settings, `profile` with the linter profile `config/ruff/addons.toml`, each `"reports"` or `"silent"`.
 `mise run lint:catalog` runs stock ruff both ways (the profile run uses a copy that selects the rule inside the
-profile's own `[lint]` table, so its `ignore` and rule settings still apply) and records the counts with a hash of
+profile's own `[lint]` table, so its `ignore` and rule settings still apply), both for the Python version of the
+Blender commit the `blender` submodule pins, and records the counts with a hash of
 the code in `examples/expected/catalog-lint.txt`; `catalog:generate` judges the claim against that file.
 `linter-profile` in `safeguards` needs a `[lint]` table.
 

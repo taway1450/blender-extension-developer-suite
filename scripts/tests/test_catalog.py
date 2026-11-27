@@ -42,7 +42,7 @@ from _catalog import (
 from _common import CATALOG_DIR, StepError, catalog_entries
 from _features import Addon, catalog_entry_list
 from examples_coverage import RULES_MD
-from lint_catalog import count_findings, profile_selecting
+from lint_catalog import count_findings, profile_selecting, target_version
 
 PATH = "properties/sample.py"
 
@@ -931,3 +931,10 @@ def test_a_marker_on_a_gapped_line_reads_as_what_would_be_reported():
         "print(x)  # would be reported: invalid-argument-type",
         "print(x)  # reported: invalid-assignment",
     ]
+
+
+def test_ruff_targets_the_python_of_the_pinned_blender():
+    """Both ruff runs target the Python the pinned Blender ships, as `run_ruff.py` does for the add-ons."""
+    assert target_version("set(PYTHON_SHORT_VERSION 3.13)\nset(PYTHON_VERSION 3.13.9)\n") == "py313"
+    with pytest.raises(StepError, match="PYTHON_SHORT_VERSION"):
+        target_version("set(PYTHON_VERSION 3.13.9)\n")

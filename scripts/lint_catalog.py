@@ -7,7 +7,8 @@ Each such entry names a ruff rule and claims whether ruff reports it with the ru
 settings (``--isolated --extend-select RULE``) and once with the linter profile ``config/ruff/addons.toml``. The
 profile run uses a copy of the profile that selects the rule inside its own ``[lint]`` table, so the profile's
 ``ignore`` and rule settings (pep8-naming's ``ignore-names``) still apply: a rule selected on the command line would
-override them. Ruff is stock ruff (``uvx ruff@<version ruff-blender is based on>``, see build_ty.py); nothing is built.
+override them. Both runs target the Python of the Blender commit the ``blender`` submodule pins, read from its
+``versions.cmake`` (CI fetches that file on demand). Ruff is stock ruff (``uvx ruff@<version ruff-blender is based on>``, see build_ty.py); nothing is built.
 
 The counts go to ``examples/expected/catalog-lint.txt`` with the hash of each entry's code; ``catalog:generate``
 judges the ``[lint]`` claims against that file. Without ``--update`` the run compares with the file and fails when a
@@ -25,10 +26,20 @@ import json
 import re
 import subprocess
 
-from _catalog import LINT_RECORDED, LintResult, code_hash, lint_verdict, load_entry, read_lint, write_lint
-from _common import CACHE_DIR, CATALOG_DIR, REPO_ROOT, StepError, log, main_wrapper
+from _catalog import (
+    LINT_RECORDED,
+    LintResult,
+    blender_commit,
+    code_hash,
+    lint_verdict,
+    load_entry,
+    read_lint,
+    write_lint,
+)
+from _common import BLENDER_SUBMODULE, CACHE_DIR, CATALOG_DIR, REPO_ROOT, StepError, log, main_wrapper
 from _features import catalog_entry_list
 from build_ty import stock_command
+from generate_stubs import VERSIONS_CMAKE, python_short_version
 from run_ruff import LINT_RE, PROFILES_DIR, RUFF_CACHE
 
 PROFILE = PROFILES_DIR / "addons.toml"
@@ -47,6 +58,27 @@ def profile_selecting(profile: str, rule: str) -> str:
 def count_findings(output: str, rule: str) -> int:
     """How often ``ruff check --output-format concise`` reported ``rule``."""
     return sum(m["rule"] == rule for m in LINT_RE.finditer(output))
+
+
+def target_version(versions_cmake: str) -> str:
+    """Ruff's ``--target-version`` (``py313``) for the Python a Blender ``versions.cmake`` names."""
+    return f"py{python_short_version(versions_cmake).replace('.', '')}"
+
+
+def pinned_versions_cmake() -> str:
+    """The text of ``versions.cmake`` at the Blender commit the ``blender`` submodule pins."""
+    commit = blender_commit()
+    if commit is None:
+        raise StepError("The blender submodule does not have its pinned commit: `git submodule update --init blender`")
+    shown = subprocess.run(
+        ["git", "-C", str(BLENDER_SUBMODULE), "show", f"{commit}:{VERSIONS_CMAKE}"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if shown.returncode:
+        raise StepError(f"Could not read {VERSIONS_CMAKE} at {commit[:10]}: {shown.stderr.strip()}")
+    return shown.stdout
 
 
 def ruff_output(ruff: list[str], options: list[str], path: str) -> str:
@@ -76,11 +108,12 @@ def main() -> int:
     args = parser.parse_args()
 
     ruff = [str(part) for part in stock_command("ruff")]
+    target = ["--target-version", target_version(pinned_versions_cmake())]
     recorded = read_lint(LINT_RECORDED.read_text(encoding="utf-8")) if LINT_RECORDED.is_file() else {}
     addons = catalog_entry_list(args.entries)
     entries = [(addon, load_entry(addon)) for addon in addons]
     linted = [(addon, entry) for addon, entry in entries if entry.header.lint.get("rule")]
-    log(f"Running ruff on {len(linted)} catalog entries with a [lint] table")
+    log(f"Running ruff ({target[1]}) on {len(linted)} catalog entries with a [lint] table")
     PROFILE_COPIES.mkdir(parents=True, exist_ok=True)
     found: dict[str, LintResult] = {}
     names: dict[str, str] = {}  # rule -> its name, asked of ruff once per rule
@@ -88,8 +121,8 @@ def main() -> int:
         rule = entry.header.lint["rule"]
         copy = PROFILE_COPIES / f"addons-{rule}.toml"
         copy.write_text(profile_selecting(PROFILE.read_text(encoding="utf-8"), rule), encoding="utf-8")
-        default = ruff_output(ruff, ["--isolated", "--extend-select", rule], entry.rel)
-        profile = ruff_output(ruff, ["--config", str(copy)], entry.rel)
+        default = ruff_output(ruff, ["--isolated", *target, "--extend-select", rule], entry.rel)
+        profile = ruff_output(ruff, ["--config", str(copy), *target], entry.rel)
         found[entry.rel] = LintResult(
             code_hash(addon),
             rule,
