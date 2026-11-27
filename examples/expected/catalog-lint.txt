@@ -1,0 +1,10 @@
+# Ruff results of the catalog entries with a [lint] table: per entry the rule, the hash of its code and how often
+# ruff reports the rule with it turned on, with stock settings (default) and with config/ruff/addons.toml (profile).
+# `mise run lint:catalog` fails when they change; `--update` rewrites this file.
+# Format: path | rule | rule name | hash | default <count> | profile <count>
+tooling/annotation_imports.py | TC002 | typing-only-third-party-import | 915b2aaabe6d | default 1 | profile 0
+tooling/class_names.py | N801 | invalid-class-name | 734be7d66412 | default 2 | profile 0
+tooling/mutable_class_default.py | RUF012 | mutable-class-default | 6090d429d236 | default 1 | profile 0
+tooling/quoted_annotation_key.py | UP037 | quoted-annotation | 192cd37612da | default 1 | profile 0
+tooling/reload_guard_names | F821 | undefined-name | 42963bfc450b | default 1 | profile 1
+tooling/undefined_annotation_key.py | F821 | undefined-name | e58305b3606d | default 1 | profile 1

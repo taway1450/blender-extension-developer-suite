@@ -45,7 +45,7 @@ class Tools(Panel):
 <a id="missing-draw"></a>
 ### A panel without `draw`
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/missing-draw`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `inheritance/missing-draw`
 
 Most callbacks are optional, but a `Panel`, `Menu`, `Header` or `NodeSocket` must define `draw`: Blender refuses
 to register the class without one. The checker reports the class.
@@ -83,7 +83,7 @@ def unregister():
 <a id="override-signature"></a>
 ### An override with another signature
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `inheritance/override-signature`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `inheritance/override-signature`
 
 Blender checks each callback when it registers the class: the number of positional parameters (defaults
 included), and whether it is a classmethod (`poll`) or a plain function (`execute`). Parameter names do not matter,

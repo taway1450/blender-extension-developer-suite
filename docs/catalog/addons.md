@@ -216,7 +216,7 @@ def example() -> None:
 <a id="no-unregister"></a>
 ### `register()` without `unregister()`
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/no-unregister`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `addons/no-unregister`
 
 Blender calls `register()` when the add-on is enabled and `unregister()` when it is disabled; an add-on without
 one of them cannot be enabled. The checker reports the missing function on the first line of `__init__.py`.
@@ -467,7 +467,7 @@ license = ["SPDX:GPL-3.0-or-later"]
 <a id="preferences-idname"></a>
 ### A preferences `bl_idname` that is not the add-on's module
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/preferences-idname`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `addons/preferences-idname`
 
 Blender finds an add-on's preferences by their `bl_idname`, which must be the add-on's module: `__package__` in
 an extension, which is `bl_ext.<repository>.<id>`, not the bare `id`. A class named by the `id`, or by

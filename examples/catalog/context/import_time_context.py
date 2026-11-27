@@ -3,10 +3,12 @@
 # section = "outside-callbacks"
 # status = "handled"
 # safeguards = ["typechecker"]
-# features = ["assumptions"]# see = ["blender/scripts/modules/_bpy_restrict_state.py"]
+# features = ["assumptions"]
+# see = ["blender/scripts/modules/_bpy_restrict_state.py"]
 # ///
 """While Blender imports and registers an add-on, `bpy.context` is a restricted context with no `scene` at all:
-reading it raises `AttributeError`. A module-level read belongs in `register()` or later. The checker does not tell
+reading it raises `AttributeError`. `register()` runs in that context too, so the read belongs in a callback, a
+handler or a timer (see [`bpy.data` during registration](hazards.md#restricted-data)). The checker does not tell
 import time from other code outside callbacks: it reports the read only as the Assumption it makes for `scene` there,
 a warning."""
 

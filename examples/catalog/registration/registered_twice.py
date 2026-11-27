@@ -2,7 +2,7 @@
 # title = "A class registered twice"
 # section = "classes"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["registration_checks"]
 #
 # [evidence]

@@ -8,6 +8,7 @@ import _common
 from _catalog import (
     PAGES_DIR,
     Catalog,
+    LintResult,
     Recorded,
     Topics,
     blender_commit,
@@ -21,9 +22,12 @@ from _catalog import (
     header_problems,
     in_blender_source,
     leftover_lines,
+    lint_leftovers,
+    lint_verdict,
     make_entry,
     pages,
     parse_header,
+    read_lint,
     read_recorded,
     read_topics,
     render_entry,
@@ -32,10 +36,13 @@ from _catalog import (
     stale_recordings,
     verdict,
     what_you_see,
+    with_ruff,
+    write_lint,
 )
 from _common import CATALOG_DIR, StepError, catalog_entries
 from _features import Addon, catalog_entry_list
 from examples_coverage import RULES_MD
+from lint_catalog import count_findings, profile_selecting
 
 PATH = "properties/sample.py"
 
@@ -488,6 +495,7 @@ def test_the_catalog_holds_and_its_pages_are_current():
         ({"addon": "properties/props_defaults"}, "says register `ok`, but properties/props_defaults says `fails`"),
         ({"addon": "properties/props_defaults", "register": "fails", "says": "TypeError"}, "`TypeError` is not in"),
         ({"addon": "properties/no_such_addon"}, "is no feature-test add-on"),
+        ({"addon": "properties/generated/props_scalar", "says": "a READ_ONLY property cannot be written"}, None),
     ],
 )
 def test_evidence_must_say_what_the_feature_test_records(evidence, problem):
@@ -528,6 +536,18 @@ def test_the_hash_covers_a_package_entrys_manifest(tmp_path):
     addon = Addon("t", package, tmp_path, package.parent)
     first = code_hash(addon)
     (package / "blender_manifest.toml").write_text('id = "other"\n', encoding="utf-8")
+    assert code_hash(addon) != first
+
+
+def test_the_hash_covers_the_helper_add_on_an_entry_uses(tmp_path):
+    package, helper = tmp_path / "t" / "kit", tmp_path / "t" / "_helper"
+    for directory in (package, helper):
+        directory.mkdir(parents=True)
+        (directory / "__init__.py").write_text("x = 1\n", encoding="utf-8")
+    (package / "blender_manifest.toml").write_text('[tool.blender]\nuses = ["_helper", "other"]\n', encoding="utf-8")
+    addon = Addon("t", package, tmp_path, package.parent)
+    first = code_hash(addon)
+    (helper / "__init__.py").write_text("x = 2\n", encoding="utf-8")
     assert code_hash(addon) != first
 
 
@@ -631,3 +651,283 @@ def test_an_assert_type_over_several_lines_shows():
 )
 def test_the_first_sentence_skips_abbreviations(prose, first):
     assert first_sentence(prose) == first
+
+
+# --- ruff claims (`[lint]`) ---------------------------------------------------------------------------------------------
+
+NAME = "invalid-class-name"
+LINTED = """\
+    # /// catalog
+    # title = "Class names"
+    # section = "lint"
+    # status = "handled"
+    # safeguards = ["linter-profile"]
+    #
+    # [lint]
+    # rule = "N801"
+    # default = "reports"
+    # profile = "silent"
+    # ///
+    \"\"\"Blender's class names are not CapWords.\"\"\"
+
+    from bpy.types import Operator
+
+
+    class SIMPLE_OT_run(Operator):
+        bl_idname = "simple.run"
+        bl_label = "Run"
+"""
+
+
+@pytest.mark.parametrize(
+    ("lines", "problem"),
+    [
+        ("[lint]\ndefault = 'reports'\nprofile = 'silent'", "[lint] names the ruff `rule`"),
+        ("[lint]\nrule = 'N801'\ndefault = 'loud'\nprofile = 'silent'", "[lint] default is `reports` or `silent`"),
+        ("[lint]\nrule = 'N801'\ndefault = 'reports'", "[lint] profile is `reports` or `silent`"),
+        ("[lint]\nrule = 'N801'\ndefault = 'reports'\nprofile = 'silent'\nlevel = 1", "unknown key `lint.level`"),
+    ],
+)
+def test_lint_table_rules(lines, problem):
+    base = 'title = "t"\nsection = "s"\nstatus = "unknown"\n'
+    _, problems = header("\n".join(f"# {line}" for line in (base + lines).splitlines()))
+    assert any(problem in p for p in problems), problems
+
+
+def test_the_linter_profile_safeguard_needs_a_lint_table():
+    _, problems = header('# title = "t"\n# section = "s"\n# status = "handled"\n# safeguards = ["linter-profile"]\n')
+    assert any("`linter-profile` needs a [lint] table" in p for p in problems), problems
+
+
+def test_a_lint_table_parses():
+    made = entry(LINTED, "tooling/class_names.py")
+    assert made.problems == []
+    assert made.header.lint == {"rule": "N801", "default": "reports", "profile": "silent"}
+
+
+def test_lint_results_read_back_as_written():
+    results = {
+        "tooling/a.py": LintResult("abc", "N801", "invalid-class-name", 2, 0),
+        "tooling/b.py": LintResult("def", "F821", "undefined-name", 1, 1),
+    }
+    text = write_lint(results)
+    assert "tooling/a.py | N801 | invalid-class-name | abc | default 2 | profile 0" in text
+    assert read_lint(text) == results
+
+
+def test_a_lint_claim_is_judged_against_the_recorded_run():
+    made = entry(LINTED, "tooling/class_names.py")
+    assert lint_verdict(made, {}, "abc") == [
+        "tooling/class_names.py: never checked with ruff: run `mise run lint:catalog tooling/class-names --update`"
+    ]
+    changed = {made.rel: LintResult("old", "N801", NAME, 1, 0)}
+    assert "changed since ruff checked it" in lint_verdict(made, changed, "abc")[0]
+    assert lint_verdict(made, {made.rel: LintResult("abc", "N801", NAME, 1, 0)}, "abc") == []
+    (wrong,) = lint_verdict(made, {made.rel: LintResult("abc", "N801", NAME, 1, 1)}, "abc")
+    assert '`profile = "silent"`, but the linter profile reports `N801` 1 time' in wrong
+    (other,) = lint_verdict(made, {made.rel: LintResult("abc", "E501", "line-too-long", 1, 0)}, "abc")
+    assert "recorded for `E501`" in other
+
+
+def test_lint_lines_of_entries_without_a_lint_table_are_leftovers():
+    made = entry(HANDLED)
+    record = {
+        made.rel: LintResult("abc", "N801", NAME, 1, 0),
+        "tooling/gone.py": LintResult("x", "F821", "undefined-name", 1, 1),
+    }
+    assert lint_leftovers([made], record) == [
+        "catalog-lint.txt: `properties/sample.py` has no [lint] table: re-record with `mise run lint:catalog --update`",
+        "catalog-lint.txt: `tooling/gone.py` is no entry any more: re-record with `mise run lint:catalog --update`",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("default", "profile", "said"),
+    [
+        (
+            "reports",
+            "silent",
+            "stock ruff reports it here; the [linter profile](by-safeguard.md#linter-profile) does not",
+        ),
+        ("reports", "reports", "stock ruff reports it here, and so does the [linter profile]"),
+        ("silent", "silent", "neither stock ruff nor the [linter profile]"),
+        ("silent", "reports", "stock ruff does not report it here; the [linter profile]"),
+    ],
+)
+def test_the_page_says_what_ruff_reports(default, profile, said):
+    text = LINTED.replace('default = "reports"', f'default = "{default}"').replace(
+        'profile = "silent"', f'profile = "{profile}"'
+    )
+    line = with_ruff(entry(text, "tooling/class_names.py"), LintResult("abc", "N801", NAME, 1, 0))
+    assert line.startswith("[`N801`](https://docs.astral.sh/ruff/rules/invalid-class-name/) selected in both runs: ")
+    assert said in line
+
+
+def test_a_lint_entry_shows_its_ruff_line_and_no_unchecked_note():
+    topics = read_topics(TOPICS)
+    made = entry(LINTED, "tooling/class_names.py")
+    lint = {made.rel: LintResult("abc", "N801", NAME, 1, 0)}
+    text = "\n".join(render_entry(made, Catalog(topics, [made], Recorded(), {}, {}, lint)))
+    assert (
+        "- **With ruff:** [`N801`](https://docs.astral.sh/ruff/rules/invalid-class-name/) selected in both runs" in text
+    )
+    assert "checked with ruff" in text
+    assert "Not machine-checked" not in text
+
+
+def test_the_profile_copy_selects_the_rule_inside_its_own_lint_table():
+    profile = '# a comment\n\n[lint]\nignore = ["RUF012"]\n\n[lint.pep8-naming]\nignore-names = ["*_OT_*"]\n'
+    copied = profile_selecting(profile, "N801")
+    assert '[lint]\nextend-select = ["N801"]\nignore = ["RUF012"]' in copied
+    with pytest.raises(StepError, match=r"no \[lint\] table"):
+        profile_selecting("[format]\n", "N801")
+
+
+def test_findings_of_one_rule_are_counted():
+    output = "a.py:1:7: N801 Class name `x` should use CapWords\na.py:2:1: F401 unused\na.py:3:7: N801 again\n"
+    assert count_findings(output, "N801") == 2
+
+
+# --- strictness evidence ------------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("evidence", "problem"),
+    [
+        (
+            {
+                "addon": "imprecise_annotations/imp_strictness",
+                "rule": "blender-imprecise-operator-return",
+                "lenient": "ignore",
+                "default": "warn",
+                "strict": "error",
+            },
+            None,
+        ),
+        (
+            {"addon": "imprecise_annotations/imp_strictness", "rule": "blender-imprecise-enum-value", "strict": "warn"},
+            "says `blender-imprecise-enum-value` is `warn` under strict, but imprecise_annotations/imp_strictness says `error`",
+        ),
+        (
+            {"addon": "imprecise_annotations/imp_strictness", "rule": "blender-unknown-operator", "default": "warn"},
+            "says `blender-unknown-operator` is `warn` under default, but imprecise_annotations/imp_strictness says `ignore`",
+        ),
+        (
+            {"addon": "properties/props_defaults", "rule": "blender-x", "default": "warn"},
+            "no feature-test add-on with _expected/strictness",
+        ),
+    ],
+)
+def test_strictness_evidence_must_match_the_feature_test(evidence, problem):
+    problems = evidence_problems("e.py", evidence)
+    assert (problems == []) if problem is None else any(problem in p for p in problems), problems
+
+
+@pytest.mark.parametrize(
+    ("lines", "problem"),
+    [
+        ("rule = 'blender-x'", "[evidence] with a `rule` gives its level under lenient, default or strict"),
+        ("rule = 'blender-x'\ndefault = 'loud'", "[evidence] default is `ignore`, `warn` or `error`"),
+        ("rule = 'blender-x'\ndefault = 'warn'\nregister = 'fails'", "[evidence] with a `rule` has no `register`"),
+        ("default = 'warn'", "[evidence] gives levels only with a `rule`"),
+    ],
+)
+def test_strictness_evidence_rules(lines, problem):
+    base = 'title = "t"\nsection = "s"\nstatus = "unknown"\n[evidence]\naddon = "a/b"\n'
+    _, problems = header("\n".join(f"# {line}" for line in (base + lines).splitlines()))
+    assert any(problem in p for p in problems), problems
+
+
+def test_strictness_evidence_is_no_runtime_evidence():
+    lines = 'title = "t"\nsection = "s"\nstatus = "handled"\nsafeguards = ["blender-runtime"]\n[evidence]\naddon = "a/b"\nrule = "blender-x"\ndefault = "warn"'
+    _, problems = header("\n".join(f"# {line}" for line in lines.splitlines()))
+    assert any("needs `evidence`" in p for p in problems), problems
+
+
+def test_the_page_shows_the_levels_of_strictness_evidence():
+    text = HANDLED.replace(
+        '# safeguards = ["typechecker"]\n',
+        '# safeguards = ["typechecker"]\n    #\n    # [evidence]\n    # addon = "imprecise_annotations/imp_strictness"\n'
+        '    # rule = "blender-imprecise-operator-return"\n    # lenient = "ignore"\n    # default = "warn"\n'
+        '    # strict = "error"\n',
+    )
+    made = entry(text)
+    assert made.problems == []
+    page = "\n".join(render_entry(made, Catalog(read_topics(TOPICS), [made], Recorded(), {}, {})))
+    assert (
+        "- **Levels:** [`blender-imprecise-operator-return`](" in page
+        and "is `ignore` under the lenient preset, `warn` under default and `error` under strict" in page
+    )
+    assert (
+        "[strictness evidence](../../tests/typecheck/features/imprecise_annotations/imp_strictness/_expected/strictness.toml)"
+        in page
+    )
+
+
+# --- page wording -------------------------------------------------------------------------------------------------------
+
+
+def test_a_gap_whose_expected_error_is_missing_says_nothing_is_reported():
+    gapped = entry(GAPPED)
+    unused = ("unused-ignore-comment", 'assert_type(settings.mode, Literal["A", "B"])')
+    assert _catalog.today(gapped, recorded(gapped, [unused]), {}) == (
+        "nothing is reported on the line marked *not handled yet*"
+    )
+    both = recorded(gapped, [unused, GAP_RESULT])
+    assert _catalog.today(gapped, both, {}).startswith("ty reports [`type-assertion-failure`](")
+
+
+def test_the_legend_explains_ty_the_entry_id_and_blender_main():
+    legend = "\n".join(_catalog.READING)
+    assert "*ty* is ty-blender" in legend
+    assert "`mise run check:catalog main properties/annotated-property`" in legend
+    assert "Blender main" in legend and "development branch" in legend
+    assert "**With ruff**" in legend and "**Levels**" in legend
+
+
+def test_a_lint_claim_shows_what_fails_without_a_gap_tag():
+    text = (
+        LINTED.replace('status = "handled"', 'status = "not-handled"')
+        .replace('    # safeguards = ["linter-profile"]\n', "")
+        .replace(
+            'profile = "silent"',
+            'profile = "reports"\n    #\n    # [future]\n    # class = "possible"\n    # note = "n"',
+        )
+    )
+    made = entry(text, "tooling/class_names.py")
+    assert made.problems == []
+    assert verdict(made, recorded(made), "abc") == []
+
+
+# --- coverage -----------------------------------------------------------------------------------------------------------
+
+
+def test_every_rule_and_feature_is_in_an_entry_or_exempt():
+    made = [entry(HANDLED), entry(GAPPED, "properties/gap.py")]
+    rules = ["invalid-assignment", "blender-unknown-operator", "blender-gone"]
+    features = ["operator_calls"]
+    exempt = {"blender-gone": "tested by the feature tests only", "invalid-assignment": "x", "nothing": "y"}
+    assert _catalog.coverage_problems(made, rules, features, exempt) == [
+        "topics.toml: [exempt] `invalid-assignment` is in an entry (properties/sample.py): remove the exemption",
+        "topics.toml: the rule `blender-unknown-operator` is in no entry: show it with a marker, or [exempt] it with the reason",
+        "topics.toml: the feature `operator_calls` is in no entry's `features`, or [exempt] it with the reason",
+        "topics.toml: [exempt] `nothing` is no `blender-*` rule or feature directory",
+    ]
+
+
+def test_topics_read_the_coverage_exemptions():
+    topics = read_topics(TOPICS + '\n[exempt]\n"blender-x" = "why"\n')
+    assert topics.exempt == {"blender-x": "why"}
+    assert not any("unknown key" in p for p in topics.problems)
+
+
+def test_a_marker_on_a_gapped_line_reads_as_what_would_be_reported():
+    code = shown_code(
+        "x = 1\n# gap: not reported yet\nprint(x)  # ty: ignore[invalid-argument-type]\nprint(x)  # ty: ignore[invalid-assignment]\n"
+    )
+    assert code.splitlines() == [
+        "x = 1",
+        "# not handled yet: not reported yet",
+        "print(x)  # would be reported: invalid-argument-type",
+        "print(x)  # reported: invalid-assignment",
+    ]

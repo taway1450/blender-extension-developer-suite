@@ -184,7 +184,7 @@ class OBJECT_OT_tidy(Operator):
 <a id="rejected-arguments"></a>
 ### Arguments Blender rejects at registration
 
-**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/rejected-arguments`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [Blender at runtime](by-safeguard.md#blender-runtime) · checked with Blender main, builtin stubs · `properties/rejected-arguments`
 
 Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default
 that is not one of the enum's items, a `set` callback without `get`, a vector `size` above
@@ -336,6 +336,38 @@ def example(layout: Layout) -> None:
 - **What you see:** `layout.margins` is `Margins`; `layout.target` is `Object | None`.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/pointer_properties.py)
 
+<a id="read-only-properties"></a>
+### Read-only properties
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/read-only-properties`
+
+A property declared with `options={"READ_ONLY"}` can be read but not assigned: Blender raises `AttributeError` on
+a write. The checker reads the option, keeps the Value type for reading, and reports an assignment; it takes a
+property with a `get` callback and no `set` as read-only too.
+
+```python
+from bpy.props import IntProperty
+from bpy.types import PropertyGroup
+
+
+def get_total(self: "Settings") -> int:
+    return 3
+
+
+class Settings(PropertyGroup):
+    fixed: IntProperty(options={"READ_ONLY"})
+    total: IntProperty(get=get_total)
+
+
+def example(settings: Settings) -> None:
+    assert_type(settings.fixed, int)
+    settings.fixed = 1  # reported: invalid-assignment
+    settings.total = 1  # reported: invalid-assignment
+```
+
+- **What you see:** `settings.fixed` is `int`; ty reports [`invalid-assignment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-assignment) (error) on the lines marked *reported*.
+- **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [runtime evidence](../../tests/typecheck/features/properties/generated/props_scalar/_expected/runtime.toml) · [source](../../examples/catalog/properties/read_only_properties.py)
+
 <a id="scalar-types"></a>
 ### Scalar Value types
 
@@ -433,7 +465,36 @@ def example(transform: Transform) -> None:
 - **What you see:** `transform.tint` is `Color`; `transform.offset` is `Vector`; `transform.rotation` is `Euler`; `transform.space` is `Matrix`; `transform.weights` is `bpy_prop_array[float]`.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/vector_subtypes.py)
 
-To come in this section: vector writes; read-only properties.
+<a id="vector-writes"></a>
+### Writing a vector property
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) and [the stubs](by-safeguard.md#stub-generator) · checked with Blender main, builtin stubs · `properties/vector-writes`
+
+A vector property reads as a `mathutils` object or an array, but takes any sequence of the right element type: a
+tuple or a list, of rows for a `Matrix`. The checker types an add-on's own vector properties so, and the stubs
+type Blender's (`Object.location`, `Light.color`) the same way. An element of the wrong type is still reported.
+
+```python
+from bpy.props import FloatVectorProperty
+from bpy.types import Object, PropertyGroup
+from mathutils import Color, Vector
+
+
+class Settings(PropertyGroup):
+    tint: FloatVectorProperty(subtype="COLOR")
+
+
+def example(settings: Settings, ob: Object) -> None:
+    settings.tint = (1.0, 0.5, 0.0)
+    assert_type(settings.tint, Color)
+    ob.location = (1, 2, 3)
+    assert_type(ob.location, Vector)
+    ob.location = ("1", 2, 3)  # reported: invalid-assignment
+```
+
+- **What you see:** `settings.tint` is `Color`; `ob.location` is `Vector`; ty reports [`invalid-assignment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-assignment) (error) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `Object.location` as `Vector` for writes too, so assigning a tuple is reported.
+- **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [runtime evidence](../../tests/typecheck/features/api_types/api_setters/_expected/runtime.toml) · [source](../../examples/catalog/properties/vector_writes.py)
 
 <a id="registered"></a>
 ## Registered properties
@@ -492,6 +553,59 @@ def owner_name(physics: Physics) -> str:
 - **What you see:** `physics.id_data` is `Object`.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/group_id_data.py)
 
+<a id="on-demand-property"></a>
+### A property registered outside `register()`
+
+**Partial**: handled in part by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `properties/on-demand-property`
+
+An add-on can register a property later than `register()`, say in an `update` callback when an option is turned
+on. The checker knows the property only where `hasattr` has found it, and reports a plain read elsewhere. It also
+reports the assignment that registers the property, which is legal there, as `missing-attribute`: outside
+`register()`, `Scene` has no such attribute yet.
+
+```python
+import bpy
+from bpy.props import BoolProperty, IntProperty
+from bpy.types import PropertyGroup, Scene
+
+bl_info = {
+    "name": "Catalog: a property registered outside register()",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+def enable_counter(self, context):
+    # not handled yet: the registration outside `register()` is reported
+    bpy.types.Scene.on_demand_count = IntProperty()
+
+
+class ON_DEMAND_PROPERTY_Settings(PropertyGroup):
+    counting: BoolProperty(update=enable_counter)
+
+
+def example(scene: Scene) -> None:
+    if hasattr(scene, "on_demand_count"):
+        assert_type(scene.on_demand_count, int)
+    print(scene.on_demand_count)  # reported: missing-attribute
+
+
+def register():
+    bpy.utils.register_class(ON_DEMAND_PROPERTY_Settings)
+
+
+def unregister():
+    bpy.utils.unregister_class(ON_DEMAND_PROPERTY_Settings)
+```
+
+- **What you see:** `scene.on_demand_count` is `int`; ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the line marked *reported*.
+- **Not yet:** The assignment that registers the property outside `register()` is reported as `missing-attribute`.
+- **Today:** ty reports [`missing-attribute`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#missing-attribute) (error) on the line marked *not handled yet*.
+- **Future:** Possible: Accept assigning a property to a Blender class anywhere in the add-on, while giving the attribute only after `hasattr`.
+- **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/on_demand_property.py)
+
 <a id="registered-property"></a>
 ### A property assigned to a Blender class
 
@@ -548,8 +662,6 @@ def register() -> None:
 
 - **What you see:** ty reports [`blender-unsupported-property-target`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-unsupported-property-target) (warn) on the line marked *reported*.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/unsupported_target.py)
-
-To come in this section: a property registered outside `register()`.
 
 <a id="callbacks"></a>
 ## Callbacks and wrappers
@@ -641,7 +753,7 @@ bl_info = {
 
 class MIN_ABOVE_MAX_Settings(PropertyGroup):
     # not handled yet: the limits are not compared
-    level: IntProperty(min=10, max=0)  # reported: blender-invalid-property
+    level: IntProperty(min=10, max=0)  # would be reported: blender-invalid-property
 
 
 def register():
@@ -652,7 +764,7 @@ def unregister():
     bpy.utils.unregister_class(MIN_ABOVE_MAX_Settings)
 ```
 
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Possible: Compare literal `min` and `max` (and `soft_min` and `soft_max`) in `blender-invalid-property`.
 - **Checked in Blender:** the add-on registers; Blender keeps the minimum as given.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/min_above_max.py)

@@ -25,6 +25,7 @@ import argparse
 
 from _catalog import (
     ANY_RULE_HEADING,
+    LINT_RECORDED,
     OTHERS,
     PAGES_DIR,
     REFERENCE,
@@ -34,13 +35,17 @@ from _catalog import (
     blender_commit,
     catalog_problems,
     code_hash,
+    coverage_problems,
     differences,
     differs_problems,
     header_problems,
     later_topics,
     leftover_lines,
+    lint_leftovers,
+    lint_verdict,
     load_entry,
     pages,
+    read_lint,
     read_recorded,
     read_topics,
     recorded_file,
@@ -63,20 +68,23 @@ def current() -> tuple[Catalog, list[str], str]:
     topics = read_topics(TOPICS_TOML.read_text(encoding="utf-8"))
     reference = read_recorded(recorded_file(*REFERENCE))
     others = {key: read_recorded(recorded_file(*key)) for key in OTHERS}
+    lint = read_lint(LINT_RECORDED.read_text(encoding="utf-8")) if LINT_RECORDED.is_file() else {}
     features, later = feature_names(), later_topics()
     entries, problems, differ = [], list(topics.problems), {}
     for addon in addons:
         entry = load_entry(addon)
         entries.append(entry)
         problems += entry.problems + header_problems(entry, topics, features, later)
-        problems += verdict(entry, reference, code_hash(addon))
+        current_hash = code_hash(addon)
+        problems += verdict(entry, reference, current_hash) + lint_verdict(entry, lint, current_hash)
         found = differences(entry, reference, others)
         problems += stale_recordings(entry, reference, others) + differs_problems(entry, found, topics.differs)
         differ[entry.id] = found
-    catalog = Catalog(topics, entries, reference, read_rules(RULES_MD, ANY_RULE_HEADING), differ)
+    catalog = Catalog(topics, entries, reference, read_rules(RULES_MD, ANY_RULE_HEADING), differ, lint)
     problems += catalog_problems(catalog)
+    problems += coverage_problems(entries, list(read_rules(RULES_MD)), features, topics.exempt)
     files = {"/".join(key): record for key, record in [(REFERENCE, reference), *others.items()]}
-    problems += leftover_lines(entries, files)
+    problems += leftover_lines(entries, files) + lint_leftovers(entries, lint)
     ty_toml = updated_ty_toml(TY_TOML.read_text(encoding="utf-8"), import_roots(addons), ROOTS_BEGIN, TY_TOML)
     return catalog, problems, ty_toml
 

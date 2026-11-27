@@ -81,6 +81,38 @@ def example(ob: Object) -> None:
 - **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs type `object.data` as `ID | None`, with no view of `data` per `type` for the checker to narrow to. · fake-bpy-module stubs, Blender 5.2: These stubs have no view of `object.data` per `type`, so it stays the union of all data types.
 - **More:** [feature tests: type_narrowing](../../tests/typecheck/features/type_narrowing/README.md) · [source](../../examples/catalog/data/object_data_type.py)
 
+<a id="pointer-alias"></a>
+### Pointers Blender keeps in step
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `data/pointer-alias`
+
+Blender's C code keeps some pointers in step: in the node editor, `space_data.node_tree` being set means
+`space_data.edit_tree` is set too, since Blender sets and clears the two together. The checker applies such a
+Pointer alias without reporting it: a poll that checks `node_tree` also covers `edit_tree`. The read of `node_tree`
+itself is reported as the narrowing the poll implies; the read of `edit_tree`, which the alias adds, is not.
+
+```python
+from bpy.types import NodeTree, Panel
+
+
+class SIMPLE_PT_node_tree(Panel):
+    bl_label = "Node tree"
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+
+    @classmethod
+    def poll(cls, context):
+        return context.space_data.node_tree is not None
+
+    def draw(self, context):
+        assert_type(context.space_data.node_tree, NodeTree)  # reported: blender-narrowed-by-poll
+        assert_type(context.space_data.edit_tree, NodeTree)
+```
+
+- **What you see:** `context.space_data.edit_tree` is `NodeTree`; ty reports [`blender-narrowed-by-poll`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-narrowed-by-poll) (warn) on the line marked *reported*.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs have no Tag views, so `context.space_data` stays `Space | None`, and `Space` has no `node_tree` or `edit_tree`: each read is reported. · fake-bpy-module stubs, Blender 5.2: These stubs have no Tag views, so `context.space_data` stays `Space | None`, and `Space` has no `node_tree` or `edit_tree`: each read is reported.
+- **More:** [feature tests: pointer_aliases](../../tests/typecheck/features/pointer_aliases/README.md) · [feature tests: implied_narrowings](../../tests/typecheck/features/implied_narrowings/README.md) · [`source/blender/editors/space_node/space_node.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/editors/space_node/space_node.cc) · [source](../../examples/catalog/data/pointer_alias.py)
+
 <a id="collections"></a>
 ## Collections
 
@@ -145,12 +177,12 @@ def example(mesh: Mesh) -> None:
     coords = [0.0] * (len(mesh.vertices) * 3)
     assert_type(mesh.vertices.foreach_get("co", coords), None)
     # not handled yet: the attribute name is not checked
-    mesh.vertices.foreach_get("coo", coords)  # reported: invalid-argument-type
+    mesh.vertices.foreach_get("coo", coords)  # would be reported: invalid-argument-type
 ```
 
 - **What you see:** `mesh.vertices.foreach_get("co", coords)` is `None`.
 - **Not yet:** The attribute name is a plain `str`: a misspelt one is not reported.
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Possible: Check the attribute name against the element type's properties.
 - **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/data/foreach_get.py)
 
@@ -269,12 +301,12 @@ def example(principled: ShaderNodeBsdfPrincipled) -> None:
     assert_type(principled.inputs["Base Color"], NodeSocketColor)
     assert_type(principled.outputs["BSDF"], NodeSocketShader)
     # not handled yet: a name the node does not declare is not reported
-    print(principled.inputs["Base Colour"])  # reported: invalid-argument-type
+    print(principled.inputs["Base Colour"])  # would be reported: invalid-argument-type
 ```
 
 - **What you see:** `principled.inputs["Base Color"]` is `NodeSocketColor`; `principled.outputs["BSDF"]` is `NodeSocketShader`.
 - **Not yet:** A name the node does not declare gives a plain `NodeSocket`, not an error.
-- **Today:** ty reports [`unused-ignore-comment`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#unused-ignore-comment) (warn) on the line marked *not handled yet*.
+- **Today:** nothing is reported on the line marked *not handled yet*.
 - **Future:** Possible: Type the lookup by the node's socket names only, so another name is reported, as fake-bpy-module does for 5.2.
 - **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs do not type a node's sockets by name, so each is a plain `NodeSocket` and the asserts fail. · fake-bpy-module stubs, Blender 5.2: These stubs type a node's sockets by an overload of their names, so a name the node does not declare is reported.
 - **More:** [feature tests: api_types](../../tests/typecheck/features/api_types/README.md) · [source](../../examples/catalog/data/socket_by_name.py)

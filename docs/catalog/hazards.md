@@ -13,14 +13,219 @@ the entries say why and link Blender's own gotcha pages.
 <a id="stale-data"></a>
 ## Stale data
 
-To come in this section: a reference kept across undo; a collection item after `add()`; an edit-mode mesh's data.
+<a id="added-item-reference"></a>
+### A collection item after `add()`
+
+**Not handled** (not statically checkable) · not machine-checked · `hazards/added-item-reference`
+
+Adding points to a curve, or vertices, edges and faces to a mesh, re-allocates the array that holds them, so an
+item read before the `add()` points to freed memory and can crash Blender. Read the item again after adding.
+
+```python
+from bpy.types import Curve
+
+
+def add_point(curve: Curve) -> None:
+    points = curve.splines[0].bezier_points
+    first = points[0]
+    points.add(1)  # re-allocates the points: `first` is stale now
+    first = points[0]
+    first.co.x = 0.0
+```
+
+- **Future:** Not statically checkable: Which calls re-allocate a collection's array is decided in Blender's C code while it runs.
+- **Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted.
+- **More:** [info_gotchas_crashes](https://docs.blender.org/api/current/info_gotchas_crashes.html) · [source](../../examples/catalog/hazards/added_item_reference.py)
+
+<a id="edit-mode-mesh"></a>
+### An edit-mode mesh's data
+
+**Not handled** (not statically checkable) · not machine-checked · `hazards/edit-mode-mesh`
+
+In Edit Mode a mesh has its own edit data, written back to the mesh only when Blender leaves Edit Mode: the mesh's
+`vertices` are out of sync until then. Read the edit mesh with `bmesh.from_edit_mesh` instead. Switching the mode
+also re-allocates the mesh's data, so a `vertices` or `polygons` read before the switch is stale after it.
+
+```python
+import bmesh
+from bpy.types import Mesh
+
+
+def selected_count(mesh: Mesh) -> int:
+    if mesh.is_editmode:
+        edit = bmesh.from_edit_mesh(mesh)
+        return sum(v.select for v in edit.verts)
+    return sum(v.select for v in mesh.vertices)
+```
+
+- **Future:** Not statically checkable: Whether the mesh is in Edit Mode is known only while Blender runs.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's builtin stubs have `BMVertSeq.__iter__` return the sequence itself, which has no `__next__`, so iterating the vertices is reported.
+- **Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted.
+- **More:** [info_gotchas_meshes](https://docs.blender.org/api/current/info_gotchas_meshes.html) · [info_gotchas_crashes](https://docs.blender.org/api/current/info_gotchas_crashes.html) · [source](../../examples/catalog/hazards/edit_mode_mesh.py)
+
+<a id="undo-reference"></a>
+### A reference kept across undo
+
+**Not handled** (not statically checkable) · not machine-checked · `hazards/undo-reference`
+
+Undo and redo may free every data-block and its sub-data, and a Python object that still points to one then reads
+freed memory, which can crash Blender. Blender's docs advise to keep no reference to Blender data between
+operators: keep a name or an index and look the data up again.
+
+```python
+import bpy
+from bpy.types import Operator, Scene
+
+REMEMBERED: dict[str, Scene] = {}
+SCENE_NAMES: list[str] = []
+
+
+class SIMPLE_OT_remember(Operator):
+    bl_idname = "simple.remember"
+    bl_label = "Remember"
+
+    def execute(self, context):
+        REMEMBERED["last"] = context.scene  # may point to freed data after an undo
+        SCENE_NAMES.append(context.scene.name)  # a name stays valid
+        return {"FINISHED"}
+
+
+def last_scene() -> Scene | None:
+    return bpy.data.scenes.get(SCENE_NAMES[-1]) if SCENE_NAMES else None
+```
+
+- **Future:** Not statically checkable: Whether the data a reference points to still exists depends on what the user undoes while Blender runs.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported, and `bpy.data.scenes.get` returns a plain `bpy_struct`, not `Scene | None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported.
+- **Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted.
+- **More:** [info_gotchas_crashes](https://docs.blender.org/api/current/info_gotchas_crashes.html) · [info_gotchas_internal_data_and_python_objects](https://docs.blender.org/api/current/info_gotchas_internal_data_and_python_objects.html) · [source](../../examples/catalog/hazards/undo_reference.py)
 
 <a id="restricted"></a>
 ## Restricted context
 
-To come in this section: `bpy.data` during registration; writes in a draw function.
+<a id="draw-write"></a>
+### Writes in a draw function
+
+**Not handled** (possible) · checked with Blender main, builtin stubs · `hazards/draw-write`
+
+Blender calls a panel's, menu's or header's `draw` with writes to data-blocks turned off: setting a property of a
+scene, an object or any other data-block there raises `AttributeError` ("Writing to ID classes in this context is
+not allowed"). Change data in an operator, or in a property's `update` callback. The checker does not report the
+write; the marked line shows the result a check would give.
+
+```python
+from bpy.types import Panel
+
+
+class SIMPLE_PT_frame(Panel):
+    bl_label = "Frame"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+
+    def draw(self, context):
+        self.layout.prop(context.scene, "frame_current")
+        # not handled yet: the write in `draw` is not reported
+        context.scene.frame_current = 1  # would be reported: invalid-assignment
+```
+
+- **Today:** nothing is reported on the line marked *not handled yet*.
+- **Future:** Possible: The add-on typechecker could report an assignment to a data-block's property in a callback Blender calls read-only, such as `draw`.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported, and `layout.prop` rejects a scene that may be `None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported.
+- **More:** [`source/blender/python/intern/bpy_rna.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/python/intern/bpy_rna.cc) · [`source/blender/makesrna/intern/rna_ui.cc`](https://projects.blender.org/blender/blender/src/branch/main/source/blender/makesrna/intern/rna_ui.cc) · [source](../../examples/catalog/hazards/draw_write.py)
+
+<a id="restricted-data"></a>
+### `bpy.data` during registration
+
+**Not handled** (possible) · checked with Blender main, builtin stubs · `hazards/restricted-data`
+
+While Blender imports an add-on and runs its `register()`, `bpy.data` is an empty stand-in, so reading any
+collection raises `AttributeError` and the add-on fails to enable. Read the data in a callback, a handler or a timer
+instead. The checker does not tell `register()` from other code; the marked line shows the result a check would
+give.
+
+```python
+import bpy
+
+bl_info = {
+    "name": "Catalog: bpy.data during registration",
+    "author": "Blender Extension Developer Suite",
+    "version": (1, 0, 0),
+    "blender": (4, 2, 0),
+    "category": "Development",
+}
+
+
+def register():
+    # not handled yet: `bpy.data` is not known to be empty here
+    print(len(bpy.data.objects))  # would be reported: missing-attribute
+
+
+def unregister():
+    pass
+```
+
+- **Today:** nothing is reported on the line marked *not handled yet*.
+- **Future:** Possible: The add-on typechecker could report a read of `bpy.data` at module level and in `register()`, as it reports `bpy.context` members there.
+- **More:** [`scripts/modules/_bpy_restrict_state.py`](https://projects.blender.org/blender/blender/src/branch/main/scripts/modules/_bpy_restrict_state.py) · [`scripts/modules/addon_utils.py`](https://projects.blender.org/blender/blender/src/branch/main/scripts/modules/addon_utils.py) · [source](../../examples/catalog/hazards/restricted_data.py)
 
 <a id="threads"></a>
 ## Threads and crashes
 
-To come in this section: `bpy` in a thread; a callback that crashes Blender.
+<a id="callback-operator"></a>
+### An operator in a property callback
+
+**Not handled** (not statically checkable) · not machine-checked · `hazards/callback-operator`
+
+A property's `update` callback should be fast. Calling an operator there may work, but Blender's docs say it is not
+supported: the operator and the property edit each store an undo step, and a callback that sets properties again can
+loop. Change the data directly in the callback.
+
+```python
+import bpy
+from bpy.props import BoolProperty
+from bpy.types import Context, PropertyGroup
+
+
+def select_everything(self: "Settings", context: Context) -> None:
+    bpy.ops.object.select_all(action="SELECT")  # not supported in a callback
+
+
+class Settings(PropertyGroup):
+    select_all: BoolProperty(update=select_everything)
+```
+
+- **Future:** Not statically checkable: Whether the callback breaks undo or starts an update loop depends on what the operator does while Blender runs.
+- **Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted.
+- **More:** [info_gotchas_crashes](https://docs.blender.org/api/current/info_gotchas_crashes.html) · [info_gotchas_operators](https://docs.blender.org/api/current/info_gotchas_operators.html) · [source](../../examples/catalog/hazards/callback_operator.py)
+
+<a id="thread-access"></a>
+### `bpy` in a thread
+
+**Not handled** (not statically checkable) · not machine-checked · `hazards/thread-access`
+
+Blender's Python is not thread-safe: a thread that still runs after the script returns can crash Blender later, in
+its drawing, a render or a driver. A thread is fine only while the script waits for it with `join()`; for work apart
+from Blender, Blender's docs advise `multiprocessing`.
+
+```python
+import threading
+
+import bpy
+
+
+def count_objects() -> None:
+    print(len(bpy.data.objects))
+
+
+def count_and_wait() -> None:
+    thread = threading.Thread(target=count_objects)
+    thread.start()
+    thread.join()  # the thread ends before the script does
+
+
+def count_in_background() -> None:
+    threading.Thread(target=count_objects).start()  # may crash Blender later
+```
+
+- **Future:** Not statically checkable: Whether a thread still runs when Blender draws, renders or evaluates drivers is known only while Blender runs.
+- **Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted.
+- **More:** [info_gotchas_threading](https://docs.blender.org/api/current/info_gotchas_threading.html) · [source](../../examples/catalog/hazards/thread_access.py)

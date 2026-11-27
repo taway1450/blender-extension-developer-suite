@@ -2,7 +2,7 @@
 # title = "A panel without `draw`"
 # section = "overrides"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["inheritance"]
 #
 # [evidence]

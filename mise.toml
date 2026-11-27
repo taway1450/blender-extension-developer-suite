@@ -443,6 +443,18 @@ uv run scripts/run_ruff.py format features {{usage.version}}
 {%- if usage.ref %} --ref "{{usage.ref}}"{% endif %}
 '''
 
+[tasks."lint:catalog"]
+description = "Run stock ruff on the catalog entries with a [lint] table (stock settings and config/ruff/addons.toml, the rule turned on) and compare with examples/expected/catalog-lint.txt"
+usage = '''
+arg "[entries]" var=#true help="Topics (tooling) or entries (tooling/class-names) of examples/catalog/ (default: all)"
+flag "--update" help="Rewrite examples/expected/catalog-lint.txt instead of comparing"
+'''
+run = '''
+uv run scripts/lint_catalog.py
+{%- for name in usage.entries %} {{name}}{% endfor %}
+{%- if usage.update %} --update{% endif %}
+'''
+
 [tasks."lint:scripts"]
 description = "Lint and format the tooling in scripts/ with the pinned upstream ruff through prek (.pre-commit-config.yaml); fixes files"
 run = 'uvx prek@0.5.6 run --all-files'

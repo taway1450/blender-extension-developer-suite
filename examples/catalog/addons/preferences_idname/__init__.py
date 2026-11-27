@@ -2,7 +2,7 @@
 # title = "A preferences `bl_idname` that is not the add-on's module"
 # section = "preferences"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["addon_preferences"]
 #
 # [evidence]

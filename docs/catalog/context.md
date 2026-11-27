@@ -71,6 +71,38 @@ def frame(context: Context) -> int:
 - **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported and `scene` keeps `None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and `scene` keeps `None`.
 - **More:** [feature tests: context_members](../../tests/typecheck/features/context_members/README.md) · [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/context/guaranteed_members.py)
 
+<a id="menu-poll-editor"></a>
+### Editor members in a menu's `poll`
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/menu-poll-editor`
+
+A menu is usually shown in an editor, where `area`, `region` and `space_data` are set, but nothing in a menu
+class names that editor. The checker takes the members as not `None` in its `poll` and reports each read as an
+Assumption; a read tested for `None` is not reported.
+
+```python
+from bpy.types import Area, Menu
+
+
+class SIMPLE_MT_tools(Menu):
+    bl_label = "Tools"
+
+    @classmethod
+    def poll(cls, context):
+        assert_type(context.area, Area)  # reported: blender-assumed-editor-member
+        if context.region is None:
+            return False
+        return context.region.type == "WINDOW"
+
+    def draw(self, context):
+        self.layout.label(text="Tools")
+```
+
+- **What you see:** ty reports [`blender-assumed-editor-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-editor-member) (warn) on the line marked *reported*.
+- **Levels:** [`blender-assumed-editor-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-editor-member) is `warn` under the lenient preset, `warn` under default and `error` under strict.
+- **With other stubs:** builtin stubs, Blender 5.2: Blender 5.2's stubs type the callback's `context` as `Context | None`, so every read of it is reported and `area` keeps `None`. · fake-bpy-module stubs, Blender 5.2: These stubs type the callback's `context` as `Context | None`, so every read of it is reported and `area` keeps `None`.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [strictness evidence](../../tests/typecheck/features/assumptions/asm_editor_member/_expected/strictness.toml) · [source](../../examples/catalog/context/menu_poll_editor.py)
+
 <a id="poll-narrowing"></a>
 ### `context.object` after a poll
 
@@ -229,7 +261,8 @@ def unregister() -> None:
 **Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/import-time-context`
 
 While Blender imports and registers an add-on, `bpy.context` is a restricted context with no `scene` at all:
-reading it raises `AttributeError`. A module-level read belongs in `register()` or later. The checker does not tell
+reading it raises `AttributeError`. `register()` runs in that context too, so the read belongs in a callback, a
+handler or a timer (see [`bpy.data` during registration](hazards.md#restricted-data)). The checker does not tell
 import time from other code outside callbacks: it reports the read only as the Assumption it makes for `scene` there,
 a warning.
 
@@ -256,7 +289,67 @@ def unregister():
 ```
 
 - **What you see:** ty reports [`blender-assumed-context-member`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-context-member) (warn) on the line marked *reported*.
-- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [source](../../examples/catalog/context/import_time_context.py)
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [`scripts/modules/_bpy_restrict_state.py`](https://projects.blender.org/blender/blender/src/branch/main/scripts/modules/_bpy_restrict_state.py) · [source](../../examples/catalog/context/import_time_context.py)
+
+<a id="preset-file"></a>
+### The context of a preset file
+
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `context/preset-file`
+
+A preset is a Python file that Blender runs with the context of the panel or menu that applies it, so a camera
+preset reads `bpy.context.camera` at module level and finds the camera of the Properties editor's camera tab.
+Nothing in the file says which panel runs it: the checker takes a module-level read in a file under a `presets`
+folder as not `None` and reports it as an Assumption. A read in a function of the preset keeps the stub type.
+
+`preset_file/__init__.py`
+
+```python
+import bpy
+from bpy.types import Menu
+
+
+class PRESET_FILE_MT_presets(Menu):
+    bl_label = "Camera presets"
+    preset_subdir = "preset_file"
+    preset_operator = "script.execute_preset"
+    draw = Menu.draw_preset
+
+
+classes = (PRESET_FILE_MT_presets,)
+register, unregister = bpy.utils.register_classes_factory(classes)
+```
+
+`preset_file/presets/preset_file/small_sensor.py`
+
+```python
+import bpy
+
+camera = bpy.context.camera  # reported: blender-assumed-preset-context
+camera.sensor_width = 13.2
+camera.sensor_fit = "HORIZONTAL"
+```
+
+`preset_file/blender_manifest.toml`
+
+```toml
+schema_version = "1.0.0"
+
+id = "preset_file"
+version = "1.0.0"
+name = "Catalog: the context of a preset file"
+tagline = "the context of a preset file"
+maintainer = "Blender Extension Developer Suite"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+```
+
+- **What you see:** ty reports [`blender-assumed-preset-context`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-preset-context) (warn) on the line marked *reported*.
+- **Levels:** [`blender-assumed-preset-context`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#blender-assumed-preset-context) is `warn` under the lenient preset, `warn` under default and `error` under strict.
+- **With other stubs:** builtin stubs, Blender 5.2: In Blender 5.2's builtin stubs `Menu.draw_preset` takes a `Context` and `Menu.draw` a `Context | None`, so assigning one as the other is reported as an incompatible override, and `context.camera` is typed `Camera`, so nothing is assumed. · fake-bpy-module stubs, Blender 5.2: In these stubs `Menu.draw_preset` takes a `Context` and `Menu.draw` a `Context | None`, so assigning one as the other is reported as an incompatible override.
+- **More:** [feature tests: assumptions](../../tests/typecheck/features/assumptions/README.md) · [strictness evidence](../../tests/typecheck/features/assumptions/asm_preset_context/_expected/strictness.toml) · [`scripts/startup/bl_operators/presets.py`](https://projects.blender.org/blender/blender/src/branch/main/scripts/startup/bl_operators/presets.py) · [source](../../examples/catalog/context/preset_file)
 
 <a id="timer-context"></a>
 ### `bpy.context` in a timer

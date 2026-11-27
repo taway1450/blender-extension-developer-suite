@@ -9,11 +9,13 @@ root = [
     "blend-files",
     "context",
     "data",
+    "hazards",
     "inheritance",
     "modules",
     "operators",
     "properties",
     "registration",
+    "tooling",
     "ui",
 ]
 # END generated roots

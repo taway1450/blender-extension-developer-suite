@@ -2,7 +2,7 @@
 # title = "An operator idname Blender rejects"
 # section = "idnames"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["registration_checks"]
 #
 # [evidence]

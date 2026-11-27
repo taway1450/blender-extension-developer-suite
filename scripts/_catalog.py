@@ -36,7 +36,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from _baseline import CATALOG, EXAMPLES_EXPECTED_DIR, entry_path, type_entry
+from _baseline import CATALOG, EXAMPLES_EXPECTED_DIR, SEPARATOR, entry_path, type_entry
 from _common import BLENDER_SUBMODULE, CATALOG_DIR, REPO_ROOT, entry_key
 from _features import FEATURES_DIR, Addon
 from _markers import ASSERT, EXPECTED, EXPECTED_ERROR, TypeMarker, parse_type_file
@@ -95,6 +95,7 @@ CLASSES = {
     "out-of-scope": "Out of scope",
 }
 NEEDS_GAP = ("planned", "possible")  # a class whose entry shows what fails today
+UNUSED_IGNORE = ("unused-ignore-comment", "unused-type-ignore-comment")  # an expected error that is not reported
 HEADER_KEYS = {
     "title",
     "section",
@@ -109,12 +110,23 @@ HEADER_KEYS = {
     "future",
     "differs",
     "runtime",
+    "lint",
 }
 FUTURE_KEYS = {"class", "note", "tracked"}  # all strings
 RUNTIME_KEYS = {"register", "error", "reason", "probe"}
-# `[evidence]`: a feature-test add-on, and what its _expected/runtime.toml must say for the entry's claim to hold.
-EVIDENCE_KEYS = {"addon", "register", "says"}  # all strings
+# `[evidence]`: a feature-test add-on, and what its _expected/runtime.toml must say for the entry's claim to hold
+# (`register`, `says`), or with a `rule`, the rule's level under each Strictness preset as its _expected/strictness.toml
+# records it.
+PRESETS = ("lenient", "default", "strict")
+LEVELS = ("ignore", "warn", "error")
+EVIDENCE_KEYS = {"addon", "register", "says", "rule", *PRESETS}  # all strings
 PROBE_KEYS = {"code", "expect", "reason"}
+# `[lint]`: a ruff rule, and whether ruff reports it on the entry with the rule turned on, once with stock settings
+# (`default`) and once with the linter profile (`profile`), as `mise run lint:catalog` records.
+LINT_KEYS = {"rule", "default", "profile"}  # all strings
+LINT_OUTCOMES = ("reports", "silent")
+LINT_RECORDED = EXAMPLES_EXPECTED_DIR / "catalog-lint.txt"
+RUFF_RULES_URL = "https://docs.astral.sh/ruff/rules"
 DOCS_PAGE = re.compile(r"^(info_[a-z_]+|[a-z][a-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*)$")
 # Modules of Blender's Python an entry may import, which an entry's file stem would shadow.
 BLENDER_MODULES = {
@@ -167,10 +179,21 @@ def opening_marker(text: str) -> str:
 
 def entry_files(entry: Addon) -> list[Path]:
     """Every file ty may read for the entry: the ``.py`` file, or all files of the package (its
-    ``blender_manifest.toml`` too)."""
+    ``blender_manifest.toml`` too) and of each helper add-on its manifest ``uses`` (a sibling folder named ``_*``,
+    which is no entry of its own)."""
     if entry.path.is_file():
         return [entry.path]
-    return sorted(p for p in entry.path.rglob("*") if p.is_file() and "__pycache__" not in p.parts)
+    folders = [entry.path]
+    if (manifest := entry.path / MANIFEST).is_file():
+        uses = tomllib.loads(manifest.read_text(encoding="utf-8")).get("tool", {}).get("blender", {}).get("uses", [])
+        folders += [entry.path.parent / name for name in uses if name.startswith("_")]
+    return sorted(
+        p
+        for folder in folders
+        if folder.is_dir()
+        for p in folder.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts
+    )
 
 
 def code_hash(entry: Addon) -> str:
@@ -263,6 +286,7 @@ class Topics:
     safeguards: dict[str, dict[str, str]] = field(default_factory=dict)  # id -> title, description
     classes: dict[str, str] = field(default_factory=dict)  # id -> description
     differs: dict[str, str] = field(default_factory=dict)  # "generator/version" -> note
+    exempt: dict[str, str] = field(default_factory=dict)  # rule or feature no entry shows -> why
     problems: list[str] = field(default_factory=list)
 
     def topic(self, topic_id: str) -> Topic | None:
@@ -276,8 +300,9 @@ def read_topics(text: str) -> Topics:
         safeguards=data.get("safeguard", {}),
         classes=data.get("class", {}),
         differs=data.get("differs", {}),
+        exempt=data.get("exempt", {}),
     )
-    for unknown in sorted(set(data) - {"intro", "topic", "safeguard", "class", "differs"}):
+    for unknown in sorted(set(data) - {"intro", "topic", "safeguard", "class", "differs", "exempt"}):
         result.problems.append(f"topics.toml: unknown key `{unknown}`")
     for topic_id, topic in data.get("topic", {}).items():
         sections = []
@@ -327,6 +352,7 @@ class Header:
     future: dict = field(default_factory=dict)
     differs: dict[str, str] = field(default_factory=dict)
     runtime: dict = field(default_factory=dict)
+    lint: dict[str, str] = field(default_factory=dict)
 
 
 def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
@@ -391,6 +417,7 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
         future=mapping("future", FUTURE_KEYS, strings=True),
         differs=mapping("differs", None),
         runtime=mapping("runtime", RUNTIME_KEYS),
+        lint=mapping("lint", LINT_KEYS, strings=True),
     )
     for key in ("title", "section", "status"):
         if key not in data:
@@ -428,8 +455,29 @@ def parse_header(where: str, lines: list[str]) -> tuple[Header, list[str]]:
             problems.append(f"{where}: [evidence] names the feature-test `addon`")
         if header.evidence.get("register", "ok") not in ("ok", "fails"):
             problems.append(f"{where}: [evidence] register is `ok` or `fails`")
-    if "blender-runtime" in header.safeguards and not (header.evidence or header.runtime):
+        levels = [p for p in PRESETS if p in header.evidence]
+        if header.evidence.get("rule"):
+            if not levels:
+                problems.append(f"{where}: [evidence] with a `rule` gives its level under lenient, default or strict")
+            problems += [
+                f"{where}: [evidence] with a `rule` has no `{k}`" for k in ("register", "says") if k in header.evidence
+            ]
+        elif levels:
+            problems.append(f"{where}: [evidence] gives levels only with a `rule`")
+        for preset in levels:
+            if header.evidence[preset] not in LEVELS:
+                problems.append(f"{where}: [evidence] {preset} is `ignore`, `warn` or `error`")
+    runtime_evidence = header.evidence and not header.evidence.get("rule")
+    if "blender-runtime" in header.safeguards and not (runtime_evidence or header.runtime):
         problems.append(f"{where}: `blender-runtime` needs `evidence` or a [runtime] table")
+    if header.lint:
+        if not header.lint.get("rule"):
+            problems.append(f"{where}: [lint] names the ruff `rule`")
+        for run in ("default", "profile"):
+            if header.lint.get(run) not in LINT_OUTCOMES:
+                problems.append(f"{where}: [lint] {run} is `reports` or `silent`")
+    if "linter-profile" in header.safeguards and not header.lint:
+        problems.append(f"{where}: `linter-profile` needs a [lint] table (what ruff reports, `mise run lint:catalog`)")
     if header.runtime:
         if header.runtime.get("register", "ok") not in ("ok", "fails"):
             problems.append(f"{where}: [runtime] register is `ok` or `fails`")
@@ -546,11 +594,13 @@ def first_sentence(prose: str) -> str:
 # --- what the code shows ----------------------------------------------------------------------------------------------
 
 
-def display_line(line: str) -> str:
-    """A line as the page shows it: an expected error reads as what is reported, a Gap tag as what is missing."""
+def display_line(line: str, gapped: bool = False) -> str:
+    """A line as the page shows it: an expected error reads as what is reported (on the line a Gap tag marks, as what
+    would be reported), a Gap tag as what is missing."""
     if gap := GAP.match(line):
         return f"{line[: len(line) - len(line.lstrip())]}# not handled yet: {gap['id']}"
-    return EXPECTED_ERROR.sub(lambda m: f"# reported: {', '.join(r.strip() for r in m['rules'].split(','))}", line)
+    said = "would be reported" if gapped else "reported"
+    return EXPECTED_ERROR.sub(lambda m: f"# {said}: {', '.join(r.strip() for r in m['rules'].split(','))}", line)
 
 
 def shown_code(text: str) -> str:
@@ -565,7 +615,7 @@ def shown_code(text: str) -> str:
     if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
         skip = set(range(first.lineno - 1, first.end_lineno or first.lineno))
     shown: list[str] = []
-    hidden, hide_indent, dedent = False, 0, 0
+    hidden, hide_indent, dedent, gapped = False, 0, 0, False
     for index, line in enumerate(lines):
         if index in skip:
             continue
@@ -575,7 +625,11 @@ def shown_code(text: str) -> str:
         elif stripped == SHOW:
             hidden, dedent = False, max(0, indent - hide_indent)
         elif not hidden:
-            shown.append(display_line(line[dedent:] if not line[:dedent].strip() else line).rstrip())
+            shown.append(display_line(line[dedent:] if not line[:dedent].strip() else line, gapped).rstrip())
+            if GAP.match(line):
+                gapped = True
+            elif stripped and not stripped.startswith("#"):
+                gapped = False  # a Gap tag marks the line below it
     return re.sub(r"\n{4,}", "\n\n\n", "\n".join(shown)).strip("\n")
 
 
@@ -637,7 +691,7 @@ def verdict(entry: Entry, reference: Recorded, current_hash: str) -> list[str]:
         problems.append(f"{where}: a handled entry shows what the safeguard does with a marker")
     if status == "partial" and not (holding and gaps):
         problems.append(f"{where}: a partial entry has a marker that holds and a Gap tag")
-    if status == "not-handled" and cls in NEEDS_GAP and not gaps:
+    if status == "not-handled" and cls in NEEDS_GAP and not gaps and not entry.header.lint:  # [lint] shows it
         problems.append(f"{where}: a {cls} entry shows with a Gap tag what fails today")
     return problems
 
@@ -694,7 +748,11 @@ def differs_problems(entry: Entry, found: dict[str, bool], blanket: dict[str, st
 
 def evidence_problems(where: str, evidence: dict) -> list[str]:
     """Whether the feature-test add-on's ``_expected/runtime.toml`` says what ``[evidence]`` claims: the same
-    ``register`` outcome, and ``says`` in its ``reason`` or ``error``."""
+    ``register`` outcome, and ``says`` in its ``reason``, its ``error`` or a probe's ``reason``. Evidence with a ``rule`` is matched against
+    its ``_expected/strictness.toml`` instead: the rule's level under each preset it names (a rule the file does not
+    list reports nothing, so it is ``ignore``)."""
+    if evidence.get("rule"):
+        return strictness_problems(where, evidence)
     path = FEATURES_DIR / evidence["addon"] / "_expected" / "runtime.toml"
     if not path.is_file():
         return [f"{where}: evidence `{evidence['addon']}` is no feature-test add-on with _expected/runtime.toml"]
@@ -704,8 +762,113 @@ def evidence_problems(where: str, evidence: dict) -> list[str]:
     if claimed != recorded:
         problems.append(f"{where}: [evidence] says register `{claimed}`, but {evidence['addon']} says `{recorded}`")
     says = evidence.get("says", "")
-    if says and not any(says in spec.get(key, "") for key in ("reason", "error")):
-        problems.append(f"{where}: [evidence] `{says}` is not in the reason or error of {evidence['addon']}")
+    texts = [spec.get("reason", ""), spec.get("error", ""), *(p.get("reason", "") for p in spec.get("probe", []))]
+    if says and not any(says in text for text in texts):
+        problems.append(f"{where}: [evidence] `{says}` is not in the reason, error or a probe of {evidence['addon']}")
+    return problems
+
+
+def strictness_problems(where: str, evidence: dict) -> list[str]:
+    addon, rule = evidence["addon"], evidence["rule"]
+    path = FEATURES_DIR / addon / "_expected" / "strictness.toml"
+    if not path.is_file():
+        return [f"{where}: evidence `{addon}` is no feature-test add-on with _expected/strictness.toml"]
+    spec = tomllib.loads(path.read_text(encoding="utf-8"))
+    problems = []
+    for preset in PRESETS:
+        claimed, recorded = evidence.get(preset), spec.get(preset, {}).get(rule, "ignore")
+        if claimed and claimed != recorded:
+            problems.append(
+                f"{where}: [evidence] says `{rule}` is `{claimed}` under {preset}, but {addon} says `{recorded}`"
+            )
+    return problems
+
+
+def levels_line(entry: Entry) -> str:
+    """The rule's level under each preset the strictness evidence names."""
+    evidence = entry.header.evidence
+    if not evidence.get("rule"):
+        return ""
+    named = [(p, evidence[p]) for p in PRESETS if p in evidence]
+    if not named:
+        return ""
+    parts = [f"`{named[0][1]}` under the {named[0][0]} preset"] + [f"`{level}` under {p}" for p, level in named[1:]]
+    return f"{rule_link(evidence['rule'], {})} is {joined(parts)}"
+
+
+@dataclass(frozen=True)
+class LintResult:
+    """What ``lint:catalog`` recorded for an entry with a ``[lint]`` table: the hash of the code it ran on, the rule
+    (its code and name) and how often each run reported it."""
+
+    hash: str
+    rule: str
+    name: str
+    default: int
+    profile: int
+
+
+LINT_HEADER = (
+    "# Ruff results of the catalog entries with a [lint] table: per entry the rule, the hash of its code and how often",
+    "# ruff reports the rule with it turned on, with stock settings (default) and with config/ruff/addons.toml (profile).",
+    "# `mise run lint:catalog` fails when they change; `--update` rewrites this file.",
+    "# Format: path | rule | rule name | hash | default <count> | profile <count>",
+)
+
+
+def read_lint(text: str) -> dict[str, LintResult]:
+    results = {}
+    for line in text.splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        path, rule, name, hash_, default, profile = line.split(SEPARATOR)
+        results[path] = LintResult(
+            hash_, rule, name, int(default.removeprefix("default ")), int(profile.removeprefix("profile "))
+        )
+    return results
+
+
+def write_lint(results: dict[str, LintResult]) -> str:
+    lines = [
+        SEPARATOR.join([path, r.rule, r.name, r.hash, f"default {r.default}", f"profile {r.profile}"])
+        for path, r in sorted(results.items())
+    ]
+    return "\n".join([*LINT_HEADER, *lines]) + "\n"
+
+
+def lint_verdict(entry: Entry, recorded: dict[str, LintResult], current_hash: str) -> list[str]:
+    """Whether the ``[lint]`` claims hold against what ``lint:catalog`` recorded for the entry as its code is now."""
+    lint, where = entry.header.lint, entry.main
+    if not lint.get("rule"):
+        return []
+    rerun = f"run `mise run lint:catalog {entry.id} --update`"
+    result = recorded.get(entry.rel)
+    if result is None:
+        return [f"{where}: never checked with ruff: {rerun}"]
+    if result.hash != current_hash:
+        return [f"{where}: changed since ruff checked it: {rerun}"]
+    if result.rule != lint["rule"]:
+        return [f"{where}: ruff was recorded for `{result.rule}`, not `{lint['rule']}`: {rerun}"]
+    problems = []
+    runs = (("default", "stock ruff", result.default), ("profile", "the linter profile", result.profile))
+    for run, what, count in runs:
+        claimed = lint.get(run)
+        if claimed in LINT_OUTCOMES and (claimed == "reports") != (count > 0):
+            said = f"reports `{result.rule}` {count} time{'s' if count != 1 else ''}" if count else "is silent"
+            problems.append(f'{where}: `{run} = "{claimed}"`, but {what} {said}')
+    return problems
+
+
+def lint_leftovers(entries: list[Entry], recorded: dict[str, LintResult]) -> list[str]:
+    """Recorded ruff results of no entry with a ``[lint]`` table."""
+    by_rel = {e.rel: e for e in entries}
+    rerun = "re-record with `mise run lint:catalog --update`"
+    problems = []
+    for path in sorted(recorded):
+        if path not in by_rel:
+            problems.append(f"{LINT_RECORDED.name}: `{path}` is no entry any more: {rerun}")
+        elif not by_rel[path].header.lint:
+            problems.append(f"{LINT_RECORDED.name}: `{path}` has no [lint] table: {rerun}")
     return problems
 
 
@@ -810,8 +973,11 @@ def status_line(entry: Entry, topics: Topics) -> str:
         label += f" ({CLASSES.get(header.future.get('class', ''), '').lower()})"
     else:
         label += ": not classified yet"
-    checked = "checked with Blender main, builtin stubs" if entry.checked else "not machine-checked"
-    return f"{label} · {checked} · `{entry.id}`"
+    checked = [
+        *(["checked with Blender main, builtin stubs"] if entry.checked else []),
+        *(["checked with ruff"] if entry.header.lint else []),
+    ]
+    return f"{label} · {' · '.join(checked) or 'not machine-checked'} · `{entry.id}`"
 
 
 def what_you_see(entry: Entry, levels: dict[str, str]) -> str:
@@ -836,11 +1002,30 @@ def what_you_see(entry: Entry, levels: dict[str, str]) -> str:
 
 def today(entry: Entry, reference: Recorded, levels: dict[str, str]) -> str:
     gaps = entry.gaps()
-    rules = sorted({result[1] for result in reference.of(entry.rel) if in_gap(result, gaps)})
-    if not rules:
-        return ""
+    found = sorted({result[1] for result in reference.of(entry.rel) if in_gap(result, gaps)})
+    # An expected error ty does not report shows as its unused ignore comment: nothing is reported on that line.
+    rules = [rule for rule in found if rule not in UNUSED_IGNORE]
     where = "line" if len(gaps) == 1 else "lines"
+    if not rules:
+        return f"nothing is reported on the {where} marked *not handled yet*" if found else ""
     return f"ty reports {joined([rule_link(r, levels) for r in rules])} on the {where} marked *not handled yet*"
+
+
+def with_ruff(entry: Entry, result: LintResult | None) -> str:
+    """What the ``[lint]`` table says ruff reports with its rule selected, with stock settings and the profile."""
+    lint = entry.header.lint
+    if not lint.get("rule"):
+        return ""
+    rule = lint["rule"]
+    link = f"[`{rule}`]({RUFF_RULES_URL}/{result.name}/)" if result and result.rule == rule else f"`{rule}`"
+    profile = "the [linter profile](by-safeguard.md#linter-profile)"
+    said = {
+        ("reports", "silent"): f"stock ruff reports it here; {profile} does not",
+        ("reports", "reports"): f"stock ruff reports it here, and so does {profile}",
+        ("silent", "silent"): f"neither stock ruff nor {profile} reports it here",
+        ("silent", "reports"): f"stock ruff does not report it here; {profile} does",
+    }.get((lint.get("default", ""), lint.get("profile", "")), "")
+    return f"{link} selected in both runs: {said}" if said else ""
 
 
 def future_line(entry: Entry) -> str:
@@ -871,7 +1056,8 @@ def more_links(entry: Entry) -> str:
         f"[feature tests: {name}](../../tests/typecheck/features/{name}/README.md)" for name in entry.header.features
     ]
     if addon := entry.header.evidence.get("addon"):
-        links.append(f"[runtime evidence](../../tests/typecheck/features/{addon}/_expected/runtime.toml)")
+        kind = "strictness" if entry.header.evidence.get("rule") else "runtime"
+        links.append(f"[{kind} evidence](../../tests/typecheck/features/{addon}/_expected/{kind}.toml)")
     links += [f"[{page}]({BLENDER_DOCS_URL}/{page}.html)" for page in entry.header.blender_docs]
     links += [
         f"[`{path.removeprefix('blender/')}`](https://projects.blender.org/blender/blender/src/branch/main/{path.removeprefix('blender/')})"
@@ -914,6 +1100,10 @@ def render_entry(entry: Entry, catalog: Catalog) -> list[str]:
         bullets.append(f"**Future:** {future}")
     if blender := in_blender(entry):
         bullets.append(f"**Checked in Blender:** {blender}")
+    if rule_levels := levels_line(entry):
+        bullets.append(f"**Levels:** {rule_levels}.")
+    if ruff := with_ruff(entry, catalog.lint.get(entry.rel)):
+        bullets.append(f"**With ruff:** {ruff}.")
     notes = []
     for key, differs in differ.items():
         if differs:
@@ -922,7 +1112,7 @@ def render_entry(entry: Entry, catalog: Catalog) -> list[str]:
             notes.append(f"{generator} stubs, Blender {version}: {note}")
     if notes:
         bullets.append("**With other stubs:** " + " · ".join(notes))
-    if not entry.checked:
+    if not entry.checked and not entry.header.lint:
         bullets.append(
             "**Not machine-checked:** the code is type-checked, so its API names exist, but nothing in it is asserted."
         )
@@ -940,6 +1130,7 @@ class Catalog:
     reference: Recorded
     levels: dict[str, str]
     differ: dict[str, dict[str, bool]]  # entry id -> other generator/version -> differs
+    lint: dict[str, LintResult] = field(default_factory=dict)  # entry path -> what lint:catalog recorded
 
     def of_topic(self, topic: str) -> list[Entry]:
         return [e for e in self.entries if e.topic == topic]
@@ -984,16 +1175,27 @@ READING = """\
 - **Status**: *Handled* (something deals with it for you), *Partial*, *Not handled* (with what can change: planned, \
 possible, not statically checkable, out of scope; see the [roadmap](roadmap.md)) or *Unknown* (not classified yet). \
 *To come* counts the entries a topic still lacks: their titles are listed on its page.
+- *ty* is ty-blender, the add-on typechecker: a fork of the Python type checker ty that knows Blender's conventions.
 - **checked with Blender main, builtin stubs**: the example was type-checked by ty-blender against the stubs Blender \
-itself generates for its development version. *Not machine-checked* entries make no claim a type checker could test.
+itself generates for Blender main, its development branch. **checked with ruff**: the ruff run the entry describes \
+was recorded too. *Not machine-checked* entries assert nothing a tool could test (their code is still \
+type-checked, so the API names in it exist).
+- The last item of that line, such as `properties/annotated-property`, is the entry's id: \
+`mise run check:catalog main properties/annotated-property` checks that entry alone.
 - **Code**: `assert_type(x, T)` (from `typing`) states the type you get for `x`; `# reported: rule` marks a line \
-ty-blender reports under that rule; `# not handled yet: why` marks the line that still goes wrong.
+ty-blender reports under that rule; `# not handled yet: why` marks the line below it that still goes wrong, and \
+`# would be reported: rule` on that line names what a check would report there.
 - **Script or add-on**: an example is a plain script unless it needs an add-on (registration checks, preferences, \
 metadata): then it has a `bl_info` or a `blender_manifest.toml`, and its `register()` is what Blender calls. A script's \
 classes are not checked for registration.
 - **What you see**: the types and diagnostics those lines show, with each rule's default level (`error`, `warn`) \
-linked to its description. **Today** says what is reported on a line not handled yet, **Future** what would handle it.
+linked to its description. **Not yet** says what a partial entry lacks, **Today** what is reported on a line not \
+handled yet, **Future** what would handle it.
 - **Checked in Blender**: what loading the example in Blender showed (`mise run check:load main --catalog`).
+- **Levels**: a rule's level (`ignore`, `warn` or `error`) under each Strictness preset, lenient, default and strict, \
+as the project's feature test records it.
+- **With ruff**: ruff run twice with the entry's rule selected, once with its stock settings and once with the \
+[linter profile](by-safeguard.md#linter-profile), and whether each run reports the rule (`mise run lint:catalog`).
 - **With other stubs**: where fake-bpy-module's stubs or Blender 5.2 give another result, and why.
 - **More**: the project's own tests for the feature, Blender's documentation, and the example's source.
 - Capitalised terms such as *Property host*, *Value type* or *Assumption* are defined in the \
@@ -1098,6 +1300,29 @@ def catalog_problems(catalog: Catalog) -> list[str]:
     names = BLENDER_MODULES | set(sys.stdlib_module_names)
     problems += [
         f"{e.main}: the file stem `{e.stem}` is also a module name" for e in catalog.entries if e.stem in names
+    ]
+    return problems
+
+
+def coverage_problems(entries: list[Entry], rules: list[str], features: list[str], exempt: dict[str, str]) -> list[str]:
+    """Every ``blender-*`` rule is a marker of some entry and every feature directory in some entry's ``features``,
+    or ``[exempt]`` in topics.toml says why not; an exemption is for a rule or feature no entry shows."""
+    shown: dict[str, str] = {}  # rule or feature -> the first entry that shows it
+    for entry in entries:
+        for name in [*(r for m in entry.markers() for r in m.rules), *entry.header.features]:
+            shown.setdefault(name, entry.main)
+    problems = []
+    for kind, names in (("rule", rules), ("feature", features)):
+        for name in names:
+            if name in shown and name in exempt:
+                problems.append(f"topics.toml: [exempt] `{name}` is in an entry ({shown[name]}): remove the exemption")
+            elif name not in shown and name not in exempt:
+                where = "in no entry: show it with a marker," if kind == "rule" else "in no entry's `features`,"
+                problems.append(f"topics.toml: the {kind} `{name}` is {where} or [exempt] it with the reason")
+    problems += [
+        f"topics.toml: [exempt] `{name}` is no `blender-*` rule or feature directory"
+        for name in exempt
+        if name not in rules and name not in features
     ]
     return problems
 

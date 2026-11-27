@@ -2,7 +2,7 @@
 # title = "`unregister()` that does not undo `register()`"
 # section = "classes"
 # status = "handled"
-# safeguards = ["typechecker"]
+# safeguards = ["typechecker", "blender-runtime"]
 # features = ["registration_checks"]
 #
 # [evidence]
