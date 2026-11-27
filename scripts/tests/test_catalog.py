@@ -4,6 +4,7 @@ from textwrap import dedent
 import pytest
 
 import _catalog
+import _common
 from _catalog import (
     PAGES_DIR,
     Catalog,
@@ -17,6 +18,7 @@ from _catalog import (
     differs_problems,
     evidence_problems,
     first_sentence,
+    header_problems,
     in_blender_source,
     leftover_lines,
     make_entry,
@@ -29,8 +31,9 @@ from _catalog import (
     split_header,
     stale_recordings,
     verdict,
+    what_you_see,
 )
-from _common import CATALOG_DIR, catalog_entries
+from _common import CATALOG_DIR, StepError, catalog_entries
 from _features import Addon, catalog_entry_list
 from examples_coverage import RULES_MD
 
@@ -507,3 +510,75 @@ def test_blender_source_paths_are_looked_up_at_the_pinned_commit():
     assert in_blender_source("doc/python_api/rst/info_gotcha.rst") is True
     assert in_blender_source("source/blender/") is True
     assert in_blender_source("doc/python_api/rst/info_no_such_page.rst") is False
+
+
+def test_an_entry_the_other_results_never_checked_is_reported():
+    made = entry(HANDLED)
+    others = {("builtin", "5.2"): Recorded(), ("fake-bpy-module", "main"): recorded(made)}
+    (problem,) = stale_recordings(made, recorded(made), others)
+    assert "never checked with builtin stubs, Blender 5.2" in problem
+    assert f"check:catalog 5.2 {made.id} --generator builtin --update" in problem
+
+
+def test_the_hash_covers_a_package_entrys_manifest(tmp_path):
+    package = tmp_path / "t" / "kit"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("x = 1\n", encoding="utf-8")
+    (package / "blender_manifest.toml").write_text('id = "kit"\n', encoding="utf-8")
+    addon = Addon("t", package, tmp_path, package.parent)
+    first = code_hash(addon)
+    (package / "blender_manifest.toml").write_text('id = "other"\n', encoding="utf-8")
+    assert code_hash(addon) != first
+
+
+def test_two_entries_of_one_id_are_an_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(_common, "CATALOG_DIR", tmp_path)
+    (tmp_path / "t").mkdir()
+    (tmp_path / "t" / "a_b.py").write_text("", encoding="utf-8")
+    (tmp_path / "t" / "a-b.py").write_text("", encoding="utf-8")
+    with pytest.raises(StepError, match="both the catalog entry t/a-b"):
+        catalog_entries([])
+
+
+@pytest.mark.parametrize(
+    ("table", "problem"),
+    [
+        ('[future]\n# class = "planned"\n# note = "n"\n# tracked = 12', "`future.tracked` must be a string"),
+        ("[evidence]\n# addon = 1", "`evidence.addon` must be a string"),
+        ('[evidence]\n# addon = "properties/props_defaults"\n# says = ["x"]', "`evidence.says` must be a string"),
+    ],
+)
+def test_values_of_the_wrong_type_are_problems_not_crashes(table, problem):
+    made = entry(HANDLED.replace("# ///\n", f"# {table}\n    # ///\n", 1).replace("\n# ", "\n    # "))
+    problems = made.problems + header_problems(made, read_topics(TOPICS), [], set())
+    assert any(problem in p for p in problems), problems
+
+
+def test_an_unreadable_blender_tree_cannot_tell(monkeypatch):
+    monkeypatch.setattr(_catalog, "blender_commit", lambda: "0" * 40)
+    assert in_blender_source("doc/python_api/rst/info_gotcha.rst") is None
+
+
+def test_a_script_that_mentions_bl_info_is_no_addon():
+    mentions = HANDLED.replace("Its second sentence.", "It has no `bl_info`.")
+    assert not entry(mentions).is_addon
+    assert entry(HANDLED.replace("# catalog: hide\n", "bl_info = {}\n    # catalog: hide\n", 1)).is_addon
+
+
+def test_an_assert_type_over_several_lines_shows():
+    wrapped = HANDLED.replace(
+        "assert_type(settings.count, int)", "assert_type(\n            settings.count, int\n        )"
+    )
+    assert "`settings.count` is `int`" in what_you_see(entry(wrapped), {})
+
+
+@pytest.mark.parametrize(
+    ("prose", "first"),
+    [
+        ("Some callbacks, e.g. `poll`, are classmethods. More.", "Some callbacks, e.g. `poll`, are classmethods."),
+        ("One. Two.", "One."),
+        ("No full stop", "No full stop"),
+    ],
+)
+def test_the_first_sentence_skips_abbreviations(prose, first):
+    assert first_sentence(prose) == first

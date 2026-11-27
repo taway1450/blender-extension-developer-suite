@@ -68,7 +68,10 @@ def catalog_entries(names: list[str]) -> list[Path]:
             if path.name.startswith((".", "_")):
                 continue
             if path.suffix == ".py" or (path / "__init__.py").is_file():
-                available[f"{topic}/{entry_key(path.stem)}"] = path
+                key = f"{topic}/{entry_key(path.stem)}"
+                if key in available:
+                    raise StepError(f"{available[key]} and {path} are both the catalog entry {key}: rename one")
+                available[key] = path
     if not names:
         return list(available.values())
     selected: list[Path] = []

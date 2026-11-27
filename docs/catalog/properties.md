@@ -584,7 +584,7 @@ class Settings(PropertyGroup):
     other: FloatProperty(update=rename_object)  # reported: invalid-argument-type
 ```
 
-- **What you see:** ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
+- **What you see:** `self` is `Settings`; ty reports [`invalid-argument-type`](https://github.com/taway1450/ruff-blender/blob/blender/crates/ty/docs/rules.md#invalid-argument-type) (error) on the line marked *reported*.
 - **More:** [feature tests: properties](../../tests/typecheck/features/properties/README.md) · [source](../../examples/catalog/properties/callback_self.py)
 
 <a id="enum-item-strings"></a>
