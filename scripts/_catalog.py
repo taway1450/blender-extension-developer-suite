@@ -814,7 +814,10 @@ def counts(entries: list[Entry]) -> list[str]:
 
 def topic_page(catalog: Catalog, topic: Topic) -> str:
     out = [f"# {topic.title}", "", GENERATED_NOTE, "", topic.intro.strip(), ""]
-    out += ["[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)", ""]
+    out += [
+        "[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)",
+        "",
+    ]
     out += [" · ".join(f"[{s.title}](#{s.id})" for s in topic.sections), ""]
     for section in topic.sections:
         out += [f'<a id="{section.id}"></a>', f"## {section.title}", ""]
@@ -835,6 +838,26 @@ def index_line(entry: Entry) -> str:
     return f"- [{entry.header.title}]({entry.topic}.md#{entry.anchor}) ({status}): {first_sentence(entry.prose)}"
 
 
+# The legend on the index page, one bullet per line.
+READING = """\
+<a id="reading-an-entry"></a>
+## Reading an entry
+
+- **Status**: *Handled* (something deals with it for you), *Partial*, *Not handled* (with what can change: planned, \
+possible, not statically checkable, out of scope; see the [roadmap](roadmap.md)) or *Unknown* (not classified yet). \
+*To come* counts the entries a topic still lacks: their titles are listed on its page.
+- **checked with Blender main, builtin stubs**: the example was type-checked by ty-blender against the stubs Blender \
+itself generates for its development version. *Not machine-checked* entries make no claim a type checker could test.
+- **Code**: `assert_type(x, T)` (from `typing`) states the type you get for `x`; `# reported: rule` marks a line \
+ty-blender reports under that rule; `# not handled yet: why` marks the line that still goes wrong.
+- **What you see**: the types and diagnostics those lines show, with each rule's default level (`error`, `warn`) \
+linked to its description. **Today** says what is reported on a line not handled yet, **Future** what would handle it.
+- **With other stubs**: where fake-bpy-module's stubs or Blender 5.2 give another result, and why.
+- **More**: the project's own tests for the feature, Blender's documentation, and the example's source.
+- Terms in *italics* such as *Property host* or *Value type* are defined in the [glossary](../../GLOSSARY.md).\
+""".splitlines()
+
+
 def index_page(catalog: Catalog) -> str:
     rows = []
     for topic in catalog.topics.topics:
@@ -844,6 +867,7 @@ def index_page(catalog: Catalog) -> str:
     out = ["# Blender Python feature catalog", "", GENERATED_NOTE, "", catalog.topics.intro.strip(), ""]
     out += ["[By handler](by-handler.md) · [Roadmap](roadmap.md)", ""]
     out += table(["Topic", "Covers", *STATUSES.values(), "To come"], rows)
+    out += ["", *READING]
     for topic in catalog.topics.topics:
         entries = catalog.of_topic(topic.id)
         out += ["", f"## [{topic.title}]({topic.id}.md)", ""]

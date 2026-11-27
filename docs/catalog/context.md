@@ -5,7 +5,7 @@
 `bpy.context` has different members in every editor and at every moment. What a callback can rely on, what a poll or
 a panel's `bl_context` narrows, and what is gone outside callbacks.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Guaranteed context members](#members) · [Narrowings](#narrowings) · [Outside callbacks](#outside-callbacks)
 

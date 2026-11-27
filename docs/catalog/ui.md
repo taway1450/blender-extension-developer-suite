@@ -5,7 +5,7 @@
 Draw code runs often and with a narrow context. What `layout` calls accept, how lists and popovers find their data, and
 the classes for gizmos and tools.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Draw code](#draw) · [Lists](#lists) · [Popovers and menus](#popovers) · [Gizmos and tools](#gizmos-tools)
 

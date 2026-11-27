@@ -5,7 +5,7 @@
 What makes a module an add-on to Blender, and what Blender does with it: the manifest or `bl_info`, `register()` and
 `unregister()`, reloading, preferences, and add-ons that use one another.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Metadata](#metadata) · [Entry points](#entry-points) · [Preferences](#preferences) · [Other add-ons](#other-addons)
 

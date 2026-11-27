@@ -5,7 +5,7 @@
 Data-blocks in `.blend` files: looked up by name, shipped with the add-on, linked from libraries, and custom
 properties set on them.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Data by name](#by-name) · [Custom properties](#custom-properties)
 

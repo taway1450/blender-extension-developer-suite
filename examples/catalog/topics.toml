@@ -5,12 +5,14 @@ intro = """
 Blender's Python API has conventions no Python tool knows on its own: properties declared as annotations that are
 calls, classes that only exist once registered, a `context` whose members depend on the editor, collections looked up
 by name. This catalog lists them by what an add-on author is doing. Each entry has a short example and says what
-handles it: the stubs, the add-on typechecker (ty-blender), the linter profile, Blender itself at runtime, or nothing
-yet, and then whether that can change.
+deals with it for you (its handler: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
+for add-on code, Blender itself when the add-on runs, or nothing yet). When nothing does, the entry says whether that
+can change. [By handler](by-handler.md) explains each handler.
 
-Every example is checked. `mise run check:catalog` type-checks it with ty-blender and the bpy stubs, and the pages are
-generated from the results, so an entry that says something is handled shows what you see, and one that says it is
-not handled yet fails the build once it is.
+The examples are not just illustrations. Each one is type-checked with ty-blender and the stubs, and these pages are
+written from the results. So "handled" means the example shows what you get in your editor today, and "not handled"
+means the example shows the line that still goes wrong: when a new ty-blender gets it right, the catalog's own checks
+fail until the entry is updated.
 """
 
 # --- handlers: what can handle an entry (the `handled-by` values) -----------------------------------------------------
@@ -144,11 +146,11 @@ to-come = ["registration in a helper function", "registration in a loop over a t
 title = "Properties"
 covers = "declaring, Value types, Registered properties, callbacks, wrappers"
 intro = """
-Blender properties are declared as class annotations whose value is a call, `count: IntProperty()`, on a Property host
-(a `PropertyGroup`, an `Operator`, a `Panel`'s ...). Python's typing spec says an annotation is a type, so a plain type
-checker rejects the call and knows nothing of the attribute. The add-on typechecker reads it as Blender does: the
-instance attribute has the property's Value type, and `bpy.types.Scene.x = IntProperty()` adds a Registered property
-to every scene.
+Blender properties are declared as class annotations whose value is a call, `count: IntProperty()`, on a class that
+takes properties (a *Property host*: a `PropertyGroup`, an `Operator`, `AddonPreferences` and a few more). Python
+expects an annotation to name a type, not to call a function, so a plain type checker reports the call and does not
+know what `self.count` is. The add-on typechecker reads it as Blender does: `self.count` is an `int` (the property's
+*Value type*), and `bpy.types.Scene.x = IntProperty()` gives every scene an `x` (a *Registered property*).
 """
 
 [[topic.properties.sections]]

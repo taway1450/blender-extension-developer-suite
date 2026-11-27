@@ -6,7 +6,7 @@ Operators are classes Blender calls back (`execute`, `invoke`, `modal`, `poll`) 
 `bpy.ops` by idname. What their callbacks must return, what a call through `bpy.ops` accepts, and what the strings that
 name an operator have to match.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Callbacks and return sets](#callbacks) · [Calling through `bpy.ops`](#calls) · [Idname strings](#idnames) · [Modal operators](#modal)
 

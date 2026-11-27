@@ -5,12 +5,14 @@
 Blender's Python API has conventions no Python tool knows on its own: properties declared as annotations that are
 calls, classes that only exist once registered, a `context` whose members depend on the editor, collections looked up
 by name. This catalog lists them by what an add-on author is doing. Each entry has a short example and says what
-handles it: the stubs, the add-on typechecker (ty-blender), the linter profile, Blender itself at runtime, or nothing
-yet, and then whether that can change.
+deals with it for you (its handler: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
+for add-on code, Blender itself when the add-on runs, or nothing yet). When nothing does, the entry says whether that
+can change. [By handler](by-handler.md) explains each handler.
 
-Every example is checked. `mise run check:catalog` type-checks it with ty-blender and the bpy stubs, and the pages are
-generated from the results, so an entry that says something is handled shows what you see, and one that says it is
-not handled yet fails the build once it is.
+The examples are not just illustrations. Each one is type-checked with ty-blender and the stubs, and these pages are
+written from the results. So "handled" means the example shows what you get in your editor today, and "not handled"
+means the example shows the line that still goes wrong: when a new ty-blender gets it right, the catalog's own checks
+fail until the entry is updated.
 
 [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
@@ -28,6 +30,17 @@ not handled yet fails the build once it is.
 | [Blend files](blend-files.md) | data by name, shipped files, libraries, custom properties |  |  |  |  | 4 |
 | [Hazards](hazards.md) | stale data, undo, crashes, restricted context, threads |  |  |  |  | 7 |
 | [Tooling](tooling.md) | ruff rules that misfire on add-on code, format, Strictness |  |  |  |  | 5 |
+
+<a id="reading-an-entry"></a>
+## Reading an entry
+
+- **Status**: *Handled* (something deals with it for you), *Partial*, *Not handled* (with what can change: planned, possible, not statically checkable, out of scope; see the [roadmap](roadmap.md)) or *Unknown* (not classified yet). *To come* counts the entries a topic still lacks: their titles are listed on its page.
+- **checked with Blender main, builtin stubs**: the example was type-checked by ty-blender against the stubs Blender itself generates for its development version. *Not machine-checked* entries make no claim a type checker could test.
+- **Code**: `assert_type(x, T)` (from `typing`) states the type you get for `x`; `# reported: rule` marks a line ty-blender reports under that rule; `# not handled yet: why` marks the line that still goes wrong.
+- **What you see**: the types and diagnostics those lines show, with each rule's default level (`error`, `warn`) linked to its description. **Today** says what is reported on a line not handled yet, **Future** what would handle it.
+- **With other stubs**: where fake-bpy-module's stubs or Blender 5.2 give another result, and why.
+- **More**: the project's own tests for the feature, Blender's documentation, and the example's source.
+- Terms in *italics* such as *Property host* or *Value type* are defined in the [glossary](../../GLOSSARY.md).
 
 ## [Add-ons](addons.md)
 

@@ -5,7 +5,7 @@
 The data API: pointers that are never `None` though the stubs say `X | None`, subtypes chosen by a Type tag, collections
 looked up by name, enum values as strings, and node sockets.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Pointers and `None`](#pointers) · [Collections](#collections) · [Enum values](#enums) · [Nodes and sockets](#nodes)
 

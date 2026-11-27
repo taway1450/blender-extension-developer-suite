@@ -5,7 +5,7 @@
 Add-on classes derive from Blender's bases, and often from mixins of their own. Which overrides Blender calls, which
 bases it accepts, and how mixins see the members of the class they are mixed into.
 
-[All topics](README.md) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
 
 [Overrides](#overrides) · [Mixins](#mixins) · [Bases](#bases)
 
