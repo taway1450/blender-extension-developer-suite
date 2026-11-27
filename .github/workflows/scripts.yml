@@ -1,0 +1,54 @@
+# Checks the tooling in scripts/ on every pull request and every push to main: its unit tests (`mise run
+# test:scripts`), the prek hooks (`mise run lint:scripts` without fixing: the job fails if a hook would change a
+# file) and that the generated feature-test add-ons are current (`mise run features:generate --check`).
+#
+# None of these builds ty or needs Blender. Only ty-blender and its nested ruff-blender are checked out (shallowly,
+# at their pinned commits), so that ty's rule reference is there and the tests that read it do not skip; the blender
+# and fake-bpy-module submodules are left out.
+name: scripts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scripts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUITE_JOBS: "2"
+      SUITE_MEMORY_LIMIT_GB: "0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out ty-blender and ruff-blender at their pinned commits
+        run: |
+          git submodule update --init --depth 1 ty-blender
+          git -C ty-blender submodule update --init --depth 1 ruff-blender
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+
+      - name: Trust the mise config
+        run: mise trust -q .
+
+      - name: Unit tests (test:scripts)
+        run: mise run test:scripts
+
+      - name: prek hooks (lint:scripts, must change nothing)
+        run: uvx prek@0.5.6 run --all-files --show-diff-on-failure
+
+      - name: Generated feature tests are current (features:generate --check)
+        run: mise run features:generate --check

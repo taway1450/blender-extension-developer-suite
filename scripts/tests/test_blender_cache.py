@@ -92,7 +92,7 @@ def test_a_matching_manifest_is_accepted():
         ({"machine": "riscv"}, "built on riscv"),
         ({"repo_root": "/elsewhere"}, "only --ccache-only works"),
         ({"compilers": {"CC": {"path": "no-such-compiler-xyz", "version": ""}}}, "not installed here"),
-        ({"cmake": "/root/.cache/uv/environments-v2/x/lib/python3.0/site-packages/cmake/data/bin/cmake"}, "CMake"),
+        ({"cmake": "/no/such/uv/environments-v2/x/lib/python3.0/site-packages/cmake/data/bin/cmake"}, "CMake"),
         ({"ccache": {"path": "/no/such/ccache", "version": "ccache 4"}}, "which is missing"),
     ],
 )
