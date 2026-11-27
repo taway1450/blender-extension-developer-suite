@@ -23,11 +23,11 @@ fail until the entry is updated.
 | [Properties](properties.md) | declaring, Value types, Registered properties, callbacks, wrappers | 19 | 1 | 4 |  | 3 |
 | [Operators](operators.md) | callbacks and return sets, `bpy.ops`, idname strings, modal | 12 |  | 1 |  |  |
 | [Context](context.md) | Guaranteed context members, editors, outside callbacks, narrowings | 9 |  |  |  |  |
-| [Data](data.md) | never-None, Type tags, collections, setters, node sockets, enums |  |  |  |  | 13 |
+| [Data](data.md) | never-None, Type tags, collections, node sockets, enums | 9 | 3 |  |  |  |
 | [UI](ui.md) | draw code, lists, popovers, gizmos, tools | 7 |  | 3 |  |  |
 | [Inheritance](inheritance.md) | overrides, mixins, bases | 8 |  |  |  |  |
-| [Modules](modules.md) | mathutils, bmesh, gpu, handlers, timers, msgbus, previews, C modules |  |  |  |  | 9 |
-| [Blend files](blend-files.md) | data by name, shipped files, libraries, custom properties |  |  |  |  | 4 |
+| [Modules](modules.md) | mathutils, bmesh, gpu, handlers, timers, msgbus, previews | 5 | 2 | 2 |  |  |
+| [Blend files](blend-files.md) | data by name, shipped files, libraries, custom properties | 1 | 1 | 2 |  |  |
 | [Hazards](hazards.md) | stale data, undo, crashes, restricted context, threads |  |  |  |  | 7 |
 | [Tooling](tooling.md) | ruff rules that misfire on add-on code, format, Strictness |  |  |  |  | 5 |
 
@@ -132,7 +132,18 @@ fail until the entry is updated.
 
 ## [Data](data.md)
 
-Nothing here yet.
+- [`collection["name"]`](data.md#collection-by-name) (handled): A collection of Blender data is looked up by name or by index, and both give its element type: an `Object` from `bpy.data.objects`.
+- [`.get()`](data.md#collection-get) (handled): `collection.get(name)` gives the element, or `None` when there is none of that name.
+- [An enum-flag set](data.md#enum-flag-set) (handled): An enum-flag property holds a set of identifiers, such as an operator's `bl_options`.
+- [An enum value as a string](data.md#enum-string) (handled): An enum property of Blender's takes and gives one of its identifiers as a string.
+- [`foreach_get`](data.md#foreach-get) (partial): `collection.foreach_get(name, values)` reads one attribute of every element into a flat sequence in one call, much faster than a loop.
+- [Never-None pointers](data.md#never-none-pointers) (handled): The stubs type a pointer that can never be `None` without `None`, so it is read directly.
+- [`new()` and `remove()`](data.md#new-and-remove) (handled): `new()` creates an element of a collection and returns it; `remove()` deletes one, and takes only an element of that collection's type.
+- [`nodes.new("ShaderNodeBsdfPrincipled")`](data.md#node-by-type) (handled): `nodes.new` takes the idname of the node to create, as a string.
+- [Pointers `None` until set](data.md#nullable-pointers) (handled): Some data is created only on demand: an object has no `animation_data` until it is animated or `animation_data_create()` is called.
+- [`object.data` by type](data.md#object-data-type) (handled): After a test of `object.type`, in an `if` or a `match`, the checker narrows `object.data` to the data-block that type holds: a `Mesh` for `"MESH"`.
+- [Sockets by name](data.md#socket-by-name) (partial): A built-in node's sockets are looked up by name, identifier or index, and each has its own socket type: the Principled BSDF's `"Base Color"` input is a `NodeSocketColor`.
+- [A socket's `default_value`](data.md#socket-default-value) (partial): Every socket type that holds a value has a `default_value`, but the base `NodeSocket` does not.
 
 ## [UI](ui.md)
 
@@ -160,11 +171,22 @@ Nothing here yet.
 
 ## [Modules](modules.md)
 
-Nothing here yet.
+- [`bmesh.from_edit_mesh`](modules.md#bmesh-edit-mesh) (handled): `bmesh.from_edit_mesh` gives the `BMesh` of a mesh in edit mode, whose vertices, edges and faces are typed sequences: an item of `bm.verts` is a `BMVert`, of a face's `loops` a `BMLoop`.
+- [A BMesh layer by name](modules.md#bmesh-layer) (partial): A BMesh keeps extra per-element data in layers, found by name: `bm.verts.layers.float.get("weight")` is the layer, or `None` when there is none, and `.new("weight")` creates it.
+- [A draw callback](modules.md#draw-handler) (partial): `SpaceView3D.draw_handler_add` makes Blender call a function each time it draws the 3D Viewport, with `gpu` to draw in it.
+- [A handler's parameters](modules.md#handler-parameters) (not handled): A function in `bpy.app.handlers` gets parameters that depend on the list: a frame-change handler the scene and the depsgraph, a save handler the file path.
+- [msgbus keys](modules.md#msgbus-keys) (handled): `bpy.msgbus.subscribe_rna` calls a function when a property changes.
+- [`@persistent`](modules.md#persistent-handler) (handled): Blender removes the handlers when it loads another file, except those marked `@persistent`.
+- [Preview icons by name](modules.md#preview-icons) (not handled): `bpy.utils.previews` holds the add-on's own icons, loaded from image files and found by name for `icon_value`.
+- [A timer's return value](modules.md#timer-return) (handled): A function given to `bpy.app.timers.register` returns the seconds until its next call, or `None` to stop.
+- [`Vector` arithmetic](modules.md#vector-arithmetic) (handled): `mathutils` types work with Python's operators: a `Vector` times a number is a `Vector`, a `Matrix` times a `Vector` with `@` is a `Vector`.
 
 ## [Blend files](blend-files.md)
 
-Nothing here yet.
+- [`obj["key"]`](blend-files.md#custom-property) (not handled): Custom properties, set and read with `obj["key"]` on a data-block and on some other structs such as bones, are not known before Blender runs.
+- [`id_properties_ui`](blend-files.md#id-properties-ui) (handled): `obj.id_properties_ui("key")` gives the settings Blender shows for a custom property: its range, its step, its description.
+- [`bpy.data.materials["Rust"]`](blend-files.md#materials-by-name) (partial): What a material found by name holds, such as the nodes of its tree, is not known: only the `.blend` file it comes from says.
+- [Data a shipped file holds](blend-files.md#shipped-blend-file) (not handled): An add-on that ships a `.blend` file loads data-blocks from it with `bpy.data.libraries.load`: the names in `data_to.materials` before the block ends, the loaded materials after it.
 
 ## [Hazards](hazards.md)
 

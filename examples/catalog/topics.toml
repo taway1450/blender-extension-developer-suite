@@ -227,31 +227,32 @@ to-come = []
 
 [topic.data]
 title = "Data"
-covers = "never-None, Type tags, collections, setters, node sockets, enums"
+covers = "never-None, Type tags, collections, node sockets, enums"
 intro = """
-The data API: pointers that are never `None` though the stubs say `X | None`, subtypes chosen by a Type tag, collections
-looked up by name, enum values as strings, and node sockets.
+The data API: pointers that are never `None` and those that can be, subtypes chosen by a Type tag, collections looked
+up by name, enum values as strings, and node sockets. Enum properties with dynamic items are in
+[Properties](properties.md#dynamic-enum).
 """
 
 [[topic.data.sections]]
 id = "pointers"
 title = "Pointers and `None`"
-to-come = ["never-None pointers", "pointers `None` until set", "`object.data` by type"]
+to-come = []
 
 [[topic.data.sections]]
 id = "collections"
 title = "Collections"
-to-come = ["`collection[\"name\"]`", "`.get()`", "`new()` and `remove()`", "`foreach_get`"]
+to-come = []
 
 [[topic.data.sections]]
 id = "enums"
 title = "Enum values"
-to-come = ["an enum value as a string", "an enum-flag set", "dynamic enum values"]
+to-come = []
 
 [[topic.data.sections]]
 id = "nodes"
 title = "Nodes and sockets"
-to-come = ["`nodes.new(\"ShaderNodeBsdfPrincipled\")`", "sockets by name", "a socket's `default_value`"]
+to-come = []
 
 [topic.ui]
 title = "UI"
@@ -306,26 +307,25 @@ to-come = []
 
 [topic.modules]
 title = "Modules"
-covers = "mathutils, bmesh, gpu, handlers, timers, msgbus, previews, C modules"
+covers = "mathutils, bmesh, gpu, handlers, timers, msgbus, previews"
 intro = """
-The modules beside `bpy`: math, mesh editing, drawing, callbacks Blender calls at given moments, and the modules
-written in C that stubs describe from their docs.
+The modules beside `bpy`: math, mesh editing, drawing, and callbacks Blender calls at given moments.
 """
 
 [[topic.modules.sections]]
 id = "math-mesh"
 title = "mathutils and bmesh"
-to-come = ["`Vector` arithmetic", "`bmesh.from_edit_mesh`", "a BMesh layer by name"]
+to-come = []
 
 [[topic.modules.sections]]
 id = "callbacks"
 title = "Handlers, timers and msgbus"
-to-come = ["a handler's parameters", "`@persistent`", "a timer's return value", "msgbus keys"]
+to-come = []
 
 [[topic.modules.sections]]
 id = "drawing"
 title = "gpu and previews"
-to-come = ["a draw handler", "preview icons by name"]
+to-come = []
 
 [topic.blend-files]
 title = "Blend files"
@@ -338,12 +338,12 @@ properties set on them.
 [[topic.blend-files.sections]]
 id = "by-name"
 title = "Data by name"
-to-come = ["`bpy.data.materials[\"Rust\"]`", "data a shipped file holds"]
+to-come = []
 
 [[topic.blend-files.sections]]
 id = "custom-properties"
 title = "Custom properties"
-to-come = ["`obj[\"key\"]`", "`id_properties_ui`"]
+to-come = []
 
 [topic.hazards]
 title = "Hazards"
