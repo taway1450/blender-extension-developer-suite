@@ -81,12 +81,12 @@ def roots_block(roots: list[str], begin: str = ROOTS_BEGIN) -> str:
     return f"{begin}\nroot = [\n{entries}]\n{ROOTS_END}"
 
 
-def updated_ty_toml(text: str, roots: list[str], begin: str = ROOTS_BEGIN) -> str:
-    """ty.toml's ``text`` with ``roots`` between the generated-roots comments (``begin`` names the script that writes
-    them); the rest is kept as it is."""
+def updated_ty_toml(text: str, roots: list[str], begin: str = ROOTS_BEGIN, path: Path = TY_TOML) -> str:
+    """The ty.toml's ``text`` (read from ``path``) with ``roots`` between the generated-roots comments (``begin`` names
+    the script that writes them); the rest is kept as it is."""
     start, end = text.find(begin), text.find(ROOTS_END)
     if start < 0 or end < 0:
-        raise StepError(f"The ty.toml has no '{begin}' ... '{ROOTS_END}' block")
+        raise StepError(f"{path} has no '{begin}' ... '{ROOTS_END}' block")
     return text[:start] + roots_block(roots, begin) + text[end + len(ROOTS_END) :]
 
 

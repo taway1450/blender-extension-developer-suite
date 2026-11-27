@@ -3,17 +3,21 @@ from textwrap import dedent
 
 import pytest
 
+import _catalog
 from _catalog import (
     PAGES_DIR,
     Catalog,
     Recorded,
     Topics,
+    blender_commit,
     catalog_problems,
     checked_entries,
     code_hash,
     differences,
     differs_problems,
+    evidence_problems,
     first_sentence,
+    in_blender_source,
     leftover_lines,
     make_entry,
     pages,
@@ -408,14 +412,16 @@ def test_topics_name_every_safeguard_and_class():
 def test_rendered_entries():
     topics = read_topics(TOPICS)
     levels = {"invalid-assignment": "error", "type-assertion-failure": "error"}
-    handled = "\n".join(render_entry(entry(HANDLED), topics, Recorded(), levels, {}))
+    sample = entry(HANDLED)
+    handled = "\n".join(render_entry(sample, Catalog(topics, [sample], Recorded(), levels, {})))
     assert '<a id="sample"></a>\n### A sample' in handled
     assert "**Handled** by [the add-on typechecker](by-safeguard.md#typechecker)" in handled
     assert "**What you see:** `settings.count` is `int`; ty reports [`invalid-assignment`](" in handled
     assert "(error) on the line marked *reported*." in handled
     assert "[source](../../examples/catalog/properties/sample.py)" in handled
     gapped = entry(GAPPED)
-    text = "\n".join(render_entry(gapped, topics, recorded(gapped, [GAP_RESULT]), levels, {"builtin/5.2": True}))
+    differ = {gapped.id: {"builtin/5.2": True}}
+    text = "\n".join(render_entry(gapped, Catalog(topics, [gapped], recorded(gapped, [GAP_RESULT]), levels, differ)))
     assert "**Not handled** (planned) · checked with Blender main" in text
     assert "on the line marked *not handled yet*" in text
     assert "**Future:** Planned: Read the unpacked tuple. (tracked: `later/enum-items-unpacked`)" in text
@@ -470,3 +476,34 @@ def test_the_catalog_holds_and_its_pages_are_current():
     for name, text in pages(catalog).items():
         assert (PAGES_DIR / name).read_text(encoding="utf-8") == text, f"run `mise run catalog:generate` ({name})"
     assert TY_TOML.read_text(encoding="utf-8") == ty_toml
+
+
+@pytest.mark.parametrize(
+    ("evidence", "problem"),
+    [
+        ({"addon": "properties/props_defaults", "register": "fails", "says": "ValueError at registration"}, None),
+        ({"addon": "properties/props_defaults"}, "says register `ok`, but properties/props_defaults says `fails`"),
+        ({"addon": "properties/props_defaults", "register": "fails", "says": "TypeError"}, "`TypeError` is not in"),
+        ({"addon": "properties/no_such_addon"}, "is no feature-test add-on"),
+    ],
+)
+def test_evidence_must_say_what_the_feature_test_records(evidence, problem):
+    problems = evidence_problems("e.py", evidence)
+    assert (problems == []) if problem is None else any(problem in p for p in problems), problems
+
+
+def test_evidence_needs_its_addon():
+    _, problems = header('# title = "t"\n# section = "s"\n# status = "unknown"\n# [evidence]\n# register = "fails"\n')
+    assert any("names the feature-test `addon`" in p for p in problems), problems
+
+
+def test_blender_source_paths_are_unknown_without_the_pinned_commit(monkeypatch):
+    monkeypatch.setattr(_catalog, "blender_commit", lambda: None)
+    assert in_blender_source("doc/python_api/rst/info_gotcha.rst") is None
+
+
+@pytest.mark.skipif(blender_commit() is None, reason="the blender submodule lacks its pinned commit")
+def test_blender_source_paths_are_looked_up_at_the_pinned_commit():
+    assert in_blender_source("doc/python_api/rst/info_gotcha.rst") is True
+    assert in_blender_source("source/blender/") is True
+    assert in_blender_source("doc/python_api/rst/info_no_such_page.rst") is False

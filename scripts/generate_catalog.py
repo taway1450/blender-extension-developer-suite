@@ -24,12 +24,14 @@ from __future__ import annotations
 import argparse
 
 from _catalog import (
+    ANY_RULE_HEADING,
     OTHERS,
     PAGES_DIR,
     REFERENCE,
     TOPICS_TOML,
     TY_TOML,
     Catalog,
+    blender_commit,
     catalog_problems,
     code_hash,
     differences,
@@ -39,7 +41,6 @@ from _catalog import (
     leftover_lines,
     load_entry,
     pages,
-    read_levels,
     read_recorded,
     read_topics,
     recorded_file,
@@ -48,7 +49,7 @@ from _catalog import (
 )
 from _common import REPO_ROOT, StepError, log, main_wrapper
 from _features import catalog_entry_list, feature_names, import_roots
-from examples_coverage import RULES_MD
+from examples_coverage import RULES_MD, read_rules
 from generate_features import updated_ty_toml
 
 ROOTS_BEGIN = "# BEGIN generated roots (scripts/generate_catalog.py)"
@@ -72,11 +73,11 @@ def current() -> tuple[Catalog, list[str], str]:
         found = differences(entry, reference, others)
         problems += stale_recordings(entry, reference, others) + differs_problems(entry, found, topics.differs)
         differ[entry.id] = found
-    catalog = Catalog(topics, entries, reference, read_levels(RULES_MD), differ)
+    catalog = Catalog(topics, entries, reference, read_rules(RULES_MD, ANY_RULE_HEADING), differ)
     problems += catalog_problems(catalog)
     files = {"/".join(key): record for key, record in [(REFERENCE, reference), *others.items()]}
     problems += leftover_lines(entries, files)
-    ty_toml = updated_ty_toml(TY_TOML.read_text(encoding="utf-8"), import_roots(addons), ROOTS_BEGIN)
+    ty_toml = updated_ty_toml(TY_TOML.read_text(encoding="utf-8"), import_roots(addons), ROOTS_BEGIN, TY_TOML)
     return catalog, problems, ty_toml
 
 
@@ -86,6 +87,8 @@ def main() -> int:
     args = parser.parse_args()
 
     catalog, problems, ty_toml = current()
+    if blender_commit() is None:
+        log("The blender submodule lacks its pinned commit: Blender docs pages and source paths are not checked")
     for problem in problems:
         print(f"    {problem}", flush=True)
     files = {PAGES_DIR / name: text for name, text in pages(catalog).items()}

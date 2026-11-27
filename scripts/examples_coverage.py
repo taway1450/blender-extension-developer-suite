@@ -34,7 +34,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from _baseline import EXAMPLES, EXAMPLES_EXPECTED_DIR, SEPARATOR
+from _baseline import EXAMPLES, EXAMPLES_EXPECTED_DIR, SEPARATOR, Kind
 from _common import EXAMPLE_ADDONS_DIR, REPO_ROOT, TY_SUBMODULE, StepError, log, main_wrapper
 from _features import FEATURES_DIR, feature_names
 from _markers import EXPECTED_ERROR, line_keys
@@ -135,26 +135,27 @@ def read_config(path: Path) -> Config:
     return Config(data.get("later", {}), data.get("exempt", {}))
 
 
-def read_rules(path: Path) -> dict[str, str]:
-    """Every ``blender-*`` rule of the rule reference with its default level."""
+def read_rules(path: Path, heading_pattern: re.Pattern[str] = RULE_HEADING) -> dict[str, str]:
+    """Every ``blender-*`` rule of the rule reference (or every rule whose heading ``heading_pattern`` matches) with
+    its default level."""
     rules: dict[str, str] = {}
     current = None
     for line in path.read_text(encoding="utf-8").splitlines():
-        heading = RULE_HEADING.match(line)
+        heading = heading_pattern.match(line)
         if heading:
             current = heading["rule"]
             rules[current] = ""
         elif line.startswith("## "):
-            current = None  # another rule: its level is not the last Blender rule's
+            current = None  # another rule: its level is not the last matched rule's
         elif current and not rules[current] and (level := RULE_LEVEL.match(line)):
             rules[current] = level["level"]
     return rules
 
 
-def read_results(path: Path) -> set[tuple[str, str, str]]:
+def read_results(path: Path, kind: Kind = EXAMPLES) -> set[tuple[str, str, str]]:
     """The recorded results as (path, rule, line key)."""
     results = set()
-    for entry in EXAMPLES.read(path):
+    for entry in kind.read(path):
         file, rule, key = entry.split(SEPARATOR, 2)
         results.add((file, rule, key))
     return results

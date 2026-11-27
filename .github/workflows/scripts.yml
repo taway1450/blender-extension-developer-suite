@@ -4,8 +4,8 @@
 # catalog entries hold against their recorded results and its pages are current (`mise run catalog:generate --check`).
 #
 # None of these builds ty or needs Blender. Only ty-blender and its nested ruff-blender are checked out (shallowly,
-# at their pinned commits), so that ty's rule reference is there and the tests that read it do not skip; the blender
-# and fake-bpy-module submodules are left out.
+# at their pinned commits), so that ty's rule reference is there and the tests that read it do not skip. Of the
+# blender submodule only the pinned commit's trees are fetched (no files); fake-bpy-module is left out.
 name: scripts
 
 on:
@@ -35,6 +35,14 @@ jobs:
         run: |
           git submodule update --init --depth 1 ty-blender
           git -C ty-blender submodule update --init --depth 1 ruff-blender
+
+      # The catalog checks that the Blender docs pages and source paths its entries link to exist at the pinned
+      # commit (`git ls-tree`), which needs the commit's trees but none of its files.
+      - name: Fetch the Blender source's tree at its pinned commit, without file contents
+        run: |
+          git init -q blender
+          git -C blender fetch -q --depth 1 --filter=blob:none \
+            "$(git config -f .gitmodules submodule.blender.url)" "$(git rev-parse HEAD:blender)"
 
       - uses: astral-sh/setup-uv@v6
 

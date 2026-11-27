@@ -53,6 +53,11 @@ def catalog_topics() -> list[str]:
     return sorted(p.name for p in found if p.is_dir() and not p.name.startswith((".", "_")))
 
 
+def entry_key(name: str) -> str:
+    """A catalog entry's id from its file stem (or a name given for it): ``-`` for ``_``."""
+    return name.replace("_", "-")
+
+
 def catalog_entries(names: list[str]) -> list[Path]:
     """The catalog's entries, or only those of the named topics (``properties``) and entries (``properties/<id>``,
     where ``<id>`` is the file stem with ``-`` for ``_``); none is not an error. An entry is a ``.py`` file or a
@@ -63,12 +68,12 @@ def catalog_entries(names: list[str]) -> list[Path]:
             if path.name.startswith((".", "_")):
                 continue
             if path.suffix == ".py" or (path / "__init__.py").is_file():
-                available[f"{topic}/{path.stem.replace('_', '-')}"] = path
+                available[f"{topic}/{entry_key(path.stem)}"] = path
     if not names:
         return list(available.values())
     selected: list[Path] = []
     for name in names:
-        key = name.strip("/").replace("_", "-")
+        key = entry_key(name.strip("/"))
         matches = [path for entry, path in available.items() if key in (entry, entry.partition("/")[0])]
         if not matches:
             topics = ", ".join(catalog_topics()) or "none"
