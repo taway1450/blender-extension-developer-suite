@@ -95,14 +95,15 @@ def statement_lines(tree: ast.Module, first: int) -> range:
     return range(first, first + 1)
 
 
-def file_demos(path: str, text: str) -> list[Demo]:
-    """The tags of one file. A tag is a comment line of its own; comment lines may follow it before the statement."""
+def file_demos(path: str, text: str, tag_pattern: re.Pattern[str] = TAG) -> list[Demo]:
+    """The tags of one file. A tag is a comment line of its own; comment lines may follow it before the statement.
+    ``tag_pattern`` matches a tag line and names its ``id`` (the catalog's Gap tags use another one)."""
     lines = text.splitlines()
     keys = line_keys(lines)
     tree = ast.parse(text)
     demos = []
     for index, line in enumerate(lines):
-        tag = TAG.match(line)
+        tag = tag_pattern.match(line)
         if not tag:
             continue
         first = index + 1

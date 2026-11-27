@@ -76,17 +76,18 @@ def diff(files: dict[Path, str], existing: dict[Path, str]) -> Diff:
     )
 
 
-def roots_block(roots: list[str]) -> str:
+def roots_block(roots: list[str], begin: str = ROOTS_BEGIN) -> str:
     entries = "".join(f'    "{r}",\n' for r in roots)
-    return f"{ROOTS_BEGIN}\nroot = [\n{entries}]\n{ROOTS_END}"
+    return f"{begin}\nroot = [\n{entries}]\n{ROOTS_END}"
 
 
-def updated_ty_toml(text: str, roots: list[str]) -> str:
-    """ty.toml's ``text`` with ``roots`` between the generated-roots comments; the rest is kept as it is."""
-    start, end = text.find(ROOTS_BEGIN), text.find(ROOTS_END)
+def updated_ty_toml(text: str, roots: list[str], begin: str = ROOTS_BEGIN) -> str:
+    """ty.toml's ``text`` with ``roots`` between the generated-roots comments (``begin`` names the script that writes
+    them); the rest is kept as it is."""
+    start, end = text.find(begin), text.find(ROOTS_END)
     if start < 0 or end < 0:
-        raise StepError(f"{TY_TOML} has no '{ROOTS_BEGIN}' ... '{ROOTS_END}' block")
-    return text[:start] + roots_block(roots) + text[end + len(ROOTS_END) :]
+        raise StepError(f"The ty.toml has no '{begin}' ... '{ROOTS_END}' block")
+    return text[:start] + roots_block(roots, begin) + text[end + len(ROOTS_END) :]
 
 
 def main() -> int:

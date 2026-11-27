@@ -1,0 +1,7 @@
+# Catalog entry results, fake-bpy-module stubs, Blender main: a `checked` line per entry with the hash of
+# its code, then the diagnostics ty reports and the markers that do not hold (the Gap-tagged ones).
+# `mise run check:catalog main` fails when they change; `--update` rewrites this file.
+# Format: path | checked | hash, or path | rule | source line (with #2, #3 ... for a repeated text)
+addons/legacy_scene_counter.py | checked | a0d9c66afb44
+addons/own_preferences | checked | d660b8040df6
+properties/annotated_property.py | checked | 4eef97f92850
