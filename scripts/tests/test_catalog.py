@@ -14,6 +14,7 @@ from _catalog import (
     differences,
     differs_problems,
     first_sentence,
+    leftover_lines,
     make_entry,
     pages,
     parse_header,
@@ -22,6 +23,7 @@ from _catalog import (
     render_entry,
     shown_code,
     split_header,
+    stale_recordings,
     verdict,
 )
 from _common import CATALOG_DIR, catalog_entries
@@ -359,8 +361,18 @@ def test_a_note_without_a_difference_is_stale():
 
 def test_another_result_recorded_from_older_code_is_not_compared():
     made = entry(HANDLED)
-    found = differences(made, recorded(made), {("builtin", "5.2"): recorded(made, [("x", "y")], hash_="old")})
-    assert found == {}
+    others = {("builtin", "5.2"): recorded(made, [("x", "y")], hash_="old")}
+    assert differences(made, recorded(made), others) == {}
+    (problem,) = stale_recordings(made, recorded(made), others)
+    assert "recorded from older code with builtin stubs, Blender 5.2" in problem
+
+
+def test_lines_of_a_removed_entry_are_leftovers():
+    made = entry(HANDLED)
+    record = Recorded({made.rel: "abc", "properties/gone.py": "def"}, {("properties/gone.py", "rule", "key")})
+    assert leftover_lines([made], {"builtin/main": record}) == [
+        "builtin/main: `properties/gone.py` is no entry any more: re-record with `--update`"
+    ]
 
 
 # --- pages --------------------------------------------------------------------------------------------------------------

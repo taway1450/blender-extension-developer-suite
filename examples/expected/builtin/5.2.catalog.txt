@@ -30,7 +30,7 @@ properties/quoted_wrapper_call.py | checked | e794c3b4b876
 properties/quoted_wrapper_call.py | invalid-type-form | size: "distance('Size')"
 properties/quoted_wrapper_call.py | type-assertion-failure | assert_type(shape.size, float)
 properties/registered_property.py | checked | 0e6b3ba349d4
-properties/rejected_arguments.py | checked | 4a07469f1206
+properties/rejected_arguments.py | checked | 2f9ba2b68856
 properties/scalar_types.py | checked | 2142f47ec734
 properties/static_enum.py | checked | 69c602838de7
 properties/unevaluated_annotation.py | checked | 06e225583119

@@ -36,12 +36,14 @@ from _catalog import (
     differs_problems,
     header_problems,
     later_topics,
+    leftover_lines,
     load_entry,
     pages,
     read_levels,
     read_recorded,
     read_topics,
     recorded_file,
+    stale_recordings,
     verdict,
 )
 from _common import REPO_ROOT, StepError, log, main_wrapper
@@ -68,10 +70,12 @@ def current() -> tuple[Catalog, list[str], str]:
         problems += entry.problems + header_problems(entry, topics, features, later)
         problems += verdict(entry, reference, code_hash(addon))
         found = differences(entry, reference, others)
-        problems += differs_problems(entry, found, topics.differs)
+        problems += stale_recordings(entry, reference, others) + differs_problems(entry, found, topics.differs)
         differ[entry.id] = found
     catalog = Catalog(topics, entries, reference, read_levels(RULES_MD), differ)
     problems += catalog_problems(catalog)
+    files = {"/".join(key): record for key, record in [(REFERENCE, reference), *others.items()]}
+    problems += leftover_lines(entries, files)
     ty_toml = updated_ty_toml(TY_TOML.read_text(encoding="utf-8"), import_roots(addons), ROOTS_BEGIN)
     return catalog, problems, ty_toml
 

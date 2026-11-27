@@ -7,7 +7,7 @@
 # evidence = "properties/props_defaults"
 # ///
 """Some `bpy.props` arguments type-check against the stubs but make `register_class` raise `ValueError`: a default
-that is not one of the enum's items, a `set` callback without `get`, a name starting with `_`, a vector `size` above
+that is not one of the enum's items, a `set` callback without `get`, a vector `size` above
 32. The checker reports each where it is written."""
 
 from bpy.props import EnumProperty, FloatVectorProperty, IntProperty

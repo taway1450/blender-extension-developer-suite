@@ -583,6 +583,28 @@ def differences(entry: Entry, reference: Recorded, others: dict[tuple[str, str],
     return found
 
 
+def stale_recordings(entry: Entry, reference: Recorded, others: dict[tuple[str, str], Recorded]) -> list[str]:
+    """The other recorded generators/versions that checked an older version of the entry: their outcome cannot be
+    compared, so its ``[differs]`` notes cannot be judged until it is recorded again."""
+    current = reference.hashes.get(entry.rel)
+    return [
+        f"{entry.main}: recorded from older code with {generator} stubs, Blender {version}: run "
+        f"`mise run check:catalog {version} {entry.id} --generator {generator} --update`"
+        for (generator, version), recorded in others.items()
+        if current is not None and entry.rel in recorded.hashes and recorded.hashes[entry.rel] != current
+    ]
+
+
+def leftover_lines(entries: list[Entry], recorded: dict[str, Recorded]) -> list[str]:
+    """Recorded lines of no current entry (one deleted or renamed), per recorded file."""
+    problems = []
+    for name, record in recorded.items():
+        paths = set(record.hashes) | {path for path, _, _ in record.results}
+        stale = sorted(p for p in paths if not any(p == e.rel or p.startswith(f"{e.rel}/") for e in entries))
+        problems += [f"{name}: `{p}` is no entry any more: re-record with `--update`" for p in stale]
+    return problems
+
+
 def differs_problems(entry: Entry, found: dict[str, bool], blanket: dict[str, str]) -> list[str]:
     """A note is required where another recorded result differs (``[differs]`` or a blanket note in topics.toml),
     and the entry's own note must not stay once it does not."""
