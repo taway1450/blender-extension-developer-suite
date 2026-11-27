@@ -185,22 +185,22 @@ name an operator have to match.
 [[topic.operators.sections]]
 id = "callbacks"
 title = "Callbacks and return sets"
-to-come = ["`execute` returning a set of literals", "`invoke` with an event", "a return set Blender rejects"]
+to-come = []
 
 [[topic.operators.sections]]
 id = "calls"
 title = "Calling through `bpy.ops`"
-to-come = ["the add-on's own operator", "Blender's operators", "an execution context as the first argument", "`temp_override`"]
+to-come = []
 
 [[topic.operators.sections]]
 id = "idnames"
 title = "Idname strings"
-to-come = ["`layout.operator(\"x.y\")`", "a keymap item", "an internal operator"]
+to-come = []
 
 [[topic.operators.sections]]
 id = "modal"
 title = "Modal operators"
-to-come = ["`context.area` in `modal`", "timers and `modal_handler_add`"]
+to-come = []
 
 [topic.context]
 title = "Context"
@@ -213,17 +213,17 @@ a panel's `bl_context` narrows, and what is gone outside callbacks.
 [[topic.context.sections]]
 id = "members"
 title = "Guaranteed context members"
-to-come = ["`context.scene` and `context.view_layer`", "`context.object` after a poll", "members per editor"]
+to-come = []
 
 [[topic.context.sections]]
 id = "narrowings"
 title = "Narrowings"
-to-come = ["`bl_context` of a panel", "a menu's prefix", "a poll that checks the mode"]
+to-come = []
 
 [[topic.context.sections]]
 id = "outside-callbacks"
 title = "Outside callbacks"
-to-come = ["`bpy.context` at import time", "in a timer", "in an application handler"]
+to-come = []
 
 [topic.data]
 title = "Data"
@@ -264,22 +264,22 @@ the classes for gizmos and tools.
 [[topic.ui.sections]]
 id = "draw"
 title = "Draw code"
-to-come = ["`layout.prop(data, \"name\")`", "`layout.operator` and its properties", "icons by name"]
+to-come = []
 
 [[topic.ui.sections]]
 id = "lists"
 title = "Lists"
-to-come = ["`template_list` and a `UIList`", "`draw_item`"]
+to-come = []
 
 [[topic.ui.sections]]
 id = "popovers"
 title = "Popovers and menus"
-to-come = ["a popover opened by an appended function", "menus appended to Blender's headers"]
+to-come = []
 
 [[topic.ui.sections]]
 id = "gizmos-tools"
 title = "Gizmos and tools"
-to-come = ["Blender's own gizmo types", "a workspace tool"]
+to-come = []
 
 [topic.inheritance]
 title = "Inheritance"

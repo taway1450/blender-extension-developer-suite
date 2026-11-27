@@ -22,6 +22,42 @@ addons/preferences_before_registration/__init__.py | missing-attribute | print(e
 addons/preferences_idname | checked | 76d3948cf510
 addons/refused_manifest | checked | e0c0570662ff
 addons/reload_guard | checked | 343249fa9d23
+context/bl_context_tab.py | checked | ad6eb0aa5daa
+context/bl_context_tab.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
+context/bl_context_tab.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-bl-context]
+context/bl_context_tab.py | missing-union-attribute | assert_type(context.active_object, Object | None)
+context/bl_context_tab.py | type-assertion-failure | assert_type(context.active_object, Object | None)
+context/editor_space.py | checked | 73699f8645da
+context/editor_space.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)
+context/editor_space.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)
+context/editor_space.py | missing-attribute | self.layout.label(text=f"Lens: {context.space_data.lens}")
+context/editor_space.py | missing-union-attribute | self.layout.label(text=f"Lens: {context.space_data.lens}")
+context/guaranteed_members.py | checked | f9b5562ac580
+context/guaranteed_members.py | missing-union-attribute | assert_type(context.scene, Scene)
+context/guaranteed_members.py | type-assertion-failure | assert_type(context.scene, Scene)
+context/guaranteed_members.py | missing-union-attribute | assert_type(context.view_layer, ViewLayer)
+context/guaranteed_members.py | type-assertion-failure | assert_type(context.view_layer, ViewLayer)
+context/handler_context.py | checked | 666d433d0846
+context/import_time_context.py | checked | 709f93cb3486
+context/menu_prefix.py | checked | 473070af26bd
+context/menu_prefix.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+context/menu_prefix.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+context/menu_prefix.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-menu-prefix]
+context/mode_poll.py | checked | 2efa8326490f
+context/mode_poll.py | missing-union-attribute | return context.mode == "EDIT_MESH"
+context/mode_poll.py | missing-union-attribute | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+context/mode_poll.py | type-assertion-failure | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+context/mode_poll.py | unused-ignore-comment | assert_type(context.edit_object.data, Mesh)  # ty: ignore[blender-narrowed-by-poll]
+context/poll_narrowing.py | checked | f78c072d5a8a
+context/poll_narrowing.py | missing-union-attribute | return context.object is not None
+context/poll_narrowing.py | missing-union-attribute | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+context/poll_narrowing.py | unused-ignore-comment | assert_type(context.object, Object)  # ty: ignore[blender-narrowed-by-poll]
+context/poll_narrowing.py | missing-union-attribute | context.object.name = "Renamed"  # ty: ignore[blender-narrowed-by-poll]
+context/poll_narrowing.py | unused-ignore-comment | context.object.name = "Renamed"  # ty: ignore[blender-narrowed-by-poll]
+context/poll_narrowing.py | missing-union-attribute | context.active_bone.name = "Renamed"  # ty: ignore[invalid-assignment]
+context/poll_narrowing.py | unused-ignore-comment | context.active_bone.name = "Renamed"  # ty: ignore[invalid-assignment]
+context/timer_context.py | checked | 323b0163243c
+context/timer_context.py | type-assertion-failure | assert_type(bpy.context.object, Object | None)
 inheritance/class_variable.py | checked | 32f880d5ae03
 inheritance/missing_draw.py | checked | 215788f3c3db
 inheritance/mixin_order.py | checked | 78b5ad7c9493
@@ -32,6 +68,35 @@ inheritance/two_bases.py | checked | 62f929dd61bd
 inheritance/unannotated_override.py | checked | 266b3f0c2c77
 inheritance/unannotated_override.py | type-assertion-failure | assert_type(context, Context)
 inheritance/unannotated_override.py | missing-union-attribute | print(context.scene.name)
+operators/builtin_operator_call.py | checked | c770a9e969bb
+operators/execution_context.py | checked | 3676a881746b
+operators/internal_operator.py | checked | 03b4ac3bc48b
+operators/internal_operator.py | missing-union-attribute | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+operators/internal_operator.py | unused-ignore-comment | print(context.object.name)  # ty: ignore[blender-assumed-internal-operator]
+operators/invoke_event.py | checked | af1bb176eeee
+operators/invoke_event.py | type-assertion-failure | assert_type(event, Event)
+operators/invoke_event.py | missing-union-attribute | print(event.mouse_region_x, event.mouse_region_y)
+operators/keymap_item.py | checked | b6a6d2e2a4a2
+operators/modal_area.py | checked | 7bd21fb9d4f3
+operators/modal_area.py | missing-union-attribute | context.window_manager.modal_handler_add(self)
+operators/modal_area.py | missing-union-attribute | context.area.tag_redraw()
+operators/modal_area.py | missing-union-attribute | if event.type in {"LEFTMOUSE", "ESC"}:
+operators/modal_timer.py | checked | 4a3698fc5df9
+operators/modal_timer.py | missing-union-attribute | assert_type(context.window_manager, WindowManager)
+operators/modal_timer.py | type-assertion-failure | assert_type(context.window_manager, WindowManager)
+operators/modal_timer.py | missing-union-attribute | self.timer = context.window_manager.event_timer_add(0.5, window=context.window)
+operators/modal_timer.py | missing-union-attribute | context.window_manager.modal_handler_add(self)
+operators/modal_timer.py | missing-union-attribute | if event.type == "TIMER":
+operators/modal_timer.py | missing-union-attribute | if event.type == "ESC":
+operators/modal_timer.py | missing-union-attribute | context.window_manager.event_timer_remove(self.timer)
+operators/operator_id_pointer.py | checked | 870fea702113
+operators/own_operator_call.py | checked | c5c88e59f8f3
+operators/return_set.py | checked | 1b5ee3b2ba87
+operators/return_set.py | missing-union-attribute | if context.object is None:
+operators/set_str_return.py | checked | d2326dd005a5
+operators/set_str_return.py | missing-union-attribute | if context.object is None:
+operators/temp_override.py | checked | 5dddf3b0d207
+operators/unknown_operator.py | checked | ce0a85d542c9
 properties/annotated_property.py | checked | 2be26238542d
 properties/callback_self.py | checked | d44ed0deaae0
 properties/class_attribute.py | checked | abf3e15b4be5
@@ -76,3 +141,32 @@ registration/registration_loop.py | checked | e162efd5d0de
 registration/subpanel_order.py | checked | 8dc4bdd7f057
 registration/unreachable_registration.py | checked | c66f51ece12f
 registration/unregister_mismatch.py | checked | f14a24b4185a
+ui/appended_popover.py | checked | 7e9b2ece7f5a
+ui/appended_popover.py | missing-union-attribute | self.layout.label(text=context.object.name)
+ui/appended_popover.py | missing-attribute | bpy.types.VIEW3D_HT_header.append(draw_popover)
+ui/appended_popover.py | missing-attribute | bpy.types.VIEW3D_HT_header.remove(draw_popover)
+ui/builtin_gizmo.py | checked | ab757f6cb358
+ui/builtin_gizmo.py | missing-attribute | arrow.draw_style = "BOX"
+ui/draw_item_annotation.py | checked | 79970d1b40ed
+ui/draw_item_annotation.py | incompatible-method-override | def draw_item(self, context, layout, data, item: Layer, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+ui/draw_item_annotation.py | unused-ignore-comment | def draw_item(self, context, layout, data, item: Layer, icon, active_data, active_property):  # ty: ignore[blender-imprecise-callback-parameter]
+ui/draw_item_annotation.py | missing-union-attribute | layout.label(text=item.label)
+ui/header_append.py | checked | 8c65da2de5d0
+ui/header_append.py | missing-attribute | bpy.types.VIEW3D_MT_object.append(draw_scatter)
+ui/icon_name.py | checked | 843ad7f3d312
+ui/list_item.py | checked | 865fd156b637
+ui/list_item.py | type-assertion-failure | assert_type(data, Scene)
+ui/list_item.py | type-assertion-failure | assert_type(item, LIST_ITEM_Entry)  # ty: ignore[blender-assumed-list-item]
+ui/list_item.py | missing-attribute | layout.label(text=item.label)  # ty: ignore[blender-assumed-list-item]
+ui/list_item.py | missing-union-attribute | layout.label(text=item.label)  # ty: ignore[blender-assumed-list-item]
+ui/list_item.py | invalid-argument-type | "LIST_ITEM_UL_entries", "", context.scene, "list_item_entries", context.scene, "list_item_index"
+ui/list_item.py | missing-union-attribute | "LIST_ITEM_UL_entries", "", context.scene, "list_item_entries", context.scene, "list_item_index"
+ui/operator_button.py | checked | 35aa6de7423e
+ui/popover_panel.py | checked | cf4b1d129537
+ui/popover_panel.py | missing-union-attribute | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+ui/popover_panel.py | type-assertion-failure | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+ui/popover_panel.py | unused-ignore-comment | assert_type(context.space_data, SpaceView3D)  # ty: ignore[blender-narrowed-by-popover]
+ui/prop_name.py | checked | 28ca12c19c7b
+ui/prop_name.py | missing-union-attribute | if context.object is not None:
+ui/prop_name.py | missing-union-attribute | self.layout.prop(context.object, "locaton")  # ty: ignore[invalid-argument-type]
+ui/workspace_tool.py | checked | 9da9fe998ba1
