@@ -2,7 +2,7 @@
 # title = "A legacy single-file add-on"
 # section = "metadata"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["addon_discovery", "properties"]
 # ///
 """A module with a `bl_info` dict is a legacy add-on. Its `register()` adds a Registered property, which the rest of

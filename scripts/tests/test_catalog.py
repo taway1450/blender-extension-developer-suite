@@ -37,7 +37,7 @@ HANDLED = """\
     # title = "A sample"
     # section = "declaring"
     # status = "handled"
-    # handled-by = ["typechecker"]
+    # safeguards = ["typechecker"]
     # ///
     \"\"\"The prose. Its second sentence.\"\"\"
 
@@ -123,7 +123,7 @@ def test_no_header_block():
 def test_a_handled_entry_parses_without_problems():
     made = entry(HANDLED)
     assert made.problems == []
-    assert made.header.handled_by == ("typechecker",)
+    assert made.header.safeguards == ("typechecker",)
     assert made.id == "properties/sample"
     assert made.prose == "The prose. Its second sentence."
 
@@ -131,20 +131,20 @@ def test_a_handled_entry_parses_without_problems():
 @pytest.mark.parametrize(
     ("lines", "problem"),
     [
-        ('title = "t"\nsection = "s"\nstatus = "handled"', "names its `handled-by`"),
-        ('title = "t"\nsection = "s"\nstatus = "partial"\nhandled-by = ["typechecker"]', "says in `note`"),
+        ('title = "t"\nsection = "s"\nstatus = "handled"', "names its `safeguards`"),
+        ('title = "t"\nsection = "s"\nstatus = "partial"\nsafeguards = ["typechecker"]', "says in `note`"),
         ('title = "t"\nsection = "s"\nstatus = "not-handled"', "needs a [future] table"),
         ('title = "t"\nsection = "s"\nstatus = "not-handled"\n[future]\nclass = "planned"\nnote = "n"', "`tracked`"),
         ('title = "t"\nsection = "s"\nstatus = "not-handled"\n[future]\nclass = "maybe"\nnote = "n"', "class `maybe`"),
         ('title = "t"\nsection = "s"\nstatus = "done"', "status `done`"),
         ('title = "t"\nsection = "s"\nstatus = "unknown"\ncolour = "red"', "unknown header key `colour`"),
         ('title = "t"\nstatus = "unknown"', "needs `section`"),
-        ('title = "t"\nsection = "s"\nstatus = "handled"\nhandled-by = ["mypy"]', "`mypy` is no handler"),
-        ('title = "t"\nsection = "s"\nstatus = "handled"\nhandled-by = ["blender-runtime"]', "needs `evidence`"),
-        ('title = "t"\nsection = "s"\nstatus = "unknown"\nhandled-by = ["typechecker"]', "has no `handled-by`"),
+        ('title = "t"\nsection = "s"\nstatus = "handled"\nsafeguards = ["mypy"]', "`mypy` is no safeguard"),
+        ('title = "t"\nsection = "s"\nstatus = "handled"\nsafeguards = ["blender-runtime"]', "needs `evidence`"),
+        ('title = "t"\nsection = "s"\nstatus = "unknown"\nsafeguards = ["typechecker"]', "has no `safeguards`"),
         ('title = "t"\nsection = "s"\nstatus = "unknown"\n[differs]\n"mypy/1" = "x"', "no other recorded"),
         (
-            'title = "t"\nsection = "s"\nstatus = "handled"\nhandled-by = ["typechecker"]\n[future]\nclass = "possible"\nnote = "n"',
+            'title = "t"\nsection = "s"\nstatus = "handled"\nsafeguards = ["typechecker"]\n[future]\nclass = "possible"\nnote = "n"',
             "only a not-handled or partial",
         ),
     ],
@@ -305,13 +305,13 @@ def test_handled_entries_need_a_marker_and_no_gap():
         .replace("  # ty: ignore[invalid-assignment]", "")
     )
     assert verdict(linter, recorded(linter), "abc") == []
-    gapped = entry(GAPPED.replace('status = "not-handled"', 'status = "handled"\n    # handled-by = ["typechecker"]'))
+    gapped = entry(GAPPED.replace('status = "not-handled"', 'status = "handled"\n    # safeguards = ["typechecker"]'))
     assert any("has no Gap tag" in p for p in verdict(gapped, recorded(gapped, [GAP_RESULT]), "abc"))
 
 
 def test_partial_needs_a_holding_marker_and_a_gap():
     text = GAPPED.replace(
-        'status = "not-handled"', 'status = "partial"\n    # handled-by = ["typechecker"]\n    # note = "n"'
+        'status = "not-handled"', 'status = "partial"\n    # safeguards = ["typechecker"]\n    # note = "n"'
     )
     only_gap = entry(text)
     assert any(
@@ -379,7 +379,7 @@ def test_lines_of_a_removed_entry_are_leftovers():
 
 TOPICS = """
 intro = "The catalog."
-[handler.typechecker]
+[safeguard.typechecker]
 title = "the add-on typechecker"
 description = "ty-blender."
 [class]
@@ -398,9 +398,9 @@ to-come = ["vectors"]
 """
 
 
-def test_topics_name_every_handler_and_class():
+def test_topics_name_every_safeguard_and_class():
     topics = read_topics(TOPICS)
-    assert "topics.toml: no [handler.stub-generator]" in topics.problems
+    assert "topics.toml: no [safeguard.stub-generator]" in topics.problems
     assert "topics.toml: no [class.possible]" in topics.problems
     assert [s.id for s in topics.topic("properties").sections] == ["declaring", "value-types"]
 
@@ -410,7 +410,7 @@ def test_rendered_entries():
     levels = {"invalid-assignment": "error", "type-assertion-failure": "error"}
     handled = "\n".join(render_entry(entry(HANDLED), topics, Recorded(), levels, {}))
     assert '<a id="sample"></a>\n### A sample' in handled
-    assert "**Handled** by [the add-on typechecker](by-handler.md#typechecker)" in handled
+    assert "**Handled** by [the add-on typechecker](by-safeguard.md#typechecker)" in handled
     assert "**What you see:** `settings.count` is `int`; ty reports [`invalid-assignment`](" in handled
     assert "(error) on the line marked *reported*." in handled
     assert "[source](../../examples/catalog/properties/sample.py)" in handled
@@ -425,7 +425,7 @@ def test_pages_list_every_entry_and_what_is_to_come():
     topics = read_topics(TOPICS)
     made = [entry(HANDLED), entry(GAPPED, "properties/gap.py")]
     files = pages(Catalog(topics, made, Recorded(), {}, {}))
-    assert set(files) == {"README.md", "by-handler.md", "roadmap.md", "properties.md"}
+    assert set(files) == {"README.md", "by-safeguard.md", "roadmap.md", "properties.md"}
     assert "- [A sample](properties.md#sample) (handled): The prose." in files["README.md"]
     assert "| [Properties](properties.md) | declaring | 1 |  | 1 |  | 1 |" in files["README.md"]
     assert "To come in this section: vectors." in files["properties.md"]
@@ -433,7 +433,7 @@ def test_pages_list_every_entry_and_what_is_to_come():
         "- [A gap](properties.md#gap) (not handled): Unpacked items are not read. *Read the unpacked tuple.*"
         in files["roadmap.md"]
     )
-    assert "- [A sample](properties.md#sample)" in files["by-handler.md"]
+    assert "- [A sample](properties.md#sample)" in files["by-safeguard.md"]
 
 
 def test_stems_are_unique_and_shadow_no_module():

@@ -2,7 +2,7 @@
 # title = "The old `x = IntProperty()` form"
 # section = "declaring"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """Before Blender 2.80 properties were class attributes, `count = IntProperty()`. Blender now ignores that form

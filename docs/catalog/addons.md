@@ -5,7 +5,7 @@
 What makes a module an add-on to Blender, and what Blender does with it: the manifest or `bl_info`, `register()` and
 `unregister()`, reloading, preferences, and add-ons that use one another.
 
-[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By handler](by-handler.md) · [Roadmap](roadmap.md)
+[All topics](README.md) · [Reading an entry](README.md#reading-an-entry) · [By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 [Metadata](#metadata) · [Entry points](#entry-points) · [Preferences](#preferences) · [Other add-ons](#other-addons)
 
@@ -15,7 +15,7 @@ What makes a module an add-on to Blender, and what Blender does with it: the man
 <a id="legacy-scene-counter"></a>
 ### A legacy single-file add-on
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `addons/legacy-scene-counter`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/legacy-scene-counter`
 
 A module with a `bl_info` dict is a legacy add-on. Its `register()` adds a Registered property, which the rest of
 the add-on reads with its Value type.
@@ -61,7 +61,7 @@ To come in this section: `register()` without `unregister()`; `register_classes_
 <a id="own-preferences"></a>
 ### The add-on's own preferences
 
-**Handled** by [the add-on typechecker](by-handler.md#typechecker) · checked with Blender main, builtin stubs · `addons/own-preferences`
+**Handled** by [the add-on typechecker](by-safeguard.md#typechecker) · checked with Blender main, builtin stubs · `addons/own-preferences`
 
 `preferences.addons[__package__].preferences` is the add-on's own `AddonPreferences` subclass when the key names
 the add-on, not the stub's `AddonPreferences | None`.

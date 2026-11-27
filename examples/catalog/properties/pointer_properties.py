@@ -2,7 +2,7 @@
 # title = "Pointers to a group and to a data-block"
 # section = "value-types"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """A `PointerProperty` to a `PropertyGroup` always holds an instance of it: Blender creates it with its owner, and it

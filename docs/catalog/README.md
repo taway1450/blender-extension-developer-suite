@@ -5,16 +5,16 @@
 Blender's Python API has conventions no Python tool knows on its own: properties declared as annotations that are
 calls, classes that only exist once registered, a `context` whose members depend on the editor, collections looked up
 by name. This catalog lists them by what an add-on author is doing. Each entry has a short example and says what
-deals with it for you (its handler: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
+deals with it for you (its safeguard: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
 for add-on code, Blender itself when the add-on runs, or nothing yet). When nothing does, the entry says whether that
-can change. [By handler](by-handler.md) explains each handler.
+can change. [By safeguard](by-safeguard.md) explains each safeguard.
 
 The examples are not just illustrations. Each one is type-checked with ty-blender and the stubs, and these pages are
 written from the results. So "handled" means the example shows what you get in your editor today, and "not handled"
 means the example shows the line that still goes wrong: when a new ty-blender gets it right, the catalog's own checks
 fail until the entry is updated.
 
-[By handler](by-handler.md) · [Roadmap](roadmap.md)
+[By safeguard](by-safeguard.md) · [Roadmap](roadmap.md)
 
 | Topic | Covers | Handled | Partial | Not handled | Unknown | To come |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -2,7 +2,7 @@
 # title = "`from __future__ import annotations`"
 # section = "declaring"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """With `from __future__ import annotations` every annotation is a string, which Blender evaluates when it registers

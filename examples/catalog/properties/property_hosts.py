@@ -2,7 +2,7 @@
 # title = "Classes that ignore property annotations"
 # section = "declaring"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """Only some Blender classes are Property hosts: `PropertyGroup`, `Operator`, `Macro`, `AddonPreferences`, `UIList`,

@@ -9,7 +9,7 @@ tag, no Gap tag that holds, a status that agrees with the markers, and an entry 
 that differs with another recorded stub generator or Blender version needs a ``[differs]`` note. The header must
 name only what exists (its section in ``topics.toml``, features, ``later`` topics, trackers, evidence).
 
-The pages are one per topic, an index, a page by handler and a roadmap. The import roots in
+The pages are one per topic, an index, a page by safeguard and a roadmap. The import roots in
 ``examples/catalog/ty.toml`` (one per topic folder) are written too.
 
 ``--check`` writes nothing and fails when an entry does not hold or a page is out of date.

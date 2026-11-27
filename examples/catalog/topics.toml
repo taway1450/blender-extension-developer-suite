@@ -5,9 +5,9 @@ intro = """
 Blender's Python API has conventions no Python tool knows on its own: properties declared as annotations that are
 calls, classes that only exist once registered, a `context` whose members depend on the editor, collections looked up
 by name. This catalog lists them by what an add-on author is doing. Each entry has a short example and says what
-deals with it for you (its handler: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
+deals with it for you (its safeguard: the type stubs of `bpy`, the add-on typechecker ty-blender, a ruff configuration
 for add-on code, Blender itself when the add-on runs, or nothing yet). When nothing does, the entry says whether that
-can change. [By handler](by-handler.md) explains each handler.
+can change. [By safeguard](by-safeguard.md) explains each safeguard.
 
 The examples are not just illustrations. Each one is type-checked with ty-blender and the stubs, and these pages are
 written from the results. So "handled" means the example shows what you get in your editor today, and "not handled"
@@ -15,57 +15,57 @@ means the example shows the line that still goes wrong: when a new ty-blender ge
 fail until the entry is updated.
 """
 
-# --- handlers: what can handle an entry (the `handled-by` values) -----------------------------------------------------
+# --- safeguards: what can handle an entry (the `safeguards` values) -----------------------------------------------------
 
-[handler.stub-generator]
+[safeguard.stub-generator]
 title = "the stubs"
 description = """
 The bpy stubs (`.pyi` files) any Python type checker or editor reads: Blender's own (builtin, 5.2 and later) or
 fake-bpy-module. A convention the stubs can state as plain Python typing needs nothing else.
 """
 
-[handler.runtime-probe]
+[safeguard.runtime-probe]
 title = "the runtime probe"
 description = """
 Facts read from a running Blender and written into the stubs: what its startup scripts register, the Value types of
 properties defined in C, the members a context really has.
 """
 
-[handler.source-parser]
+[safeguard.source-parser]
 title = "the Blender source parser"
 description = """
 Facts read from Blender's C and Python source that no running Blender reports: which pointers are never `None`, which
 enum values a function accepts.
 """
 
-[handler.typechecker]
+[safeguard.typechecker]
 title = "the add-on typechecker"
 description = """
 ty-blender, a fork of ty that reads an add-on as Blender loads it: property annotations, what `register()` adds,
 operator idnames, the members a poll guarantees. It reports what Blender would reject as `blender-*` diagnostics.
 """
 
-[handler.runtime-typechecker]
+[safeguard.runtime-typechecker]
 title = "the runtime add-on typechecker"
 description = """
 The add-on typechecker run inside Blender, against the add-on as it is registered: for what only exists once the
 add-on runs.
 """
 
-[handler.blender-fix]
+[safeguard.blender-fix]
 title = "a fix in Blender"
 description = """
 A change to Blender itself (its stubs, its API or its docs) that makes the convention checkable by any tool.
 """
 
-[handler.linter-profile]
+[safeguard.linter-profile]
 title = "the linter profile"
 description = """
 The ruff configuration for add-on code (`config/ruff/`): rules that misfire on Blender conventions are turned off or
 narrowed, and rules that catch Blender mistakes are turned on.
 """
 
-[handler.blender-runtime]
+[safeguard.blender-runtime]
 title = "Blender at runtime"
 description = """
 Blender itself, when the add-on runs: it raises, prints a warning or rejects the class. The entry says what it does
@@ -75,8 +75,8 @@ and shows the evidence.
 # --- classes: what can change for an entry that is not handled (`[future] class`) -------------------------------------
 
 [class]
-planned = "A handler can check it and the work is tracked."
-possible = "A handler could check it; the note says how. Nothing tracks it yet."
+planned = "A safeguard can check it and the work is tracked."
+possible = "A safeguard could check it; the note says how. Nothing tracks it yet."
 not-checkable = "No static tool can know it: it depends on what happens while Blender runs. The note says why."
 out-of-scope = "A static tool could check it, but it is not this project's to check. The note says whose it is."
 

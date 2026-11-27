@@ -2,7 +2,7 @@
 # title = "The data-block that owns a group"
 # section = "registered"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """Every `PropertyGroup` instance knows the data-block it is stored on, `id_data`. The stubs can only say `ID`; the

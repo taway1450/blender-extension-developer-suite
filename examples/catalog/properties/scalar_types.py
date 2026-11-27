@@ -2,7 +2,7 @@
 # title = "Scalar Value types"
 # section = "value-types"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """`IntProperty`, `FloatProperty`, `BoolProperty` and `StringProperty` give `int`, `float`, `bool` and `str`. A string

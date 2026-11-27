@@ -4,19 +4,19 @@
 
 Everything the catalog says is not handled or handled in part, by what can change.
 
-[All topics](README.md) · [By handler](by-handler.md)
+[All topics](README.md) · [By safeguard](by-safeguard.md)
 
 <a id="planned"></a>
 ## Planned
 
-A handler can check it and the work is tracked.
+A safeguard can check it and the work is tracked.
 
 - [Enum items that unpack another tuple](properties.md#enum-items-unpacked) (not handled): Static `items` give the property a `Literal` Value type. *Read `*NAME` inside static `items` through the constant, as items joined with `+` already are.*
 
 <a id="possible"></a>
 ## Possible
 
-A handler could check it; the note says how. Nothing tracks it yet.
+A safeguard could check it; the note says how. Nothing tracks it yet.
 
 - [A minimum above the maximum](properties.md#min-above-max) (not handled): Blender rejects many wrong `bpy.props` arguments at registration, but not a `min` above `max`: the class registers and the property keeps both limits, so no value is in range. *Compare literal `min` and `max` (and `soft_min` and `soft_max`) in `blender-invalid-property`.*
 - [A wrapper call in a quoted annotation](properties.md#quoted-wrapper-call) (not handled): Blender evaluates a string annotation when it registers the class, so `size: "distance('Size')"` declares a property like the unquoted call. *Evaluate a string annotation that holds a call as the call, as Blender does when it registers the class.*

@@ -2,7 +2,7 @@
 # title = "Property arguments are keyword-only"
 # section = "declaring"
 # status = "handled"
-# handled-by = ["stub-generator"]
+# safeguards = ["stub-generator"]
 # features = ["properties"]
 # ///
 """Every argument of the `bpy.props` functions is keyword-only, so `StringProperty("Name")` raises `TypeError`. The

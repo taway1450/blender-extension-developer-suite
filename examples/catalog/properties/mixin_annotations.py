@@ -2,7 +2,7 @@
 # title = "Properties declared on a mixin"
 # section = "declaring"
 # status = "handled"
-# handled-by = ["typechecker"]
+# safeguards = ["typechecker"]
 # features = ["properties"]
 # ///
 """Annotations of a base class, and of a mixin that is no Blender class at all, become properties of every class that
