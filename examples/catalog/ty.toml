@@ -1,0 +1,18 @@
+# ty configuration for the catalog entries (mise run check:catalog). Every entry is a top-level module, as Blender
+# (or a script runner) loads it, so every topic folder is a root. The stubs and the Python version are passed on the
+# command line per stub generator and Blender version.
+
+[environment]
+# BEGIN generated roots (scripts/generate_catalog.py)
+root = [
+    "addons",
+    "properties",
+]
+# END generated roots
+
+[rules]
+# The markers rely on these (see tests/typecheck/README.md): an expected error (`# ty: ignore[rule]`) that ty no
+# longer reports is a failure, and so is a wrong assert_type.
+unused-ignore-comment = "error"
+unused-type-ignore-comment = "error"
+type-assertion-failure = "error"
